@@ -58,7 +58,7 @@ class MetaDictProxy( type ):
     mapped dictionary.
     """
   
-    if len( attr ) > 2 \
+    if len( attr ) >= 2 \
       and attr.startswith( "_" ) \
       and not attr.startswith( "__" ):
   
@@ -126,11 +126,11 @@ class MetaDictProxy( type ):
 
 
 
-## ---[ Class CoreConfigBasket ]---------------------------------------
+## ---[ Class ConfigBasket ]---------------------------------------
 
-class CoreConfigBasket( object ):
+class ConfigBasket( object ):
   """
-  CoreConfigBasket( object )
+  ConfigBasket( object )
   
   This class holds the core behavior for a set of configuration keys.
   """
@@ -272,7 +272,7 @@ class CoreConfigBasket( object ):
 
   def createAnonymousRealm( s ):
     
-    return CoreConfigBasket( s )
+    return ConfigBasket( s )
 
 
   def createRealm( s, name ):
@@ -287,54 +287,45 @@ class CoreConfigBasket( object ):
     return s.basket
 
   
-  def getAllDataAsDict( s ):
+  def dumpAsDict( s ):
 
-    d = dict( s.getOwnDict().copy() )
-    d[ "_sections" ] = dict( [ ( name, realm.getAllDataAsDict() ) \
-                                 for ( name, realm ) in s.realms.iteritems() ] )
+    d = s.getOwnDict().copy()
+
+    if s.realms:
+      d[ "_sections" ] = dict( [ ( name, s.realms[ name ].dumpAsDict() ) \
+                                   for name in s.realms ] )
     return d
 
 
+  @staticmethod
+  def buildFromDict( d ):
 
-## ---[ Class ConfigBasket ]-------------------------------------------
+    SECTIONS = "_sections"
 
-class ConfigBasket( CoreConfigBasket ):
+    c=ConfigBasket()
 
-  def __init__( s ):
+    if SECTIONS in d:
 
-    CoreConfigBasket.__init__( s )
+      sections = d[ SECTIONS ]
+
+      for name, section in sections.iteritems():
+        c.saveRealm( ConfigBasket.buildFromDict( section ), name )
+
+      del d[ SECTIONS ]
     
-    s.specs  = None
-    s.loader = None
-    s.saver  = None
+    c.updateFromDict( d )
 
-
-  def save( s ):
-    
-    if not s.saver:
-      raise TypeError( "This configuration object has no saver." )
-
-    pass #XXX
-
-
-
-  def load( s ):
-
-    if not s.loader():
-      raise TypeError( "This configuration object has no loader." )
-
-    pass #XXX
-
-
+    return c
+      
 
 
 ## ---[ Class ConfigBasketUpdater ]------------------------------------
 
-class ConfigBasketUpdater( CoreConfigBasket ):
+class ConfigBasketUpdater( ConfigBasket ):
 
   def __init__( s, parent ):
   
-    CoreConfigBasket.__init__( s, parent )
+    ConfigBasket.__init__( s, parent )
 
 
   def commit( s ):

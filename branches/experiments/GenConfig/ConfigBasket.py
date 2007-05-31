@@ -1,5 +1,5 @@
 ##
-## GenConfig.py
+## ConfigBasket.py
 ##
 ## Holds the classes that handle the configuration subsystem.
 ##
@@ -137,6 +137,7 @@ class ConfigBasket( object ):
 
   __metaclass__ = MetaDictProxy
 
+  SECTIONS = "_sections"
 
 
   def __init__( s, parent=None ):
@@ -197,6 +198,11 @@ class ConfigBasket( object ):
   def reset( s ):
   
     s.basket.clear()
+
+
+  def resetRealms( s ):
+  
+    s.realms.clear()
 
 
   def owns( s, attr ):
@@ -300,22 +306,25 @@ class ConfigBasket( object ):
   @staticmethod
   def buildFromDict( d ):
 
-    SECTIONS = "_sections"
-
     c=ConfigBasket()
-
-    if SECTIONS in d:
-
-      sections = d[ SECTIONS ]
-
-      for name, section in sections.iteritems():
-        c.saveRealm( ConfigBasket.buildFromDict( section ), name )
-
-      del d[ SECTIONS ]
-    
-    c.updateFromDict( d )
+    c.updateFromDictTree( d )
 
     return c
+
+
+  def updateFromDictTree( s, d ):
+
+    if ConfigBasket.SECTIONS in d:
+
+      sections = d[ ConfigBasket.SECTIONS ]
+
+      for name, section in sections.iteritems():
+        s.saveRealm( ConfigBasket.buildFromDict( section ), name )
+
+      del d[ ConfigBasket.SECTIONS ]
+    
+    s.updateFromDict( d )
+
       
 
 

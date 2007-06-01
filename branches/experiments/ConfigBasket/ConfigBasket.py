@@ -144,7 +144,7 @@ class ConfigBasket( object ):
 
     s.name   = None
     s.basket = {}
-    s.realms = {}
+    s.domains = {}
     s.parent = parent
 
 
@@ -163,8 +163,8 @@ class ConfigBasket( object ):
       except KeyError:
         pass
 
-      if s.hasRealm( k ):
-        return s.getRealm( k )
+      if s.hasDomain( k ):
+        return s.getDomain( k )
 
       raise
 
@@ -200,9 +200,9 @@ class ConfigBasket( object ):
     s.basket.clear()
 
 
-  def resetRealms( s ):
+  def resetDomains( s ):
   
-    s.realms.clear()
+    s.domains.clear()
 
 
   def owns( s, attr ):
@@ -239,52 +239,52 @@ class ConfigBasket( object ):
     return len( s.basket ) == 0
 
 
-  def hasRealm( s, realm ):
+  def hasDomain( s, domain ):
 
-    return s.realms.has_key( realm )
+    return s.domains.has_key( domain )
 
 
-  def getRealm( s, realm ):
+  def getDomain( s, domain ):
     
     try:
-      return s.realms[ realm ]
+      return s.domains[ domain ]
       
     except KeyError:
-      raise KeyError( "This configuration object doesn't have a realm called %s." % realm )
+      raise KeyError( "This configuration object doesn't have a domain called %s." % domain )
 
 
-  def saveRealm( s, realm, name ):
+  def saveDomain( s, domain, name ):
 
-    s.realms[ name ] = realm
+    s.domains[ name ] = domain
 
 
-  def saveAsRealm( s, name ):
+  def saveAsDomain( s, name ):
 
     ## Watch the difference with the above method: here, THIS object is being
-    ## saved into its PARENT as a new realm.
+    ## saved into its PARENT as a new domain.
     
     s.name = name
-    s.parent.saveRealm( s, name )
+    s.parent.saveDomain( s, name )
 
 
-  def deleteRealm( s, name ):
+  def deleteDomain( s, name ):
     
     try:
-      del s.realms[ name ]
+      del s.domains[ name ]
       
     except KeyError:
-      raise KeyError( "This configuration object doesn't have a realm called %s." % realm )
+      raise KeyError( "This configuration object doesn't have a domain called %s." % domain )
 
 
-  def createAnonymousRealm( s ):
+  def createAnonymousDomain( s ):
     
     return ConfigBasket( s )
 
 
-  def createRealm( s, name ):
+  def createDomain( s, name ):
       
-    c = s.createAnonymousRealm()
-    c.saveAsRealm( name )
+    c = s.createAnonymousDomain()
+    c.saveAsDomain( name )
     return c
 
 
@@ -297,9 +297,9 @@ class ConfigBasket( object ):
 
     d = s.getOwnDict().copy()
 
-    if s.realms:
-      d[ "_sections" ] = dict( [ ( name, s.realms[ name ].dumpAsDict() ) \
-                                   for name in s.realms ] )
+    if s.domains:
+      d[ "_sections" ] = dict( [ ( name, s.domains[ name ].dumpAsDict() ) \
+                                   for name in s.domains ] )
     return d
 
 
@@ -319,7 +319,7 @@ class ConfigBasket( object ):
       sections = d[ ConfigBasket.SECTIONS ]
 
       for name, section in sections.iteritems():
-        s.saveRealm( ConfigBasket.buildFromDict( section ), name )
+        s.saveDomain( ConfigBasket.buildFromDict( section ), name )
 
       del d[ ConfigBasket.SECTIONS ]
     

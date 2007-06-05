@@ -11,7 +11,6 @@ import re
 
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)" )
 RE_KEYVALUE = re.compile( r"^(\w+)\s*=\s*(.*)" )
-RE_QUOTED_STRING = re.compile( r'^(".*[^\\](\\\\)*").*' )
 
 def parseIniLine( line ):
 
@@ -52,6 +51,8 @@ class IniConfigBasket( ConfigBasket ):
 
     s.filename=filename
     ConfigBasket.__init__( s )
+
+    s.load()
 
 
   def load( s ):

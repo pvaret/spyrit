@@ -6,7 +6,8 @@
 
 
 _defaults = dict(
-  mainwindow_size = ( 640, 480 )
+  show_splashscreen = True,
+  mainwindow_size = ( 640, 480 ),
 )
 
 

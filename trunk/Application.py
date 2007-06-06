@@ -24,6 +24,8 @@ class Application( QtGui.QApplication ):
     s.config       = None
     s.mw           = None
 
+    connect( s, SIGNAL( "aboutToQuit()" ), s.saveConfig )
+
 
   def bootstrap( s ):
 
@@ -50,7 +52,11 @@ class Application( QtGui.QApplication ):
 
     else: splash = None
 
-    s.mw = QtGui.QMainWindow()
+    s.setWindowIcon( QtGui.QIcon( ":/app/icon" ) )
+
+
+    from MainWindow import MainWindow
+    s.mw = MainWindow()
     s.mw.show()
 
     if splash:
@@ -65,3 +71,9 @@ class Application( QtGui.QApplication ):
       s.bootstrap()
 
     return QtGui.QApplication.exec_()
+
+
+  def saveConfig( s ):
+    
+    if s.config:
+      s.config.save()

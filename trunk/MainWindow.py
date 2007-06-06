@@ -32,7 +32,23 @@ class MainWindow( QtGui.QMainWindow ):
     if pos:
       s.move( pos )
 
+    s.createMenus()
+    s.createToolbar()
+
 #    s.setCentralWidget( QtGui.QTabWidget( s ) )
+
+
+  def createMenus( s ):
+
+    menubar = s.menuBar()
+
+    helpmenu = QtGui.QMenu( "Help", menubar )
+
+    menubar.addMenu( helpmenu )
+
+
+  def createToolbar( s ):
+    pass
 
 
   def closeEvent( s, event ):

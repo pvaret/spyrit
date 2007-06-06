@@ -9,6 +9,8 @@
 from localqt import *
 from Config  import config
 
+from Utilities import tuple_to_QSize, tuple_to_QPoint
+
 
 class MainWindow( QtGui.QMainWindow ):
 
@@ -18,18 +20,16 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.setWindowTitle( config._mainwindow_title )
 
-    size = QtCore.QSize()
-    size.setWidth( config._mainwindow_size[ 0 ] )
-    size.setHeight( config._mainwindow_size[ 1 ] )
-    s.resize( size )
+    size = tuple_to_QSize( config._mainwindow_size )
+    if size:
+      s.resize( size )
 
-    s.setMinimumSize( config._mainwindow_min_width, \
-                      config._mainwindow_min_height )
+    min_size = tuple_to_QSize( config._mainwindow_min_size )
+    if min_size:
+      s.setMinimumSize( min_size )
 
-    if config._mainwindow_pos:
-      pos = QtCore.QPoint()
-      pos.setX( config._mainwindow_pos[ 0 ] )
-      pos.setY( config._mainwindow_pos[ 1 ] )
+    pos = tuple_to_QPoint( config._mainwindow_pos )
+    if pos:
       s.move( pos )
 
 #    s.setCentralWidget( QtGui.QTabWidget( s ) )
@@ -37,14 +37,8 @@ class MainWindow( QtGui.QMainWindow ):
 
   def closeEvent( s, event ):
     
-    size = s.size()
-    w, h = size.width(), size.height()
-
-    ## We only save the main window's size if it's non-trivial, so as to
-    ## avoid user errors.
-    if w >= config._mainwindow_min_width \
-      and h >= config._mainwindow_min_height:
-      config._mainwindow_size = ( size.width(), size.height() )
+    size = ( s.size().width(), s.size().height() )
+    config._mainwindow_size = size
 
     pos = ( s.pos().x(), s.pos().y() )
     config._mainwindow_pos = pos

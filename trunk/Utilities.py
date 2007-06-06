@@ -36,3 +36,27 @@ def test_qt_version():
   v = tuple( int(c) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
 
   return v >= ( REQUIRED_MAJOR, REQUIRED_MINOR )
+
+
+def tuple_to_QPoint( t ):
+
+  try:
+    x, y = int( t[0] ), int( t[1] )
+
+  except ( TypeError, IndexError, ValueError ):
+    return None
+
+  from localqt import QtCore
+  return QtCore.QPoint( x, y )
+
+
+def tuple_to_QSize( t ):
+
+  try:
+    w, h = int( t[0] ), int( t[1] )
+
+  except ( TypeError, IndexError, ValueError ):
+    return None
+
+  from localqt import QtCore
+  return QtCore.QSize( w, h )

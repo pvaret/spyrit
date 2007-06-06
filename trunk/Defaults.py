@@ -8,11 +8,10 @@
 _defaults = dict(
 
   mainwindow_title = "Spyrit",
-  mainwindow_min_height = 200,
-  mainwindow_min_width = 320,
+  mainwindow_min_size = ( 160, 100 ),
   mainwindow_pos = None,
 
-  show_splashscreen = True,
+  show_splashscreen = False,
   mainwindow_size = ( 640, 480 ),
 )
 

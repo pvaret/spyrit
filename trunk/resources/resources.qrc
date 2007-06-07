@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icon">
-  <file alias="connect">connect_creating.png</file>
+  <file alias="quit">quit.png</file>
 </qresource>
 <qresource prefix="/app">
   <file alias="splash">splash.jpg</file>

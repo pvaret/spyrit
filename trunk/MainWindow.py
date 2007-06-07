@@ -18,6 +18,10 @@ class MainWindow( QtGui.QMainWindow ):
 
     QtGui.QMainWindow.__init__( s, parent )
 
+    ## Create needed members.
+    s.maintoolbar = None
+
+    ## Set up main window according to its configuration.
     s.setWindowTitle( config._mainwindow_title )
 
     size = tuple_to_QSize( config._mainwindow_size )
@@ -32,23 +36,46 @@ class MainWindow( QtGui.QMainWindow ):
     if pos:
       s.move( pos )
 
-    s.createMenus()
-    s.createToolbar()
 
+    ## Load up the core engine, attach it to this window.
+    from Core import Core
+    s.core = Core( s )
+
+    s.createMenus( s.core )
+    s.createToolbar( s.core)
+
+
+    ## And create the central widget. :)
 #    s.setCentralWidget( QtGui.QTabWidget( s ) )
 
 
-  def createMenus( s ):
+  def createMenus( s, core ):
 
     menubar = s.menuBar()
 
+    filemenu = QtGui.QMenu( "File", menubar )
+
+    filemenu.addAction( core.actions.quit )
+
+    menubar.addMenu( filemenu )
+
     helpmenu = QtGui.QMenu( "Help", menubar )
+
+    helpmenu.addAction( core.actions.aboutqt )
 
     menubar.addMenu( helpmenu )
 
 
-  def createToolbar( s ):
-    pass
+  def createToolbar( s, core ):
+
+    if not s.maintoolbar:
+      s.maintoolbar = QtGui.QToolBar( "Main Toolbar" )
+      s.maintoolbar.setMovable( False )
+      s.maintoolbar.setToolButtonStyle( QtCore.Qt.ToolButtonTextUnderIcon )
+      s.addToolBar( s.maintoolbar )
+    
+    s.maintoolbar.addAction( core.actions.quit )
+    
 
 
   def closeEvent( s, event ):

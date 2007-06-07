@@ -13,13 +13,14 @@ class Core( QtCore.QObject ):
 
   def __init__( s, mw ):
 
-    QtCore.QObject.__init__( s )
+    ## We make the QApplication instance this object's parent, so that during
+    ## shutdown it doesn't get deleted before the C++ layer has had time to
+    ## clean it up.
+    QtCore.QObject.__init__( s, QtGui.qApp )
 
     s.mw      = mw
     s.worlds  = []
-
-    from ActionSet import ActionSet
-    s.actions = ActionSet()
+    s.actions = None
 
     s.createActions()
 
@@ -30,6 +31,9 @@ class Core( QtCore.QObject ):
 
 
   def createActions( s ):
+
+    from ActionSet import ActionSet
+    s.actions = ActionSet()
 
     s.actions.quit = QtGui.QAction( QtGui.QIcon( ":/icon/quit" ), "Quit", s )
     s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
@@ -60,3 +64,4 @@ class Core( QtCore.QObject ):
        pass
 
     s.mw.close()
+

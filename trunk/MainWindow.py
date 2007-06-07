@@ -42,7 +42,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.core = Core( s )
 
     s.createMenus( s.core )
-    s.createToolbar( s.core)
+    s.createToolbar( s.core )
 
 
     ## And create the central widget. :)
@@ -69,7 +69,7 @@ class MainWindow( QtGui.QMainWindow ):
   def createToolbar( s, core ):
 
     if not s.maintoolbar:
-      s.maintoolbar = QtGui.QToolBar( "Main Toolbar" )
+      s.maintoolbar = QtGui.QToolBar( "Main Toolbar", s )
       s.maintoolbar.setMovable( False )
       s.maintoolbar.setToolButtonStyle( QtCore.Qt.ToolButtonTextUnderIcon )
       s.addToolBar( s.maintoolbar )

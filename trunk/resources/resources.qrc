@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icon">
   <file alias="quit">quit.png</file>
+  <file alias="qt-logo">qt-logo.png</file>
 </qresource>
 <qresource prefix="/app">
   <file alias="splash">splash.jpg</file>

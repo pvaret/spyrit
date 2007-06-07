@@ -7,7 +7,7 @@
 
 _defaults = dict(
 
-  mainwindow_title = "Spyrit",
+  app_name = "Spyrit",
   mainwindow_min_size = ( 160, 100 ),
   mainwindow_pos = None,
 

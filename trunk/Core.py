@@ -23,6 +23,11 @@ class Core( QtCore.QObject ):
 
     s.createActions()
 
+    afterstart = QtCore.QTimer( s )
+    afterstart.setSingleShot( True )
+    connect( afterstart, SIGNAL( "timeout()" ), s.afterStart )
+    afterstart.start( 0 )
+
 
   def createActions( s ):
 
@@ -30,9 +35,22 @@ class Core( QtCore.QObject ):
     s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
     connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
 
-    s.actions.aboutqt = QtGui.QAction( "About Qt...", s )
+    s.actions.aboutqt = QtGui.QAction( QtGui.QIcon( ":/icon/qt-logo" ),
+                                       "About Qt...", s )
     s.actions.aboutqt.setMenuRole( QtGui.QAction.AboutQtRole )
     connect( s.actions.aboutqt, SIGNAL( "triggered()" ), QtGui.qApp.aboutQt )
+
+
+  def afterStart( s ):
+
+    ## This method is called once, right after the start of the event loop.
+    ## It is used to set up things that we only want done after the event loop
+    ## has begun running.
+
+    import sys
+    from Utilities import handle_exception
+
+    sys.excepthook = handle_exception
 
 
   def quit( s ):

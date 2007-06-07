@@ -22,7 +22,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.maintoolbar = None
 
     ## Set up main window according to its configuration.
-    s.setWindowTitle( config._mainwindow_title )
+    s.setWindowTitle( config._app_name )
 
     size = tuple_to_QSize( config._mainwindow_size )
     if size:
@@ -75,6 +75,7 @@ class MainWindow( QtGui.QMainWindow ):
       s.addToolBar( s.maintoolbar )
     
     s.maintoolbar.addAction( core.actions.quit )
+    s.maintoolbar.addAction( core.actions.aboutqt )
     
 
 

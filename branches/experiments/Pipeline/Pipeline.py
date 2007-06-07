@@ -15,7 +15,7 @@ from Helpers import iter_and_peek_next, endOfIterationMarker, done
 ## ---[ Exception ChunkTypeMismatch ]----------------------------------
 
 
-class ChunkTypeMismatch(Exception):
+class ChunkTypeMismatch( Exception ):
   """
   Exception ChunkTypeMismatch
   
@@ -38,22 +38,24 @@ class ChunkTypes:
   ENDLINE     = 5
   TEXT        = 6
 
-  def __init__(s):
+
+  def __init__( s ):
     
     ## The following is an ugly hack to generate the reverse mapping from value
     ## to chunk type name based on the above information.
     ## It allows you to look up ChunkTypes by value, for instance:
-    ## ChunkType.name[0] returns the string "NETWORK"
+    ## ChunkType.name[ 0 ] returns the string "NETWORK"
     ## This is mostly intended for debugging purposes.
     
-    IntegerType = type(1)
+    IntegerType = type( 1 )
     
-    chunkTypeList = [name for name in dir(ChunkTypes)
+    chunkTypeList = [ name for name in dir( ChunkTypes )
                       if  name.isalpha()
                       and name.isupper()
-                      and type(getattr(ChunkTypes, name)) is IntegerType]
+                      and type( getattr( ChunkTypes, name ) ) is IntegerType ]
     
-    s.name = dict([(getattr(ChunkTypes, name), name) for name in chunkTypeList])
+    s.name = dict( ( getattr( ChunkTypes, name ), name ) 
+                             for name in chunkTypeList )
 
 chunktypes = ChunkTypes()
 
@@ -69,37 +71,38 @@ class BaseChunk:
 
   chunktype = chunktypes.BYTES
 
-  def __init__(s, data=None):
+  def __init__( s, data=None ):
 
     s.data = data
 #    s.lastOfPacket = False
 
 
-  def merge(s, otherchunk):
+  def merge( s, otherchunk ):
   
     if s.chunktype != otherchunk.chunktype:
     
-      chunktypename      = chunktypes.name[         s.chunktype]
-      otherchunktypename = chunktypes.name[otherchunk.chunktype]
+      chunktypename      = chunktypes.name[          s.chunktype ]
+      otherchunktypename = chunktypes.name[ otherchunk.chunktype ]
       
-      raise ChunkTypeMismatch("Trying to merge %s chunk with %s chunk!" % \
-            (chunktypename, otherchunktypename))
+      raise ChunkTypeMismatch( "Trying to merge %s chunk with %s chunk!" % \
+                               ( chunktypename, otherchunktypename ) )
     
     ## The chunks are compatible, so we concatenate their data.
     ## We just need to be careful in case one of the two is None,
     ## because None and strings don't add up too well.
     if s.data is None:
       s.data = otherchunk.data or None
+
     else:
       s.data += otherchunk.data or ""
 
 
   def __repr__(s):
 
-    chunktype = chunktypes.name[s.chunktype]
+    chunktype = chunktypes.name[ s.chunktype ]
 
     if s.data:
-      return '<Chunk Type: %s; Data: "%s">' % (chunktype, s.data)
+      return '<Chunk Type: %s; Data: "%s">' % ( chunktype, s.data )
       
     else:
       return '<Chunk Type: %s>' % chunktype
@@ -107,7 +110,7 @@ class BaseChunk:
 
 ## ---[ Class EndOfPacketChunk ]---------------------------------------
 
-class EndOfPacketChunk(BaseChunk):
+class EndOfPacketChunk( BaseChunk ):
   """
   This chunk type represents the end of a given packet. It is necessary
   because some filters in the pipeline need to be informed that the current
@@ -121,14 +124,14 @@ theEndOfPacketChunk = EndOfPacketChunk()
 
 ## ---[ Class UnicodeTextChunk ]---------------------------------------
 
-class UnicodeTextChunk(BaseChunk):
+class UnicodeTextChunk( BaseChunk ):
   
   chunktype = chunktypes.TEXT
 
 
 ## ---[ Class EndLineChunk ]-------------------------------------------
 
-class EndLineChunk(BaseChunk):
+class EndLineChunk( BaseChunk ):
   
   chunktype = chunktypes.ENDLINE
 
@@ -157,29 +160,29 @@ class BaseFilter:
     s.context = context
 
 
-  def attachDownstreamSink(s, chunksink):
+  def attachDownstreamSink( s, chunksink ):
 
-    s.downstreamCallbacks.append(chunksink)
+    s.downstreamCallbacks.append( chunksink )
 
 
-  def postpone(s, chunk):
+  def postpone( s, chunk ):
 
     if s.postponedChunk:
-      raise Exception("Whoa, there should NOT be a chunk in there already...")
+      raise Exception( "Whoa, there should NOT be a chunk in there already..." )
     
     else:
       s.postponedChunk = chunk
 
 
 
-  def processChunk(s, chunk):
+  def processChunk( s, chunk ):
     ## This is the default implementation, which does nothing.
     ## Override this to implement your filter.
     ## Note that this must be a generator or return a list.
     yield chunk
 
 
-  def mergePostponed(s, chunk):
+  def mergePostponed( s, chunk ):
 
     if chunk is theEndOfPacketChunk:
       ## The End Of Packet chunk is a special case, and is never merged
@@ -196,20 +199,20 @@ class BaseFilter:
     
     try:
       ## And try to merge it with the new chunk.
-      postponed.merge(chunk)
+      postponed.merge( chunk )
       chunk = postponed
       
     except ChunkTypeMismatch:
       ## If they're incompatible, it means the postponed chunk was really
       ## complete, so we send it downstream.
-      s.sendChunkDownstream(postponed)
+      s.sendChunkDownstream( postponed )
 
     return chunk
 
 
-  def feedIn(s, chunk):
+  def feedIn( s, chunk ):
     
-    chunk = s.mergePostponed(chunk)
+    chunk = s.mergePostponed( chunk )
     
     ## At this point, the postponed chunk has either been merged with
     ## the new one, or been sent downstream. At any rate, it's been dealt
@@ -219,56 +222,57 @@ class BaseFilter:
     ## going on...
     
     if chunk.chunktype in s.relevant_types:
-      chunks = s.processChunk(chunk)
+      chunks = s.processChunk( chunk )
       
     else:
-      chunks = [chunk]
+      chunks = [ chunk ]
     
-    for chunk, nextChunk in iter_and_peek_next(chunks):
+    for chunk, nextChunk in iter_and_peek_next( chunks ):
     
 #      if nextChunk is endOfIterationMarker:
 #        chunk.lastOfPacket = True
         
-      s.sendChunkDownstream(chunk)
+      s.sendChunkDownstream( chunk )
 
 
-  def sendChunkDownstream(s, chunk):
+  def sendChunkDownstream( s, chunk ):
 
     for chunkeater in s.downstreamCallbacks:
-      chunkeater(chunk)
+      chunkeater( chunk )
 
 
 
 ## ---[ Class EndLineFilter ]------------------------------------------
 
-class EndLineFilter(BaseFilter):
+class EndLineFilter( BaseFilter ):
   
-  relevant_types = [chunktypes.BYTES]
+  relevant_types = [ chunktypes.BYTES ]
 #  markers = ("\r\n", "\n")
   
-  def processChunk(s, chunk):
+  def processChunk( s, chunk ):
     
     assert chunk.chunktype == chunktypes.BYTES
     
     text = chunk.data
-    if text.endswith("\r"):
-      s.postpone(chunk)
+
+    if text.endswith( "\r" ):
+      s.postpone( chunk )
       done()
     
-    while len(text) > 0:
+    while len( text ) > 0:
 
-      i = text.find("\r\n")
+      i = text.find( "\r\n" )
       
       if i == -1:
-        yield BaseChunk(text)
+        yield BaseChunk( text )
         break
       
       else:
         
         if i != 0:
-          yield BaseChunk(text[:i])
+          yield BaseChunk( text[ :i ] )
          
-        text = text[i+2:]
+        text = text[ i+2: ]
         yield theEndLineChunk
 
 
@@ -276,17 +280,17 @@ class EndLineFilter(BaseFilter):
 
 ## ---[ Class UnicodeTextFilter ]--------------------------------------
 
-class UnicodeTextFilter(BaseFilter):
+class UnicodeTextFilter( BaseFilter ):
   
-  relevant_types = [chunktypes.BYTES]
+  relevant_types = [ chunktypes.BYTES ]
   
   def __init__(s, *args):
     
     s.encoding = "ascii"
-    BaseFilter.__init__(s, *args)
+    BaseFilter.__init__( s, *args )
 
 
-  def processChunk(s, chunk):
+  def processChunk( s, chunk ):
  
     ## FIXME: this may break if the chunk ends with an unfinished UTF-8
     ## sequence. I.e., the character whose UTF-8 encoding is split over
@@ -294,7 +298,7 @@ class UnicodeTextFilter(BaseFilter):
     ## Waiting for an end of line might suffice, though!
  
     if chunk.chunktype == chunktypes.BYTES:
-      chunk = UnicodeTextChunk(chunk.data.decode(s.encoding, "ignore"))
+      chunk = UnicodeTextChunk( chunk.data.decode( s.encoding, "ignore" ) )
     
     yield chunk
 
@@ -316,53 +320,53 @@ class Pipeline:
     s.isLastChunk = False
 
 
-  def feedPacketIn(s, packet):
+  def feedPacketIn( s, packet ):
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
     
-    s.feedIn(BaseChunk(packet))
+    s.feedIn( BaseChunk( packet ) )
     
     ## Then we notify the filters that this is the end of the packet.
-    s.feedIn(theEndOfPacketChunk)
+    s.feedIn( theEndOfPacketChunk )
   
 
-  def feedIn(s, chunk):
+  def feedIn( s, chunk ):
   
-    s.firstFilter.feedIn(chunk)
+    s.firstFilter.feedIn( chunk )
     s.notifyDownstreamBucketFull()
   
   
-  def storeIntoDownstreamBucket(s, chunk):
+  def storeIntoDownstreamBucket( s, chunk ):
   
-    s.downstreamBucket.append(chunk)
+    s.downstreamBucket.append( chunk )
   
   
-  def notifyDownstreamBucketFull(s):
+  def notifyDownstreamBucketFull( s ):
   
     for callback in s.downstreamCallbacks:
-      callback(s.downstreamBucket)
+      callback( s.downstreamBucket )
 
     s.downstreamBucket = []
 
     
-  def addFilter(s, filter):
+  def addFilter( s, filter ):
 
-    filter.setContext(s)
+    filter.setContext( s )
     
     if not s.firstFilter:
       s.firstFilter = s.lastFilter = filter
       
     else:
-      s.lastFilter.attachDownstreamSink(filter.feedIn)
+      s.lastFilter.attachDownstreamSink( filter.feedIn )
       s.lastFilter = filter
 
 
   def finalize(s):
     
-    s.lastFilter.attachDownstreamSink(s.storeIntoDownstreamBucket)
+    s.lastFilter.attachDownstreamSink( s.storeIntoDownstreamBucket )
 
 
-  def attachDownstreamSink(s, callback):
+  def attachDownstreamSink( s, callback ):
     ## 'callback' should be a callable that takes a list of chunks.
     s.downstreamCallbacks.append(callback)
 
@@ -373,22 +377,22 @@ if __name__ == '__main__':
 
   pipe = Pipeline()
   
-  pipe.addFilter(BaseFilter())
-  pipe.addFilter(EndLineFilter())
-  pipe.addFilter(UnicodeTextFilter())
+  pipe.addFilter( BaseFilter() )
+  pipe.addFilter( EndLineFilter() )
+  pipe.addFilter( UnicodeTextFilter() )
   pipe.finalize()
   
-  def output(chunks):
+  def output( chunks ):
     for chunk in chunks:
       if chunk.chunktype != chunktypes.ENDOFPACKET:
         print chunk
   
-  pipe.attachDownstreamSink(output)
+  pipe.attachDownstreamSink( output )
   print "Begin..."
 
-  pipe.feedPacketIn("Ceci est un test.")
-  pipe.feedPacketIn("Mrehw!\r\nMrahw!\r\n")
-  pipe.feedPacketIn("Plus dur maintenant.")
-  pipe.feedPacketIn("\r")
-  pipe.feedPacketIn("\n")
+  pipe.feedPacketIn( "Ceci est un test." )
+  pipe.feedPacketIn( "Mrehw!\r\nMrahw!\r\n" )
+  pipe.feedPacketIn( "Plus dur maintenant." )
+  pipe.feedPacketIn( "\r" )
+  pipe.feedPacketIn( "\n" )
 

@@ -57,18 +57,14 @@ class Pipeline:
   def addFilter( s, filter ):
 
     filter.setContext( s )
-    
+    filter.setSink( s.appendToOutputBuffer )
+
     if not s.firstFilter:
       s.firstFilter = s.lastFilter = filter
-      
+
     else:
-      s.lastFilter.addSink( filter.feedChunk )
+      s.lastFilter.setSink( filter.feedChunk )
       s.lastFilter = filter
-
-
-  def finalize(s):
-    
-    s.lastFilter.addSink( s.appendToOutputBuffer )
 
 
   def addSink( s, callback ):
@@ -85,7 +81,6 @@ if __name__ == '__main__':
   pipe.addFilter( BaseFilter() )
   pipe.addFilter( EndLineFilter() )
   pipe.addFilter( UnicodeTextFilter() )
-  pipe.finalize()
   
   def output( chunks ):
     for chunk in chunks:

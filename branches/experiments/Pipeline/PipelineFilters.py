@@ -5,6 +5,7 @@
 ## and move them through the pipeline.
 ##
 
+import re
 
 from PipelineChunks import *
 
@@ -19,9 +20,9 @@ class BaseFilter:
 
   def __init__( s, context=None ):
 
+    s.sink           = None
     s.context        = context
     s.postponedChunk = []
-    s.sinks          = []
 
 
   def setContext( s, context ):
@@ -29,9 +30,9 @@ class BaseFilter:
     s.context = context
 
 
-  def addSink( s, sink ):
+  def setSink( s, sink ):
 
-    s.sinks.append( sink )
+    s.sink = sink
 
 
   def postpone( s, chunk ):
@@ -73,7 +74,7 @@ class BaseFilter:
     except ChunkTypeMismatch:
       ## If they're incompatible, it means the postponed chunk was really
       ## complete, so we send it downstream.
-      s.sendChunkDownstream( postponed )
+      s.sink( postponed )
 
     return chunk
 
@@ -90,24 +91,12 @@ class BaseFilter:
     ## going on...
     
     if chunk.chunktype in s.relevant_types:
+
       chunks = s.processChunk( chunk )
+      for chunk in chunks: s.sink( chunk )
       
     else:
-      chunks = [ chunk ]
-    
-    for chunk, nextChunk in iter_and_peek_next( chunks ):
-    
-#      if nextChunk is endOfIterationMarker:
-#        chunk.lastOfPacket = True
-        
-      s.sendChunkDownstream( chunk )
-
-
-  def sendChunkDownstream( s, chunk ):
-
-    for sink in s.sinks:
-      sink( chunk )
-
+      s.sink( chunk )
 
 
 ## ---[ Class EndLineFilter ]------------------------------------------
@@ -115,34 +104,41 @@ class BaseFilter:
 class EndLineFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
-  
+
+  match      = re.compile( r'(\r\n)|\n' )
+  unfinished = "\r"
+
   def processChunk( s, chunk ):
-    
-    assert chunk.chunktype == chunktypes.BYTES
     
     text = chunk.data
 
-    if text.endswith( "\r" ):
-      s.postpone( chunk )
-      done()
-    
     while len( text ) > 0:
 
-      i = text.find( "\r\n" )
+      cr = s.match.search( text )
       
-      if i == -1:
-        yield ByteChunk( text )
-        break
-      
+      if cr:
+        head = text[ :cr.start() ]
+        tail = text[ cr.end():   ]
+
+        text = tail
+
+        if head:
+          yield ByteChunk( head )
+
+        yield theEndOfLineChunk
+
       else:
+        ## The remaining text doesn't contain any identifiable carriage
+        ## return. So we quit the loop.
+        break
+
+    if text:
+      
+      if text.endswith( s.unfinished ):
+        s.postpone( ByteChunk( text ) )
         
-        if i != 0:
-          yield ByteChunk( text[ :i ] )
-         
-        text = text[ i+2: ]
-        yield theEndLineChunk
-
-
+      else:
+        yield( ByteChunk( text ) )
 
 
 ## ---[ Class UnicodeTextFilter ]--------------------------------------
@@ -162,7 +158,8 @@ class UnicodeTextFilter( BaseFilter ):
     ## FIXME: this may break if the chunk ends with an unfinished UTF-8
     ## sequence. I.e., the character whose UTF-8 encoding is split over
     ## two packets (is that even possible?), would be ignored.
-    ## Waiting for an end of line might suffice, though!
+    ## Mostly a theorical concern, though, since the default encoding here is
+    ## ASCII.
  
     if chunk.chunktype == chunktypes.BYTES:
       chunk = UnicodeTextChunk( chunk.data.decode( s.encoding, "ignore" ) )

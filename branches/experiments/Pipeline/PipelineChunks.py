@@ -6,8 +6,6 @@
 ##
 
 
-from IterHelpers import iter_and_peek_next, endOfIterationMarker, done
-
 ## ---[ Exception ChunkTypeMismatch ]----------------------------------
 
 
@@ -31,7 +29,7 @@ class ChunkTypes:
   BYTES       = 2
   TELNET      = 3
   ANSI        = 4
-  ENDLINE     = 5
+  ENDOFLINE   = 5
   TEXT        = 6
 
 
@@ -60,7 +58,8 @@ chunktypes = ChunkTypes()
 
 class BaseChunk:
   """
-  This is the base class for all chunks. It should never be used on its own.
+  This is the base class for all chunks. It should never be used on its own;
+  use a subclass instead.
   """
 
   chunktype = None
@@ -131,14 +130,16 @@ class EndOfPacketChunk( BaseChunk ):
 
   chunktype = chunktypes.ENDOFPACKET
 
+
 theEndOfPacketChunk = EndOfPacketChunk()
 
 
-## ---[ Class EndLineChunk ]-------------------------------------------
+## ---[ Class EndOfLineChunk ]-----------------------------------------
 
-class EndLineChunk( BaseChunk ):
+class EndOfLineChunk( BaseChunk ):
   
-  chunktype = chunktypes.ENDLINE
+  chunktype = chunktypes.ENDOFLINE
 
-theEndLineChunk = EndLineChunk()
+
+theEndOfLineChunk = EndOfLineChunk()
 

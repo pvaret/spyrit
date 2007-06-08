@@ -8,6 +8,8 @@
 
 
 from localqt import *
+from Config  import config
+from World   import World
 
 class Core( QtCore.QObject ):
 
@@ -29,6 +31,11 @@ class Core( QtCore.QObject ):
     connect( afterstart, SIGNAL( "timeout()" ), s.afterStart )
     afterstart.start( 0 )
 
+    ## Make sure the configuration object has a domain where we can put our
+    ## per-world configurations.
+    if not config.hasDomain( config._worlds_section ):
+      config.createDomain( config._worlds_section )
+
 
   def createActions( s ):
 
@@ -43,6 +50,27 @@ class Core( QtCore.QObject ):
                                        "About Qt...", s )
     s.actions.aboutqt.setMenuRole( QtGui.QAction.AboutQtRole )
     connect( s.actions.aboutqt, SIGNAL( "triggered()" ), QtGui.qApp.aboutQt )
+
+
+  def openAnonymousWorld( s, host, port ):
+
+    conf = config.createAnonymousDomain()
+    conf._host = host
+    conf._port = port
+
+    world   = World( conf )
+    s.worlds.append( world )
+    s.mw.newWorldUI( world )
+    
+
+  def openNamedWorld( s, name ):
+
+    worldsconf = config.getDomain( config._worlds_section )
+
+    if worldsconf.hasDomain( name ):
+      world = World( worldsconf.getDomain( name ) )
+      s.worlds.append( world )
+      s.mw.newWorldUI( world )
 
 
   def afterStart( s ):
@@ -60,8 +88,7 @@ class Core( QtCore.QObject ):
   def quit( s ):
     
     for world in s.worlds:
-       ## world.disconnect()
-       pass
+       world.disconnectFromWorld()
 
     s.mw.close()
 

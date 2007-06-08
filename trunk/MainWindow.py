@@ -8,6 +8,7 @@
 
 from localqt import *
 from Config  import config
+from WorldUI import WorldUI
 
 from Utilities import tuple_to_QSize, tuple_to_QPoint
 
@@ -44,9 +45,8 @@ class MainWindow( QtGui.QMainWindow ):
     s.createMenus( s.core )
     s.createToolbar( s.core )
 
-
     ## And create the central widget. :)
-#    s.setCentralWidget( QtGui.QTabWidget( s ) )
+    s.setCentralWidget( QtGui.QTabWidget( s ) )
 
 
   def createMenus( s, core ):
@@ -77,6 +77,11 @@ class MainWindow( QtGui.QMainWindow ):
     s.maintoolbar.addAction( core.actions.quit )
     s.maintoolbar.addAction( core.actions.aboutqt )
     
+
+
+  def newWorldUI( s, world ):
+
+    s.centralWidget().addTab( WorldUI( s, world ), world.displayname )
 
 
   def closeEvent( s, event ):

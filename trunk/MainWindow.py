@@ -55,6 +55,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     filemenu = QtGui.QMenu( "File", menubar )
 
+    filemenu.addAction( core.actions.quickconnect )
     filemenu.addAction( core.actions.quit )
 
     menubar.addMenu( filemenu )
@@ -75,6 +76,7 @@ class MainWindow( QtGui.QMainWindow ):
       s.addToolBar( s.maintoolbar )
     
     s.maintoolbar.addAction( core.actions.quit )
+    s.maintoolbar.addAction( core.actions.quickconnect )
     s.maintoolbar.addAction( core.actions.aboutqt )
     
 

@@ -42,14 +42,20 @@ class Core( QtCore.QObject ):
     from ActionSet import ActionSet
     s.actions = ActionSet()
 
-    s.actions.quit = QtGui.QAction( QtGui.QIcon( ":/icon/quit" ), "Quit", s )
-    s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
-    connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
-
     s.actions.aboutqt = QtGui.QAction( QtGui.QIcon( ":/icon/qt-logo" ),
                                        "About Qt...", s )
     s.actions.aboutqt.setMenuRole( QtGui.QAction.AboutQtRole )
     connect( s.actions.aboutqt, SIGNAL( "triggered()" ), QtGui.qApp.aboutQt )
+
+    s.actions.quickconnect = QtGui.QAction( QtGui.QIcon( ":/icon/connect" ),
+                                            "Quick connect...", s)
+    connect( s.actions.quickconnect, SIGNAL( "triggered()" ),
+                                     s.actionQuickConnect )
+
+    s.actions.quit = QtGui.QAction( QtGui.QIcon( ":/icon/quit" ), "Quit", s )
+    s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
+    connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
+
 
 
   def openAnonymousWorld( s, host, port ):
@@ -58,7 +64,7 @@ class Core( QtCore.QObject ):
     conf._host = host
     conf._port = port
 
-    world   = World( conf )
+    world = World( conf )
     s.worlds.append( world )
     s.mw.newWorldUI( world )
     
@@ -92,3 +98,14 @@ class Core( QtCore.QObject ):
 
     s.mw.close()
 
+
+  def actionQuickConnect( s ):
+
+    conf       = config.createAnonymousDomain()
+    conf._host = ""
+    conf._port = 8000
+
+    from QuickConnectDialog import QuickConnectDialog
+
+    if QuickConnectDialog( conf, s.mw ).exec_():
+      s.openAnonymousWorld( conf._host, conf._port )

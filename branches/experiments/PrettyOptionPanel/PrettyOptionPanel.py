@@ -20,11 +20,12 @@ class ConfigMapperWidget:
   ## implements the boilerplate code that will be common to all its subclasses,
   ##  i.e. the actual widget mappers.
 
-  def __init__( s, mapper, option ):
+  def __init__( s, mapper, option, label=None ):
 
     s.mapper = mapper
     s.conf   = mapper.conf  ## for convenience.
     s.option = option
+    s.label  = label
 
     mapper.widgets.append( s )
 
@@ -88,9 +89,9 @@ class LineEditMapper( ConfigMapperWidget, QtGui.QLineEdit ):
 
   MINIMUM_WIDTH = 150
 
-  def __init__( s, mapper, option ):
+  def __init__( s, mapper, option, label=None ):
 
-    ConfigMapperWidget.__init__( s, mapper, option )
+    ConfigMapperWidget.__init__( s, mapper, option, label )
     QtGui.QLineEdit.__init__( s )
 
     s.setMinimumWidth( s.MINIMUM_WIDTH )
@@ -114,9 +115,9 @@ class LineEditMapper( ConfigMapperWidget, QtGui.QLineEdit ):
 
 class SpinBoxMapper( ConfigMapperWidget, QtGui.QSpinBox ):
 
-  def __init__( s, mapper, option ):
+  def __init__( s, mapper, option, label=None ):
 
-    ConfigMapperWidget.__init__( s, mapper, option )
+    ConfigMapperWidget.__init__( s, mapper, option, label )
     QtGui.QSpinBox.__init__( s )
 
     s.setRange( 1, 65535 )
@@ -136,6 +137,45 @@ class SpinBoxMapper( ConfigMapperWidget, QtGui.QSpinBox ):
   def applyValueToWidget( s, value ):
 
     s.setValue( value )
+
+
+
+
+
+class CheckBoxMapper( ConfigMapperWidget, QtGui.QCheckBox ):
+
+  def __init__( s, mapper, option, label=None ):
+
+    ConfigMapperWidget.__init__( s, mapper, option, label )
+    QtGui.QCheckBox.__init__( s )
+    
+    text    = s.label.rstrip( ":" )
+    s.label = None
+    s.setText( text )
+
+    connect( s, SIGNAL( "stateChanged( int )" ),
+                s.updateConfFromWidget )
+
+    s.updateWidgetFromConf()
+
+
+  def obtainValueFromWidget( s ):
+
+    return ( s.checkState() == QtCore.Qt.Checked ) and True or False
+
+
+  def applyValueToWidget( s, value ):
+
+    if value:
+      s.setCheckState( QtCore.Qt.Checked )
+
+    else:
+      s.setCheckState( QtCore.Qt.Unchecked )
+
+
+  def isValid( s ):
+    return True  ## A checkbox is always valid.
+
 
 
 
@@ -183,14 +223,19 @@ class ConfigMapper( QtCore.QObject ):
       emit( s, SIGNAL( "isValid( bool )" ), True )
 
 
-  def lineedit( s, option ):
+  def lineedit( s, option, label=None ):
 
-    return LineEditMapper( s, option )
+    return LineEditMapper( s, option, label )
 
 
-  def spinbox( s, option ):
+  def spinbox( s, option, label=None ):
 
-    return SpinBoxMapper( s, option )
+    return SpinBoxMapper( s, option, label )
+
+
+  def checkbox( s, option, label=None ):
+
+    return CheckBoxMapper( s, option, label )
 
 
   def updateWidgetsFromConf( s ):
@@ -228,45 +273,57 @@ class PrettyOptionPanel( QtGui.QWidget ):
     s.layout().setColumnStretch( 1, 0 )
     s.layout().setColumnStretch( 2, 1 )
    
-    currentrow = 0
+    s.currentrow = 0
 
     for group, items in s.mapper.contents:
 
-      s.addGroup( group, currentrow )
-      currentrow += 1
+      s.addGroupRow( group )
 
-      for item, itemlabel in items:
-        s.addItem( item, currentrow, itemlabel )
-        currentrow += 1
+      for item in items:
+        s.addItemRow( item )
+
+      s.addStretchRow()
     
 
 
-  def addGroup( s, name, currentrow ):
+  def addGroupRow( s, name ):
     
-    label = QtGui.QLabel("<b>" + name + "</b>", s)
+    label = QtGui.QLabel( "<b>" + name + "</b>", s )
     label.setAlignment( QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom )
 
-    s.layout().addWidget( label, currentrow, 0, 1, -1 )
+    s.layout().addWidget( label, s.currentrow, 0, 1, -1 )
 
-    if currentrow > 0:
-      s.layout().setRowMinimumHeight( currentrow,
+    if s.currentrow > 0:
+      s.layout().setRowMinimumHeight( s.currentrow,
                                       label.sizeHint().height() * 1.5 )
+
+    s.currentrow += 1
     
 
-  def addItem( s, widget, currentrow, label=None ):
+  def addItemRow( s, widget ):
     
+    label = widget.label
+
     if label:
 
       l = QtGui.QLabel( label, s )
-      l.setAlignment( QtCore.Qt.AlignRight )
+      l.setAlignment( QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter )
       l.setBuddy( widget )
 
       if l.sizeHint().width() >= s.MAX_LABEL_WIDTH_UNTIL_WORDWRAP:
         l.setWordWrap( True )
 
-      s.layout().addWidget( l, currentrow, 1 )
+      s.layout().addWidget( l, s.currentrow, 1 )
     
-    s.layout().addWidget( widget, currentrow, 2 )
+    s.layout().addWidget( widget, s.currentrow, 2 )
+
+    s.currentrow += 1
+
+
+  def addStretchRow( s ):
+
+    s.layout().setRowStretch( s.currentrow, 1 )
+    s.currentrow += 1
 
 
   def defaults( s ):
@@ -281,45 +338,3 @@ class PrettyOptionPanel( QtGui.QWidget ):
     s.mapper.updateWidgetsFromConf()
 
 
-
-class PrettyOptionDialog( QtGui.QDialog ):
-
-  def __init__( s, mapper, header=None, oklabel=None, parent=None ):
-
-    QtGui.QDialog.__init__( s, parent )
-
-    s.header    = header
-    s.panel     = PrettyOptionPanel( mapper )
-    s.buttonbox = QtGui.QDialogButtonBox( QtGui.QDialogButtonBox.Ok
-                                        | QtGui.QDialogButtonBox.Cancel )
-
-    s.okbutton = s.buttonbox.button( QtGui.QDialogButtonBox.Ok )
-
-    if oklabel:
-      s.okbutton.setText( oklabel )
-
-    connect( mapper,     SIGNAL( "isValid( bool )" ),
-             s.okbutton, SLOT( "setEnabled( bool )" ) )
-
-    connect( s.buttonbox, SIGNAL( "accepted()" ), s, SLOT( "accept()" ) );
-    connect( s.buttonbox, SIGNAL( "rejected()" ), s, SLOT( "reject()" ) );
-
-    mapper.refreshState()
-
-    s.relayout()
-
-
-  def relayout( s ):
-
-    if s.layout(): 
-      import sip
-      sip.delete( s.layout() )
-
-    s.setLayout( QtGui.QVBoxLayout( s ) )
-
-    if s.header:
-      s.layout().addWidget( s.header )
-
-    s.layout().addWidget( s.panel )
-    s.layout().addWidget( Separator( s ) )
-    s.layout().addWidget( s.buttonbox )

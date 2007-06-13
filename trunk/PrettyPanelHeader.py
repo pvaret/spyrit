@@ -35,11 +35,11 @@ class PrettyPanelHeader( QtGui.QFrame ):
     if icon:
       i = QtGui.QLabel( s )
       i.setPixmap( icon )
-      layout.addWidget( i, 0, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter )
+      layout.addWidget( i, 0, Qt.AlignLeft | Qt.AlignVCenter )
 
     t = QtGui.QLabel( '<font size="+2"><b>%s</b></font>' % text, s )
-    t.setTextFormat( QtCore.Qt.RichText )
-    layout.addWidget( t, 0, QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter )
+    t.setTextFormat( Qt.RichText )
+    layout.addWidget( t, 0, Qt.AlignRight | Qt.AlignVCenter )
 
     s.setLayout( layout )
     

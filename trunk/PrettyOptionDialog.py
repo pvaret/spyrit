@@ -42,7 +42,6 @@ class PrettyOptionDialog( QtGui.QDialog ):
   def relayout( s ):
 
     if s.layout(): 
-      import sip
       sip.delete( s.layout() )
 
     s.setLayout( QtGui.QVBoxLayout( s ) )

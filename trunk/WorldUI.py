@@ -8,27 +8,26 @@
 
 from localqt import *
 
+from WorldOutputUI  import WorldOutputUI
 from PipelineChunks import chunktypes
 
 
-class WorldUI( QtGui.QTextEdit ):
+class WorldUI( QtGui.QSplitter ):
 
   def __init__( s, parent, world ):
     
-    QtGui.QTextEdit.__init__( s, parent )
+    QtGui.QSplitter.__init__( s, Qt.Vertical, parent )
 
     s.parent = parent
     s.world  = world
+    s.conf   = world.conf
 
-    s.setCurrentFont( QtGui.QFont("Courier") )
-    world.socketpipeline.addSink( s.sink, [chunktypes.TEXT, chunktypes.ENDOFLINE] )
+    s.outputui = WorldOutputUI( s, world )
+    s.addWidget( s.outputui )
+    
+    world.socketpipeline.addSink( s.outputui.sink, 
+                                [ chunktypes.TEXT,
+                                  chunktypes.ENDOFLINE,
+                                  chunktypes.NETWORK ] )
     world.connectToWorld()
 
-
-  def sink( s, chunks ):
-
-    for chunk in chunks:
-      if chunk.chunktype == chunktypes.TEXT:
-        s.insertPlainText( chunk.data )
-      elif chunk.chunktype == chunktypes.ENDOFLINE:
-        s.insertPlainText( "\n" )

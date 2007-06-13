@@ -20,7 +20,11 @@ if not test_python_version() or not test_pyqt4() or not test_qt_version() :
   sys.exit( 1 )
 
 
-import sys
-from Application import Application
+def main():
 
-Application().exec_()
+  from Application import Application
+  Application().exec_()
+
+
+if __name__ == "__main__":
+  main()

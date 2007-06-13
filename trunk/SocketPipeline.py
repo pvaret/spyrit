@@ -31,6 +31,8 @@ class SocketPipeline:
     s.socket = QtNetwork.QTcpSocket()
     connect( s.socket, SIGNAL( "stateChanged( QAbstractSocket::SocketState )" ),
                        s.reportStateChange )
+    connect( s.socket, SIGNAL( "error( QAbstractSocket::SocketError )" ),
+                       s.reportError )
     connect( s.socket, SIGNAL( "readyRead()" ), s.readSocket )
 
 
@@ -57,6 +59,24 @@ class SocketPipeline:
 
     elif state == QtNetwork.QAbstractSocket.UnconnectedState:
       s.pipeline.feedChunk( NetworkChunk( NetworkChunk.DISCONNECTED ) )
+
+
+  def reportError( s, error ):
+
+    if   error == QtNetwork.QAbstractSocket.ConnectionRefusedError:
+      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.CONNECTIONREFUSED ) )
+
+    elif error == QtNetwork.QAbstractSocket.HostNotFoundError:
+      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.HOSTNOTFOUND ) )
+
+    elif error == QtNetwork.QAbstractSocket.SocketTimeoutError:
+      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.TIMEOUT ) )
+
+    elif error == QtNetwork.QAbstractSocket.RemoteHostClosedError:
+      pass  ## It's okay, we handle it as a disconnect.
+
+    else:
+      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.OTHERERROR ) )
 
 
   def readSocket( s ):

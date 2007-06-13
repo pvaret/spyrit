@@ -8,7 +8,7 @@
 
 
 from localqt import *
-from Config  import config
+from Config  import config, worldconfig
 from World   import World
 
 class Core( QtCore.QObject ):
@@ -21,20 +21,12 @@ class Core( QtCore.QObject ):
     QtCore.QObject.__init__( s, QtGui.qApp )
 
     s.mw      = mw
-    s.worlds  = []
+    s.worlds  = {}
     s.actions = None
 
     s.createActions()
 
-    afterstart = QtCore.QTimer( s )
-    afterstart.setSingleShot( True )
-    connect( afterstart, SIGNAL( "timeout()" ), s.afterStart )
-    afterstart.start( 0 )
-
-    ## Make sure the configuration object has a domain where we can put our
-    ## per-world configurations.
-    if not config.hasDomain( config._worlds_section ):
-      config.createDomain( config._worlds_section )
+    QtCore.QTimer.singleShot( 0, s.afterStart )
 
 
   def createActions( s ):
@@ -57,27 +49,25 @@ class Core( QtCore.QObject ):
     connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
 
 
+  def knownWorldList( s ):
 
-  def openAnonymousWorld( s, host, port ):
+    return config.getDomain( config._worlds_section ).getDomainList()
 
-    conf = config.createAnonymousDomain()
-    conf._host = host
-    conf._port = port
 
-    world = World( conf )
-    s.worlds.append( world )
-    s.mw.newWorldUI( world )
+  def openWorld( s, conf, name=None ):
+
+    world = World( conf, name )
+    pos = s.mw.newWorldUI( world )
+    s.worlds[ pos ] = world
     
 
-  def openNamedWorld( s, name ):
+  def openWorldByName( s, world ):
 
-    worldsconf = config.getDomain( config._worlds_section )
+    if not worldconfig.hasDomain( world ):
+      return
 
-    if worldsconf.hasDomain( name ):
-      world = World( worldsconf.getDomain( name ) )
-      s.worlds.append( world )
-      s.mw.newWorldUI( world )
-
+    conf = worldconfig.getDomain( world )
+    s.openWorld( conf, world )
 
   def afterStart( s ):
 
@@ -93,7 +83,7 @@ class Core( QtCore.QObject ):
 
   def quit( s ):
     
-    for world in s.worlds:
+    for world in s.worlds.itervalues():
        world.disconnectFromWorld()
 
     s.mw.close()
@@ -107,5 +97,26 @@ class Core( QtCore.QObject ):
 
     from QuickConnectDialog import QuickConnectDialog
 
-    if QuickConnectDialog( conf, s.mw ).exec_():
-      s.openAnonymousWorld( conf._host, conf._port )
+    dialog = QuickConnectDialog( conf, s.mw )
+
+    if dialog.exec_():
+      s.openWorld( conf )
+
+
+  def makeConnectToWorldAction( s, world ):
+
+    action = QtGui.QAction( world, s )
+    action.setData( QtCore.QVariant( world ) )
+    connect( action, SIGNAL( "triggered()" ), s.actionConnectToWorld )
+
+    return action
+
+
+  def actionConnectToWorld( s ):
+
+    action = s.sender()
+
+    if not action: return
+
+    world = unicode( action.data().toString() )
+    s.openWorldByName( world )

@@ -8,22 +8,26 @@
 
 from localqt import *
 
+from PipelineChunks import *
 from SocketPipeline import SocketPipeline
 
 
 class World:
 
-  def __init__( s, config, name=None ):
+  def __init__( s, conf, name=None ):
 
-    s.name   = name
-    s.config = config
+    s.name = name
+    s.conf = conf
 
-    host = config._host
-    port = config._port
+    s.connected = False
 
-    s.displayname = name or "(%s:%d)" % ( host, port )
+    s.host = conf._host
+    s.port = conf._port
 
-    s.socketpipeline = SocketPipeline( host, port )
+    s.displayname = name or "(%s:%d)" % ( s.host, s.port )
+
+    s.socketpipeline = SocketPipeline( s.host, s.port )
+    s.socketpipeline.addSink( s.sink, [ chunktypes.NETWORK ] )
 
 
   def connectToWorld( s ):
@@ -34,3 +38,14 @@ class World:
   def disconnectFromWorld( s ):
 
     s.socketpipeline.disconnectFromHost()
+
+
+  def sink( s, chunks ):
+
+    for chunk in chunks:
+
+      if   chunk.data == NetworkChunk.CONNECTED:
+        s.connected = True
+
+      elif chunk.data == NetworkChunk.DISCONNECTED:
+        s.connected = False

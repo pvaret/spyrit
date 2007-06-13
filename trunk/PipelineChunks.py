@@ -134,6 +134,11 @@ class NetworkChunk( BaseChunk ):
   CONNECTED     = 3
   DISCONNECTING = 4
 
+  CONNECTIONREFUSED = 5
+  HOSTNOTFOUND      = 6
+  TIMEOUT           = 7
+  OTHERERROR        = 8
+
 
   def __init__( s, data ):
 

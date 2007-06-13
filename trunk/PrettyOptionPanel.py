@@ -121,7 +121,7 @@ class SpinBoxMapper( ConfigMapperWidget, QtGui.QSpinBox ):
     QtGui.QSpinBox.__init__( s )
 
     s.setRange( 1, 65535 )
-    s.setAlignment( QtCore.Qt.AlignRight )
+    s.setAlignment( Qt.AlignRight )
 
     connect( s, SIGNAL( "valueChanged( int )" ),
                 s.updateConfFromWidget )
@@ -161,16 +161,16 @@ class CheckBoxMapper( ConfigMapperWidget, QtGui.QCheckBox ):
 
   def obtainValueFromWidget( s ):
 
-    return ( s.checkState() == QtCore.Qt.Checked ) and True or False
+    return ( s.checkState() == Qt.Checked ) and True or False
 
 
   def applyValueToWidget( s, value ):
 
     if value:
-      s.setCheckState( QtCore.Qt.Checked )
+      s.setCheckState( Qt.Checked )
 
     else:
-      s.setCheckState( QtCore.Qt.Unchecked )
+      s.setCheckState( Qt.Unchecked )
 
 
   def isValid( s ):
@@ -264,7 +264,6 @@ class PrettyOptionPanel( QtGui.QWidget ):
     layout = s.layout()
     
     if layout:
-      import sip
       sip.delete( layout )
 
     s.setLayout( QtGui.QGridLayout( s ) )
@@ -289,7 +288,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
   def addGroupRow( s, name ):
     
     label = QtGui.QLabel( "<b>" + name + "</b>", s )
-    label.setAlignment( QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom )
+    label.setAlignment( Qt.AlignLeft | Qt.AlignBottom )
 
     s.layout().addWidget( label, s.currentrow, 0, 1, -1 )
 
@@ -307,7 +306,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
     if label:
 
       l = QtGui.QLabel( label, s )
-      l.setAlignment( QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter )
+      l.setAlignment( Qt.AlignRight | Qt.AlignVCenter )
       l.setBuddy( widget )
 
       if l.sizeHint().width() >= s.MAX_LABEL_WIDTH_UNTIL_WORDWRAP:

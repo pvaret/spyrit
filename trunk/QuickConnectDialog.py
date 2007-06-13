@@ -11,28 +11,22 @@ from PrettyPanelHeader  import PrettyPanelHeader
 from PrettyOptionDialog import PrettyOptionDialog
 
 
-class QuickConnectDialog:
+def QuickConnectDialog( conf, parent=None ):
 
-  def __init__( s, conf, parent=None ):
+    header = PrettyPanelHeader( "Quick connect",
+                                 QtGui.QPixmap( ":/icon/connect" ) )
 
-    s.conf = conf
-    
-    s.header = PrettyPanelHeader( "Quick connect",
-                                  QtGui.QPixmap( ":/icon/connect" ) )
+    mapper = ConfigMapper( conf )
+    mapper.addGroup( "Connection parameters", [
+                       mapper.lineedit( "host", "&Server:" ),
+                       mapper.spinbox(  "port", "&Port:" ),
+                     ] )
 
-    s.mapper = ConfigMapper( conf )
-    s.mapper.addGroup( "Connection parameters", [
-                         s.mapper.lineedit( "host", "&Server:" ),
-                         s.mapper.spinbox( "port", "&Port:" ),
-                       ] )
+    dialog = PrettyOptionDialog( mapper,
+                                 parent  = parent,
+                                 header  = header,
+                                 oklabel = "Connect",
+                                 title   = "Quick connect" )
 
-    s.dialog = PrettyOptionDialog( s.mapper,
-                                   parent  = parent,
-                                   header  = s.header,
-                                   oklabel = "Connect",
-                                   title   = "Quick connect" )
+    return dialog
 
-
-  def exec_( s ):
-
-    return s.dialog.exec_()

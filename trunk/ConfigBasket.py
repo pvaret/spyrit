@@ -253,8 +253,14 @@ class ConfigBasket( object ):
       raise KeyError( "This configuration object doesn't have a domain called %s." % domain )
 
 
+  def getDomainList( s ):
+
+    return list( s.domains.iterkeys() )
+
+
   def saveDomain( s, domain, name ):
 
+    domain.parent = s
     s.domains[ name ] = domain
 
 

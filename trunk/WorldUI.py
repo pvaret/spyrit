@@ -8,6 +8,7 @@
 
 from localqt import *
 
+from WorldInputUI   import WorldInputUI
 from WorldOutputUI  import WorldOutputUI
 from PipelineChunks import chunktypes
 
@@ -29,5 +30,6 @@ class WorldUI( QtGui.QSplitter ):
                                 [ chunktypes.TEXT,
                                   chunktypes.ENDOFLINE,
                                   chunktypes.NETWORK ] )
-    world.connectToWorld()
 
+    s.inputui = WorldInputUI( s, world )
+    s.addWidget( s.inputui )

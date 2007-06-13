@@ -80,6 +80,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
           s.insertInfoText( "Connecting..." )
 
         elif chunk.data == NetworkChunk.CONNECTED:
+
           if not s.world.connected:
             s.insertInfoText( "Connected!" )
 
@@ -87,6 +88,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
           pass
 
         elif chunk.data == NetworkChunk.DISCONNECTED:
+
           if s.world.connected:
             s.insertInfoText( "Connection closed." )
 

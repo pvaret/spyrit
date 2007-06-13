@@ -28,3 +28,4 @@ def main():
 
 if __name__ == "__main__":
   main()
+  print "TODO: Fix WorldOutputUI so that clicks don't move the textcursor around!"

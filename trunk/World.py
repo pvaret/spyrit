@@ -40,12 +40,24 @@ class World:
     s.socketpipeline.disconnectFromHost()
 
 
+  def setConnected( s ):
+
+    s.connected = True
+
+
+  def setDisconnected( s ):
+
+    s.connected = False
+
+
   def sink( s, chunks ):
 
     for chunk in chunks:
 
       if   chunk.data == NetworkChunk.CONNECTED:
-        s.connected = True
+
+        QtCore.QTimer.singleShot( 0, s.setConnected )
 
       elif chunk.data == NetworkChunk.DISCONNECTED:
-        s.connected = False
+
+        QtCore.QTimer.singleShot( 0, s.setDisconnected )

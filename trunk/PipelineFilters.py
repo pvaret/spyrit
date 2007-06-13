@@ -149,8 +149,8 @@ class UnicodeTextFilter( BaseFilter ):
   
   def __init__(s, *args):
     
-    s.encoding = "ascii"
     BaseFilter.__init__( s, *args )
+    s.encoding = "ascii"
 
 
   def processChunk( s, chunk ):

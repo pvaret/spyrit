@@ -87,6 +87,9 @@ class SocketPipeline:
 
   def write( s, data ):
 
+    if type( data ) is type( u'' ):
+      data = data.encode( "ascii", "ignore" )
+
     s.socket.write( data )
     s.socket.flush()
 

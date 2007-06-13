@@ -58,6 +58,9 @@ class Core( QtCore.QObject ):
 
     world = World( conf, name )
     pos = s.mw.newWorldUI( world )
+
+    world.connectToWorld()
+
     s.worlds[ pos ] = world
     
 

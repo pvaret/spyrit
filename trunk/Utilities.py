@@ -62,6 +62,12 @@ def tuple_to_QSize( t ):
   return QtCore.QSize( w, h )
 
 
+def case_insensitive_cmp( x, y ):
+
+  return ( x.lower() < y.lower() ) and -1 or 1
+
+
+
 def handle_exception( exc_type, exc_value, exc_traceback ):
 
   import sys

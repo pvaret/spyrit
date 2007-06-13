@@ -10,7 +10,7 @@ from localqt import *
 from Config  import config
 from WorldUI import WorldUI
 
-from Utilities import tuple_to_QSize, tuple_to_QPoint
+from Utilities import tuple_to_QSize, tuple_to_QPoint, case_insensitive_cmp
 
 
 class TabBarWheelEventHandler( QtCore.QObject ):
@@ -103,7 +103,7 @@ class MainWindow( QtGui.QMainWindow ):
       worldsmenu.addSeparator()
       worldlistmenu = worldsmenu.addMenu( "Connect to" )
 
-      for world in worlds:
+      for world in sorted( worlds, case_insensitive_cmp ):
         worldlistmenu.addAction( core.makeConnectToWorldAction( world ) )
 
     menubar.addMenu( worldsmenu )

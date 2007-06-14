@@ -21,6 +21,8 @@ _defaults = dict(
   info_font_color   = "#606060",  ## dark grey
   output_background_color = "#000000", ## black
 
+  splitter_sizes = [ 1000, 100, 100 ],
+
 )
 
 

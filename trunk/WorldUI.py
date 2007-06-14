@@ -33,3 +33,11 @@ class WorldUI( QtGui.QSplitter ):
 
     s.inputui = WorldInputUI( s, world )
     s.addWidget( s.inputui )
+
+    s.outputui.setFocusProxy( s.inputui )
+    s.setFocusProxy( s.inputui )
+
+    QtCore.QTimer.singleShot( 0, s.inputui, SLOT( "setFocus()" ) )
+
+    s.setChildrenCollapsible( False )
+    s.setSizes( s.conf._splitter_sizes )

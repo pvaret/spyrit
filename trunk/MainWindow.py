@@ -81,6 +81,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.tabwidget.tabBar().installEventFilter( TabBarWheelEventHandler( s ) )
 
+    connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ), s.ensureTabFocus )
+
 
   def createMenus( s, core ):
 
@@ -141,6 +143,11 @@ class MainWindow( QtGui.QMainWindow ):
   def currentWorldUI( s ):
 
     return s.tabwidget.currentWidget()
+
+
+  def ensureTabFocus( s, i ):
+
+    s.tabwidget.widget( i ).setFocus()
 
 
   def closeEvent( s, event ):

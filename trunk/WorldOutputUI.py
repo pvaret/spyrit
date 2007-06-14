@@ -28,6 +28,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.world = world
     s.conf  = world.conf
 
+    s.atbottom  = True
+    s.scrollbar = s.verticalScrollBar()
+
+    connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
+
     s.refresh()
 
 
@@ -55,14 +60,23 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.infocharformat.setFontWeight( QtGui.QFont.Normal )
     s.infocharformat.setFontItalic( True )
  
+
+  def onScroll( s, pos ):
+
+    s.atbottom = ( pos == s.scrollbar.maximum() )
+
    
   def sink( s, chunks ):
+
+    scrollpos = s.scrollbar.value()
 
     ## Ensure that the cursor is at the end of the document. (The cursor may
     ## have been moved when the user clicked somewhere on the widget... even
     ## if it's set read-only. Bummer.)
     if not s.textCursor().atEnd():
       s.moveCursor( QtGui.QTextCursor.End )
+
+    s.setUpdatesEnabled( False )
 
     pending = []
 
@@ -116,6 +130,14 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     if pending:
       s.insertText( "".join( pending ) )
+
+    if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
+      s.scrollbar.setValue( s.scrollbar.maximum() )
+
+    else:
+      s.scrollbar.setValue( scrollpos )
+
+    s.setUpdatesEnabled( True )
 
 
   def insertText( s, text ):

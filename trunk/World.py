@@ -50,6 +50,11 @@ class World:
     s.connected = False
 
 
+  def refresh( s ):
+
+    s.worldui.refresh()
+
+
   def sink( s, chunks ):
 
     for chunk in chunks:

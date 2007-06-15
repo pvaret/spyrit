@@ -21,7 +21,6 @@ class Core( QtCore.QObject ):
     QtCore.QObject.__init__( s, QtGui.qApp )
 
     s.mw      = mw
-    s.worlds  = {}
     s.actions = None
 
     s.createActions()
@@ -35,12 +34,17 @@ class Core( QtCore.QObject ):
     s.actions = ActionSet()
 
     s.actions.aboutqt = QtGui.QAction( QtGui.QIcon( ":/icon/qt-logo" ),
-                                       "About Qt...", s )
+                                      "About Qt...", s )
     s.actions.aboutqt.setMenuRole( QtGui.QAction.AboutQtRole )
     connect( s.actions.aboutqt, SIGNAL( "triggered()" ), QtGui.qApp.aboutQt )
 
+    s.actions.createworld = QtGui.QAction( QtGui.QIcon( ":/icon/new_world" ),
+                                          "Create world...", s)
+    connect( s.actions.createworld, SIGNAL( "triggered()" ),
+                                    s.actionCreateWorld )
+
     s.actions.quickconnect = QtGui.QAction( QtGui.QIcon( ":/icon/connect" ),
-                                            "Quick connect...", s)
+                                           "Quick connect...", s)
     connect( s.actions.quickconnect, SIGNAL( "triggered()" ),
                                      s.actionQuickConnect )
 
@@ -51,17 +55,15 @@ class Core( QtCore.QObject ):
 
   def knownWorldList( s ):
 
-    return config.getDomain( config._worlds_section ).getDomainList()
+    return worldconfig.getDomainList()
 
 
   def openWorld( s, conf, name=None ):
 
     world = World( conf, name )
-    pos = s.mw.newWorldUI( world )
+    s.mw.newWorldUI( world )
 
     world.connectToWorld()
-
-    s.worlds[ pos ] = world
     
 
   def openWorldByName( s, world ):
@@ -71,6 +73,7 @@ class Core( QtCore.QObject ):
 
     conf = worldconfig.getDomain( world )
     s.openWorld( conf, world )
+
 
   def afterStart( s ):
 
@@ -86,10 +89,32 @@ class Core( QtCore.QObject ):
 
   def quit( s ):
     
-    for world in s.worlds.itervalues():
-       world.disconnectFromWorld()
+    for worldui in s.mw.iterateOnWorlds():
+       worldui.world.disconnectFromWorld()
 
     s.mw.close()
+
+
+  def actionCreateWorld( s ):
+
+    conf       = worldconfig.createAnonymousDomain()
+    conf._host = ""
+    conf._port = 8000
+    conf._name = ""
+
+    from CreateWorldDialog import CreateWorldDialog
+
+    dialog = CreateWorldDialog( conf, s.mw )
+
+    if dialog.exec_():
+
+      name = conf._name
+      del conf._name
+      conf.saveAsDomain( name )
+
+      s.mw.applyNewConf()
+
+      s.openWorld( conf )
 
 
   def actionQuickConnect( s ):

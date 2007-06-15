@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/icon">
   <file alias="connect">connect.png</file>
+  <file alias="new_world">new_world.png</file>
   <file alias="qt-logo">qt-logo.png</file>
   <file alias="quit">quit.png</file>
 </qresource>

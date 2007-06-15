@@ -32,11 +32,15 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.scrollbar = s.verticalScrollBar()
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
-
+    
     s.refresh()
 
 
   def refresh( s ):
+
+    s.setStyleSheet( 'QTextEdit { font-family: "%s" ;  font-size: %dpt }'
+                              % ( s.conf._output_font_name,
+                                  s.conf._output_font_size ) )
 
     s.viewport().palette().setColor( QtGui.QPalette.Base,
                        QtGui.QColor( s.conf._output_background_color ) )
@@ -44,21 +48,15 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.defaultcharformat = QtGui.QTextCharFormat()
     s.defaultcharformat.clearForeground()
     s.defaultcharformat.clearBackground()
-    s.defaultcharformat.setFontFamily( s.conf._output_font_name )
-    s.defaultcharformat.setFontPointSize( s.conf._output_font_size )
     s.defaultcharformat.setForeground( QtGui.QBrush( \
                                  QtGui.QColor( s.conf._output_font_color ) ) )
-    s.defaultcharformat.setFontWeight( QtGui.QFont.Normal )
    
     s.infocharformat = QtGui.QTextCharFormat()
     s.infocharformat.clearForeground()
     s.infocharformat.clearBackground()
-    s.infocharformat.setFontFamily( s.conf._output_font_name )
-    s.infocharformat.setFontPointSize( s.conf._output_font_size )
+    s.infocharformat.setFontItalic( True )
     s.infocharformat.setForeground( QtGui.QBrush( \
                               QtGui.QColor( s.conf._info_font_color ) ) )
-    s.infocharformat.setFontWeight( QtGui.QFont.Normal )
-    s.infocharformat.setFontItalic( True )
  
 
   def onScroll( s, pos ):

@@ -16,10 +16,17 @@ _defaults = dict(
   mainwindow_size   = ( 800, 600 ),
 
   output_font_name  = "Courier",
-  output_font_size  = 11,
+  output_font_size  = 12,
   output_font_color = "#a0a0a4",  ## grey
+
   info_font_color   = "#606060",  ## dark grey
-  output_background_color = "#000000", ## black
+
+  input_font_name  = "",  ## Nothing, system default will be used.
+  input_font_size  = 0,   ## Nothing, system default will be used.
+  input_font_color = "",  ## Nothing, system default will be used.
+
+  output_background_color = "#000000",  ## black
+  input_background_color  = "#ffffff",  ## white
 
   splitter_sizes = [ 1000, 100, 100 ],
 

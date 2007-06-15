@@ -72,8 +72,8 @@ class MainWindow( QtGui.QMainWindow ):
     from Core import Core
     s.core = Core( s )
 
-    s.createMenus( s.core )
-    s.createToolbar( s.core )
+    s.createMenus()
+    s.createToolbar()
 
     ## And create the central widget. :)
     s.tabwidget = QtGui.QTabWidget( s )
@@ -84,21 +84,23 @@ class MainWindow( QtGui.QMainWindow ):
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ), s.ensureTabFocus )
 
 
-  def createMenus( s, core ):
+  def createMenus( s ):
 
     menubar = s.menuBar()
     menubar.clear()
 
     filemenu = QtGui.QMenu( "File", menubar )
 
-    filemenu.addAction( core.actions.quit )
+    filemenu.addAction( s.core.actions.quit )
 
     menubar.addMenu( filemenu )
 
     worldsmenu = QtGui.QMenu( "Worlds", menubar )
-    worldsmenu.addAction( core.actions.quickconnect )
 
-    worlds = core.knownWorldList()
+    worldsmenu.addAction( s.core.actions.quickconnect )
+    worldsmenu.addAction( s.core.actions.createworld )
+
+    worlds = s.core.knownWorldList()
 
     if worlds:
 
@@ -106,18 +108,20 @@ class MainWindow( QtGui.QMainWindow ):
       worldlistmenu = worldsmenu.addMenu( "Connect to" )
 
       for world in sorted( worlds, case_insensitive_cmp ):
-        worldlistmenu.addAction( core.makeConnectToWorldAction( world ) )
+        worldlistmenu.addAction( s.core.makeConnectToWorldAction( world ) )
+
+      s.worldslistmenu = worldlistmenu ## XXX
 
     menubar.addMenu( worldsmenu )
 
     helpmenu = QtGui.QMenu( "Help", menubar )
 
-    helpmenu.addAction( core.actions.aboutqt )
+    helpmenu.addAction( s.core.actions.aboutqt )
 
     menubar.addMenu( helpmenu )
 
 
-  def createToolbar( s, core ):
+  def createToolbar( s):
 
     if not s.maintoolbar:
       s.maintoolbar = QtGui.QToolBar( "Main Toolbar", s )
@@ -125,15 +129,37 @@ class MainWindow( QtGui.QMainWindow ):
       s.maintoolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
       s.addToolBar( s.maintoolbar )
     
-    s.maintoolbar.addAction( core.actions.quit )
-    s.maintoolbar.addAction( core.actions.quickconnect )
-    s.maintoolbar.addAction( core.actions.aboutqt )
+    s.maintoolbar.addAction( s.core.actions.quit )
+    s.maintoolbar.addAction( s.core.actions.createworld )
+    a=QtGui.QAction(QtGui.QIcon( ":/icon/connect" ), "Connect to...", s)
+    a.setMenu(s.worldslistmenu)
+    s.maintoolbar.addAction( a )
+
+    s.maintoolbar.addAction( s.core.actions.aboutqt )
     
+
+  def iterateOnWorlds( s ):
+
+    for i in range( s.tabwidget.count() ):
+      yield s.tabwidget.widget( i )
+
+
+  def applyNewConf( s ):
+
+    s.setUpdatesEnabled( False )
+
+    s.createMenus()
+
+    for world in s.iterateOnWorlds():
+      world.refresh()
+
+    s.setUpdatesEnabled( True )
 
 
   def newWorldUI( s, world ):
 
     worldui = WorldUI( s, world )
+
     pos = s.tabwidget.addTab( worldui, world.displayname )
     s.tabwidget.setCurrentIndex( pos )
 

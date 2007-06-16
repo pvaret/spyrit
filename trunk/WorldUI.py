@@ -41,3 +41,8 @@ class WorldUI( QtGui.QSplitter ):
 
     s.setChildrenCollapsible( False )
     s.setSizes( s.conf._splitter_sizes )
+
+
+  def close( s ):
+   
+    emit( s, SIGNAL( "worldWantsToClose( PyQt_PyObject )" ), s )

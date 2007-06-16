@@ -7,9 +7,11 @@
 ##
 
 
-from localqt import *
-from Config  import config, worldconfig
-from World   import World
+from localqt     import *
+from Config      import config, worldconfig
+from World       import World
+from AboutDialog import AboutDialog
+
 
 class Core( QtCore.QObject ):
 
@@ -33,24 +35,37 @@ class Core( QtCore.QObject ):
     from ActionSet import ActionSet
     s.actions = ActionSet()
 
-    s.actions.aboutqt = QtGui.QAction( QtGui.QIcon( ":/icon/qt-logo" ),
-                                      "About Qt...", s )
+    s.actions.about = \
+      QtGui.QAction( QtGui.QIcon( ":/app/icon" ),
+                     "About %s..." % config._app_name, s )
+    s.actions.about.setMenuRole( QtGui.QAction.AboutRole )
+    connect( s.actions.about, SIGNAL( "triggered()" ), AboutDialog.showDialog )
+
+    s.actions.aboutqt = \
+      QtGui.QAction( QtGui.QIcon( ":/icon/qt-logo" ), "About Qt...", s )
     s.actions.aboutqt.setMenuRole( QtGui.QAction.AboutQtRole )
     connect( s.actions.aboutqt, SIGNAL( "triggered()" ), QtGui.qApp.aboutQt )
 
-    s.actions.createworld = QtGui.QAction( QtGui.QIcon( ":/icon/new_world" ),
-                                          "Create world...", s)
-    connect( s.actions.createworld, SIGNAL( "triggered()" ),
-                                    s.actionCreateWorld )
+    s.actions.createworld = \
+      QtGui.QAction( QtGui.QIcon( ":/icon/new_world" ), "Create world...", s )
+    connect( s.actions.createworld,
+             SIGNAL( "triggered()" ), s.actionCreateWorld )
 
-    s.actions.quickconnect = QtGui.QAction( QtGui.QIcon( ":/icon/connect" ),
-                                           "Quick connect...", s)
-    connect( s.actions.quickconnect, SIGNAL( "triggered()" ),
-                                     s.actionQuickConnect )
+    s.actions.quickconnect = QtGui.QAction( "Quick connect...", s )
+    connect( s.actions.quickconnect,
+             SIGNAL( "triggered()" ), s.actionQuickConnect )
 
     s.actions.quit = QtGui.QAction( QtGui.QIcon( ":/icon/quit" ), "Quit", s )
     s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
     connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
+
+
+    s.actions.closecurrent = \
+      QtGui.QAction( QtGui.QIcon( ":/icon/close" ), "Close", s )
+    connect( s.actions.closecurrent,
+             SIGNAL( "triggered()" ), s.actionCloseWorld )
+
+
 
 
   def knownWorldList( s ):
@@ -86,13 +101,20 @@ class Core( QtCore.QObject ):
 
     sys.excepthook = handle_exception
 
+    from AboutDialog import AboutDialog
+
 
   def quit( s ):
     
-    for worldui in s.mw.iterateOnWorlds():
-       worldui.world.disconnectFromWorld()
-
     s.mw.close()
+
+
+  def actionCloseWorld( s ):
+
+    worldui = s.mw.currentWorldUI()
+
+    if worldui:
+      worldui.close()
 
 
   def actionCreateWorld( s ):
@@ -114,7 +136,7 @@ class Core( QtCore.QObject ):
 
       s.mw.applyNewConf()
 
-      s.openWorld( conf )
+      s.openWorld( conf, name )
 
 
   def actionQuickConnect( s ):
@@ -133,7 +155,7 @@ class Core( QtCore.QObject ):
 
   def makeConnectToWorldAction( s, world ):
 
-    action = QtGui.QAction( world, s )
+    action = QtGui.QAction( world.replace( "&", "&&" ), s )
     action.setData( QtCore.QVariant( world ) )
     connect( action, SIGNAL( "triggered()" ), s.actionConnectToWorld )
 

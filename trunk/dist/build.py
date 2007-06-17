@@ -96,7 +96,9 @@ def build( scriptname, outputname=None ):
   from modulefinder import ModuleFinder
 
   p = os.path.abspath( os.getcwd() )
-  os.chdir( os.path.dirname( scriptname ) )
+
+  if os.path.dirname( scriptname ):
+    os.chdir( os.path.dirname( scriptname ) )
 
   mf = ModuleFinder( [ "." ] )
   mf.run_script( os.path.basename( scriptname ) )

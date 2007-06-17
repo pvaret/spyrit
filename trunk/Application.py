@@ -42,10 +42,12 @@ class Application( QtGui.QApplication ):
       import resources
 
     except ImportError:
+
       from Logger import logger
       logger.warn( "Resource file not found. No graphics will be loaded." )
 
-    if config._show_splashscreen:
+    if False: #config._show_splashscreen:
+
       splash = QtGui.QSplashScreen( QtGui.QPixmap( ":/app/splash" ) )
       splash.show()
       QtGui.qApp.processEvents()

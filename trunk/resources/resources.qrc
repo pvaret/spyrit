@@ -7,7 +7,7 @@
   <file alias="quit">quit.png</file>
 </qresource>
 <qresource prefix="/app">
-  <file alias="splash">splash.jpg</file>
+ <!-- <file alias="splash">splash.jpg</file> -->
   <file alias="icon">spyrit-icon.png</file>
 </qresource>
 </RCC>

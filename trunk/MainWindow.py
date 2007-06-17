@@ -270,6 +270,8 @@ class MainWindow( QtGui.QMainWindow ):
     pos = s.tabwidget.indexOf( worldui )
     s.tabwidget.removeTab( pos )
 
+    s.updateActionsState()
+
 
   def closeEvent( s, event ):
 

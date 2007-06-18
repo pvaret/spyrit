@@ -246,7 +246,6 @@ class MainWindow( QtGui.QMainWindow ):
   def ensureTabFocus( s, i ):
 
     s.tabwidget.widget( i ).setFocus()
-    1/0
 
 
   def closeWorld( s, worldui ):

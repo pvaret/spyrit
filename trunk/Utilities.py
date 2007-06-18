@@ -25,6 +25,19 @@ def test_pyqt4():
     return False
 
 
+def test_sip_version():
+
+  REQUIRED_MAJOR      = 4
+  REQUIRED_MINOR      = 5
+  REQUIRED_PATCHLEVEL = 1
+
+  import sip
+
+  v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." ) )
+
+  return v >= ( REQUIRED_MAJOR, REQUIRED_MINOR, REQUIRED_PATCHLEVEL )
+
+
 def test_qt_version():
 
   REQUIRED_MAJOR = 4
@@ -33,7 +46,7 @@ def test_qt_version():
   from PyQt4 import QtCore
 
   ## Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
-  v = tuple( int(c) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
+  v = tuple( int( c ) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
 
   return v >= ( REQUIRED_MAJOR, REQUIRED_MINOR )
 

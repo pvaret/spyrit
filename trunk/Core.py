@@ -9,8 +9,10 @@
 
 from localqt     import *
 from Config      import config, worldconfig
-from World       import World
+from Utilities   import str_to_int
 from AboutDialog import AboutDialog
+from Logger      import logger
+from World       import World
 
 
 class Core( QtCore.QObject ):
@@ -92,6 +94,17 @@ class Core( QtCore.QObject ):
     s.openWorld( conf, world )
 
 
+  def openWorldByHostPort( s, host, port ):
+
+    conf       = worldconfig.createAnonymousDomain()
+    conf._host = host
+    conf._port = port
+    conf._name = ""
+
+    s.openWorld( conf )
+
+
+
   def afterStart( s ):
 
     ## This method is called once, right after the start of the event loop.
@@ -103,7 +116,34 @@ class Core( QtCore.QObject ):
 
     sys.excepthook = handle_exception
 
-    from AboutDialog import AboutDialog
+    worlds = s.knownWorldList()
+
+    ## At this point, the arguments that Qt uses have already been filtered
+    ## by Qt itself.
+
+    for arg in sys.argv[ 1: ]:
+
+      if ":" in arg:  ## This is probably a 'server:port' argument.
+
+        server, port = arg.split( ":", 1 )
+        port         = str_to_int( port )  
+
+        if not port or not server:
+          logger.warn( "Invalid <server>:<port> command line: %s" % arg )
+
+        else:
+          s.openWorldByHostPort( server, port )
+
+      else:
+
+        possiblematches = [ w for w in worlds if w.lower() == arg.lower() ]
+
+        if possiblematches:
+          s.openWorldByName( possiblematches[ 0 ] )
+
+        else:
+          logger.warn( "No such world: %s" % arg )
+
 
 
   def quit( s ):
@@ -143,7 +183,7 @@ class Core( QtCore.QObject ):
 
   def actionQuickConnect( s ):
 
-    conf       = config.createAnonymousDomain()
+    conf       = worldconfig.createAnonymousDomain()
     conf._host = ""
     conf._port = 8000
 

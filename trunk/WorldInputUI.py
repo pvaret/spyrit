@@ -88,4 +88,3 @@ class WorldInputUI( QtGui.QTextEdit ):
   def historyDown( s ):
 
     s.history.historyDown()
-

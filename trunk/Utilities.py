@@ -87,6 +87,17 @@ def tuple_to_QSize( t ):
   return QtCore.QSize( w, h )
 
 
+def str_to_int( s ):
+
+  try:
+    v = int( s )
+
+  except ValueError:
+    v = 0
+
+  return v
+
+
 def case_insensitive_cmp( x, y ):
 
   return ( x.lower() < y.lower() ) and -1 or 1

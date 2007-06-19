@@ -230,9 +230,6 @@ class MainWindow( QtGui.QMainWindow ):
     pos = s.tabwidget.addTab( worldui, world.displayname )
     s.tabwidget.setCurrentIndex( pos )
 
-    connect( worldui, SIGNAL( "worldWantsToClose( PyQt_PyObject )" ),
-             s.closeWorld )
-
     s.updateActionsState()
 
     return pos

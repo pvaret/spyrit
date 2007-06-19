@@ -57,11 +57,13 @@ class Core( QtCore.QObject ):
 
     s.actions.quit = QtGui.QAction( QtGui.QIcon( ":/icon/quit" ), "Quit", s )
     s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
+    s.actions.quit.setShortcut( QtGui.QKeySequence( "Ctrl+Q" ) )
     connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
 
 
     s.actions.closecurrent = \
       QtGui.QAction( QtGui.QIcon( ":/icon/close" ), "Close", s )
+    s.actions.closecurrent.setShortcut( QtGui.QKeySequence( "Ctrl+W" ) )
     connect( s.actions.closecurrent,
              SIGNAL( "triggered()" ), s.actionCloseWorld )
 
@@ -114,7 +116,7 @@ class Core( QtCore.QObject ):
     worldui = s.mw.currentWorldUI()
 
     if worldui:
-      worldui.close()
+      s.mw.closeWorld( worldui )
 
 
   def actionCreateWorld( s ):

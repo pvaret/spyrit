@@ -12,30 +12,38 @@ def test_python_version():
 
   import sys
   v = sys.version_info[ 0:2 ]
-  return v >= ( REQUIRED_MAJOR ,REQUIRED_MINOR )
+
+  if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
+    return True, None
+
+  else:
+    return False, "Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 def test_pyqt4():
 
   try:
     import PyQt4
-    return True
+    return True, None
 
   except ImportError:
-    return False
+    return False, "PyQt4 bindings required!"
 
 
 def test_sip_version():
 
   REQUIRED_MAJOR      = 4
   REQUIRED_MINOR      = 5
-  REQUIRED_PATCHLEVEL = 1
 
   import sip
 
   v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." ) )
 
-  return v >= ( REQUIRED_MAJOR, REQUIRED_MINOR, REQUIRED_PATCHLEVEL )
+  if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
+    return True, None
+
+  else:
+    return False, "SIP v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 def test_qt_version():
@@ -48,7 +56,11 @@ def test_qt_version():
   ## Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
   v = tuple( int( c ) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
 
-  return v >= ( REQUIRED_MAJOR, REQUIRED_MINOR )
+  if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
+    return True, None
+
+  else:
+    return False, "Qt v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 def tuple_to_QPoint( t ):

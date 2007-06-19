@@ -1,3 +1,6 @@
+#!/usr/bin/python
+## -*- coding: utf-8 -*-
+
 ##
 ## spyrit.py
 ##
@@ -14,16 +17,20 @@ from Utilities import test_python_version, \
                       test_qt_version
 
 
-if not test_python_version() \
-   or not test_sip_version() \
-   or not test_pyqt4() \
-   or not test_qt_version():
+for test in ( test_python_version,
+              test_sip_version,
+              test_pyqt4,
+              test_qt_version ):
 
-  import sys
-  from Logger import logger
-  logger.error( "This program requires " + \
-                "Python 2.4, sip 4.5.1, PyQt 4 and Qt 4.2 or later." )
-  sys.exit( 1 )
+  result, msg = test()
+
+  if not result:
+
+    import sys
+    from Logger import logger
+    logger.error( msg )
+
+    sys.exit( 1 )
 
 
 def main():

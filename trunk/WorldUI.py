@@ -11,6 +11,7 @@ from localqt import *
 from WorldInputUI   import WorldInputUI
 from WorldOutputUI  import WorldOutputUI
 from PipelineChunks import chunktypes
+from ActionSet      import ActionSet
 
 
 class WorldUI( QtGui.QSplitter ):
@@ -19,9 +20,12 @@ class WorldUI( QtGui.QSplitter ):
     
     QtGui.QSplitter.__init__( s, Qt.Vertical, parent )
 
-    s.parent = parent
-    s.world  = world
-    s.conf   = world.conf
+    s.dummy=QtGui.QWidget()
+
+    s.parent  = parent
+    s.world   = world
+    s.conf    = world.conf
+    s.actions = None
 
     s.outputui = WorldOutputUI( s, world )
     s.addWidget( s.outputui )
@@ -42,3 +46,29 @@ class WorldUI( QtGui.QSplitter ):
     s.setChildrenCollapsible( False )
     s.setSizes( s.conf._splitter_sizes )
 
+    s.createActions()
+
+
+  def createActions( s ):
+
+    if s.actions:
+      return
+
+    s.actions = ActionSet()
+
+    s.actions.historyup = \
+        QtGui.QAction( QtGui.QIcon( ":/icon/up" ), "History Up", s.inputui )
+    s.actions.historyup.setShortcut( QtGui.QKeySequence( "Alt+Up" ) )
+    s.actions.historyup.setShortcutContext( Qt.WidgetShortcut )
+    connect( s.actions.historyup, SIGNAL( "triggered()" ), s.inputui.historyUp )
+
+    s.inputui.addAction( s.actions.historyup )
+
+    s.actions.historydown = \
+        QtGui.QAction( QtGui.QIcon( ":/icon/down" ), "History Down", s.inputui )
+    s.actions.historydown.setShortcut( QtGui.QKeySequence( "Alt+Down" ) )
+    s.actions.historydown.setShortcutContext( Qt.WidgetShortcut )
+    connect( s.actions.historydown,
+             SIGNAL( "triggered()" ), s.inputui.historyDown )
+
+    s.inputui.addAction( s.actions.historydown )

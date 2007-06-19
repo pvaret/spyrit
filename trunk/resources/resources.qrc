@@ -2,9 +2,11 @@
 <qresource prefix="/icon">
   <file alias="close">close.png</file>
   <file alias="connect">connect.png</file>
+  <file alias="down">down.png</file>
   <file alias="new_world">new_world.png</file>
   <file alias="qt-logo">qt-logo.png</file>
   <file alias="quit">quit.png</file>
+  <file alias="up">up.png</file>
 </qresource>
 <qresource prefix="/app">
  <!-- <file alias="splash">splash.jpg</file> -->

@@ -8,14 +8,20 @@
 
 from localqt import *
 
+from InputHistory import InputHistory
+
+
 class WorldInputUI( QtGui.QTextEdit ):
 
   def __init__( s, parent, world ):
 
     QtGui.QTextEdit.__init__( s, parent )
 
-    s.world = world
-    s.conf  = world.conf
+    s.setAcceptRichText( False )
+
+    s.world   = world
+    s.conf    = world.conf
+    s.history = InputHistory( s )
 
     s.refresh()
 
@@ -69,15 +75,17 @@ class WorldInputUI( QtGui.QTextEdit ):
   def clearAndSend( s ):
 
     text = unicode( s.toPlainText() ).rstrip( "\n" )
+    s.history.update( text )
     s.world.socketpipeline.write( text + "\n" )
     s.clear()
 
 
-  def canInsertFromMimeData( s, mimesource ):
+  def historyUp( s ):
 
-    return mimesource.hasText()
+    s.history.historyUp()
 
 
-  def insertFromMimeData( s, mimesource ):
+  def historyDown( s ):
 
-    s.insertPlainText( mimesource.text() )
+    s.history.historyDown()
+

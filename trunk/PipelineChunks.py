@@ -28,7 +28,7 @@ class ChunkTypes:
   ENDOFPACKET = 1
   BYTES       = 2
   TELNET      = 3
-  ANSI        = 4
+  FORMAT      = 4
   ENDOFLINE   = 5
   TEXT        = 6
 
@@ -113,6 +113,48 @@ class ByteChunk( BaseChunk ):
   """
 
   chunktype = chunktypes.BYTES
+
+
+## ---[ Class FormatChunk ]--------------------------------------------
+
+class FormatChunk( BaseChunk ):
+  """
+  This chunk type represents a formatting parameter, typically extracted from
+  an ANSI SGR escape sequences, although they might conceivably come from
+  other sources such as MXP codes.
+  """
+
+  chunktype = chunktypes.FORMAT
+
+  ANSI_MAPPING = (
+    ( "0",  "RESET" ),
+    ( "1",  "BOLD" ),
+    ( "3",  "ITALIC" ),
+    ( "4",  "UNDERLINE" ),
+    ( "22", "NO_BOLD" ),
+    ( "23", "NO_ITALIC" ),
+    ( "24", "NO_UNDERLINE" ),
+    ( "30", "FG_BLACK" ),
+    ( "31", "FG_RED" ),
+    ( "32", "FG_GREEN" ),
+    ( "33", "FG_YELLOW" ),
+    ( "34", "FG_BLUE" ),
+    ( "35", "FG_MAGENTA" ),
+    ( "36", "FG_CYAN" ),
+    ( "37", "FG_WHITE" ),
+    ( "39", "FG_DEFAULT" ),
+    ( "40", "BG_BLACK" ),
+    ( "41", "BG_RED" ),
+    ( "42", "BG_GREEN" ),
+    ( "43", "BG_YELLOW" ),
+    ( "44", "BG_BLUE" ),
+    ( "45", "BG_MAGENTA" ),
+    ( "46", "BG_CYAN" ),
+    ( "47", "BG_WHITE" ),
+    ( "49", "BG_DEFAULT" ),
+  )
+
+  ANSI_TO_FORMAT = dict( ANSI_MAPPING )
 
 
 ## ---[ Class UnicodeTextChunk ]---------------------------------------

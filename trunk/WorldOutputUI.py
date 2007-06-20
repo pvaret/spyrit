@@ -36,6 +36,16 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.refresh()
 
 
+  def getDefaultCharFormat( s ):
+
+    defaultcharformat = QtGui.QTextCharFormat()
+    defaultcharformat.clearForeground()
+    defaultcharformat.clearBackground()
+    defaultcharformat.setForeground( QtGui.QBrush( \
+                               QtGui.QColor( s.conf._output_font_color ) ) )
+    return defaultcharformat
+
+
   def refresh( s ):
 
     s.setStyleSheet( 'QTextEdit { font-family: "%s" ;  font-size: %dpt }'
@@ -45,15 +55,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.viewport().palette().setColor( QtGui.QPalette.Base,
                        QtGui.QColor( s.conf._output_background_color ) )
 
-    s.defaultcharformat = QtGui.QTextCharFormat()
-    s.defaultcharformat.clearForeground()
-    s.defaultcharformat.clearBackground()
-    s.defaultcharformat.setForeground( QtGui.QBrush( \
-                                 QtGui.QColor( s.conf._output_font_color ) ) )
+    s.charformat = s.getDefaultCharFormat()
    
-    s.infocharformat = QtGui.QTextCharFormat()
-    s.infocharformat.clearForeground()
-    s.infocharformat.clearBackground()
+    s.infocharformat = s.getDefaultCharFormat()
     s.infocharformat.setFontItalic( True )
     s.infocharformat.setForeground( QtGui.QBrush( \
                               QtGui.QColor( s.conf._info_font_color ) ) )
@@ -85,6 +89,90 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
       elif chunk.chunktype == chunktypes.ENDOFLINE:
         pending.append( "\n" )
+
+      elif chunk.chunktype == chunktypes.FORMAT:
+
+        if pending:
+          s.insertText( "".join( pending ) )
+          pending = []
+
+        if chunk.data   == "RESET":
+          s.charformat = s.getDefaultCharFormat()
+
+        elif chunk.data == "BOLD":
+          s.charformat.setFontWeight( QtGui.QFont.Bold )
+
+        elif chunk.data == "ITALIC":
+          s.charformat.setFontItalic( True )
+
+        elif chunk.data == "UNDERLINE":
+          s.charformat.setFontUnderline( True )
+
+        elif chunk.data == "NO_BOLD":
+          s.charformat.setFontWeight( QtGui.QFont.Normal )
+
+        elif chunk.data == "NO_ITALIC":
+          s.charformat.setFontItalic( False )
+
+        elif chunk.data == "NO_UNDERLINE":
+          s.charformat.setFontUnderline( False )
+
+        elif chunk.data == "FG_BLACK":
+          s.charformat.setForeground( QtGui.QBrush( Qt.black ) )
+
+        elif chunk.data == "FG_RED":
+          s.charformat.setForeground( QtGui.QBrush( Qt.red ) )
+
+        elif chunk.data == "FG_GREEN":
+          s.charformat.setForeground( QtGui.QBrush( Qt.green ) )
+
+        elif chunk.data == "FG_YELLOW":
+          s.charformat.setForeground( QtGui.QBrush( Qt.yellow ) )
+
+        elif chunk.data == "FG_BLUE":
+          s.charformat.setForeground( QtGui.QBrush( Qt.blue ) )
+
+        elif chunk.data == "FG_MAGENTA":
+          s.charformat.setForeground( QtGui.QBrush( Qt.magenta ) )
+
+        elif chunk.data == "FG_CYAN":
+          s.charformat.setForeground( QtGui.QBrush( Qt.cyan ) )
+
+        elif chunk.data == "FG_WHITE":
+          s.charformat.setForeground( QtGui.QBrush( Qt.white ) )
+
+        elif chunk.data == "FG_DEFAULT":
+          s.charformat.setForeground( QtGui.QBrush( \
+                        QtGui.QColor( s.conf._output_font_color ) ) )
+
+        elif chunk.data == "BG_BLACK":
+          s.charformat.setBackground( QtGui.QBrush( Qt.black ) )
+
+        elif chunk.data == "BG_RED":
+          s.charformat.setBackground( QtGui.QBrush( Qt.red ) )
+
+        elif chunk.data == "BG_GREEN":
+          s.charformat.setBackground( QtGui.QBrush( Qt.green ) )
+
+        elif chunk.data == "BG_YELLOW":
+          s.charformat.setBackground( QtGui.QBrush( Qt.yellow ) )
+
+        elif chunk.data == "BG_BLUE":
+          s.charformat.setBackground( QtGui.QBrush( Qt.blue ) )
+
+        elif chunk.data == "BG_MAGENTA":
+          s.charformat.setBackground( QtGui.QBrush( Qt.magenta ) )
+
+        elif chunk.data == "BG_CYAN":
+          s.charformat.setBackground( QtGui.QBrush( Qt.cyan ) )
+
+        elif chunk.data == "BG_WHITE":
+          s.charformat.setBackground( QtGui.QBrush( Qt.white ) )
+
+        elif chunk.data == "BG_DEFAULT":
+          s.charformat.clearBackground()
+
+
 
       elif chunk.chunktype == chunktypes.NETWORK:
 
@@ -140,7 +228,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def insertText( s, text ):
 
-    s.textCursor().insertText( text, s.defaultcharformat )
+    s.textCursor().insertText( text, s.charformat )
     
 
   def insertInfoText( s, text ):

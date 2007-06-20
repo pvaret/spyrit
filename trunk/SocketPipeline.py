@@ -21,7 +21,7 @@ class SocketPipeline:
     ## usage.
 
     s.pipeline = Pipeline()
-    s.pipeline.addFilter( BaseFilter() )
+    s.pipeline.addFilter( AnsiFilter() )
     s.pipeline.addFilter( EndLineFilter() )
     s.pipeline.addFilter( UnicodeTextFilter() )
 

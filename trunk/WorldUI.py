@@ -33,7 +33,8 @@ class WorldUI( QtGui.QSplitter ):
     world.socketpipeline.addSink( s.outputui.sink, 
                                 [ chunktypes.TEXT,
                                   chunktypes.ENDOFLINE,
-                                  chunktypes.NETWORK ] )
+                                  chunktypes.NETWORK,
+                                  chunktypes.FORMAT ] )
 
     s.inputui = WorldInputUI( s, world )
     s.addWidget( s.inputui )

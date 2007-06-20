@@ -99,6 +99,76 @@ class BaseFilter:
       s.sink( chunk )
 
 
+## ---[ Class AnsiFilter ]---------------------------------------------
+
+class AnsiFilter( BaseFilter ):
+
+  relevant_types = [ chunktypes.BYTES ]
+
+  ## For the time being, we only catch the SGR (Set Graphics Rendition) part
+  ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
+
+  ESC   = "\x1b"
+  CSI8b = "\x9b"
+
+  CSI = "(" + ESC + r"\[" + "|" + CSI8b + ")"
+
+  match = re.compile( CSI + r"(\d+;?)*" + "m" )
+
+  unfinished = re.compile( "|".join( [ "(" + code + "$)" for code in
+                               ESC,
+                               CSI + r"[\d;]*"
+                         ] ) )
+
+  def processChunk( s, chunk ):
+    
+    text = chunk.data
+
+    while len( text ) > 0:
+
+      ansi = s.match.search( text )
+      
+      if ansi:
+
+        head = text[ :ansi.start() ]
+        tail = text[ ansi.end():   ]
+
+        text = tail
+
+        if head:
+          yield ByteChunk( head )
+
+        parameters = ansi.groups()[ 1 ]
+
+        if not parameters:
+          parameters = "0"  ## ESC [ m is an alias for ESC [ 0 m.
+
+        for param in parameters.split( ';' ):
+
+          format = FormatChunk.ANSI_TO_FORMAT.get( param )
+
+          if format:
+            yield( FormatChunk( format ) )
+
+      else:
+        ## The remaining text doesn't contain any complete ANSI sequence.
+        ## So we quit the loop.
+        break
+
+    if text:
+      
+      if s.unfinished.search( text ): ## Remaining text is an unfinished ANSI
+                                      ## sequence!
+        s.postpone( ByteChunk( text ) )
+        
+      else:
+        yield( ByteChunk( text ) )
+
+
+
+
+
+
 ## ---[ Class EndLineFilter ]------------------------------------------
 
 class EndLineFilter( BaseFilter ):

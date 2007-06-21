@@ -111,9 +111,9 @@ class AnsiFilter( BaseFilter ):
   ESC   = "\x1b"
   CSI8b = "\x9b"
 
-  CSI = "(" + ESC + r"\[" + "|" + CSI8b + ")"
+  CSI = "(?:" + ESC + r"\[" + "|" + CSI8b + ")"
 
-  match = re.compile( CSI + r"(\d+;?)*" + "m" )
+  match = re.compile( CSI + r"((?:\d+;?)*)" + "m" )
 
   unfinished = re.compile( "|".join( [ "(" + code + "$)" for code in
                                ESC,
@@ -138,17 +138,22 @@ class AnsiFilter( BaseFilter ):
         if head:
           yield ByteChunk( head )
 
-        parameters = ansi.groups()[ 1 ]
+        parameters = ansi.groups()[ 0 ]
 
         if not parameters:
           parameters = "0"  ## ESC [ m is an alias for ESC [ 0 m.
+
+        formats = []
 
         for param in parameters.split( ';' ):
 
           format = FormatChunk.ANSI_TO_FORMAT.get( param )
 
           if format:
-            yield( FormatChunk( format ) )
+            formats.append( format )
+
+        if formats:
+          yield( FormatChunk( formats ) )
 
       else:
         ## The remaining text doesn't contain any complete ANSI sequence.

@@ -10,6 +10,7 @@
 from localqt import *
 
 from PipelineChunks import *
+from Logger         import logger
 
 
 class WorldOutputUI( QtGui.QTextEdit ):
@@ -32,17 +33,55 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.scrollbar = s.verticalScrollBar()
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
+
+    s.standardcolors = { 
+      0: {  ## Un-highlighted colors
+            "BLACK":   Qt.black,
+            "RED":     Qt.darkRed,
+            "GREEN":   Qt.darkGreen,
+            "YELLOW":  Qt.darkYellow,
+            "BLUE":    Qt.darkBlue,
+            "MAGENTA": Qt.darkMagenta,
+            "CYAN":    Qt.darkCyan,
+            "WHITE":   Qt.lightGray,
+         },
+      1: {  ## Highlighted colors
+            "BLACK":   Qt.darkGray,
+            "RED":     Qt.red,
+            "GREEN":   Qt.green,
+            "YELLOW":  Qt.yellow,
+            "BLUE":    Qt.blue,
+            "MAGENTA": Qt.magenta,
+            "CYAN":    Qt.cyan,
+            "WHITE":   Qt.white,
+         } 
+    }
     
     s.refresh()
 
 
   def getDefaultCharFormat( s ):
 
+    default_fg = QtGui.QColor( s.conf._output_font_color )
+
     defaultcharformat = QtGui.QTextCharFormat()
     defaultcharformat.clearForeground()
     defaultcharformat.clearBackground()
-    defaultcharformat.setForeground( QtGui.QBrush( \
-                               QtGui.QColor( s.conf._output_font_color ) ) )
+    defaultcharformat.setForeground( QtGui.QBrush( default_fg ) )
+
+    defaultcharformat.highlight = 0
+    defaultcharformat.fgcolor   = None
+
+    ## We also need a highlighted variant of the user's default text color,
+    ## in case we're in bold-as-highlight mode and the world wants to display
+    ## bold text in the default color.
+    ## The value of 1.4 (40% lighter) is admittedly somewhat arbitrary.
+
+    H, S, V, A = default_fg.getHsv()
+    V = min( V * 1.4, 256 )
+    defaultcharformat.highlighted_default_fg = \
+                                             QtGui.QColor.fromHsv( H, S, V, A )
+
     return defaultcharformat
 
 
@@ -55,13 +94,35 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.viewport().palette().setColor( QtGui.QPalette.Base,
                        QtGui.QColor( s.conf._output_background_color ) )
 
-    s.charformat = s.getDefaultCharFormat()
+    s.charformat     = s.getDefaultCharFormat()
    
     s.infocharformat = s.getDefaultCharFormat()
     s.infocharformat.setFontItalic( True )
-    s.infocharformat.setForeground( QtGui.QBrush( \
-                              QtGui.QColor( s.conf._info_font_color ) ) )
+    s.infocharformat.setForeground( \
+               QtGui.QBrush( QtGui.QColor( s.conf._info_font_color ) ) )
  
+
+  def applyCharFormatColor( s ):
+
+    fgcolor   = s.charformat.fgcolor
+    highlight = s.charformat.highlight
+
+    if fgcolor:
+
+      color = s.standardcolors[ highlight ].get( fgcolor )
+
+      if color:
+
+        s.charformat.setForeground( QtGui.QBrush( QtGui.QColor( color ) ) )
+        return
+
+    if highlight and s.conf._bold_as_highlight:
+      s.charformat.setForeground( s.charformat.highlighted_default_fg )
+
+    else:
+      s.charformat.setForeground( \
+                    QtGui.QBrush( QtGui.QColor( s.conf._output_font_color ) ) )
+
 
   def onScroll( s, pos ):
 
@@ -87,8 +148,12 @@ class WorldOutputUI( QtGui.QTextEdit ):
       if   chunk.chunktype == chunktypes.TEXT:
         pending.append( chunk.data )
 
+
+
       elif chunk.chunktype == chunktypes.ENDOFLINE:
         pending.append( "\n" )
+
+
 
       elif chunk.chunktype == chunktypes.FORMAT:
 
@@ -97,83 +162,61 @@ class WorldOutputUI( QtGui.QTextEdit ):
           s.insertText( "".join( pending ) )
           pending = []
 
-        for format in chunk.data:
+        for param, value in chunk.data:
 
-          if format   == "RESET":
+          if   param == "RESET":
             s.charformat = s.getDefaultCharFormat()
 
-          elif format == "BOLD":
-            s.charformat.setFontWeight( QtGui.QFont.Bold )
+          elif param == "BOLD":
 
-          elif format == "ITALIC":
-            s.charformat.setFontItalic( True )
+            if s.conf._bold_as_highlight:
 
-          elif format == "UNDERLINE":
-            s.charformat.setFontUnderline( True )
+              if value == True:
+                s.charformat.highlight = 1
 
-          elif format == "NO_BOLD":
-            s.charformat.setFontWeight( QtGui.QFont.Normal )
+              else:
+                s.charformat.highlight = 0
 
-          elif format == "NO_ITALIC":
-            s.charformat.setFontItalic( False )
+              s.applyCharFormatColor()
 
-          elif format == "NO_UNDERLINE":
-            s.charformat.setFontUnderline( False )
+            else:
 
-          elif format == "FG_BLACK":
-            s.charformat.setForeground( QtGui.QBrush( Qt.black ) )
+              if value == True:
+                s.charformat.setFontWeight( QtGui.QFont.Bold )
 
-          elif format == "FG_RED":
-            s.charformat.setForeground( QtGui.QBrush( Qt.red ) )
+              else:
+                s.charformat.setFontWeight( QtGui.QFont.Normal )
 
-          elif format == "FG_GREEN":
-            s.charformat.setForeground( QtGui.QBrush( Qt.green ) )
+          elif param == "ITALIC":
+            s.charformat.setFontItalic( value )
 
-          elif format == "FG_YELLOW":
-            s.charformat.setForeground( QtGui.QBrush( Qt.yellow ) )
+          elif param == "UNDERLINE":
+            s.charformat.setFontUnderline( value )
 
-          elif format == "FG_BLUE":
-            s.charformat.setForeground( QtGui.QBrush( Qt.blue ) )
+          elif param == "FG":
 
-          elif format == "FG_MAGENTA":
-            s.charformat.setForeground( QtGui.QBrush( Qt.magenta ) )
+            if value == "DEFAULT":
+              s.charformat.fgcolor = None
 
-          elif format == "FG_CYAN":
-            s.charformat.setForeground( QtGui.QBrush( Qt.cyan ) )
+            else:
+              s.charformat.fgcolor = value
 
-          elif format == "FG_WHITE":
-            s.charformat.setForeground( QtGui.QBrush( Qt.white ) )
+            s.applyCharFormatColor()
 
-          elif format == "FG_DEFAULT":
-            s.charformat.setForeground( QtGui.QBrush( \
-                          QtGui.QColor( s.conf._output_font_color ) ) )
+          elif param == "BG":
 
-          elif format == "BG_BLACK":
-            s.charformat.setBackground( QtGui.QBrush( Qt.black ) )
+            if color == "DEFAULT":
+              s.charformat.clearBackground()
 
-          elif format == "BG_RED":
-            s.charformat.setBackground( QtGui.QBrush( Qt.red ) )
+            else:
+              ## highlight = 0: Backgrounds are never highlighted/bold.
+              color = s.standardcolors[ 0 ].get( value )
 
-          elif format == "BG_GREEN":
-            s.charformat.setBackground( QtGui.QBrush( Qt.green ) )
+              if color:
+                s.charformat.setBackground( QtGui.QBrush( color ) )
 
-          elif format == "BG_YELLOW":
-            s.charformat.setBackground( QtGui.QBrush( Qt.yellow ) )
+              else: s.charformat.clearBackground()
 
-          elif format == "BG_BLUE":
-            s.charformat.setBackground( QtGui.QBrush( Qt.blue ) )
-
-          elif format == "BG_MAGENTA":
-            s.charformat.setBackground( QtGui.QBrush( Qt.magenta ) )
-
-          elif format == "BG_CYAN":
-            s.charformat.setBackground( QtGui.QBrush( Qt.cyan ) )
-
-          elif format == "BG_WHITE":
-            s.charformat.setBackground( QtGui.QBrush( Qt.white ) )
-
-          elif format == "BG_DEFAULT":
-            s.charformat.clearBackground()
 
 
       elif chunk.chunktype == chunktypes.NETWORK:
@@ -216,6 +259,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
         elif chunk.data == NetworkChunk.OTHERERROR:
           s.insertInfoText( "Network error." )
 
+
+
     if pending:
       s.insertText( "".join( pending ) )
 
@@ -226,6 +271,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
       s.scrollbar.setValue( scrollpos )
 
     s.setUpdatesEnabled( True )
+
+
 
 
   def insertText( s, text ):

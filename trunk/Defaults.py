@@ -20,6 +20,8 @@ _defaults = dict(
   output_font_size  = 12,
   output_font_color = "#a0a0a4",  ## grey
 
+  bold_as_highlight = True,
+
   info_font_color   = "#606060",  ## dark grey
 
   input_font_name  = "",  ## Nothing, system default will be used.

@@ -129,17 +129,18 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
    
-  def sink( s, chunks ):
+  def formatAndDisplay( s, chunks ):
 
     scrollpos = s.scrollbar.value()
 
     ## Ensure that the cursor is at the end of the document. (The cursor may
     ## have been moved when the user clicked somewhere on the widget... even
     ## if it's set read-only. Bummer.)
+
     if not s.textCursor().atEnd():
       s.moveCursor( QtGui.QTextCursor.End )
 
-    s.setUpdatesEnabled( False )
+    s.textCursor().beginEditBlock()
 
     pending = []
 
@@ -264,14 +265,13 @@ class WorldOutputUI( QtGui.QTextEdit ):
     if pending:
       s.insertText( "".join( pending ) )
 
+    s.textCursor().endEditBlock()
+
     if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
       s.scrollbar.setValue( s.scrollbar.maximum() )
 
     else:
       s.scrollbar.setValue( scrollpos )
-
-    s.setUpdatesEnabled( True )
-
 
 
 

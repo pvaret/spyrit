@@ -131,9 +131,7 @@ class AnsiFilter( BaseFilter ):
       if ansi:
 
         head = text[ :ansi.start() ]
-        tail = text[ ansi.end():   ]
-
-        text = tail
+        text = text[ ansi.end():   ]
 
         if head:
           yield ByteChunk( head )
@@ -237,11 +235,7 @@ class UnicodeTextFilter( BaseFilter ):
     ## ASCII.
  
     if chunk.chunktype == chunktypes.BYTES:
-      chunk = UnicodeTextChunk( chunk.data.decode( s.encoding, "ignore" ) )
+      chunk = UnicodeTextChunk( chunk.data.decode( s.encoding, "replace" ) )
     
     yield chunk
-
-
-
-## TODO: Implement TelnetFilter and AnsiFilter.
 

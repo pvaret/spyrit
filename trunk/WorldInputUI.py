@@ -76,7 +76,7 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     text = unicode( s.toPlainText() ).rstrip( "\n" )
     s.history.update( text )
-    s.world.socketpipeline.write( text + "\n" )
+    s.world.socketpipeline.send( text + "\n" )
     s.clear()
 
 

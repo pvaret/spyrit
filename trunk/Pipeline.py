@@ -16,8 +16,7 @@ class Pipeline:
   
   def __init__(s):
 
-    s.firstFilter  = None
-    s.lastFilter   = None
+    s.filters      = []
     s.sinks        = []
     s.outputBuffer = []
 
@@ -34,10 +33,15 @@ class Pipeline:
 
   def feedChunk( s, chunk ):
   
-    s.firstFilter.feedChunk( chunk )
+    if not s.filters:
+      return
+
+    s.filters[ 0 ].feedChunk( chunk )
+
     ## When the above call returns, the chunk as been fully processed through
     ## the chain of filters, and the resulting chunks are waiting in the
     ## output bucket. So we can flush it.
+
     s.flushOutputBuffer()
   
   
@@ -59,41 +63,21 @@ class Pipeline:
     filter.setContext( s )
     filter.setSink( s.appendToOutputBuffer )
 
-    if not s.firstFilter:
-      s.firstFilter = s.lastFilter = filter
+    if s.filters:
+      s.filters[ -1 ].setSink( filter.feedChunk )
 
-    else:
-      s.lastFilter.setSink( filter.feedChunk )
-      s.lastFilter = filter
+    s.filters.append( filter )
 
 
   def addSink( s, callback ):
+
     ## 'callback' should be a callable that takes a list of chunks.
     s.sinks.append( callback )
 
 
-## ---[ Main ]---------------------------------------------------------
+  def formatForSending( s, data ):
 
-if __name__ == '__main__':
+   for filter in reversed( s.filters ):
+      data = filter.formatForSending( data )
 
-  pipe = Pipeline()
-  
-  pipe.addFilter( BaseFilter() )
-  pipe.addFilter( EndLineFilter() )
-  pipe.addFilter( UnicodeTextFilter() )
-  
-  def output( chunks ):
-    for chunk in chunks:
-      if chunk.chunktype != chunktypes.ENDOFPACKET:
-        print chunk
-  
-  pipe.addSink( output )
-  print "Begin..."
-
-  pipe.feedBytes( "Ceci est un test." )
-  pipe.feedBytes( "Mrehw!\r\n\r" )
-  pipe.feedBytes( "\nMrahw!\r\n" )
-  pipe.feedBytes( "Plus dur maintenant." )
-  pipe.feedBytes( "\r" )
-  pipe.feedBytes( "\n" )
-
+   return data

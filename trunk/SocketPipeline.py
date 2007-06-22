@@ -21,6 +21,7 @@ class SocketPipeline:
     ## usage.
 
     s.pipeline = Pipeline()
+    s.pipeline.addFilter( TelnetFilter() )
     s.pipeline.addFilter( AnsiFilter() )
     s.pipeline.addFilter( EndLineFilter() )
     s.pipeline.addFilter( UnicodeTextFilter() )
@@ -85,10 +86,10 @@ class SocketPipeline:
     s.pipeline.feedBytes( data )
 
 
-  def write( s, data ):
+  def send( s, data ):
 
-    if type( data ) is type( u'' ):
-      data = data.encode( "ascii", "ignore" )
+    assert type( data ) is type( u'' )
+    data = s.pipeline.formatForSending( data )
 
     s.socket.write( data )
     s.socket.flush()

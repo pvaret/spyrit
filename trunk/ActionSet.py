@@ -39,11 +39,13 @@ class ActionSet:
       "closecurrent": ( "Close",           ":/icon/close",    "Ctrl+W"    ),
       "nexttab":      ( "Next Tab",         None,             "Shift+Tab" ),
       "previoustab":  ( "Previous Tab",     None,        "Shift+Ctrl+Tab" ),
-        
-      "historyup":    ( "History Up",   ":/icon/up",   "Ctrl+Up"     ),
-      "historydown":  ( "History Down", ":/icon/down", "Ctrl+Down"   ),
-      "pageup":       ( "Page Up",      ":/icon/up",   "Ctrl+PgUp"   ),
-      "pagedown":     ( "Page Down",    ":/icon/down", "Ctrl+PgDown" ),
+
+      "connect":     ( "Connect",       None,         "Ctrl+Shift+S" ),
+      "disconnect":  ( "Disconnect",    None,         "Ctrl+Shift+D" ),
+      "historyup":   ( "History Up",   ":/icon/up",   "Ctrl+Up"      ),
+      "historydown": ( "History Down", ":/icon/down", "Ctrl+Down"    ),
+      "pageup":      ( "Page Up",      ":/icon/up",   "Ctrl+PgUp"    ),
+      "pagedown":    ( "Page Down",    ":/icon/down", "Ctrl+PgDown"  ),
     }
 
     ## Very few actions have a specific role, so it's more effective to put

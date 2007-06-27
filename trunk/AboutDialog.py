@@ -27,8 +27,8 @@ from PrettyPanelHeader import PrettyPanelHeader
 
 ABOUT = """
   <center><br/>
-  <b>Spyrit v0.1</b><br/>
-  <br/>
+  <b>%s v%s</b><br/>""" % ( config._app_name, config._app_version ) + \
+"""<br/>
   "Still roughly carved, but coming along nicely."<br/>
   <br/>
   This software is a preliminary development version and does not do much at

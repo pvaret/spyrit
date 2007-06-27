@@ -47,12 +47,17 @@ class World:
 
   def connectToWorld( s ):
 
-    s.socketpipeline.connectToHost()
+    if not s.connected:
+      s.socketpipeline.connectToHost()
 
 
   def disconnectFromWorld( s ):
 
-    s.socketpipeline.disconnectFromHost()
+    if s.connected:
+      s.socketpipeline.disconnectFromHost()
+      
+    else:
+      s.socketpipeline.abort()
 
 
   def setConnected( s ):

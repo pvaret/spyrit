@@ -67,7 +67,9 @@ class WorldUI( QtGui.QSplitter ):
 
   def createActions( s ):
 
-    s.actionset.bindAction( "historyup",   s.inputui.historyUp   )
+    s.actionset.bindAction( "historyup",   s.inputui.historyUp )
     s.actionset.bindAction( "historydown", s.inputui.historyDown )
-    s.actionset.bindAction( "pageup",      s.outputui.pageUp     )
-    s.actionset.bindAction( "pagedown",    s.outputui.pageDown   )
+    s.actionset.bindAction( "pageup",      s.outputui.pageUp )
+    s.actionset.bindAction( "pagedown",    s.outputui.pageDown )
+    s.actionset.bindAction( "connect",     s.world.connectToWorld )
+    s.actionset.bindAction( "disconnect",  s.world.disconnectFromWorld )

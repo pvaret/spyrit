@@ -70,5 +70,6 @@ class InputHistory:
     s.cursor      = -1
 
     s.history.insert( 0, text )
+    
     if s.maxlength and len( s.history ) > s.maxlength:
       s.history.pop()

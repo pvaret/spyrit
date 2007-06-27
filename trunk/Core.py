@@ -26,8 +26,10 @@ from localqt     import *
 from Config      import config, worldconfig
 from Utilities   import str_to_int
 from AboutDialog import AboutDialog
+from ActionSet   import ActionSet
 from Logger      import logger
 from World       import World
+
 
 
 class Core( QtCore.QObject ):
@@ -39,9 +41,10 @@ class Core( QtCore.QObject ):
     ## clean it up.
     QtCore.QObject.__init__( s, QtGui.qApp )
 
-    s.mw      = mw
-    s.actions = None
-
+    s.mw        = mw
+    s.actionset = ActionSet( mw )
+    s.actions   = lambda: None  ## This is the simple object to which you can
+                                ## add attributes. :)
     s.createActions()
 
     QtCore.QTimer.singleShot( 0, s.afterStart )
@@ -49,43 +52,16 @@ class Core( QtCore.QObject ):
 
   def createActions( s ):
 
-    from ActionSet import ActionSet
-    s.actions = ActionSet()
-
-    s.actions.about = \
-      QtGui.QAction( QtGui.QIcon( ":/app/icon" ),
-                     "About %s..." % config._app_name, s )
-    s.actions.about.setMenuRole( QtGui.QAction.AboutRole )
-    connect( s.actions.about, SIGNAL( "triggered()" ), AboutDialog.showDialog )
-
-    s.actions.aboutqt = \
-      QtGui.QAction( QtGui.QIcon( ":/icon/qt-logo" ), "About Qt...", s )
-    s.actions.aboutqt.setMenuRole( QtGui.QAction.AboutQtRole )
-    connect( s.actions.aboutqt, SIGNAL( "triggered()" ), QtGui.qApp.aboutQt )
-
-    s.actions.createworld = \
-      QtGui.QAction( QtGui.QIcon( ":/icon/new_world" ), "Create world...", s )
-    connect( s.actions.createworld,
-             SIGNAL( "triggered()" ), s.actionCreateWorld )
-
-    s.actions.quickconnect = QtGui.QAction( "Quick connect...", s )
-    connect( s.actions.quickconnect,
-             SIGNAL( "triggered()" ), s.actionQuickConnect )
-
-    s.actions.quit = QtGui.QAction( QtGui.QIcon( ":/icon/quit" ), "Quit", s )
-    s.actions.quit.setMenuRole( QtGui.QAction.QuitRole )
-    s.actions.quit.setShortcut( QtGui.QKeySequence( "Ctrl+Q" ) )
-    connect( s.actions.quit, SIGNAL( "triggered()" ), s.quit )
-
-
-    s.actions.closecurrent = \
-      QtGui.QAction( QtGui.QIcon( ":/icon/close" ), "Close", s )
-    s.actions.closecurrent.setShortcut( QtGui.QKeySequence( "Ctrl+W" ) )
-    connect( s.actions.closecurrent,
-             SIGNAL( "triggered()" ), s.actionCloseWorld )
-
-
-
+    s.actions.about        = s.actionset.bindAction( "about",        AboutDialog.showDialog )
+    s.actions.aboutqt      = s.actionset.bindAction( "aboutqt",      QtGui.qApp.aboutQt )
+    s.actions.closecurrent = s.actionset.bindAction( "closecurrent", s.actionCloseWorld )
+    s.actions.createworld  = s.actionset.bindAction( "createworld",  s.actionCreateWorld )
+    s.actions.quickconnect = s.actionset.bindAction( "quickconnect", s.actionQuickConnect )
+    s.actions.quit         = s.actionset.bindAction( "quit",         s.quit )
+    
+    s.actionset.bindAction( "nexttab",     s.mw.tabwidget.tabbar.nextTab )
+    s.actionset.bindAction( "previoustab", s.mw.tabwidget.tabbar.previousTab )
+    
 
   def knownWorldList( s ):
 
@@ -111,13 +87,8 @@ class Core( QtCore.QObject ):
 
   def openWorldByHostPort( s, host, port ):
 
-    conf       = worldconfig.createAnonymousDomain()
-    conf._host = host
-    conf._port = port
-    conf._name = ""
-
+    conf = s.newWorldConfig( host, port )
     s.openWorld( conf )
-
 
 
   def afterStart( s ):
@@ -166,6 +137,16 @@ class Core( QtCore.QObject ):
     s.mw.close()
 
 
+  def newWorldConfig( s, host="", port=8000, name="" ):    
+    
+    conf       = worldconfig.createAnonymousDomain()
+    conf._host = host
+    conf._port = port
+    conf._name = name
+    
+    return conf
+
+
   def actionCloseWorld( s ):
 
     worldui = s.mw.currentWorldUI()
@@ -176,13 +157,9 @@ class Core( QtCore.QObject ):
 
   def actionCreateWorld( s ):
 
-    conf       = worldconfig.createAnonymousDomain()
-    conf._host = ""
-    conf._port = 8000
-    conf._name = ""
-
     from CreateWorldDialog import CreateWorldDialog
-
+    
+    conf   = s.newWorldConfig()
     dialog = CreateWorldDialog( conf, s.mw )
 
     if dialog.exec_():
@@ -197,13 +174,10 @@ class Core( QtCore.QObject ):
 
 
   def actionQuickConnect( s ):
-
-    conf       = worldconfig.createAnonymousDomain()
-    conf._host = ""
-    conf._port = 8000
-
+    
     from QuickConnectDialog import QuickConnectDialog
-
+    
+    conf   = s.newWorldConfig()
     dialog = QuickConnectDialog( conf, s.mw )
 
     if dialog.exec_():

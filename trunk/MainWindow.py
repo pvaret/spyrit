@@ -21,39 +21,12 @@
 
 
 
-from localqt import *
-from Config  import config
-from WorldUI import WorldUI
+from localqt             import *
+from Config              import config
+from WorldUI             import WorldUI
+from ScrollableTabWidget import ScrollableTabWidget
 
 from Utilities import tuple_to_QSize, tuple_to_QPoint, case_insensitive_cmp
-
-
-class TabBarWheelEventHandler( QtCore.QObject ):
-
-  def eventFilter( s, tabbar, event ):
-
-    if event.type() == QtCore.QEvent.Wheel \
-       and isinstance( tabbar, QtGui.QTabBar ):
-
-      if tabbar.count() <= 1:
-        return True
-
-      pos = tabbar.currentIndex()
-
-      if event.delta() < 0:
-        pos += 1
-
-      else:
-        pos -= 1
-
-      pos = pos % tabbar.count()
-
-      tabbar.setCurrentIndex( pos )
-
-      return True
-
-    else:
-      return QtCore.QObject.eventFilter( s, tabbar, event )
 
 
 class MainWindow( QtGui.QMainWindow ):
@@ -83,25 +56,20 @@ class MainWindow( QtGui.QMainWindow ):
     if pos:
       s.move( pos )
 
+    ## Create the central widget.
+
+    s.tabwidget = ScrollableTabWidget( s )
+    s.setCentralWidget( s.tabwidget )
 
     ## Load up the core engine, attach it to this window.
 
     from Core import Core
     s.core = Core( s )
 
-    ## Create the central widget.
-
-    s.tabwidget = QtGui.QTabWidget( s )
-    s.setCentralWidget( s.tabwidget )
-
-    s.tabwidget.tabBar().installEventFilter( TabBarWheelEventHandler( s ) )
-
-    connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ), s.ensureTabFocus )
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
-             s.updateActionsState )
+                          s.updateActionsState )
 
     ## Aaand apply the configuration.
-
     s.refresh()
 
 
@@ -253,11 +221,6 @@ class MainWindow( QtGui.QMainWindow ):
   def currentWorldUI( s ):
 
     return s.tabwidget.currentWidget()
-
-
-  def ensureTabFocus( s, i ):
-
-    s.tabwidget.widget( i ).setFocus()
 
 
   def closeWorld( s, worldui ):

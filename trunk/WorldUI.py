@@ -37,22 +37,21 @@ class WorldUI( QtGui.QSplitter ):
 
     s.dummy=QtGui.QWidget()
 
-    s.parent  = parent
-    s.world   = world
-    s.conf    = world.conf
-    s.actions = None
+    s.parent = parent
+    s.world  = world
+    s.conf   = world.conf
 
     s.outputui = WorldOutputUI( s, world )
     s.addWidget( s.outputui )
+
+    s.inputui = WorldInputUI( s, world )
+    s.addWidget( s.inputui )
     
     world.socketpipeline.addSink( s.outputui.formatAndDisplay, 
                                 [ chunktypes.TEXT,
                                   chunktypes.ENDOFLINE,
                                   chunktypes.NETWORK,
                                   chunktypes.FORMAT ] )
-
-    s.inputui = WorldInputUI( s, world )
-    s.addWidget( s.inputui )
 
     s.outputui.setFocusProxy( s.inputui )
     s.setFocusProxy( s.inputui )
@@ -62,29 +61,13 @@ class WorldUI( QtGui.QSplitter ):
     s.setChildrenCollapsible( False )
     s.setSizes( s.conf._splitter_sizes )
 
+    s.actionset = ActionSet( s )
     s.createActions()
 
 
   def createActions( s ):
 
-    if s.actions:
-      return
-
-    s.actions = ActionSet()
-
-    s.actions.historyup = \
-        QtGui.QAction( QtGui.QIcon( ":/icon/up" ), "History Up", s.inputui )
-    s.actions.historyup.setShortcut( QtGui.QKeySequence( "Alt+Up" ) )
-    s.actions.historyup.setShortcutContext( Qt.WidgetShortcut )
-    connect( s.actions.historyup, SIGNAL( "triggered()" ), s.inputui.historyUp )
-
-    s.inputui.addAction( s.actions.historyup )
-
-    s.actions.historydown = \
-        QtGui.QAction( QtGui.QIcon( ":/icon/down" ), "History Down", s.inputui )
-    s.actions.historydown.setShortcut( QtGui.QKeySequence( "Alt+Down" ) )
-    s.actions.historydown.setShortcutContext( Qt.WidgetShortcut )
-    connect( s.actions.historydown,
-             SIGNAL( "triggered()" ), s.inputui.historyDown )
-
-    s.inputui.addAction( s.actions.historydown )
+    s.actionset.bindAction( "historyup",   s.inputui.historyUp   )
+    s.actionset.bindAction( "historydown", s.inputui.historyDown )
+    s.actionset.bindAction( "pageup",      s.outputui.pageUp     )
+    s.actionset.bindAction( "pagedown",    s.outputui.pageDown   )

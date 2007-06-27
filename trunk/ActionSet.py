@@ -16,9 +16,73 @@
 ##
 ## ActionSet.py
 ##
-## This holds the dummy ActionSet class, which does nothing but hold QActions
-## in its attributes. 
+## This holds the ActionSet class, which abstracts the QActions used by the
+## software.
 ##
 
+from localqt import *
+from Config  import config
+
 class ActionSet:
-  pass
+  
+  def __init__( s, parent ):
+    
+    s.parent  = parent
+    
+    s.actions = {
+      "about":        ( "About %s..." % \
+                         config._app_name, ":/app/icon",       None       ),
+      "aboutqt":      ( "About Qt...",     ":/icon/qt-logo",   None       ),
+      "createworld":  ( "Create world...", ":/icon/new_world", None       ),
+      "quickconnect": ( "Quick connect...", None,              None       ),
+      "quit":         ( "Quit",            ":/icon/quit",     "Ctrl+Q"    ),
+      "closecurrent": ( "Close",           ":/icon/close",    "Ctrl+W"    ),
+      "nexttab":      ( "Next Tab",         None,             "Shift+Tab" ),
+      "previoustab":  ( "Previous Tab",     None,        "Shift+Ctrl+Tab" ),
+        
+      "historyup":    ( "History Up",   ":/icon/up",   "Ctrl+Up"     ),
+      "historydown":  ( "History Down", ":/icon/down", "Ctrl+Down"   ),
+      "pageup":       ( "Page Up",      ":/icon/up",   "Ctrl+PgUp"   ),
+      "pagedown":     ( "Page Down",    ":/icon/down", "Ctrl+PgDown" ),
+    }
+
+    ## Very few actions have a specific role, so it's more effective to put
+    ## roles in their own structure rather than in the one above.
+
+    s.roles = {
+      "about":   QtGui.QAction.AboutRole,
+      "aboutqt": QtGui.QAction.AboutQtRole,
+      "quit":    QtGui.QAction.QuitRole,
+    }
+
+
+  def bindAction( s, action, slot ):
+    
+    text, icon, shortcut = s.actions[ action ]
+    
+    if icon:
+      a = QtGui.QAction( QtGui.QIcon( icon ), text, s.parent )
+      
+    else:
+      a = QtGui.QAction( text, s.parent )
+      
+    if shortcut:
+      a.setShortcut( QtGui.QKeySequence( shortcut ) )
+    
+    role = s.roles.get( action )
+    
+    if role:
+      a.setMenuRole( role )
+    
+    connect( a, SIGNAL( "triggered()" ), slot )
+
+    ## It is necessary to add the action to a widget before its shortcuts will
+    ## work.
+    s.parent.addAction( a )
+    
+    return a
+    
+    
+  def allShortcuts( s ):
+    
+    return [ shortcut for text, icon, shortcut in s.roles if shortcut ]

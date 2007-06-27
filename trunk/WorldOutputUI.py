@@ -143,6 +143,16 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
+
+  def pageUp( s ):
+    
+    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )
+   
+   
+  def pageDown( s ):
+    
+    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepAdd )
+   
    
   def formatAndDisplay( s, chunks ):
 

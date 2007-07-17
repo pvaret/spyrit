@@ -51,7 +51,7 @@ class Pipeline:
     if not s.filters:
       return
 
-    s.filters[ 0 ].feedChunk( chunk )
+    s.filters[0].feedChunk( chunk )
 
     ## When the above call returns, the chunk as been fully processed through
     ## the chain of filters, and the resulting chunks are waiting in the
@@ -79,7 +79,7 @@ class Pipeline:
     filter.setSink( s.appendToOutputBuffer )
 
     if s.filters:
-      s.filters[ -1 ].setSink( filter.feedChunk )
+      s.filters[-1].setSink( filter.feedChunk )
 
     s.filters.append( filter )
 

@@ -236,7 +236,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
             else:
               ## highlight = 0: Backgrounds are never highlighted/bold.
-              color = s.standardcolors[ 0 ].get( value )
+              color = s.standardcolors[0].get( value )
 
               if color:
                 s.charformat.setBackground( QtGui.QBrush( color ) )

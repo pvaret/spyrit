@@ -53,7 +53,7 @@ class ChunkTypes:
     ## The following is an ugly hack to generate the reverse mapping from value
     ## to chunk type name based on the above information.
     ## It allows you to look up ChunkTypes by value, for instance:
-    ## ChunkType.name[ 0 ] returns the string "NETWORK"
+    ## ChunkType.name[0] returns the string "NETWORK"
     ## This is mostly intended for debugging purposes.
     
     IntegerType = type( 1 )

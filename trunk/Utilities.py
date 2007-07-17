@@ -138,7 +138,7 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
   filename, line, dummy, dummy = traceback.extract_tb( exc_traceback ).pop()
   filename = os.path.basename( filename )
-  error    = "%s: %s" % ( str( exc_type ).split( "'" )[ 1 ].split( "." )[ -1 ],
+  error    = "%s: %s" % ( str( exc_type ).split( "'" ) [1].split( "." ) [-1],
                           exc_value )
 
   mw = ( QtGui.qApp and hasattr( QtGui.qApp, "mw" ) and QtGui.qApp.mw ) or None

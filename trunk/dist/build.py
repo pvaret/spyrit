@@ -123,10 +123,10 @@ def main():
     return
 
   if len( sys.argv ) > 2:
-    build( sys.argv[ 1 ], sys.argv[ 2 ] )
+    build( sys.argv[1], sys.argv[2] )
 
   else:
-    build( sys.argv[ 1 ] )
+    build( sys.argv[1] )
 
 
 if __name__ == "__main__":

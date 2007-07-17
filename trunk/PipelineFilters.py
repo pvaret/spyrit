@@ -247,7 +247,7 @@ class AnsiFilter( BaseFilter ):
         if head:
           yield ByteChunk( head )
 
-        parameters = ansi.groups()[ 0 ]
+        parameters = ansi.groups() [0]
 
         if not parameters:
           parameters = "0"  ## ESC [ m is an alias for ESC [ 0 m.

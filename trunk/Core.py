@@ -125,7 +125,7 @@ class Core( QtCore.QObject ):
         possiblematches = [ w for w in worlds if w.lower() == arg.lower() ]
 
         if possiblematches:
-          s.openWorldByName( possiblematches[ 0 ] )
+          s.openWorldByName( possiblematches[0] )
 
         else:
           logger.warn( "No such world: %s" % arg )

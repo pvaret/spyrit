@@ -32,7 +32,7 @@ class PrettyPanelHeader( QtGui.QFrame ):
     QtGui.QFrame.__init__( s, parent )
 
     s.setFrameShape(  QtGui.QFrame.StyledPanel )
-    s.setFrameShadow( QtGui.QFrame.Sunken )
+    s.setFrameShadow( QtGui.QFrame.Plain )
 
     bgcolor = s.palette().color( s.backgroundRole() )
     H, S, V, A = bgcolor.getHsv()

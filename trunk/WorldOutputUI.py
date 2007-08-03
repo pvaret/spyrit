@@ -47,6 +47,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom  = True
     s.scrollbar = s.verticalScrollBar()
 
+    s.textcursor = QtGui.QTextCursor( s.document() )
+
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
 
     s.standardcolors = { 
@@ -158,14 +160,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     scrollpos = s.scrollbar.value()
 
-    ## Ensure that the cursor is at the end of the document. (The cursor may
-    ## have been moved when the user clicked somewhere on the widget... even
-    ## if it's set read-only. Bummer.)
-
-    if not s.textCursor().atEnd():
-      s.moveCursor( QtGui.QTextCursor.End )
-
-    s.textCursor().beginEditBlock()
+    s.textcursor.beginEditBlock()
 
     pending = []
 
@@ -290,7 +285,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
     if pending:
       s.insertText( "".join( pending ) )
 
-    s.textCursor().endEditBlock()
+    s.textcursor.endEditBlock()
+
+    ## Update scrollbar position.
 
     if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
       s.scrollbar.setValue( s.scrollbar.maximum() )
@@ -302,9 +299,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def insertText( s, text ):
 
-    s.textCursor().insertText( text, s.charformat )
+    s.textcursor.insertText( text, s.charformat )
     
 
   def insertInfoText( s, text ):
     
-    s.textCursor().insertText( "% " + text + "\n", s.infocharformat )
+    s.textcursor.insertText( "% " + text + "\n", s.infocharformat )

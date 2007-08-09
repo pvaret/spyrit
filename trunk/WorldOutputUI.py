@@ -47,6 +47,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom  = True
     s.scrollbar = s.verticalScrollBar()
 
+    s.pending_newline = False
+
     s.textcursor = QtGui.QTextCursor( s.document() )
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
@@ -166,16 +168,32 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     for chunk in chunks:
 
+      ## Firstly, print out any pending new line character we might have.
+
+      if s.pending_newline:
+
+        pending.append( "\n" )
+        s.pending_newline = False
+
+      ## Then process each chunk according to its type.
+
+      ## Text:
+
       if   chunk.chunktype == chunktypes.TEXT:
         pending.append( chunk.data )
 
 
+      ## Newline:
 
       elif chunk.chunktype == chunktypes.ENDOFLINE:
-        pending.append( "\n" )
+        ## If there is a new line, we postpone printing it until the next
+        ## chunk arrive. Otherwise there would always be an empty line at
+        ## the bottom of the text.
+        s.pending_newline = True
 
 
-
+      ## Formatting information:
+      
       elif chunk.chunktype == chunktypes.FORMAT:
 
         if pending: ## Flush the pending text before changing format.
@@ -239,15 +257,19 @@ class WorldOutputUI( QtGui.QTextEdit ):
               else: s.charformat.clearBackground()
 
 
+      ## Network events:
 
       elif chunk.chunktype == chunktypes.NETWORK:
+
+        ## Flush pending text.
 
         if pending:
           pending.append( "\n" )
           s.insertText( "".join( pending ) )
           pending = []
 
-        ## Network state changes.
+        ## Then process the network event.
+
         if   chunk.data == NetworkChunk.CONNECTING:
           s.insertInfoText( "Connecting..." )
 
@@ -267,7 +289,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
         elif chunk.data == NetworkChunk.RESOLVING:
           s.insertInfoText( "Resolving %s ..." % s.world.host )
 
-        ## Network errors.
+        ## ... Or the network error.
+
         elif chunk.data == NetworkChunk.CONNECTIONREFUSED:
           s.insertInfoText( "Connection refused." )
 
@@ -280,7 +303,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
         elif chunk.data == NetworkChunk.OTHERERROR:
           s.insertInfoText( "Network error." )
 
-
+    ## Flush pending text.
 
     if pending:
       s.insertText( "".join( pending ) )
@@ -295,6 +318,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     else:
       s.scrollbar.setValue( scrollpos )
 
+    ## And whew, we're done!
 
 
   def insertText( s, text ):

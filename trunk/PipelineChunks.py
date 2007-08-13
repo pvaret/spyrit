@@ -189,12 +189,13 @@ class NetworkChunk( BaseChunk ):
   RESOLVING     = 1
   CONNECTING    = 2
   CONNECTED     = 3
-  DISCONNECTING = 4
+  ENCRYPTED     = 4
+  DISCONNECTING = 5
 
-  CONNECTIONREFUSED = 5
-  HOSTNOTFOUND      = 6
-  TIMEOUT           = 7
-  OTHERERROR        = 8
+  CONNECTIONREFUSED = 6
+  HOSTNOTFOUND      = 7
+  TIMEOUT           = 8
+  OTHERERROR        = 9
 
 
   def __init__( s, data ):

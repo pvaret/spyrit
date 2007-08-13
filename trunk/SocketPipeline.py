@@ -26,6 +26,7 @@ from localqt import *
 from Pipeline        import *
 from PipelineChunks  import *
 from PipelineFilters import *
+from Logger          import logger
 
 
 class SocketPipeline:
@@ -43,8 +44,12 @@ class SocketPipeline:
     s.ssl  = ssl
 
     if s.ssl:
+
       s.socket = QtNetwork.QSslSocket()
-      s.socket.ignoreSslErrors()
+
+      connect( s.socket, SIGNAL( "encrypted()" ), s.reportEncrypted )
+      connect( s.socket, SIGNAL( "sslErrors( const QList<QSslError> & )" ),
+                         s.handleSslErrors )
 
     else:
       s.socket = QtNetwork.QTcpSocket()
@@ -90,6 +95,11 @@ class SocketPipeline:
       s.pipeline.feedChunk( NetworkChunk( NetworkChunk.DISCONNECTED ) )
 
 
+  def reportEncrypted( s ):
+
+    s.pipeline.feedChunk( NetworkChunk( NetworkChunk.ENCRYPTED ) )
+
+
   def reportError( s, error ):
 
     if   error == QtNetwork.QAbstractSocket.ConnectionRefusedError:
@@ -106,6 +116,19 @@ class SocketPipeline:
 
     else:
       s.pipeline.feedChunk( NetworkChunk( NetworkChunk.OTHERERROR ) )
+
+
+  def handleSslErrors( s, errors ):
+
+    ## We take note of the errors... and then discard them.
+    ## SSL validation errors are very common because many legitimate servers
+    ## are just not going to fork money over certificates, and nobody's
+    ## going to blame them for it.
+
+    for err in errors:
+      logger.warn( "SSL Error: " + err.errorString() )
+
+    s.socket.ignoreSslErrors()
 
 
   def readSocket( s ):

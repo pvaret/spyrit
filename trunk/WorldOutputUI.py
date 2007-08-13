@@ -278,6 +278,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
           if not s.world.connected:
             s.insertInfoText( "Connected!" )
 
+        elif chunk.data == NetworkChunk.ENCRYPTED:
+          s.insertInfoText( "SSL encryption started." )
+
         elif chunk.data == NetworkChunk.DISCONNECTING:
           pass
 

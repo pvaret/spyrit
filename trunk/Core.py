@@ -43,7 +43,7 @@ class Core( QtCore.QObject ):
 
     s.mw        = mw
     s.actionset = ActionSet( mw )
-    s.actions   = lambda: None  ## This is the simple object to which you can
+    s.actions   = lambda: None  ## This is the simplest object to which you can
                                 ## add attributes. :)
     s.createActions()
 

@@ -28,6 +28,8 @@ _defaults = dict(
   mainwindow_pos      = None,
   worlds_section      = "Worlds",
 
+  ssl                 = False,  ## By default, no SSL on sockets.
+
   show_splashscreen = False,
   mainwindow_size   = ( 800, 600 ),
 

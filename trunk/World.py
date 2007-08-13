@@ -25,6 +25,7 @@ from localqt import *
 
 from PipelineChunks import *
 from SocketPipeline import SocketPipeline
+from Utilities      import check_ssl_is_available
 
 
 class World:
@@ -36,12 +37,15 @@ class World:
 
     s.connected = False
 
+    ## Aliased for convenience.
+
     s.host = conf._host
     s.port = conf._port
+    s.ssl  = check_ssl_is_available() and conf._ssl
 
     s.displayname = name or "(%s:%d)" % ( s.host, s.port )
 
-    s.socketpipeline = SocketPipeline( s.host, s.port )
+    s.socketpipeline = SocketPipeline( s.host, s.port, s.ssl )
     s.socketpipeline.addSink( s.sink, [ chunktypes.NETWORK ] )
 
 

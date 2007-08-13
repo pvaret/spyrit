@@ -21,6 +21,8 @@
 
 from localqt import *
 
+from Utilities          import check_ssl_is_available
+
 from PrettyOptionPanel  import ConfigMapper
 from PrettyPanelHeader  import PrettyPanelHeader
 from PrettyOptionDialog import PrettyOptionDialog
@@ -32,10 +34,16 @@ def QuickConnectDialog( conf, parent=None ):
                                  QtGui.QPixmap( ":/icon/connect" ) )
 
     mapper = ConfigMapper( conf )
+
     mapper.addGroup( "Connection parameters", [
                        mapper.lineedit( "host", "&Server:" ),
                        mapper.spinbox(  "port", "&Port:" ),
                      ] )
+
+    if check_ssl_is_available():
+      mapper.addGroup( "Encryption", [
+                         mapper.checkbox( "ssl", "Use SSL &encryption"),
+                       ] )
 
     dialog = PrettyOptionDialog( mapper,
                                  parent  = parent,

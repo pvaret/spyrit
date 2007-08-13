@@ -143,6 +143,7 @@ class Core( QtCore.QObject ):
     conf._host = host
     conf._port = port
     conf._name = name
+    conf._ssl  = False
     
     return conf
 

@@ -32,9 +32,6 @@ class SocketPipeline:
 
   def __init__( s, host, port, ssl=False ):
 
-    ## The SSL parameter is unused for now; it's reserved for future Qt 4.3
-    ## usage.
-
     s.pipeline = Pipeline()
     s.pipeline.addFilter( TelnetFilter() )
     s.pipeline.addFilter( AnsiFilter() )
@@ -43,8 +40,15 @@ class SocketPipeline:
 
     s.host = host
     s.port = port
+    s.ssl  = ssl
 
-    s.socket = QtNetwork.QTcpSocket()
+    if s.ssl:
+      s.socket = QtNetwork.QSslSocket()
+      s.socket.ignoreSslErrors()
+
+    else:
+      s.socket = QtNetwork.QTcpSocket()
+
     connect( s.socket, SIGNAL( "stateChanged( QAbstractSocket::SocketState )" ),
                        s.reportStateChange )
     connect( s.socket, SIGNAL( "error( QAbstractSocket::SocketError )" ),
@@ -54,7 +58,11 @@ class SocketPipeline:
 
   def connectToHost( s ):
 
-    s.socket.connectToHost( s.host, s.port )
+    if s.ssl:
+      s.socket.connectToHostEncrypted( s.host, s.port )
+
+    else:
+      s.socket.connectToHost( s.host, s.port )
 
 
   def disconnectFromHost( s ):

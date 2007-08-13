@@ -78,6 +78,13 @@ def test_qt_version():
     return False, "Qt v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
+def check_ssl_is_available():
+
+  from PyQt4 import QtNetwork
+  return hasattr( QtNetwork, "QSslSocket" ) \
+         and QtNetwork.QSslSocket.supportsSsl()
+
+
 def tuple_to_QPoint( t ):
 
   try:

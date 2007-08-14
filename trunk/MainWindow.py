@@ -228,15 +228,19 @@ class MainWindow( QtGui.QMainWindow ):
     if worldui.world.connected:
 
       messagebox = QtGui.QMessageBox( s )
+
       messagebox.setWindowTitle( "Confirm close" )
+      messagebox.setIcon( QtGui.QMessageBox.Question )
+
       messagebox.setText( "You are still connected to this world. "
                         + "Disconnect and close this tab?" )
-      messagebox.addButton( "Close tab",   QtGui.QMessageBox.AcceptRole )
-      messagebox.addButton( "Cancel", QtGui.QMessageBox.RejectRole )
 
-      messagebox.exec_()
+      messagebox.addButton( "Close tab", QtGui.QMessageBox.AcceptRole )
+      messagebox.addButton( QtGui.QMessageBox.Cancel )
 
-      if messagebox.result() == QtGui.QMessageBox.RejectRole:
+      result = messagebox.exec_()
+
+      if result == QtGui.QMessageBox.Cancel:
         return
 
       worldui.world.disconnectFromWorld()
@@ -256,15 +260,19 @@ class MainWindow( QtGui.QMainWindow ):
     if len( connectedworlds ) > 0:
 
       messagebox = QtGui.QMessageBox( s )
+
       messagebox.setWindowTitle( "Confirm quit" )
+      messagebox.setIcon( QtGui.QMessageBox.Question )
+
       messagebox.setText( ( "You are still connected to <b>%s</b> world(s). "
                           + "Close them and quit?" ) % len( connectedworlds ) )
-      messagebox.addButton( "Quit",   QtGui.QMessageBox.AcceptRole )
-      messagebox.addButton( "Cancel", QtGui.QMessageBox.RejectRole )
 
-      messagebox.exec_()
+      messagebox.addButton( "Quit", QtGui.QMessageBox.AcceptRole )
+      messagebox.addButton( QtGui.QMessageBox.Cancel )
 
-      if messagebox.result() == QtGui.QMessageBox.RejectRole:
+      result = messagebox.exec_()
+
+      if result == QtGui.QMessageBox.Cancel:
 
         event.ignore()
         return

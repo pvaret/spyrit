@@ -112,7 +112,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     worldsmenu = menubar.addMenu( "Worlds" )
     worldsmenu.addAction( s.core.actions.quickconnect )
-    worldsmenu.addAction( s.core.actions.createworld )
+    worldsmenu.addAction( s.core.actions.newworld )
 
     worldsmenu.addSeparator()
 
@@ -156,7 +156,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Add remaining actions.
 
-    s.maintoolbar.addAction( s.core.actions.createworld )
+    s.maintoolbar.addAction( s.core.actions.newworld )
     s.maintoolbar.addSeparator()
     s.maintoolbar.addAction( s.core.actions.closecurrent )
     s.maintoolbar.addSeparator()

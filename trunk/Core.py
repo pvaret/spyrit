@@ -55,7 +55,7 @@ class Core( QtCore.QObject ):
     s.actions.about        = s.actionset.bindAction( "about",        AboutDialog.showDialog )
     s.actions.aboutqt      = s.actionset.bindAction( "aboutqt",      QtGui.qApp.aboutQt )
     s.actions.closecurrent = s.actionset.bindAction( "closecurrent", s.actionCloseWorld )
-    s.actions.createworld  = s.actionset.bindAction( "createworld",  s.actionCreateWorld )
+    s.actions.newworld     = s.actionset.bindAction( "newworld",     s.actionNewWorld )
     s.actions.quickconnect = s.actionset.bindAction( "quickconnect", s.actionQuickConnect )
     s.actions.quit         = s.actionset.bindAction( "quit",         s.quit )
     
@@ -156,12 +156,12 @@ class Core( QtCore.QObject ):
       s.mw.closeWorld( worldui )
 
 
-  def actionCreateWorld( s ):
+  def actionNewWorld( s ):
 
-    from CreateWorldDialog import CreateWorldDialog
+    from NewWorldDialog import NewWorldDialog
     
     conf   = s.newWorldConfig()
-    dialog = CreateWorldDialog( conf, s.mw )
+    dialog = NewWorldDialog( conf, s.mw )
 
     if dialog.exec_():
 

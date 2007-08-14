@@ -14,7 +14,7 @@
 ##
 
 ##
-## CreateWorldDialog.py
+## NewWorldDialog.py
 ##
 ## This class holds the dialog that lets the user create a new world.
 ##
@@ -28,9 +28,9 @@ from PrettyPanelHeader  import PrettyPanelHeader
 from PrettyOptionDialog import PrettyOptionDialog
 
 
-def CreateWorldDialog( conf, parent=None ):
+def NewWorldDialog( conf, parent=None ):
 
-    header = PrettyPanelHeader( "Create world",
+    header = PrettyPanelHeader( "New world",
                                  QtGui.QPixmap( ":/icon/new_world" ) )
 
     mapper = ConfigMapper( conf )
@@ -53,7 +53,7 @@ def CreateWorldDialog( conf, parent=None ):
                                  parent  = parent,
                                  header  = header,
                                  oklabel = "Connect",
-                                 title   = "Create world" )
+                                 title   = "New world" )
 
     return dialog
 

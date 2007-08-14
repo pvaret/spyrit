@@ -31,14 +31,14 @@ class ActionSet:
     
     s.actions = {
       "about":        ( "About %s..." % \
-                         config._app_name, ":/app/icon",       None       ),
-      "aboutqt":      ( "About Qt...",     ":/icon/qt-logo",   None       ),
-      "createworld":  ( "Create world...", ":/icon/new_world", None       ),
-      "quickconnect": ( "Quick connect...", None,              None       ),
-      "quit":         ( "Quit",            ":/icon/quit",     "Ctrl+Q"    ),
-      "closecurrent": ( "Close",           ":/icon/close",    "Ctrl+W"    ),
-      "nexttab":      ( "Next Tab",         None,             "Shift+Tab" ),
-      "previoustab":  ( "Previous Tab",     None,        "Shift+Ctrl+Tab" ),
+                         config._app_name, ":/app/icon",        None       ),
+      "aboutqt":      ( "About Qt...",     ":/icon/qt-logo",    None       ),
+      "newworld":     ( "New world...",    ":/icon/new_world", "Ctrl+N"    ),
+      "quickconnect": ( "Quick connect...", None,               None       ),
+      "quit":         ( "Quit",            ":/icon/quit",      "Ctrl+Q"    ),
+      "closecurrent": ( "Close",           ":/icon/close",     "Ctrl+W"    ),
+      "nexttab":      ( "Next Tab",         None,              "Shift+Tab" ),
+      "previoustab":  ( "Previous Tab",     None,         "Shift+Ctrl+Tab" ),
 
       "connect":     ( "Connect",       None,         "Ctrl+Shift+S" ),
       "disconnect":  ( "Disconnect",    None,         "Ctrl+Shift+D" ),

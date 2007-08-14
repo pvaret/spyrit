@@ -28,6 +28,11 @@ from PipelineChunks import *
 from Logger         import logger
 
 
+## This is used a lot, so define it right away.
+
+NL = "\n"
+
+
 class WorldOutputUI( QtGui.QTextEdit ):
 
   def __init__( s, parent, world ):
@@ -164,42 +169,25 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.textcursor.beginEditBlock()
 
-    pending = []
-
     for chunk in chunks:
-
-      ## Firstly, print out any pending new line character we might have.
-
-      if s.pending_newline:
-
-        pending.append( "\n" )
-        s.pending_newline = False
 
       ## Then process each chunk according to its type.
 
       ## Text:
 
       if   chunk.chunktype == chunktypes.TEXT:
-        pending.append( chunk.data )
+        s.insertText( chunk.data )
 
 
       ## Newline:
 
       elif chunk.chunktype == chunktypes.ENDOFLINE:
-        ## If there is a new line, we postpone printing it until the next
-        ## chunk arrive. Otherwise there would always be an empty line at
-        ## the bottom of the text.
-        s.pending_newline = True
+        s.insertNewLine()
 
 
       ## Formatting information:
       
       elif chunk.chunktype == chunktypes.FORMAT:
-
-        if pending: ## Flush the pending text before changing format.
-
-          s.insertText( "".join( pending ) )
-          pending = []
 
         for param, value in chunk.data:
 
@@ -261,14 +249,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
       elif chunk.chunktype == chunktypes.NETWORK:
 
-        ## Flush pending text.
-
-        if pending:
-          pending.append( "\n" )
-          s.insertText( "".join( pending ) )
-          pending = []
-
-        ## Then process the network event.
+        ## Handle the network event...
 
         if   chunk.data == NetworkChunk.CONNECTING:
           s.insertInfoText( "Connecting..." )
@@ -280,9 +261,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
         elif chunk.data == NetworkChunk.ENCRYPTED:
           s.insertInfoText( "SSL encryption started." )
-
-        elif chunk.data == NetworkChunk.DISCONNECTING:
-          pass
 
         elif chunk.data == NetworkChunk.DISCONNECTED:
 
@@ -306,10 +284,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
         elif chunk.data == NetworkChunk.OTHERERROR:
           s.insertInfoText( "Network error." )
 
-    ## Flush pending text.
-
-    if pending:
-      s.insertText( "".join( pending ) )
 
     s.textcursor.endEditBlock()
 
@@ -324,11 +298,25 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## And whew, we're done!
 
 
+  def insertNewLine( s ):
+
+    if s.pending_newline:
+      s.textcursor.insertText( NL, s.charformat )
+
+    s.pending_newline = True
+
+
   def insertText( s, text ):
+
+    if s.pending_newline:
+
+      s.textcursor.insertText( NL, s.charformat )
+      s.pending_newline = False
 
     s.textcursor.insertText( text, s.charformat )
     
 
   def insertInfoText( s, text ):
-    
-    s.textcursor.insertText( "% " + text + "\n", s.infocharformat )
+
+    s.textcursor.insertText( NL + "% " + text, s.infocharformat )
+    s.pending_newline = True  ## There is always a new line after info text.

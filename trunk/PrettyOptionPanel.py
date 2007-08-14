@@ -38,7 +38,7 @@ class ConfigMapperWidget:
   def __init__( s, mapper, option, label=None ):
 
     s.mapper = mapper
-    s.conf   = mapper.conf  ## for convenience.
+    s.conf   = mapper.conf  ## For convenience.
     s.option = option
     s.label  = label
 
@@ -102,7 +102,7 @@ class ConfigMapperWidget:
 
 class LineEditMapper( ConfigMapperWidget, QtGui.QLineEdit ):
 
-  MINIMUM_WIDTH = 150
+  MINIMUM_WIDTH = 250
 
   def __init__( s, mapper, option, label=None ):
 
@@ -262,7 +262,7 @@ class ConfigMapper( QtCore.QObject ):
 
 class PrettyOptionPanel( QtGui.QWidget ):
   
-  MIN_LEFT_MARGIN = 25
+  MIN_LEFT_MARGIN = 20
   MAX_LABEL_WIDTH_UNTIL_WORDWRAP = 100
 
   def __init__( s, mapper, parent=None ):
@@ -297,7 +297,6 @@ class PrettyOptionPanel( QtGui.QWidget ):
         s.addItemRow( item )
 
       s.addStretchRow()
-    
 
 
   def addGroupRow( s, name ):

@@ -357,5 +357,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def insertInfoText( s, text ):
 
-    s.textcursor.insertText( NL + "% " + text, s.infocharformat )
+    if s.pending_newline:
+      s.textcursor.insertText( NL, s.infocharformat )
+
+    s.textcursor.insertText( "% " + text, s.infocharformat )
     s.pending_newline = True  ## There is always a new line after info text.

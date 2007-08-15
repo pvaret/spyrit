@@ -24,6 +24,7 @@ import re
 
 from PipelineChunks import *
 
+
 ## ---[ Class BaseFilter ]---------------------------------------------
 
 class BaseFilter:
@@ -68,14 +69,14 @@ class BaseFilter:
 
   def concatPostponed( s, chunk ):
 
+    if not s.postponedChunk:
+      return chunk
+
     if chunk is theEndOfPacketChunk:
       ## The End Of Packet chunk is a special case, and is never merged
       ## with other chunks.
       return chunk
       
-    if not s.postponedChunk:
-      return chunk
-
     ## If there was some bit of chunk that we postponed earlier...
     postponed = s.postponedChunk
     s.postponedChunk = None
@@ -358,10 +359,7 @@ class UnicodeTextFilter( BaseFilter ):
     ## Mostly a theorical concern, though, since the default encoding here is
     ## ASCII.
  
-    if chunk.chunktype == chunktypes.BYTES:
-      chunk = UnicodeTextChunk( chunk.data.decode( s.encoding, "replace" ) )
-    
-    yield chunk
+    yield UnicodeTextChunk( chunk.data.decode( s.encoding, "replace" ) )
 
 
   def formatForSending( s, data ):

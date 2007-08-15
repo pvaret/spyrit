@@ -231,52 +231,65 @@ class AnsiFilter( BaseFilter ):
                                CSI + r"[\d;]*"
                          ] ) )
 
+
   def processChunk( s, chunk ):
-    
-    text = chunk.data
+   
+    text       = chunk.data
+    currentpos = 0
 
-    while len( text ) > 0:
+    while True:
 
-      ansi = s.match.search( text )
+      ansi = s.match.search( text, currentpos )
       
-      if ansi:
-
-        head = text[ :ansi.start() ]
-        text = text[ ansi.end():   ]
-
-        if head:
-          yield ByteChunk( head )
-
-        parameters = ansi.groups() [0]
-
-        if not parameters:
-          parameters = "0"  ## ESC [ m is an alias for ESC [ 0 m.
-
-        formats = []
-
-        for param in parameters.split( ';' ):
-
-          format = FormatChunk.ANSI_TO_FORMAT.get( param )
-
-          if format:
-            formats.append( format )
-
-        if formats:
-          yield( FormatChunk( formats ) )
-
-      else:
-        ## The remaining text doesn't contain any complete ANSI sequence.
-        ## So we quit the loop.
+      if not ansi:
         break
 
-    if text:
-      
-      if s.unfinished.search( text ): ## Remaining text is an unfinished ANSI
-                                      ## sequence!
-        s.postpone( ByteChunk( text ) )
+      startmatch = ansi.start()
+
+      if startmatch > currentpos:
+        yield ByteChunk( text[ currentpos:startmatch ] )
+
+      currentpos = ansi.end()
+
+      parameters = ansi.groups() [0]
+
+      if not parameters:
+        parameters = "0"  ## ESC [ m is an alias for ESC [ 0 m.
+
+      formats = []
+
+      for param in parameters.split( ';' ):
+
+        format = FormatChunk.ANSI_TO_FORMAT.get( param )
+
+        if format:
+          formats.append( format )
+
+      if formats:
+        yield( FormatChunk( formats ) )
+
+      ## Done searching for complete ANSI sequences.
+
+
+    if currentpos < len( text ):
+
+      possible_unfinished = s.unfinished.search( text, currentpos )
+
+      if possible_unfinished:
+
+        ## Remaining text ends with an unfinished ANSI sequence!
+        ## So we feed what remains of the raw text, if any, down the pipe, and
+        ## then postpone the unfinished ANSI sequence.
+
+        startmatch = possible_unfinished.start()
+
+        if startmatch > pos:
+          yield( ByteChunk( text[ pos:startmatch ] ) )
+
+        s.postpone( ByteChunk( text[ startmatch: ] ) )
         
       else:
-        yield( ByteChunk( text ) )
+        yield( ByteChunk( text[ currentpos: ] ) )
 
 
 

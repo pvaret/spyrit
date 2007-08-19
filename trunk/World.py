@@ -55,7 +55,7 @@ class World:
       s.socketpipeline.connectToHost()
 
 
-  def disconnectFromWorld( s ):
+  def ensureWorldDisconnected( s ):
 
     if s.connected:
       s.socketpipeline.disconnectFromHost()

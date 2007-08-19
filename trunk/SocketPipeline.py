@@ -78,6 +78,7 @@ class SocketPipeline:
   def abort( s ):
     
     s.socket.abort()
+    s.socket.close()
 
 
   def reportStateChange( s, state ):

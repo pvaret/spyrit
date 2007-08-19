@@ -72,4 +72,4 @@ class WorldUI( QtGui.QSplitter ):
     s.actionset.bindAction( "pageup",      s.outputui.pageUp )
     s.actionset.bindAction( "pagedown",    s.outputui.pageDown )
     s.actionset.bindAction( "connect",     s.world.connectToWorld )
-    s.actionset.bindAction( "disconnect",  s.world.disconnectFromWorld )
+    s.actionset.bindAction( "disconnect",  s.world.ensureWorldDisconnected )

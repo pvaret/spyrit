@@ -129,19 +129,30 @@ class TelnetFilter( BaseFilter ):
 
   relevant_types = [ chunktypes.BYTES ]
 
-  SE   = chr( 240 )
-  SB   = chr( 250 )
-  NOP  = chr( 241 )
+  SE   = chr( 240 )  ## End option subnegotiation
+  NOP  = chr( 241 )  ## No operation
+  DM   = chr( 242 )  ## Data mark for Synch operation
+  BRK  = chr( 243 )  ## Break
+  IP   = chr( 244 )  ## Interrupt process
+  AO   = chr( 245 )  ## Abort output
+  AYT  = chr( 246 )  ## Are You There function
+  EC   = chr( 247 )  ## Erase character
+  EL   = chr( 248 )  ## Erase line
+  GA   = chr( 249 )  ## Go ahead
+  SB   = chr( 250 )  ## Begin option subnegotiation
+
   WILL = chr( 251 )
   WONT = chr( 252 )
   DO   = chr( 253 )
   DONT = chr( 254 )
+
   IAC  = chr( 255 )
 
   match = re.compile(
       IAC 
     + "(?:"
-    +   "(?P<cmd>" + IAC + "|" + NOP + ")" 
+    +   "(?P<cmd>" + "|".join( [ NOP, DM, BRK, IP, AO,
+                                 AYT, EC, EL, GA, IAC ] ) + ")" 
     +   "|"
     +   "(?:"
     +     "(?P<cmdopt>" + WILL + "|" + WONT + "|" + DO + "|" + DONT + ")"
@@ -185,8 +196,7 @@ class TelnetFilter( BaseFilter ):
           yield ByteChunk( s.IAC )
           continue
 
-        elif command == s.NOP:
-          continue
+        ## TODO: Implement other commands?
 
         elif command in ( s.WILL, s.WONT, s.DO, s.DONT ):
           pass ## TODO: Implement option negociation.
@@ -208,7 +218,8 @@ class TelnetFilter( BaseFilter ):
 
   def formatForSending( s, data ):
 
-    return data.replace( s.IAC, s.IAC + s.IAC )
+    ## Escape the character 0xff in accordance with the telnet specification.
+    return data.replace( s.IAC, s.IAC * 2 )
 
 
 ## ---[ Class AnsiFilter ]---------------------------------------------

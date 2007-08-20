@@ -25,20 +25,27 @@ from localqt import *
 from Config            import config
 from PrettyPanelHeader import PrettyPanelHeader
 
+
 ABOUT = """
   <center><br/>
-  <b>%s v%s</b><br/>""" % ( config._app_name, config._app_version ) + \
-"""<br/>
-  "Still roughly carved, but coming along nicely."<br/>
+  <font size="+2"><b>%(NAME)s v%(VERSION)s</b></font><br/>
   <br/>
-  This software is a preliminary development version and does not do much at
-  all as of yet. It may not work well for you at all, although I hope it
-  will.<br/>
+  "The light at the end of the tunnel may be an oncoming dragon. YAY!"<br/>
   <br/>
-  Watch out for the future versions, which are planned to bring you all the
-  nicest features of a good MU* client.<br/>
+  This software is a beta version and as of yet incomplete, although it is
+  already usable and, we hope, fast, stable and pleasant to use.<br/>
+  <br/>
+  Please stay tuned for further developments! We aim to release version 1.0
+  within a few months, after adding the important features that are currently
+  missing, namely logs, matches and highlights, and configuration dialogs for
+  everything.<br/>
+  <br/>
+  %(NAME)s is &#169;2007 P. Varet, and licensed under the 
+  <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
+  General Public License</a>.<br/>
   </center>
-"""
+""" % dict( NAME=config._app_name, VERSION=config._app_version )
+
 
 class AboutDialog( QtGui.QDialog ):
 

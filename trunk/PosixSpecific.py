@@ -14,24 +14,26 @@
 ##
 
 ##
-## ConfigPaths.py
+## PosixSpecific.py
 ##
-## Contains the code that figures out the paths used by this program depending
-## on the OS.
+## Contains the class that implements POSIX-specific elements.
 ##
+
 
 import os.path
 
-from PlatformSpecific import platformSpecific
 
-CONFIG_DIR  = platformSpecific.get_configuration_dir()
-CONFIG_FILE = platformSpecific.get_configuration_file()
+class PosixSpecific:
 
-if not os.path.exists( CONFIG_DIR ):
+  CONFIG_DIR  = ".spyrit"
+  CONFIG_FILE = "spyrit.conf"
 
-  try:
-    os.makedirs( CONFIG_DIR )
 
-  except ( IOError, OSError ):
-    pass
-    
+  def get_configuration_dir( s ):
+
+    home_dir = os.path.expanduser( "~" )
+    return os.path.join( home_dir, s.CONFIG_DIR )
+
+
+  def get_configuration_file( s ):
+    return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )

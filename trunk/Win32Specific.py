@@ -14,24 +14,25 @@
 ##
 
 ##
-## ConfigPaths.py
+## Win32Specific.py
 ##
-## Contains the code that figures out the paths used by this program depending
-## on the OS.
+## Contains the class that implements Windows-specific elements.
 ##
+
 
 import os.path
+import winpaths
 
-from PlatformSpecific import platformSpecific
 
-CONFIG_DIR  = platformSpecific.get_configuration_dir()
-CONFIG_FILE = platformSpecific.get_configuration_file()
+class Win32Specific:
 
-if not os.path.exists( CONFIG_DIR ):
+  CONFIG_DIR  = "Spyrit"
+  CONFIG_FILE = "Spyrit.ini"
 
-  try:
-    os.makedirs( CONFIG_DIR )
 
-  except ( IOError, OSError ):
-    pass
-    
+  def get_configuration_dir( s ):
+    return os.path.join( winpaths.get_appdata(), s.CONFIG_DIR )
+
+
+  def get_configuration_file( s ):
+    return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )

@@ -14,24 +14,24 @@
 ##
 
 ##
-## ConfigPaths.py
+## PlatformSpecific.py
 ##
-## Contains the code that figures out the paths used by this program depending
-## on the OS.
+## Contains the class that encapsulate platform-dependant variations, i.e.
+## configuration file paths and such.
 ##
 
-import os.path
 
-from PlatformSpecific import platformSpecific
+import os
 
-CONFIG_DIR  = platformSpecific.get_configuration_dir()
-CONFIG_FILE = platformSpecific.get_configuration_file()
+if os.name in ( 'posix', 'mac' ):
+  from PosixSpecific import PosixSpecific as PlatformSpecific
 
-if not os.path.exists( CONFIG_DIR ):
+elif os.name in ( 'nt', ):
+  from Win32Specific import Win32Specific as PlatformSpecific
 
-  try:
-    os.makedirs( CONFIG_DIR )
+else:
+  raise NotImplementedError( "This program doesn't support your OS yet. "
+                             "Sorry!" )
 
-  except ( IOError, OSError ):
-    pass
-    
+
+platformSpecific = PlatformSpecific()

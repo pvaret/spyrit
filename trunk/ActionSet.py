@@ -44,8 +44,8 @@ class ActionSet:
       "disconnect":  ( "Disconnect",    None,         "Ctrl+Shift+D" ),
       "historyup":   ( "History Up",   ":/icon/up",   "Ctrl+Up"      ),
       "historydown": ( "History Down", ":/icon/down", "Ctrl+Down"    ),
-      "pageup":      ( "Page Up",      ":/icon/up",   "Ctrl+PgUp"    ),
-      "pagedown":    ( "Page Down",    ":/icon/down", "Ctrl+PgDown"  ),
+      "pageup":      ( "Page Up",      ":/icon/up",   "PgUp"    ),
+      "pagedown":    ( "Page Down",    ":/icon/down", "PgDown"  ),
     }
 
     ## Very few actions have a specific role, so it's more effective to put

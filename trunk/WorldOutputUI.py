@@ -362,3 +362,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.textcursor.insertText( "% " + text, s.infocharformat )
     s.pending_newline = True  ## There is always a new line after info text.
+
+
+  def resizeEvent( s, e ):
+
+    if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
+      s.scrollbar.setValue( s.scrollbar.maximum() )
+
+    return QtGui.QTextEdit.resizeEvent( s, e )

@@ -61,6 +61,8 @@ class WorldUI( QtGui.QSplitter ):
     s.setChildrenCollapsible( False )
     s.setSizes( s.conf._splitter_sizes )
 
+    connect( s, SIGNAL( "splitterMoved( int, int )" ), s.saveSplitterPosition )
+
     s.actionset = ActionSet( s )
     s.createActions()
 
@@ -73,3 +75,8 @@ class WorldUI( QtGui.QSplitter ):
     s.actionset.bindAction( "pagedown",    s.outputui.pageDown )
     s.actionset.bindAction( "connect",     s.world.connectToWorld )
     s.actionset.bindAction( "disconnect",  s.world.ensureWorldDisconnected )
+
+
+  def saveSplitterPosition( s ):
+
+    s.conf._splitter_sizes = s.sizes()

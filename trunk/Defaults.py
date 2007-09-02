@@ -23,7 +23,7 @@
 _defaults = dict(
 
   app_name            = "Spyrit",
-  app_version         = "0.2",
+  app_version         = "0.3pre",
   mainwindow_min_size = ( 160, 100 ),
   mainwindow_pos      = None,
   worlds_section      = "Worlds",
@@ -49,6 +49,8 @@ _defaults = dict(
   input_background_color  = "#ffffff",  ## white
 
   splitter_sizes = [ 1000, 100, 100 ],
+
+  input_command_char = "/",
 
 )
 

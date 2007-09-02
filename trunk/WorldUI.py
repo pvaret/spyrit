@@ -41,6 +41,8 @@ class WorldUI( QtGui.QSplitter ):
     s.world  = world
     s.conf   = world.conf
 
+    s.world.setUI( s )
+
     s.outputui = WorldOutputUI( s, world )
     s.addWidget( s.outputui )
 

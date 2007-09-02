@@ -163,7 +163,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
     ## We need a highlighted variant of the user's default text color,
     ## in case we're in bold-as-highlight mode and the world wants to display
-    ## bold text in the default color. This is what this static help method
+    ## bold text in the default color. This is what this static helper method
     ## computes.
     ## The value of 1.4 (40% lighter) is admittedly somewhat arbitrary.
 

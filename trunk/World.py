@@ -32,10 +32,16 @@ class World:
 
   def __init__( s, conf, name=None ):
 
-    s.name = name
-    s.conf = conf
+    s.name    = name
+    s.conf    = conf
+    s.worldui = None
 
-    s.connected = False
+    ## We need both of the following values, because there are cases (for
+    ## instance, when resolving the server name) where we can't consider
+    ## ourselves connected nor disconnected.
+
+    s.connected    = False
+    s.disconnected = True
 
     ## Aliased for convenience.
 
@@ -47,6 +53,17 @@ class World:
 
     s.socketpipeline = SocketPipeline( s.host, s.port, s.ssl )
     s.socketpipeline.addSink( s.sink, [ chunktypes.NETWORK ] )
+
+
+  def setUI( s, worldui ):
+
+    s.worldui = worldui
+
+
+  def info( s, text ):
+
+    if s.worldui:
+      s.worldui.outputui.insertInfoText( text )
 
 
   def connectToWorld( s ):
@@ -74,11 +91,6 @@ class World:
     s.connected = False
 
 
-  def refresh( s ):
-
-    s.worldui.refresh()
-
-
   def sink( s, chunks ):
 
     for chunk in chunks:
@@ -90,3 +102,5 @@ class World:
       elif chunk.data == NetworkChunk.DISCONNECTED:
 
         QtCore.QTimer.singleShot( 0, s.setDisconnected )
+
+      s.disconnected = ( chunk.data == NetworkChunk.DISCONNECTED )

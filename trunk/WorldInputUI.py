@@ -23,6 +23,7 @@
 
 from localqt import *
 
+from Commands     import Commands
 from InputHistory import InputHistory
 
 
@@ -34,9 +35,10 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     s.setAcceptRichText( False )
 
-    s.world   = world
-    s.conf    = world.conf
-    s.history = InputHistory( s )
+    s.world    = world
+    s.conf     = world.conf
+    s.history  = InputHistory( s )
+    s.commands = Commands( world )
 
     s.refresh()
 
@@ -91,7 +93,13 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     text = unicode( s.toPlainText() ).rstrip( "\n" )
     s.history.update( text )
-    s.world.socketpipeline.send( text + "\n" )
+
+    if text.startswith( s.conf._input_command_char ):
+      s.commands.execute( text[ len( s.conf._input_command_char ): ] )
+
+    else:
+      s.world.socketpipeline.send( text + "\n" )
+
     s.clear()
 
 

@@ -145,18 +145,17 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
   filename, line, dummy, dummy = traceback.extract_tb( exc_traceback ).pop()
   filename = os.path.basename( filename )
-  error    = "%s: %s" % ( str( exc_type ).split( "'" ) [1].split( "." ) [-1],
-                          exc_value )
+  error    = "%s: %s" % ( str( exc_type ).split( "." )[-1], exc_value )
 
   mw = ( QtGui.qApp and hasattr( QtGui.qApp, "mw" ) and QtGui.qApp.mw ) or None
 
   QtGui.QMessageBox.critical( mw, "Houston, we have a problem...",
-    "<i></i>Whoops. A critical error has occured. This is most likely a bug in "
-    + "Spyrit. The error is:<br/>"
-    + "<center><b><i>%s</i></b></center><br/>" % error
-    + "It occured at <b>line %d</b> of file <b>%s</b>.<br/><br/>"
+    "<center>Whoops. A critical error has occured. This is most likely a bug "
+  + "in Spyrit. The error is:<br/><br/>"
+  + "<b><i>%s</i></b><br/><br/>" % error
+  + "It occured at <b>line %d</b> of file <b>%s</b>.<br/><br/>"
       % ( line, filename )
-    + "Spyrit will now close." )
+  + "Spyrit will now close.</center>" )
 
 
   print "Spyrit has closed due to an error. This is the full error report:"

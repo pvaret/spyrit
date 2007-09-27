@@ -265,7 +265,8 @@ class ConfigBasket( object ):
       return s.domains[ domain ]
       
     except KeyError:
-      raise KeyError( "This configuration object doesn't have a domain called %s." % domain )
+      raise KeyError( "This configuration object doesn't have a domain called " 
+                    + "%s." % domain )
 
 
   def getDomainList( s ):
@@ -294,7 +295,8 @@ class ConfigBasket( object ):
       del s.domains[ name ]
       
     except KeyError:
-      raise KeyError( "This configuration object doesn't have a domain called %s." % domain )
+      raise KeyError( "This configuration object doesn't have a domain called "
+                    + "%s." % domain )
 
 
   def createAnonymousDomain( s ):
@@ -319,8 +321,8 @@ class ConfigBasket( object ):
     d = s.getOwnDict().copy()
 
     if s.domains:
-      d[ "_sections" ] = dict( [ ( name, s.domains[ name ].dumpAsDict() ) \
-                                   for name in s.domains ] )
+      d[ s.SECTIONS ] = dict( [ ( name, s.domains[ name ].dumpAsDict() ) \
+                                  for name in s.domains ] )
     return d
 
 

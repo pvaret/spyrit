@@ -51,6 +51,14 @@ class embedded_module_importer:
     return mod
 
 
+import imp
+if imp.get_magic() != %s:
+  print "Wrong Python version detected!"
+  print "Please download the version of this file that matches the version of"
+  print "Python that you are running, which is Python",
+  print ".".join( str( i ) for i in sys.version_info[ :3 ] )
+  sys.exit()
+
 sys.meta_path.append( embedded_module_importer() )
 
 import MAIN
@@ -86,7 +94,8 @@ def make_module_dict( modules ):
 
 def make_launcher( main, modules ):
 
-  return LAUNCHER_STUB % ( make_module_dict( modules ) )
+  return LAUNCHER_STUB % ( make_module_dict( modules ), 
+                           repr( imp.get_magic() ) )
 
 
 def build( scriptname, outputname=None ):

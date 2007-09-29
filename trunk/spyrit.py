@@ -36,14 +36,14 @@ for test in ( test_python_version,
               test_pyqt4,
               test_qt_version ):
 
-  result, msg = test()
+  ok, msg = test()
 
-  if not result:
+  if not ok:
 
-    import sys
     from Logger import logger
     logger.error( msg )
-
+    
+    import sys
     sys.exit( 1 )
 
 

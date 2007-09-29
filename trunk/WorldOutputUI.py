@@ -334,7 +334,10 @@ class WorldOutputUI( QtGui.QTextEdit ):
     else:
       s.scrollbar.setValue( scrollpos )
 
-    ## And whew, we're done!
+    ## And whew, we're done! Now let the application notify the user there's
+    ## some new stuff in the window. :)
+    
+    QtGui.qApp.alert( s.window() )
 
 
   def insertNewLine( s ):

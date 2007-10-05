@@ -64,6 +64,8 @@ class AboutDialog( QtGui.QDialog ):
 
     label = QtGui.QLabel( ABOUT )
     label.setWordWrap( True )
+    label.setOpenExternalLinks( True )
+
     s.layout().addWidget( label )
 
     button = QtGui.QPushButton( "Ok" )

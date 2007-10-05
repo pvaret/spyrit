@@ -23,12 +23,12 @@
 
 
 from localqt     import *
-from Config      import config, worldconfig
-from Utilities   import str_to_int
-from AboutDialog import AboutDialog
-from ActionSet   import ActionSet
 from Logger      import logger
 from World       import World
+from Config      import config, worldconfig
+from ActionSet   import ActionSet
+from Utilities   import str_to_int
+from AboutDialog import AboutDialog
 
 
 

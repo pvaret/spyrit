@@ -52,6 +52,8 @@ _defaults = dict(
 
   input_command_char = "/",
 
+  alert_on_activity  = True,
+
 )
 
 

@@ -24,6 +24,7 @@
 
 from localqt import *
 
+from Utilities      import check_alert_is_available
 from PipelineChunks import *
 
 
@@ -336,8 +337,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     ## And whew, we're done! Now let the application notify the user there's
     ## some new stuff in the window. :)
-    
-    QtGui.qApp.alert( s.window() )
+
+    if check_alert_is_available() and s.conf._alert_on_activity: 
+      QtGui.qApp.alert( s.window() )
 
 
   def insertNewLine( s ):

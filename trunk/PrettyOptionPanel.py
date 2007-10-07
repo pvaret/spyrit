@@ -16,10 +16,10 @@
 ##
 ## PrettyOptionPanel.py
 ##
-## This file, essentially, the PrettyOptionPanel class, that automatically
-## creates a pretty option panel where all configuration widgets are cleanly
-## aligned along a grid, based on a list of mappers between configuration keys
-## and widgets.
+## This file, essentially, holds the PrettyOptionPanel class, that
+## automatically creates a pretty option panel where all configuration widgets
+## are cleanly aligned along a grid, based on a list of mappers between
+## configuration keys and widgets.
 ## The file also contains all the classes for the mappers in question.
 ##
 
@@ -33,7 +33,7 @@ class ConfigMapperWidget:
 
   ## This here is the base widget mapper class; it is not used as such, but
   ## implements the boilerplate code that will be common to all its subclasses,
-  ##  i.e. the actual widget mappers.
+  ## i.e. the actual widget mappers.
 
   def __init__( s, mapper, option, label=None ):
 
@@ -200,7 +200,7 @@ class ConfigMapper( QtCore.QObject ):
 
   ## This class aggregates all the mapper widgets, so that the actual option
   ## panel widget only has to know about this.
-  ## It also provides convenience method to create the most typically used
+  ## It also provides convenience methods to create the most typically used
   ## configuration mapper widgets and automatically bind them to this mapper
   ## instance.
 
@@ -209,8 +209,8 @@ class ConfigMapper( QtCore.QObject ):
     QtCore.QObject.__init__( s )
 
     s.conf     = conf
-    s.contents = []
     s.widgets  = []
+    s.contents = []
 
 
   def addGroup( s, group, items ):
@@ -262,7 +262,7 @@ class ConfigMapper( QtCore.QObject ):
 
 class PrettyOptionPanel( QtGui.QWidget ):
   
-  MIN_LEFT_MARGIN = 20
+  MIN_LEFT_MARGIN                = 20
   MAX_LABEL_WIDTH_UNTIL_WORDWRAP = 100
 
   def __init__( s, mapper, parent=None ):

@@ -85,6 +85,15 @@ def check_ssl_is_available():
          and QtNetwork.QSslSocket.supportsSsl()
 
 
+def check_alert_is_available():
+
+  ## The alert() method is only available on Qt 4.3, but we need to support
+  ## 4.2 as well.
+
+  from PyQt4 import QtGui
+  return hasattr( QtGui.QApplication, "alert" )
+
+
 def tuple_to_QPoint( t ):
 
   try:

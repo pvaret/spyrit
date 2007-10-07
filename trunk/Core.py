@@ -52,7 +52,7 @@ class Core( QtCore.QObject ):
 
   def createActions( s ):
 
-    s.actions.about        = s.actionset.bindAction( "about",        AboutDialog.showDialog )
+    s.actions.about        = s.actionset.bindAction( "about",        AboutDialog.showDialog ) 
     s.actions.aboutqt      = s.actionset.bindAction( "aboutqt",      QtGui.qApp.aboutQt )
     s.actions.closecurrent = s.actionset.bindAction( "closecurrent", s.actionCloseWorld )
     s.actions.newworld     = s.actionset.bindAction( "newworld",     s.actionNewWorld )

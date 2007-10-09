@@ -52,12 +52,18 @@ class Core( QtCore.QObject ):
 
   def createActions( s ):
 
-    s.actions.about        = s.actionset.bindAction( "about",        AboutDialog.showDialog ) 
-    s.actions.aboutqt      = s.actionset.bindAction( "aboutqt",      QtGui.qApp.aboutQt )
-    s.actions.closecurrent = s.actionset.bindAction( "closecurrent", s.actionCloseWorld )
-    s.actions.newworld     = s.actionset.bindAction( "newworld",     s.actionNewWorld )
-    s.actions.quickconnect = s.actionset.bindAction( "quickconnect", s.actionQuickConnect )
-    s.actions.quit         = s.actionset.bindAction( "quit",         s.quit )
+    s.actions.about        = s.actionset.bindAction( "about",
+                                                      AboutDialog.showDialog ) 
+    s.actions.aboutqt      = s.actionset.bindAction( "aboutqt",
+                                                      QtGui.qApp.aboutQt )
+    s.actions.closecurrent = s.actionset.bindAction( "closecurrent",
+                                                      s.actionCloseWorld )
+    s.actions.newworld     = s.actionset.bindAction( "newworld",
+                                                      s.actionNewWorld )
+    s.actions.quickconnect = s.actionset.bindAction( "quickconnect",
+                                                      s.actionQuickConnect )
+    s.actions.quit         = s.actionset.bindAction( "quit",
+                                                      s.quit )
     
     s.actionset.bindAction( "nexttab",     s.mw.tabwidget.tabbar.nextTab )
     s.actionset.bindAction( "previoustab", s.mw.tabwidget.tabbar.previousTab )

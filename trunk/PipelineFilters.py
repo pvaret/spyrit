@@ -314,8 +314,10 @@ class EndLineFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
 
-  match      = re.compile( r'(\r\n)|\n' )
-  unfinished = "\r"
+  unix_like_cr   = re.compile( r'(?<!\r)\n' )
+
+  match          = re.compile( r'(\r\n)|\n' )
+  unfinished     = "\r"
 
   def processChunk( s, chunk ):
     
@@ -348,6 +350,11 @@ class EndLineFilter( BaseFilter ):
         
       else:
         yield( ByteChunk( text ) )
+
+
+  def formatForSending( s, data ):
+
+    return s.unix_like_cr.sub( "\r\n", data )
 
 
 ## ---[ Class UnicodeTextFilter ]--------------------------------------

@@ -79,7 +79,8 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def keyPressEvent( s, e ):
 
-    if e.key() in [ Qt.Key_Return, Qt.Key_Enter ]:
+    if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] and \
+       e.modifiers() == Qt.NoModifier:
 
       emit( s, SIGNAL( "returnPressed()" ) )
       e.accept()
@@ -91,14 +92,16 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def clearAndSend( s ):
 
-    text = unicode( s.toPlainText() ).rstrip( "\n" )
-    s.history.update( text )
+    text = unicode( s.toPlainText() ).rstrip( "\r\n" )
+
+    if text:
+      s.history.update( text )
 
     if text.startswith( s.conf._input_command_char ):
       s.commands.execute( text[ len( s.conf._input_command_char ): ] )
 
     else:
-      s.world.socketpipeline.send( text + "\n" )
+      s.world.socketpipeline.send( text + "\r\n" )
 
     s.clear()
 

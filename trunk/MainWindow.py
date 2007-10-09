@@ -175,7 +175,7 @@ class MainWindow( QtGui.QMainWindow ):
     return dummy
 
 
-  def iterateOnWorlds( s ):
+  def iterateOnOpenWorlds( s ):
 
     for i in range( s.tabwidget.count() ):
       yield s.tabwidget.widget( i )
@@ -187,7 +187,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.refresh()
 
-    for world in s.iterateOnWorlds():
+    for world in s.iterateOnOpenWorlds():
       world.refresh()
 
     s.setUpdatesEnabled( True )
@@ -261,7 +261,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Confirm close if some worlds are still connected.
 
-    connectedworlds = [ w for w in s.iterateOnWorlds() if w.world.connected ]
+    connectedworlds = [ w for w in s.iterateOnOpenWorlds()
+                          if  w.world.connected ]
 
     if len( connectedworlds ) > 0:
 
@@ -285,7 +286,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Ensure all the current worlds cut their connections.
 
-    for w in s.iterateOnWorlds():
+    for w in s.iterateOnOpenWorlds():
       w.world.ensureWorldDisconnected()
 
     ## Save the main window's geometry when it's about to be closed.

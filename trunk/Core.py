@@ -23,8 +23,8 @@
 
 
 from localqt     import *
-from Logger      import logger
 from World       import World
+from Logger      import logger
 from Config      import config, worldconfig
 from ActionSet   import ActionSet
 from Utilities   import str_to_int

@@ -87,4 +87,5 @@ class ActionSet:
     
   def allShortcuts( s ):
     
-    return [ shortcut for text, icon, shortcut in s.roles if shortcut ]
+    return [ shortcut for text, icon, shortcut in s.actions.iteritems()
+             if shortcut ]

@@ -56,7 +56,8 @@ class WorldUI( QtGui.QSplitter ):
                                   chunktypes.FORMAT ] )
 
     s.outputui.setFocusProxy( s.inputui )
-    s.setFocusProxy( s.inputui )
+    s.setFocusProxy( s.inputui )  ## TODO: correlate this with action of
+                                  ## mousewheel on tab bar.
 
     QtCore.QTimer.singleShot( 0, s.inputui, SLOT( "setFocus()" ) )
 

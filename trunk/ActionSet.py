@@ -21,11 +21,13 @@
 ##
 
 from localqt import *
-from Config  import config
+
 
 class ActionSet:
   
   def __init__( s, parent ):
+   
+    config = qApp().r.config
     
     s.parent  = parent
     
@@ -88,4 +90,4 @@ class ActionSet:
   def allShortcuts( s ):
     
     return [ shortcut for text, icon, shortcut in s.actions.iteritems()
-             if shortcut ]
+                                                            if shortcut ]

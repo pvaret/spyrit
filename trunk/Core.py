@@ -22,35 +22,33 @@
 ##
 
 
-from localqt     import *
-from World       import World
-from Logger      import logger
-from Config      import config, worldconfig
-from ActionSet   import ActionSet
-from Utilities   import str_to_int
-from AboutDialog import AboutDialog
+from localqt       import *
 
+from World         import World
+from ActionSet     import ActionSet
 
 
 class Core( QtCore.QObject ):
 
-  def __init__( s, mw ):
+  def __init__( s ):
 
     ## We make the QApplication instance this object's parent, so that during
     ## shutdown it doesn't get deleted before the C++ layer has had time to
     ## clean it up.
-    QtCore.QObject.__init__( s, QtGui.qApp )
+    QtCore.QObject.__init__( s, qApp() )
 
-    s.mw        = mw
-    s.actionset = ActionSet( mw )
-    s.actions   = lambda: None  ## This is the simplest object to which you can
-                                ## add attributes. :)
+    mw = qApp().r.mw
+
+    s.mw            = mw
+    s.actionset     = ActionSet( mw )
+    s.actions       = lambda: None  ## This is the simplest object to which you
+                                    ## can add attributes. :)
     s.createActions()
-
-    QtCore.QTimer.singleShot( 0, s.afterStart )
 
 
   def createActions( s ):
+
+    from AboutDialog import AboutDialog
 
     s.actions.about        = s.actionset.bindAction( "about",
                                                       AboutDialog.showDialog ) 
@@ -69,11 +67,6 @@ class Core( QtCore.QObject ):
     s.actionset.bindAction( "previoustab", s.mw.tabwidget.tabbar.previousTab )
     
 
-  def knownWorldList( s ):
-
-    return worldconfig.getDomainList()
-
-
   def openWorld( s, conf, name=None ):
 
     world = World( conf, name )
@@ -82,13 +75,15 @@ class Core( QtCore.QObject ):
     world.connectToWorld()
     
 
-  def openWorldByName( s, world ):
+  def openWorldByName( s, worldname ):
 
-    if not worldconfig.hasDomain( world ):
+    worldconfig = qApp().r.worldsmanager.worldconfig
+
+    if not worldconfig.hasDomain( worldname ):
       return
 
-    conf = worldconfig.getDomain( world )
-    s.openWorld( conf, world )
+    conf = worldconfig.getDomain( worldname )
+    s.openWorld( conf, worldname )
 
 
   def openWorldByHostPort( s, host, port ):
@@ -97,61 +92,22 @@ class Core( QtCore.QObject ):
     s.openWorld( conf )
 
 
-  def afterStart( s ):
-
-    ## This method is called once, right after the start of the event loop.
-    ## It is used to set up things that we only want done after the event loop
-    ## has begun running.
-
-    import sys
-    from Utilities import handle_exception
-
-    sys.excepthook = handle_exception
-
-    worlds = s.knownWorldList()
-
-    ## At this point, the arguments that Qt uses have already been filtered
-    ## by Qt itself.
-
-    for arg in sys.argv[ 1: ]:
-
-      if ":" in arg:  ## This is probably a 'server:port' argument.
-
-        server, port = arg.split( ":", 1 )
-        port         = str_to_int( port )  
-
-        if not port or not server:
-          logger.warn( "Invalid <server>:<port> command line: %s" % arg )
-
-        else:
-          s.openWorldByHostPort( server, port )
-
-      else:
-
-        possiblematches = [ w for w in worlds if w.lower() == arg.lower() ]
-
-        if possiblematches:
-          s.openWorldByName( possiblematches[0] )
-
-        else:
-          logger.warn( "No such world: %s" % arg )
-
-
-
   def quit( s ):
     
     s.mw.close()
 
 
   def newWorldConfig( s, host="", port=8000, name="" ):    
+
+    worldconfig = qApp().r.worldsmanager.worldconfig
+
+    worldconf       = worldconfig.createAnonymousDomain()
+    worldconf._host = host
+    worldconf._port = port
+    worldconf._name = name
+    worldconf._ssl  = False
     
-    conf       = worldconfig.createAnonymousDomain()
-    conf._host = host
-    conf._port = port
-    conf._name = name
-    conf._ssl  = False
-    
-    return conf
+    return worldconf
 
 
   def actionCloseWorld( s ):
@@ -191,10 +147,10 @@ class Core( QtCore.QObject ):
       s.openWorld( conf )
 
 
-  def makeConnectToWorldAction( s, world ):
+  def makeConnectToWorldAction( s, worldname ):
 
-    action = QtGui.QAction( world.replace( "&", "&&" ), s )
-    action.setData( QtCore.QVariant( world ) )
+    action = QtGui.QAction( worldname.replace( "&", "&&" ), s )
+    action.setData( QtCore.QVariant( worldname ) )
     connect( action, SIGNAL( "triggered()" ), s.actionConnectToWorld )
 
     return action
@@ -206,5 +162,5 @@ class Core( QtCore.QObject ):
 
     if not action: return
 
-    world = unicode( action.data().toString() )
-    s.openWorldByName( world )
+    worldname = unicode( action.data().toString() )
+    s.openWorldByName( worldname )

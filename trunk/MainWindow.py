@@ -22,7 +22,7 @@
 
 
 from localqt             import *
-from Config              import config
+
 from WorldUI             import WorldUI
 from ScrollableTabWidget import ScrollableTabWidget
 
@@ -41,6 +41,8 @@ class MainWindow( QtGui.QMainWindow ):
     s.connectmenu = QtGui.QMenu()
 
     ## Set up main window according to its configuration.
+
+    config = qApp().r.config
 
     s.setWindowTitle( config._app_name )
 
@@ -61,16 +63,12 @@ class MainWindow( QtGui.QMainWindow ):
     s.tabwidget = ScrollableTabWidget( s )
     s.setCentralWidget( s.tabwidget )
 
-    ## Load up the core engine, attach it to this window.
-
-    from Core import Core
-    s.core = Core( s )
-
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
                           s.updateActionsState )
 
     ## Aaand apply the configuration.
-    s.refresh()
+
+    QtCore.QTimer.singleShot( 0, s.refresh )
 
 
   def refresh( s ):
@@ -81,10 +79,10 @@ class MainWindow( QtGui.QMainWindow ):
     s.connectmenu.setIcon( QtGui.QIcon( ":/icon/connect" ) )
     s.connectmenu.clear()
 
-    worlds = s.core.knownWorldList()
+    worlds = qApp().r.worldsmanager.knownWorldList()
 
     for world in sorted( worlds, case_insensitive_cmp ):
-      s.connectmenu.addAction( s.core.makeConnectToWorldAction( world ) )
+      s.connectmenu.addAction( qApp().r.core.makeConnectToWorldAction( world ) )
 
     if len( worlds ) == 0:
       s.connectmenu.setEnabled( False )
@@ -107,12 +105,12 @@ class MainWindow( QtGui.QMainWindow ):
 
 
     filemenu = menubar.addMenu( "File" )
-    filemenu.addAction( s.core.actions.quit )
+    filemenu.addAction( qApp().r.core.actions.quit )
 
 
     worldsmenu = menubar.addMenu( "Worlds" )
-    worldsmenu.addAction( s.core.actions.quickconnect )
-    worldsmenu.addAction( s.core.actions.newworld )
+    worldsmenu.addAction( qApp().r.core.actions.quickconnect )
+    worldsmenu.addAction( qApp().r.core.actions.newworld )
 
     worldsmenu.addSeparator()
 
@@ -124,8 +122,8 @@ class MainWindow( QtGui.QMainWindow ):
 
 
     helpmenu = menubar.addMenu( "Help" )
-    helpmenu.addAction( s.core.actions.about )
-    helpmenu.addAction( s.core.actions.aboutqt )
+    helpmenu.addAction( qApp().r.core.actions.about )
+    helpmenu.addAction( qApp().r.core.actions.aboutqt )
 
 
 
@@ -156,13 +154,13 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Add remaining actions.
 
-    s.maintoolbar.addAction( s.core.actions.newworld )
+    s.maintoolbar.addAction( qApp().r.core.actions.newworld )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( s.core.actions.closecurrent )
+    s.maintoolbar.addAction( qApp().r.core.actions.closecurrent )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( s.core.actions.quit )
+    s.maintoolbar.addAction( qApp().r.core.actions.quit )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( s.core.actions.about )
+    s.maintoolbar.addAction( qApp().r.core.actions.about )
 
     s.updateActionsState()
  
@@ -192,7 +190,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.setUpdatesEnabled( True )
 
-    config.save()
+    qApp().r.config.save()
 
 
   def updateActionsState( s ):
@@ -200,10 +198,10 @@ class MainWindow( QtGui.QMainWindow ):
     worldui = s.currentWorldUI()
 
     if not worldui:
-      s.core.actions.closecurrent.setEnabled( False )
+      qApp().r.core.actions.closecurrent.setEnabled( False )
 
     else:
-      s.core.actions.closecurrent.setEnabled( True )
+      qApp().r.core.actions.closecurrent.setEnabled( True )
 
 
   def newWorldUI( s, world ):
@@ -290,6 +288,8 @@ class MainWindow( QtGui.QMainWindow ):
       w.world.ensureWorldDisconnected()
 
     ## Save the main window's geometry when it's about to be closed.
+
+    config = qApp().r.config
 
     size = ( s.size().width(), s.size().height() )
     config._mainwindow_size = size

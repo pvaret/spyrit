@@ -33,3 +33,6 @@ SIGNAL     = QtCore.SIGNAL
 SLOT       = QtCore.SLOT
 
 Qt = QtCore.Qt
+
+def qApp():
+  return QtGui.QApplication.instance()

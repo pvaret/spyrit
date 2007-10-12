@@ -20,10 +20,11 @@
 ## it later.
 ##
 
-from localqt import *
-
-from Config            import config
+from localqt           import *
 from PrettyPanelHeader import PrettyPanelHeader
+
+
+config = qApp().r.config
 
 
 ABOUT = """

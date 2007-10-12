@@ -20,15 +20,16 @@
 ##
 
 
-from IniConfigBasket import IniConfigBasket
-from ConfigPaths     import CONFIG_FILE
 from Defaults        import defaults
+from ConfigPaths     import CONFIG_FILE
+from IniConfigBasket import IniConfigBasket
 
 
 config        = IniConfigBasket( CONFIG_FILE )
 config.parent = defaults
 
-if not config.hasDomain( config._worlds_section ):
-  config.createDomain( config._worlds_section )
 
-worldconfig = config.getDomain( config._worlds_section )
+def Config():
+
+  global config
+  return config

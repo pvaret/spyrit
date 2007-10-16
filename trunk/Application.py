@@ -23,10 +23,11 @@
 
 import sys
 
-from localqt          import *
+from localqt    import *
 
-from Logger           import logger
-from Utilities        import handle_exception, str_to_int
+from Logger     import logger
+from Utilities  import handle_exception, str_to_int
+from Singletons import singletons
 
 
 class Application( QtGui.QApplication ):
@@ -59,19 +60,17 @@ class Application( QtGui.QApplication ):
     ## Load and register the singleton classes that are used throughout the
     ## software.
 
-    from Core             import Core
-    from Config           import Config
-    from MainWindow       import MainWindow
-    from WorldsManager    import WorldsManager
+    from Core          import Core
+    from Config        import Config
+    from MainWindow    import MainWindow
+    from WorldsManager import WorldsManager
     
-    from InstanceRegistry import InstanceRegistry
+    s.r = singletons
 
-    s.r = InstanceRegistry( 
-            ( "mw",            MainWindow ),     ## Main window instance
-            ( "core",          Core ),           ## Core engine instance
-            ( "config",        Config ),         ## Central configuration object
-            ( "worldsmanager", WorldsManager ),  ## Worlds manager instance
-          )
+    singletons.addClass( "mw",            MainWindow )
+    singletons.addClass( "core",          Core )
+    singletons.addClass( "config",        Config )
+    singletons.addClass( "worldsmanager", WorldsManager )
 
     if False: #config._show_splashscreen:
 

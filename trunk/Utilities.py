@@ -141,14 +141,14 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   import os.path
   import traceback
 
-  from localqt import QtGui
+  from localqt import qApp, QtGui
 
   ## KeyboardInterrupt is a special case.
   ## We don't raise the error dialog when it occurs.
   if issubclass( exc_type, KeyboardInterrupt ):
 
-    if QtGui.qApp:
-      QtGui.qApp.quit()
+    if qApp():
+      qApp().quit()
 
     return
 
@@ -156,7 +156,13 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   filename = os.path.basename( filename )
   error    = "%s: %s" % ( str( exc_type ).split( "." )[-1], exc_value )
 
-  mw = ( QtGui.qApp and hasattr( QtGui.qApp, "mw" ) and QtGui.qApp.mw ) or None
+  from Singletons import singletons
+
+  try:
+    mw = singletons.mw
+
+  except AttributeError:
+    mw = None
 
   QtGui.QMessageBox.critical( mw, "Houston, we have a problem...",
     "<center>Whoops. A critical error has occured. This is most likely a bug "

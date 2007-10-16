@@ -102,3 +102,10 @@ class Commands:
     except TypeError:
       s.world.info( "Invalid number of parameters for command %s." \
                     % commandname )
+
+
+  def command_Raise_Exception( s, *args ):
+    """
+    Raises an exception (for debug purposes).
+    """
+    raise Exception( args and " ".join( args ) or None )

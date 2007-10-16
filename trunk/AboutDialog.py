@@ -21,10 +21,11 @@
 ##
 
 from localqt           import *
+from Singletons        import singletons
 from PrettyPanelHeader import PrettyPanelHeader
 
 
-config = qApp().r.config
+config = singletons.config
 
 
 ABOUT = """

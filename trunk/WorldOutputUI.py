@@ -339,7 +339,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## some new stuff in the window. :)
 
     if check_alert_is_available() and s.conf._alert_on_activity: 
-      QtGui.qApp.alert( s.window() )
+      qApp().alert( s.window() )
 
 
   def insertNewLine( s ):

@@ -37,7 +37,7 @@ class Singletons:
 
   def addClass( s, name, klass ):
 
-    assert klass not in s._classes.values()
+    assert klass not in s
 
     s._classes[ name ] = klass
 
@@ -51,6 +51,10 @@ class Singletons:
       s._instances[ name ] = s._classes[ name ] ()
 
     return s._instances[ name ]
+
+
+  def __contains__( s, item ):
+    return ( item in s._classes.values() )
 
 
 singletons = Singletons()

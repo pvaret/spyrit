@@ -80,7 +80,7 @@ class WorldInputUI( QtGui.QTextEdit ):
   def keyPressEvent( s, e ):
 
     if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] and \
-       e.modifiers() == Qt.NoModifier:
+       not e.modifiers() & Qt.CTRL:
 
       emit( s, SIGNAL( "returnPressed()" ) )
       e.accept()

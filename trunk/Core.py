@@ -22,10 +22,12 @@
 ##
 
 
-from localqt       import *
+from localqt    import *
 
-from World         import World
-from ActionSet     import ActionSet
+from World      import World
+from ActionSet  import ActionSet
+from Singletons import singletons
+
 
 
 class Core( QtCore.QObject ):
@@ -37,10 +39,8 @@ class Core( QtCore.QObject ):
     ## clean it up.
     QtCore.QObject.__init__( s, qApp() )
 
-    mw = qApp().r.mw
-
-    s.mw            = mw
-    s.actionset     = ActionSet( mw )
+    s.mw            = singletons.mw
+    s.actionset     = ActionSet( s.mw )
     s.actions       = lambda: None  ## This is the simplest object to which you
                                     ## can add attributes. :)
     s.createActions()
@@ -53,7 +53,7 @@ class Core( QtCore.QObject ):
     s.actions.about        = s.actionset.bindAction( "about",
                                                       AboutDialog.showDialog ) 
     s.actions.aboutqt      = s.actionset.bindAction( "aboutqt",
-                                                      QtGui.qApp.aboutQt )
+                                                      qApp().aboutQt )
     s.actions.closecurrent = s.actionset.bindAction( "closecurrent",
                                                       s.actionCloseWorld )
     s.actions.newworld     = s.actionset.bindAction( "newworld",
@@ -77,7 +77,7 @@ class Core( QtCore.QObject ):
 
   def openWorldByName( s, worldname ):
 
-    worldconfig = qApp().r.worldsmanager.worldconfig
+    worldconfig = singletons.worldsmanager.worldconfig
 
     if not worldconfig.hasDomain( worldname ):
       return
@@ -99,7 +99,7 @@ class Core( QtCore.QObject ):
 
   def newWorldConfig( s, host="", port=8000, name="" ):    
 
-    worldconfig = qApp().r.worldsmanager.worldconfig
+    worldconfig = singletons.worldsmanager.worldconfig
 
     worldconf       = worldconfig.createAnonymousDomain()
     worldconf._host = host

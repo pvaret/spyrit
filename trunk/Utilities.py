@@ -154,7 +154,7 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
   filename, line, dummy, dummy = traceback.extract_tb( exc_traceback ).pop()
   filename = os.path.basename( filename )
-  error    = "%s: %s" % ( str( exc_type ).split( "." )[-1], exc_value )
+  error    = "%s: %s" % ( exc_type.__name__, exc_value )
 
   from Singletons import singletons
 

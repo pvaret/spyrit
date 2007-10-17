@@ -226,6 +226,13 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
 
+  def contextMenuEvent( s, e ):
+
+    menu = s.createStandardContextMenu()
+    menu.exec_( e.globalPos() )
+    sip.delete( menu )
+
+
   def pageUp( s ):
     
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )

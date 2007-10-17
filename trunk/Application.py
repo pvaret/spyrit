@@ -65,8 +65,6 @@ class Application( QtGui.QApplication ):
     from MainWindow    import MainWindow
     from WorldsManager import WorldsManager
     
-    s.r = singletons
-
     singletons.addClass( "mw",            MainWindow )
     singletons.addClass( "core",          Core )
     singletons.addClass( "config",        Config )
@@ -82,10 +80,10 @@ class Application( QtGui.QApplication ):
 
     s.setWindowIcon( QtGui.QIcon( ":/app/icon" ) )
 
-    s.r.mw.show()
+    singletons.mw.show()
 
     if splash:
-      splash.finish( s.r.mw )
+      splash.finish( singletons.mw )
 
     s.bootstrapped = True
 
@@ -102,8 +100,8 @@ class Application( QtGui.QApplication ):
 
   def saveConfig( s ):
     
-    if s.r.config:
-      s.r.config.save()
+    if singletons.config:
+      singletons.config.save()
 
 
   def afterStart( s ):

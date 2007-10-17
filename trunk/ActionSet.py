@@ -20,14 +20,16 @@
 ## software.
 ##
 
-from localqt import *
+from localqt    import *
+
+from Singletons import singletons
 
 
 class ActionSet:
   
   def __init__( s, parent ):
    
-    config = qApp().r.config
+    config    = singletons.config
     
     s.parent  = parent
     

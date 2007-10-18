@@ -23,7 +23,9 @@
 
 from localqt             import *
 
+from World               import World
 from WorldUI             import WorldUI
+from ActionSet           import ActionSet
 from Singletons          import singletons
 from ScrollableTabWidget import ScrollableTabWidget
 
@@ -70,6 +72,26 @@ class MainWindow( QtGui.QMainWindow ):
     ## Aaand apply the configuration.
 
     QtCore.QTimer.singleShot( 0, s.refresh )
+    
+    
+    ## Create all the actions.
+    
+    s.actionset     = ActionSet( s )
+    s.actions       = lambda: None  ## This is the simplest object to which you
+                                    ## can add attributes. :)
+
+    s.actions.about        = s.actionset.bindAction( "about",   s.actionAbout ) 
+    s.actions.aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
+    s.actions.closecurrent = s.actionset.bindAction( "closecurrent",
+                                                      s.actionCloseWorld )
+    s.actions.newworld     = s.actionset.bindAction( "newworld",
+                                                      s.actionNewWorld )
+    s.actions.quickconnect = s.actionset.bindAction( "quickconnect",
+                                                      s.actionQuickConnect )
+    s.actions.quit         = s.actionset.bindAction( "quit", s.close )
+    
+    s.actionset.bindAction( "nexttab",     s.tabwidget.tabbar.nextTab )
+    s.actionset.bindAction( "previoustab", s.tabwidget.tabbar.previousTab )
 
 
   def refresh( s ):
@@ -83,8 +105,7 @@ class MainWindow( QtGui.QMainWindow ):
     worlds = singletons.worldsmanager.knownWorldList()
 
     for world in sorted( worlds, case_insensitive_cmp ):
-      s.connectmenu.addAction( singletons.core \
-                                         .makeConnectToWorldAction( world ) )
+      s.connectmenu.addAction( s.makeConnectToWorldAction( world ) )
 
     if len( worlds ) == 0:
       s.connectmenu.setEnabled( False )
@@ -105,15 +126,13 @@ class MainWindow( QtGui.QMainWindow ):
     menubar = s.menuBar()
     menubar.clear()
 
-    core = singletons.core
-
     filemenu = menubar.addMenu( "File" )
-    filemenu.addAction( core.actions.quit )
+    filemenu.addAction( s.actions.quit )
 
 
     worldsmenu = menubar.addMenu( "Worlds" )
-    worldsmenu.addAction( core.actions.quickconnect )
-    worldsmenu.addAction( core.actions.newworld )
+    worldsmenu.addAction( s.actions.quickconnect )
+    worldsmenu.addAction( s.actions.newworld )
 
     worldsmenu.addSeparator()
 
@@ -125,8 +144,8 @@ class MainWindow( QtGui.QMainWindow ):
 
 
     helpmenu = menubar.addMenu( "Help" )
-    helpmenu.addAction( core.actions.about )
-    helpmenu.addAction( core.actions.aboutqt )
+    helpmenu.addAction( s.actions.about )
+    helpmenu.addAction( s.actions.aboutqt )
 
 
 
@@ -144,8 +163,6 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.maintoolbar.clear()
 
-    core = singletons.core
-
     ## Create and add dynamic world list action.
 
     connectaction = s.connectmenu.menuAction()
@@ -159,13 +176,13 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Add remaining actions.
 
-    s.maintoolbar.addAction( core.actions.newworld )
+    s.maintoolbar.addAction( s.actions.newworld )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( core.actions.closecurrent )
+    s.maintoolbar.addAction( s.actions.closecurrent )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( core.actions.quit )
+    s.maintoolbar.addAction( s.actions.quit )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( core.actions.about )
+    s.maintoolbar.addAction( s.actions.about )
 
     s.updateActionsState()
  
@@ -203,10 +220,10 @@ class MainWindow( QtGui.QMainWindow ):
     worldui = s.currentWorldUI()
 
     if not worldui:
-      singletons.core.actions.closecurrent.setEnabled( False )
+      s.actions.closecurrent.setEnabled( False )
 
     else:
-      singletons.core.actions.closecurrent.setEnabled( True )
+      s.actions.closecurrent.setEnabled( True )
 
 
   def newWorldUI( s, world ):
@@ -303,3 +320,103 @@ class MainWindow( QtGui.QMainWindow ):
     config._mainwindow_pos = pos
 
     event.accept()
+
+
+  def openWorld( s, conf, name=None ):
+
+    world = World( conf, name )
+    s.newWorldUI( world )
+
+    world.connectToWorld()
+    
+
+  def openWorldByName( s, worldname ):
+
+    worldconfig = singletons.worldsmanager.worldconfig
+
+    if not worldconfig.hasDomain( worldname ):
+      return
+
+    conf = worldconfig.getDomain( worldname )
+    s.openWorld( conf, worldname )
+
+
+  def openWorldByHostPort( s, host, port ):
+
+    conf = s.newWorldConfig( host, port )
+    s.openWorld( conf )
+
+
+  def newWorldConfig( s, host="", port=8000, name="" ):    
+
+    worldconfig = singletons.worldsmanager.worldconfig
+
+    worldconf       = worldconfig.createAnonymousDomain()
+    worldconf._host = host
+    worldconf._port = port
+    worldconf._name = name
+    worldconf._ssl  = False
+    
+    return worldconf
+
+
+  def actionCloseWorld( s ):
+
+    worldui = s.currentWorldUI()
+
+    if worldui:
+      s.closeWorld( worldui )
+
+
+  def actionNewWorld( s ):
+
+    from NewWorldDialog import NewWorldDialog
+    
+    conf   = s.newWorldConfig()
+    dialog = NewWorldDialog( conf, s )
+
+    if dialog.exec_():
+
+      name = conf._name
+      del conf._name
+      conf.saveAsDomain( name )
+
+      s.applyNewConf()
+
+      s.openWorld( conf, name )
+
+
+  def actionQuickConnect( s ):
+    
+    from QuickConnectDialog import QuickConnectDialog
+    
+    conf   = s.newWorldConfig()
+    dialog = QuickConnectDialog( conf, s )
+
+    if dialog.exec_():
+      s.openWorld( conf )
+
+
+  def makeConnectToWorldAction( s, worldname ):
+
+    action = QtGui.QAction( worldname.replace( "&", "&&" ), s )
+    action.setData( QtCore.QVariant( worldname ) )
+    connect( action, SIGNAL( "triggered()" ), s.actionConnectToWorld )
+
+    return action
+
+
+  def actionConnectToWorld( s ):
+
+    action = s.sender()
+
+    if not action: return
+
+    worldname = unicode( action.data().toString() )
+    s.openWorldByName( worldname )
+    
+    
+  def actionAbout( s ):
+    
+    from AboutDialog import AboutDialog
+    AboutDialog.showDialog()

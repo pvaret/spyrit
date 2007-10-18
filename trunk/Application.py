@@ -60,13 +60,11 @@ class Application( QtGui.QApplication ):
     ## Load and register the singleton classes that are used throughout the
     ## software.
 
-    from Core          import Core
     from Config        import Config
     from MainWindow    import MainWindow
     from WorldsManager import WorldsManager
     
     singletons.addClass( "mw",            MainWindow )
-    singletons.addClass( "core",          Core )
     singletons.addClass( "config",        Config )
     singletons.addClass( "worldsmanager", WorldsManager )
 
@@ -112,7 +110,7 @@ class Application( QtGui.QApplication ):
 
     sys.excepthook = handle_exception
 
-    #worlds = s.knownWorldList() ## TODO: implement
+    worlds = singletons.worldsmanager.knownWorldList()
 
     ## At this point, the arguments that Qt uses have already been filtered
     ## by Qt itself.
@@ -128,14 +126,14 @@ class Application( QtGui.QApplication ):
           logger.warn( "Invalid <server>:<port> command line: %s" % arg )
 
         else:
-          pass #s.openWorldByHostPort( server, port ) ## TODO: implement
+          singletons.mw.openWorldByHostPort( server, port )
 
       else:
 
         possiblematches = [ w for w in worlds if w.lower() == arg.lower() ]
 
         if possiblematches:
-          pass #s.openWorldByName( possiblematches[0] ) ## TODO: implement
+          singletons.mw.openWorldByName( possiblematches[0] )
 
         else:
           logger.warn( "No such world: %s" % arg )

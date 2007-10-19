@@ -22,6 +22,8 @@
 
 import re
 
+from Singletons import singletons
+
 
 class Commands:
 
@@ -108,4 +110,29 @@ class Commands:
     """
     Raises an exception (for debug purposes).
     """
+
+    if args:
+
+      parent_exception = __builtins__.get( "BaseException", Exception )
+
+      exc =  __builtins__.get( args[0], None )
+
+      try:
+        is_an_exception = issubclass( exc, parent_exception )
+
+      except TypeError:
+        is_an_exception = False
+
+      if is_an_exception:
+
+        raise exc( *args[1:] )
+        return
+
     raise Exception( args and " ".join( args ) or None )
+
+
+  def command_Quit( s ):
+    """
+    Quits the application.
+    """
+    singletons.mw.close()

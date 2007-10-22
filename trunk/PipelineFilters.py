@@ -40,6 +40,8 @@ class BaseFilter:
     s.context        = context
     s.postponedChunk = []
 
+    s.resetInternalState()
+
 
   def setContext( s, context ):
 
@@ -65,6 +67,15 @@ class BaseFilter:
     ## Override this to implement your filter.
     ## Note that this must be a generator or return a list.
     yield chunk
+
+
+  def resetInternalState( s ):
+    ## Initialize the filter at the beginning of a connection (or when
+    ## reconnecting). For instance the Telnet filter would drop all negociated
+    ## options.
+    ## Override this when implementing your filter if your filter uses any
+    ## internal data.
+    s.postponedChunk = []
 
 
   def concatPostponed( s, chunk ):
@@ -117,7 +128,7 @@ class BaseFilter:
 
   def formatForSending( s, data ):
     ## Reimplement this function if the filter inherently requires the data
-    ## sent to the world to be modified. I.e., the telnet filter would espace
+    ## sent to the world to be modified. I.e., the telnet filter would escape
     ## occurences of the IAC in the data.
 
     return data
@@ -366,6 +377,12 @@ class UnicodeTextFilter( BaseFilter ):
   def __init__( s, *args ):
     
     BaseFilter.__init__( s, *args )
+    s.encoding = "ascii"
+
+
+  def resetInternalState( s ):
+
+    BaseFilter.resetInternalState( s )
     s.encoding = "ascii"
 
 

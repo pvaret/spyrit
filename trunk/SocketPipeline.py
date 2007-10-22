@@ -63,6 +63,8 @@ class SocketPipeline:
 
   def connectToHost( s ):
 
+    s.pipeline.resetInternalState()
+
     if s.ssl:
       s.socket.connectToHostEncrypted( s.host, s.port )
 
@@ -73,6 +75,7 @@ class SocketPipeline:
   def disconnectFromHost( s ):
 
     s.socket.disconnectFromHost()
+    s.pipeline.resetInternalState()
   
   
   def abort( s ):

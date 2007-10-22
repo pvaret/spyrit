@@ -96,3 +96,9 @@ class Pipeline:
       data = filter.formatForSending( data )
 
    return data
+
+
+  def resetInternalState( s ):
+
+    for f in s.filters:
+      f.resetInternalState()

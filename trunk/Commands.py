@@ -136,3 +136,10 @@ class Commands:
     Quits the application.
     """
     singletons.mw.close()
+
+
+  def command_Close( s ):
+    """
+    Closes the current world.
+    """
+    s.world.close()

@@ -83,7 +83,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.actions.about        = s.actionset.bindAction( "about",   s.actionAbout ) 
     s.actions.aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
     s.actions.closecurrent = s.actionset.bindAction( "closecurrent",
-                                                      s.actionCloseWorld )
+                                                  s.actionCloseCurrentWorld )
     s.actions.newworld     = s.actionset.bindAction( "newworld",
                                                       s.actionNewWorld )
     s.actions.quickconnect = s.actionset.bindAction( "quickconnect",
@@ -360,7 +360,7 @@ class MainWindow( QtGui.QMainWindow ):
     return worldconf
 
 
-  def actionCloseWorld( s ):
+  def actionCloseCurrentWorld( s ):
 
     worldui = s.currentWorldUI()
 

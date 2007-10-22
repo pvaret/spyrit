@@ -21,11 +21,13 @@
 ##
 
 
-from localqt import *
-
+from localqt        import *
 from PipelineChunks import *
-from SocketPipeline import SocketPipeline
+
 from Utilities      import check_ssl_is_available
+
+from Singletons     import singletons
+from SocketPipeline import SocketPipeline
 
 
 class World:
@@ -104,3 +106,9 @@ class World:
         QtCore.QTimer.singleShot( 0, s.setDisconnected )
 
       s.disconnected = ( chunk.data == NetworkChunk.DISCONNECTED )
+
+
+  def close( s ):
+
+    if s.worldui:
+      singletons.mw.closeWorld( s.worldui )

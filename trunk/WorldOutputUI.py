@@ -198,6 +198,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.infocharformat = WorldOutputCharFormat( s.conf )
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
+    connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
+                                   s.ensureScrollbarAtBottom )
 
     s.pending_newline = False
    
@@ -226,6 +228,15 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
 
+  def ensureScrollbarAtBottom( s, min, max ):
+    
+    ## 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'
+    ## signal.
+
+    if s.atbottom and s.scrollbar.value() != max:
+      s.scrollbar.setValue( max )
+
+
   def contextMenuEvent( s, e ):
 
     menu = s.createStandardContextMenu()
@@ -244,8 +255,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
    
    
   def formatAndDisplay( s, chunks ):
-
-    scrollpos = s.scrollbar.value()
 
     s.textcursor.beginEditBlock()
 
@@ -334,13 +343,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.textcursor.endEditBlock()
 
-    ## Update scrollbar position.
-
-    if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
-      s.scrollbar.setValue( s.scrollbar.maximum() )
-
-    else:
-      s.scrollbar.setValue( scrollpos )
 
     ## And whew, we're done! Now let the application notify the user there's
     ## some new stuff in the window. :)

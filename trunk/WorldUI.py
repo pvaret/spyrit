@@ -35,8 +35,6 @@ class WorldUI( QtGui.QSplitter ):
     
     QtGui.QSplitter.__init__( s, Qt.Vertical, parent )
 
-    s.dummy=QtGui.QWidget()
-
     s.parent = parent
     s.world  = world
     s.conf   = world.conf

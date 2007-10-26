@@ -157,10 +157,10 @@ class ConfigBasket( object ):
 
   def __init__( s, parent=None ):
 
-    s.name   = None
-    s.basket = {}
+    s.name    = None
+    s.basket  = {}
     s.domains = {}
-    s.parent = parent
+    s.parent  = parent
 
 
   def __getitem__( s, k ):
@@ -309,6 +309,11 @@ class ConfigBasket( object ):
     c = s.createAnonymousDomain()
     c.saveAsDomain( name )
     return c
+
+
+  def isAnonymous( s ):
+
+    return s.name is None
 
 
   def getOwnDict( s ):

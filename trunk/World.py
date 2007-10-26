@@ -62,6 +62,11 @@ class World:
     s.worldui = worldui
 
 
+  def isAnonymous( s ):
+
+    return s.conf.isAnonymous()
+
+
   def info( s, text ):
 
     if s.worldui:

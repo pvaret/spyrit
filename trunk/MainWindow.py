@@ -104,14 +104,16 @@ class MainWindow( QtGui.QMainWindow ):
 
     worlds = singletons.worldsmanager.knownWorldList()
 
-    for world in sorted( worlds, case_insensitive_cmp ):
-      s.connectmenu.addAction( s.makeConnectToWorldAction( world ) )
-
-    if len( worlds ) == 0:
+    if not worlds:
       s.connectmenu.setEnabled( False )
 
     else:
+
       s.connectmenu.setEnabled( True )
+
+      for world in worlds:
+        s.connectmenu.addAction( s.makeConnectToWorldAction( world ) )
+
 
     ## (Re-)create menus and, if need be, the main toolbar.
 
@@ -149,7 +151,7 @@ class MainWindow( QtGui.QMainWindow ):
 
 
 
-  def createToolbar( s):
+  def createToolbar( s ):
 
     ## Create main toolbar.
 
@@ -275,6 +277,8 @@ class MainWindow( QtGui.QMainWindow ):
     s.tabwidget.removeTab( pos )
 
     s.updateActionsState()
+
+    del worldui
 
 
   def closeEvent( s, event ):

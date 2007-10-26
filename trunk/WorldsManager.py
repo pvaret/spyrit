@@ -18,25 +18,32 @@
 ## looks up, creates or deletes world configuration objects.
 ##
 
-from Config import config
+from localqt import *
+
+from Singletons import singletons
+from Utilities  import case_insensitive_cmp
 
 
 ## TODO: Have WorldsManager emit signal when world list changed.
 
-class WorldsManager:
+class WorldsManager( QtCore.QObject ):
   
   def __init__( s ):
     
+    QtCore.QObject.__init__( s )
+
     ## Create the section for worlds in the configuration if it doesn't exist
     ## already.
-    
+
+    config = singletons.config 
+
     if not config.hasDomain( config._worlds_section ):
       config.createDomain( config._worlds_section )
       
     s.worldconfig = config.getDomain( config._worlds_section )
     
     
-    
   def knownWorldList( s ):
 
-    return s.worldconfig.getDomainList()
+    return sorted( s.worldconfig.getDomainList(), case_insensitive_cmp )
+

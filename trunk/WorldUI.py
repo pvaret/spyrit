@@ -81,3 +81,9 @@ class WorldUI( QtGui.QSplitter ):
   def saveSplitterPosition( s ):
 
     s.conf._splitter_sizes = s.sizes()
+
+
+  def __del__( s ):
+
+    s.world = None
+    QtGui.QSplitter.__del__( s )

@@ -24,7 +24,7 @@ _defaults = dict(
 
   app_name            = "Spyrit",
   app_version         = "0.3pre",
-  mainwindow_min_size = ( 160, 100 ),
+  mainwindow_min_size = ( 320, 200 ),
   mainwindow_pos      = None,
   worlds_section      = "Worlds",
 

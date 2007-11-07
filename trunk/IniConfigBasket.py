@@ -103,6 +103,11 @@ class IniConfigBasket( ConfigBasket ):
           ## Error in the line. We carry on.
           continue
 
+        if type( value ) is type ( "" ):  ## If demJSON stupidly returned
+                                          ## a bytestring instead of Unicode...
+          try: value = value.decode( s.ENCODING )
+          except UnicodeDecodeError: continue
+
         currentdict[ result[ "key" ] ] = value
 
       elif result[ "section" ]:

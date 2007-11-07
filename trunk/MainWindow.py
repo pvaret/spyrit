@@ -54,8 +54,7 @@ class MainWindow( QtGui.QMainWindow ):
       s.resize( size )
 
     min_size = tuple_to_QSize( config._mainwindow_min_size )
-    if min_size:
-      s.setMinimumSize( min_size )
+    if min_size: s.setMinimumSize( min_size )
 
     pos = tuple_to_QPoint( config._mainwindow_pos )
     if pos:
@@ -148,7 +147,6 @@ class MainWindow( QtGui.QMainWindow ):
     helpmenu = menubar.addMenu( "Help" )
     helpmenu.addAction( s.actions.about )
     helpmenu.addAction( s.actions.aboutqt )
-
 
 
   def createToolbar( s ):
@@ -326,42 +324,34 @@ class MainWindow( QtGui.QMainWindow ):
     event.accept()
 
 
-  def openWorld( s, conf, name=None ):
+  def openWorld( s, world ):
 
-    world = World( conf, name )
     s.newWorldUI( world )
-
     world.connectToWorld()
     
 
   def openWorldByName( s, worldname ):
 
-    worldconfig = singletons.worldsmanager.worldconfig
+    world = singletons.worldsmanager.lookupWorldByName( worldname )
 
-    if not worldconfig.hasDomain( worldname ):
-      return
+    if world:
+      s.openWorld( world )
 
-    conf = worldconfig.getDomain( worldname )
-    s.openWorld( conf, worldname )
-
-
-  def openWorldByHostPort( s, host, port ):
-
-    conf = s.newWorldConfig( host, port )
-    s.openWorld( conf )
+    else:
+      logger.warn( "No such world: %s" % worldname )
 
 
-  def newWorldConfig( s, host="", port=8000, name="" ):    
+  def openWorldByHostPort( s, host, port, ssl=False ):
 
-    worldconfig = singletons.worldsmanager.worldconfig
+    world = singletons.worldsmanager.lookupWorldByHostPort( host, port )
 
-    worldconf       = worldconfig.createAnonymousDomain()
-    worldconf._host = host
-    worldconf._port = port
-    worldconf._name = name
-    worldconf._ssl  = False
-    
-    return worldconf
+    if world:
+      s.openWorld( world )
+
+    else:
+      s.openWorld( 
+        singletons.worldsmanager.newAnonymousWorld( host, port, ssl )
+      )
 
 
   def actionCloseCurrentWorld( s ):
@@ -373,37 +363,37 @@ class MainWindow( QtGui.QMainWindow ):
 
 
   def actionNewWorld( s ):
+    ## FIXME: Check why this no longer works!
 
     from NewWorldDialog import NewWorldDialog
     
-    conf   = s.newWorldConfig()
-    dialog = NewWorldDialog( conf, s )
+    world  = singletons.worldsmanager.newAnonymousWorld()
+    dialog = NewWorldDialog( world.conf, s )
 
     if dialog.exec_():
-
-      name = conf._name
-      del conf._name
-      conf.saveAsDomain( name )
+      name = world.conf._name
+      world.conf.saveAsDomain( name )
 
       s.applyNewConf()
 
-      s.openWorld( conf, name )
+      s.openWorld( world )
 
 
   def actionQuickConnect( s ):
-    
+    ## FIXME: Check why this no longer works!
+
     from QuickConnectDialog import QuickConnectDialog
     
-    conf   = s.newWorldConfig()
-    dialog = QuickConnectDialog( conf, s )
+    world  = singletons.worldsmanager.newAnonymousWorld()
+    dialog = QuickConnectDialog( world.conf, s )
 
     if dialog.exec_():
-      s.openWorld( conf )
+      s.openWorld( world )
 
 
   def makeConnectToWorldAction( s, worldname ):
 
-    action = QtGui.QAction( worldname.replace( "&", "&&" ), s )
+    action = QtGui.QAction( worldname.replace( u"&", u"&&" ), s )
     action.setData( QtCore.QVariant( worldname ) )
     connect( action, SIGNAL( "triggered()" ), s.actionConnectToWorld )
 

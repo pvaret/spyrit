@@ -32,9 +32,12 @@ from SocketPipeline import SocketPipeline
 
 class World:
 
-  def __init__( s, conf, name=None ):
+  def __init__( s, conf=None ):
 
-    s.name    = name
+    if not conf: conf = singletons.worldsmanager.newWorldConf()
+
+    ## TODO: Update all this when a conf change SIGNAL is emitted.
+
     s.conf    = conf
     s.worldui = None
 
@@ -47,11 +50,12 @@ class World:
 
     ## Aliased for convenience.
 
+    s.name = conf._name
     s.host = conf._host
     s.port = conf._port
     s.ssl  = check_ssl_is_available() and conf._ssl
 
-    s.displayname = name or "(%s:%d)" % ( s.host, s.port )
+    s.displayname = s.name or "(%s:%d)" % ( s.host, s.port )
 
     s.socketpipeline = SocketPipeline( s.host, s.port, s.ssl )
     s.socketpipeline.addSink( s.sink, [ chunktypes.NETWORK ] )

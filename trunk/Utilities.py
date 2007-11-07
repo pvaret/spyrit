@@ -134,6 +134,14 @@ def case_insensitive_cmp( x, y ):
   return ( x.lower() < y.lower() ) and -1 or 1
 
 
+def remove_accents( s ):
+
+  assert type( s ) is type( u'' )  ## Only accept Unicode strings.
+
+  from unicodedata import normalize
+
+  return ''.join( normalize( "NFKD", c )[0] for c in s )
+
 
 def handle_exception( exc_type, exc_value, exc_traceback ):
 

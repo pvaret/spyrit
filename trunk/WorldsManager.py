@@ -20,8 +20,9 @@
 
 from localqt import *
 
+from World      import World
 from Singletons import singletons
-from Utilities  import case_insensitive_cmp
+from Utilities  import case_insensitive_cmp, remove_accents
 
 
 ## TODO: Have WorldsManager emit signal when world list changed.
@@ -41,9 +42,89 @@ class WorldsManager( QtCore.QObject ):
       config.createDomain( config._worlds_section )
       
     s.worldconfig = config.getDomain( config._worlds_section )
+
+    ## LEGACY: The following code manages the case of old configuration files
+    ## with a different world section naming convention. (v0.2 and before.)
+
+    for worldname, worldconf in list( s.worldconfig.domains.iteritems() ):
+
+      ## Note how we duplicate the .iteritems() iterator into a list: that's
+      ## because we'll be modifying some of its elements on the fly.
+
+      if not hasattr( worldconf, "_name" ):
+        worldconf._name = worldname
+
+      s.worldconfig.renameDomain( worldname, s.normalize( worldname ) )
+        
+    ## Provide mappings to lookup worlds based on their name and based on
+    ## their (host, port) connection pair.
     
-    
+    s.name_mapping     = dict( 
+                               ( s.normalize( conf._name ), conf )
+                               for conf in s.worldconfig.domains.itervalues()
+                            )
+
+    s.hostport_mapping = dict( 
+                               ( ( conf._host, conf._port ), conf )
+                               for conf in s.worldconfig.domains.itervalues() 
+                             )
+   
+ 
+  def normalize( s, name ):
+
+    return remove_accents( name.strip() ).lower()
+
+
   def knownWorldList( s ):
 
-    return sorted( s.worldconfig.getDomainList(), case_insensitive_cmp )
+    return [ name
+               for dummy, name
+               in sorted (
+                           ( s.normalize( conf._name ), conf._name )
+                             for conf
+                             in s.worldconfig.domains.itervalues()
+                         )
+           ]
+
+
+  def newWorldConf( s, host="", port=8000, ssl=False, name="" ):
+
+    worldconf       = s.worldconfig.createAnonymousDomain()
+    worldconf._host = host
+    worldconf._port = port
+    worldconf._name = name
+    worldconf._ssl  = ssl
+
+    return worldconf
+    
+
+  def newWorld( s, conf ):
+
+    return World( conf )
+    
+
+  def newAnonymousWorld( s, host="", port=8000, ssl=False ):
+
+    conf = s.newWorldConf( host, port, ssl )
+    return s.newWorld( conf )
+
+
+  def lookupWorldByName( s, name ):
+
+    conf = s.name_mapping.get( s.normalize( name ) )
+
+    if conf:
+      return s.newWorld( conf )
+
+    return None
+
+
+  def lookupWorldByHostPort( s, host, port ):
+
+    conf = s.hostport_mapping.get( ( host, port ) )
+
+    if conf:
+      return s.newWorld( conf )
+
+    return None
 

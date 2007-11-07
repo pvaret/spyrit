@@ -186,14 +186,18 @@ class ConfigBasket( object ):
 
   def __setitem__( s, attr, value ):
     
+    if s.exists( attr ) and s[ attr ] == value:
+
+        ## If the value hasn't changed, we quit right away.
+        return
  
     ## If the parent already has this configuration key AND its value
     ## is the same, then we can safely delete it from the child
     ## configuration object, since the value can then be inherited
     ## from the parent.
-    if s.parent and \
-      s.parent.exists( attr ) and \
-      value == s.parent[ attr ]:
+
+    if s.parent and s.parent.exists( attr ) \
+                and value == s.parent[ attr ]:
       
       try:
         del s.basket[ attr ]
@@ -276,7 +280,9 @@ class ConfigBasket( object ):
 
   def saveDomain( s, domain, name ):
 
+    domain.name   = name
     domain.parent = s
+
     s.domains[ name ] = domain
 
 
@@ -285,8 +291,20 @@ class ConfigBasket( object ):
     ## Watch the difference with the above method: here, THIS object is being
     ## saved into its PARENT as a new domain.
     
-    s.name = name
     s.parent.saveDomain( s, name )
+
+
+  def renameDomain( s, oldname, newname ):
+
+    ## Warning: this function doesn't check whether the new domain name is
+    ## already in use -- if so, that domain will be overridden. In other words,
+    ## this is an 'mv' and not 'mv -i'.
+    ## Code that makes use of this method should check that 'newname' is free,
+    ## if it thinks it matters.
+
+    domain = s.getDomain( oldname )  ## Will raise KeyError if no such domain.
+    s.deleteDomain( oldname )
+    domain.saveAsDomain( newname )
 
 
   def deleteDomain( s, name ):

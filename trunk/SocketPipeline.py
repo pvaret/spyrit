@@ -26,12 +26,14 @@ from localqt import *
 from Pipeline        import *
 from PipelineChunks  import *
 from PipelineFilters import *
+
 from Logger          import logger
+from Utilities       import check_ssl_is_available
 
 
 class SocketPipeline:
 
-  def __init__( s, host, port, ssl=False ):
+  def __init__( s, conf ):
 
     s.pipeline = Pipeline()
     s.pipeline.addFilter( TelnetFilter() )
@@ -39,11 +41,9 @@ class SocketPipeline:
     s.pipeline.addFilter( EndLineFilter() )
     s.pipeline.addFilter( UnicodeTextFilter() )
 
-    s.host = host
-    s.port = port
-    s.ssl  = ssl
+    s.conf = conf
 
-    if s.ssl:
+    if conf._ssl and check_ssl_is_available():
 
       s.socket = QtNetwork.QSslSocket()
 
@@ -65,11 +65,11 @@ class SocketPipeline:
 
     s.pipeline.resetInternalState()
 
-    if s.ssl:
-      s.socket.connectToHostEncrypted( s.host, s.port )
+    if s.conf._ssl and check_ssl_is_available():
+      s.socket.connectToHostEncrypted( s.conf._host, s.conf._port )
 
     else:
-      s.socket.connectToHost( s.host, s.port )
+      s.socket.connectToHost( s.conf._host, s.conf._port )
 
 
   def disconnectFromHost( s ):

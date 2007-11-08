@@ -48,17 +48,19 @@ class World:
     s.connected    = False
     s.disconnected = True
 
-    ## Aliased for convenience.
-
-    s.name = conf._name
-    s.host = conf._host
-    s.port = conf._port
-    s.ssl  = check_ssl_is_available() and conf._ssl
-
-    s.displayname = s.name or "(%s:%d)" % ( s.host, s.port )
-
-    s.socketpipeline = SocketPipeline( s.host, s.port, s.ssl )
+    s.socketpipeline = SocketPipeline( conf )
     s.socketpipeline.addSink( s.sink, [ chunktypes.NETWORK ] )
+
+
+  def title( s ):
+
+    conf = s.conf
+    return conf._name or "(%s:%d)" % ( conf._host, conf._port )
+
+
+  def host( s ):
+
+    return s.conf._host
 
 
   def setUI( s, worldui ):

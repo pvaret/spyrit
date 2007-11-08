@@ -230,7 +230,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     worldui = WorldUI( s, world )
 
-    pos = s.tabwidget.addTab( worldui, world.displayname )
+    pos = s.tabwidget.addTab( worldui, world.title() )
     s.tabwidget.setCurrentIndex( pos )
 
     s.updateActionsState()
@@ -363,7 +363,6 @@ class MainWindow( QtGui.QMainWindow ):
 
 
   def actionNewWorld( s ):
-    ## FIXME: Check why this no longer works!
 
     from NewWorldDialog import NewWorldDialog
     
@@ -380,7 +379,6 @@ class MainWindow( QtGui.QMainWindow ):
 
 
   def actionQuickConnect( s ):
-    ## FIXME: Check why this no longer works!
 
     from QuickConnectDialog import QuickConnectDialog
     

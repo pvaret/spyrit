@@ -322,7 +322,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
             s.insertInfoText( "Connection closed." )
 
         elif chunk.data == NetworkChunk.RESOLVING:
-          s.insertInfoText( "Resolving %s ..." % s.world.host )
+          s.insertInfoText( "Resolving %s ..." % s.world.host() )
 
         ## ... Or the network error.
 

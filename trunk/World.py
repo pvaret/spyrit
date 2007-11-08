@@ -63,6 +63,11 @@ class World:
     return s.conf._host
 
 
+  def save( s ):
+
+    singletons.worldsmanager.saveWorld( s )
+
+
   def setUI( s, worldui ):
 
     s.worldui = worldui

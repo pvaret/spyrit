@@ -98,6 +98,12 @@ class WorldsManager( QtCore.QObject ):
     return worldconf
     
 
+  def saveWorld( s, world ):
+
+    if world.isAnonymous():
+      world.conf.saveAsDomain( s.normalize( world.conf._name ) )
+
+
   def newWorld( s, conf ):
 
     return World( conf )

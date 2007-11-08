@@ -110,8 +110,6 @@ class Application( QtGui.QApplication ):
 
     sys.excepthook = handle_exception
 
-    worlds = singletons.worldsmanager.knownWorldList()
-
     ## At this point, the arguments that Qt uses have already been filtered
     ## by Qt itself.
 
@@ -130,10 +128,4 @@ class Application( QtGui.QApplication ):
 
       else:
 
-        possiblematches = [ w for w in worlds if w.lower() == arg.lower() ]
-
-        if possiblematches:
-          singletons.mw.openWorldByName( possiblematches[0] )
-
-        else:
-          logger.warn( "No such world: %s" % arg )
+        singletons.mw.openWorldByName( arg.decode( "utf8", "replace" ) )

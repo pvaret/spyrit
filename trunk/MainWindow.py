@@ -29,6 +29,7 @@ from ActionSet           import ActionSet
 from Singletons          import singletons
 from ScrollableTabWidget import ScrollableTabWidget
 
+from Logger    import logger
 from Utilities import tuple_to_QSize, tuple_to_QPoint, case_insensitive_cmp
 
 
@@ -370,11 +371,9 @@ class MainWindow( QtGui.QMainWindow ):
     dialog = NewWorldDialog( world.conf, s )
 
     if dialog.exec_():
-      name = world.conf._name
-      world.conf.saveAsDomain( name )
 
-      s.applyNewConf()
-
+      world.save()
+      s.applyNewConf()  ## TODO: Have conf autonotify the interested parties
       s.openWorld( world )
 
 

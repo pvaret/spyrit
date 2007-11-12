@@ -49,7 +49,7 @@ class World:
     s.disconnected = True
 
     s.socketpipeline = SocketPipeline( conf )
-    s.socketpipeline.addSink( s.sink, [ chunktypes.NETWORK ] )
+    s.socketpipeline.addSink( s.sink )
 
 
   def title( s ):
@@ -112,6 +112,9 @@ class World:
   def sink( s, chunks ):
 
     for chunk in chunks:
+      
+      if not chunk.chunktype == ChunkTypes.NETWORK:
+        continue
 
       if   chunk.data == NetworkChunk.CONNECTED:
 
@@ -127,4 +130,6 @@ class World:
   def close( s ):
 
     if s.worldui:
+      
       singletons.mw.closeWorld( s.worldui )
+      s.worldui = None

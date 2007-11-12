@@ -47,11 +47,7 @@ class WorldUI( QtGui.QSplitter ):
     s.inputui = WorldInputUI( s, world )
     s.addWidget( s.inputui )
     
-    world.socketpipeline.addSink( s.outputui.formatAndDisplay, 
-                                [ chunktypes.TEXT,
-                                  chunktypes.ENDOFLINE,
-                                  chunktypes.NETWORK,
-                                  chunktypes.FORMAT ] )
+    world.socketpipeline.addSink( s.outputui.formatAndDisplay )
 
     s.outputui.setFocusProxy( s.inputui )
     s.setFocusProxy( s.inputui )  ## TODO: correlate this with action of

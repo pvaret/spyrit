@@ -150,17 +150,6 @@ class SocketPipeline:
     s.socket.flush()
 
 
-  def addSink( s, sink, filter=None ):
+  def addSink( s, sink ):
 
-    if filter is None:
-      s.pipeline.addSink( sink )
-
-    else:
-      if type( filter ) not in ( type( [] ), type( () ) ):
-        filter = [ filter ]
-
-      def filteredsink( chunks ):
-        chunks = [ chunk for chunk in chunks if chunk.chunktype in filter ]
-        if chunks: return sink( chunks )
-
-      s.pipeline.addSink( filteredsink )
+    s.pipeline.addSink( sink )

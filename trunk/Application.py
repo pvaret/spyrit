@@ -25,7 +25,7 @@ import sys
 
 from localqt    import *
 
-from Logger     import logger
+from Messages   import messages
 from Utilities  import handle_exception, str_to_int
 from Singletons import singletons
 
@@ -55,7 +55,7 @@ class Application( QtGui.QApplication ):
       import resources
 
     except ImportError:
-      logger.warn( "Resource file not found. No graphics will be loaded." )
+      messages.warn( "Resource file not found. No graphics will be loaded." )
 
     ## Load and register the singleton classes that are used throughout the
     ## software.
@@ -121,7 +121,7 @@ class Application( QtGui.QApplication ):
         port         = str_to_int( port )  
 
         if not port or not server:
-          logger.warn( "Invalid <server>:<port> command line: %s" % arg )
+          messages.warn( "Invalid <server>:<port> command line: %s" % arg )
 
         else:
           singletons.mw.openWorldByHostPort( server, port )

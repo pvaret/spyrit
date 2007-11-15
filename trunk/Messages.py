@@ -14,15 +14,15 @@
 ##
 
 ##
-## Logger.py
+## Messages.py
 ##
-## Defines a Logger class that can be used to keep track of errors, warnings,
+## Defines a Messages class that can be used to keep track of errors, warnings,
 ## etc, that take place inside the program.
 ## By default, the class only prints to stdout.
 ##
 
 
-class Logger:
+class Messages:
 
   def info( s, txt ):
     print "INFO:", txt
@@ -38,4 +38,4 @@ class Logger:
 
 
 
-logger = Logger()
+messages = Messages()

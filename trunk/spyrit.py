@@ -40,8 +40,8 @@ for test in ( test_python_version,
 
   if not ok:
 
-    from Logger import logger
-    logger.error( msg )
+    from Messages import messages
+    messages.error( msg )
     
     import sys
     sys.exit( 1 )

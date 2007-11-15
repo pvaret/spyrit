@@ -29,7 +29,7 @@ from ActionSet           import ActionSet
 from Singletons          import singletons
 from ScrollableTabWidget import ScrollableTabWidget
 
-from Logger    import logger
+from Messages  import messages
 from Utilities import tuple_to_QSize, tuple_to_QPoint, case_insensitive_cmp
 
 
@@ -339,7 +339,7 @@ class MainWindow( QtGui.QMainWindow ):
       s.openWorld( world )
 
     else:
-      logger.warn( "No such world: %s" % worldname )
+      messages.warn( "No such world: %s" % worldname )
 
 
   def openWorldByHostPort( s, host, port, ssl=False ):

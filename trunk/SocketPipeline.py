@@ -27,7 +27,7 @@ from Pipeline        import *
 from PipelineChunks  import *
 from PipelineFilters import *
 
-from Logger          import logger
+from Messages        import messages
 from Utilities       import check_ssl_is_available
 
 
@@ -130,7 +130,7 @@ class SocketPipeline:
     ## going to blame them for it.
 
     for err in errors:
-      logger.warn( "SSL Error: " + err.errorString() )
+      messages.warn( "SSL Error: " + err.errorString() )
 
     s.socket.ignoreSslErrors()
 

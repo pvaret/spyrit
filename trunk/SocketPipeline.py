@@ -153,3 +153,9 @@ class SocketPipeline:
   def addSink( s, sink ):
 
     s.pipeline.addSink( sink )
+
+
+  def cleanupBeforeDelete( s ):
+
+    s.pipeline.cleanupBeforeDelete()
+    del s.pipeline

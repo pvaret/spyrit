@@ -23,10 +23,10 @@
 
 from localqt import *
 
+from ActionSet      import ActionSet
 from WorldInputUI   import WorldInputUI
 from WorldOutputUI  import WorldOutputUI
 from PipelineChunks import chunktypes
-from ActionSet      import ActionSet
 
 
 class WorldUI( QtGui.QSplitter ):
@@ -35,9 +35,7 @@ class WorldUI( QtGui.QSplitter ):
     
     QtGui.QSplitter.__init__( s, Qt.Vertical, parent )
 
-    s.parent = parent
-    s.world  = world
-    s.conf   = world.conf
+    s.world = world
 
     s.world.setUI( s )
 
@@ -56,7 +54,7 @@ class WorldUI( QtGui.QSplitter ):
     QtCore.QTimer.singleShot( 0, s.inputui, SLOT( "setFocus()" ) )
 
     s.setChildrenCollapsible( False )
-    s.setSizes( s.conf._splitter_sizes )
+    s.setSizes( world.conf._splitter_sizes )
 
     connect( s, SIGNAL( "splitterMoved( int, int )" ), s.saveSplitterPosition )
 
@@ -76,10 +74,18 @@ class WorldUI( QtGui.QSplitter ):
 
   def saveSplitterPosition( s ):
 
-    s.conf._splitter_sizes = s.sizes()
+    s.world.conf._splitter_sizes = s.sizes()
 
 
-  def __del__( s ):
+  def cleanupBeforeDelete( s ):
 
-    s.world = None
-    QtGui.QSplitter.__del__( s )
+    s.setParent( None )
+
+    s.world.cleanupBeforeDelete()
+    s.inputui.cleanupBeforeDelete()
+    s.outputui.cleanupBeforeDelete()
+
+    del s.world
+    del s.inputui
+    del s.outputui
+    del s.actionset

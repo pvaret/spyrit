@@ -143,3 +143,9 @@ class Commands:
     Closes the current world.
     """
     s.world.close()
+
+
+  def cleanupBeforeDelete( s ):
+
+    del s.commands
+    del s.world

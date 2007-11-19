@@ -114,3 +114,11 @@ class WorldInputUI( QtGui.QTextEdit ):
   def historyDown( s ):
 
     s.history.historyDown()
+
+
+  def cleanupBeforeDelete( s ):
+
+    s.commands.cleanupBeforeDelete()
+
+    del s.commands
+    del s.history

@@ -102,3 +102,9 @@ class Pipeline:
 
     for f in s.filters:
       f.resetInternalState()
+
+
+  def cleanupBeforeDelete( s ):
+
+    del s.filters
+    del s.sinks

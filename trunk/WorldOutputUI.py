@@ -384,3 +384,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
       s.scrollbar.setValue( s.scrollbar.maximum() )
 
     return QtGui.QTextEdit.resizeEvent( s, e )
+
+
+  def cleanupBeforeDelete( s ):
+
+    del s.world

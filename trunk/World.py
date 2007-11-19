@@ -133,3 +133,11 @@ class World:
       
       singletons.mw.closeWorld( s.worldui )
       s.worldui = None
+
+
+  def cleanupBeforeDelete( s ):
+
+    s.socketpipeline.cleanupBeforeDelete()
+
+    del s.worldui
+    del s.socketpipeline

@@ -277,7 +277,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.updateActionsState()
 
-    del worldui
+    worldui.cleanupBeforeDelete()
 
 
   def closeEvent( s, event ):
@@ -376,6 +376,9 @@ class MainWindow( QtGui.QMainWindow ):
       s.applyNewConf()  ## TODO: Have conf autonotify the interested parties
       s.openWorld( world )
 
+    else:
+      world.cleanupBeforeDelete()
+
 
   def actionQuickConnect( s ):
 
@@ -386,6 +389,9 @@ class MainWindow( QtGui.QMainWindow ):
 
     if dialog.exec_():
       s.openWorld( world )
+
+    else:
+      world.cleanupBeforeDelete()
 
 
   def makeConnectToWorldAction( s, worldname ):

@@ -64,6 +64,11 @@ class PrettyOptionDialog( QtGui.QDialog ):
     if s.header:
       s.layout().addWidget( s.header )
 
+    if s.panel.layout():
+
+      l, t, r, b = s.panel.layout().getContentsMargins()
+      s.panel.layout().setContentsMargins( 0, t, 0, b )
+
     s.layout().addWidget( s.panel )
     s.layout().addWidget( Separator( s ) )
     s.layout().addWidget( s.buttonbox )

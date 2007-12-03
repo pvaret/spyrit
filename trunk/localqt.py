@@ -34,6 +34,5 @@ SLOT       = QtCore.SLOT
 
 Qt = QtCore.Qt
 
-## TODO: remove this function after the Core class has been removed.
 def qApp():
   return QtGui.QApplication.instance()

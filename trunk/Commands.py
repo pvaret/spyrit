@@ -22,6 +22,7 @@
 
 import re
 
+from localqt    import *
 from Singletons import singletons
 
 
@@ -142,7 +143,7 @@ class Commands:
     """
     Closes the current world.
     """
-    s.world.close()
+    QtCore.QTimer.singleShot( 0, s.world.close )
 
 
   def cleanupBeforeDelete( s ):

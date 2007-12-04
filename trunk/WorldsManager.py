@@ -55,20 +55,27 @@ class WorldsManager( QtCore.QObject ):
         worldconf._name = worldname
 
       s.worldconfig.renameDomain( worldname, s.normalize( worldname ) )
+
+    s.generateMappings()
+
+
+  def generateMappings( s ):
         
     ## Provide mappings to lookup worlds based on their name and based on
     ## their (host, port) connection pair.
     
-    s.name_mapping     = dict( 
-                               ( s.normalize( conf._name ), conf )
-                               for conf in s.worldconfig.domains.itervalues()
-                            )
+    s.name_mapping = dict( 
+                           ( s.normalize( conf._name ), conf )
+                           for conf in s.worldconfig.domains.itervalues()
+                         )
 
-    s.hostport_mapping = dict( 
-                               ( ( conf._host, conf._port ), conf )
-                               for conf in s.worldconfig.domains.itervalues() 
-                             )
-   
+    s.hostport_mapping = {}
+
+    for conf in s.worldconfig.domains.itervalues():
+      s.hostport_mapping.setdefault(
+                                     ( conf._host, conf._port ), []
+                                   ).append( conf )
+
  
   def normalize( s, name ):
 
@@ -101,7 +108,9 @@ class WorldsManager( QtCore.QObject ):
   def saveWorld( s, world ):
 
     if world.isAnonymous():
+
       world.conf.saveAsDomain( s.normalize( world.conf._name ) )
+      s.generateMappings()
 
 
   def newWorld( s, conf ):
@@ -127,10 +136,10 @@ class WorldsManager( QtCore.QObject ):
 
   def lookupWorldByHostPort( s, host, port ):
 
-    conf = s.hostport_mapping.get( ( host, port ) )
+    confs = s.hostport_mapping.get( ( host, port ) )
 
-    if conf:
-      return s.newWorld( conf )
+    if len( confs ) == 1:  ## One matching configuration found, and only one.
+      return s.newWorld( confs[ 0 ] )
 
     return None
 

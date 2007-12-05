@@ -23,8 +23,10 @@
 
 from localqt import *
 
-from Commands     import Commands
-from InputHistory import InputHistory
+from Commands       import Commands
+from InputHistory   import InputHistory
+from ConfigObserver import ConfigObserver
+
 
 
 class WorldInputUI( QtGui.QTextEdit ):
@@ -41,6 +43,16 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.commands = Commands( world )
 
     s.refresh()
+
+    ConfigObserver( s.conf ).addCallback( 
+                                          [
+                                            "input_font_color",
+                                            "input_font_name",
+                                            "input_font_size",
+                                            "input_background_color" 
+                                          ],
+                                          s.refresh
+                                        )
 
     connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
 

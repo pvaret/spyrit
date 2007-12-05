@@ -25,6 +25,7 @@
 from localqt import *
 
 from Utilities      import check_alert_is_available
+from ConfigObserver import ConfigObserver
 from PipelineChunks import *
 
 
@@ -73,15 +74,26 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
     QtGui.QTextCharFormat.__init__( s )
 
-    default_color       = QtGui.QColor( conf._output_font_color )
+    s.conf = conf
+
+    s.highlight = False
+    s.fgcolor   = None
+
+    s.refresh()
+    s.reset()
+
+    ConfigObserver( s.conf ).addCallback( "output_font_color", s.refresh )
+
+
+  def refresh( s ):
+
+    default_color       = QtGui.QColor( s.conf._output_font_color )
     default_highlighted = WorldOutputCharFormat.lighterColor( default_color )
 
     s.default_brush     = QtGui.QBrush( default_color )
     s.highlighted_brush = QtGui.QBrush( default_highlighted )
 
-    s.bold_as_highlight = conf._bold_as_highlight
-
-    s.reset()
+    s.setForeground( s.computeCurrentBrush() )
 
 
   def reset( s ):
@@ -100,7 +112,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
   def setHighlighted( s, highlighted ):
 
-    if not s.bold_as_highlight:
+    if not s.conf._bold_as_highlight:
 
       ## 'Highlighted' text is simply bold.
       s.setFontWeight( highlighted and QtGui.QFont.Bold
@@ -205,6 +217,16 @@ class WorldOutputUI( QtGui.QTextEdit ):
    
     s.refresh()
 
+    ConfigObserver( s.conf ).addCallback( 
+                                          [
+                                            "output_font_name",
+                                            "output_font_size",
+                                            "output_background_color",
+                                            "info_font_color"
+                                          ],
+                                          s.refresh
+                                        )
+
 
   def refresh( s ):
 
@@ -214,8 +236,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.viewport().palette().setColor( QtGui.QPalette.Base,
                        QtGui.QColor( s.conf._output_background_color ) )
-
-    s.charformat.reset()
 
     s.infocharformat.reset()
     s.infocharformat.setFontItalic( True )

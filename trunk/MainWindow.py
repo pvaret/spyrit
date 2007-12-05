@@ -42,6 +42,7 @@ class MainWindow( QtGui.QMainWindow ):
     ## Create needed members.
 
     s.maintoolbar = None
+    s.tabtoolbar  = None
     s.connectmenu = QtGui.QMenu()
 
     ## Set up main window according to its configuration.
@@ -51,15 +52,13 @@ class MainWindow( QtGui.QMainWindow ):
     s.setWindowTitle( config._app_name )
 
     size = tuple_to_QSize( config._mainwindow_size )
-    if size:
-      s.resize( size )
+    if size: s.resize( size )
 
     min_size = tuple_to_QSize( config._mainwindow_min_size )
     if min_size: s.setMinimumSize( min_size )
 
     pos = tuple_to_QPoint( config._mainwindow_pos )
-    if pos:
-      s.move( pos )
+    if pos: s.move( pos )
 
     ## Create the central widget.
 
@@ -67,12 +66,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.setCentralWidget( s.tabwidget )
 
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
-                          s.updateActionsState )
-
-    ## Aaand apply the configuration.
-
-    QtCore.QTimer.singleShot( 0, s.refresh )
-    
+                          s.setCurrentTabToolbar )
     
     ## Create all the actions.
     
@@ -82,8 +76,6 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.actions.about        = s.actionset.bindAction( "about",   s.actionAbout ) 
     s.actions.aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
-    s.actions.closecurrent = s.actionset.bindAction( "closecurrent",
-                                                  s.actionCloseCurrentWorld )
     s.actions.newworld     = s.actionset.bindAction( "newworld",
                                                       s.actionNewWorld )
     s.actions.quickconnect = s.actionset.bindAction( "quickconnect",
@@ -93,13 +85,18 @@ class MainWindow( QtGui.QMainWindow ):
     s.actionset.bindAction( "nexttab",     s.tabwidget.tabbar.nextTab )
     s.actionset.bindAction( "previoustab", s.tabwidget.tabbar.previousTab )
 
+    ## Aaand apply the configuration.
+
+    s.refresh()
+    s.createToolbar()
+
 
   def refresh( s ):
 
     ## Prepare dynamic "Connect to..." menu.
 
     s.connectmenu.setTitle( "Connect to..." )
-    s.connectmenu.setIcon( QtGui.QIcon( ":/icon/connect" ) )
+    s.connectmenu.setIcon( QtGui.QIcon( ":/icon/worlds" ) )
     s.connectmenu.clear()
 
     worlds = singletons.worldsmanager.knownWorldList()
@@ -118,9 +115,6 @@ class MainWindow( QtGui.QMainWindow ):
     ## (Re-)create menus and, if need be, the main toolbar.
 
     s.createMenus()
-
-    if not s.maintoolbar:
-      s.createToolbar()
 
 
   def createMenus( s ):
@@ -154,15 +148,11 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Create main toolbar.
 
-    if not s.maintoolbar:
+    s.maintoolbar = QtGui.QToolBar( "Main Toolbar", s )
+    s.maintoolbar.setMovable( False )
+    s.maintoolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
 
-      s.maintoolbar = QtGui.QToolBar( "Main Toolbar", s )
-      s.maintoolbar.setMovable( False )
-      s.maintoolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
-
-      s.addToolBar( s.maintoolbar )
-
-    s.maintoolbar.clear()
+    s.addToolBar( s.maintoolbar )
 
     ## Create and add dynamic world list action.
 
@@ -179,14 +169,31 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.maintoolbar.addAction( s.actions.newworld )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( s.actions.closecurrent )
-    s.maintoolbar.addSeparator()
     s.maintoolbar.addAction( s.actions.quit )
     s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( s.actions.about )
-
-    s.updateActionsState()
  
+
+  def setCurrentTabToolbar( s, i ):
+
+    s.setUpdatesEnabled( False )
+
+    if s.tabtoolbar:
+      s.removeToolBar( s.tabtoolbar )
+
+    try:
+      toolbar = s.tabwidget.widget( i ).toolbar
+
+    except AttributeError:
+      toolbar = None
+
+    s.tabtoolbar = toolbar
+
+    if toolbar:
+      s.addToolBar( toolbar )
+      toolbar.show()
+
+    s.setUpdatesEnabled( True )
+
 
   def disabledMenuText( s, text ):
 
@@ -216,17 +223,6 @@ class MainWindow( QtGui.QMainWindow ):
     singletons.config.save()
 
 
-  def updateActionsState( s ):
-
-    worldui = s.currentWorldUI()
-
-    if not worldui:
-      s.actions.closecurrent.setEnabled( False )
-
-    else:
-      s.actions.closecurrent.setEnabled( True )
-
-
   def newWorldUI( s, world ):
 
     worldui = WorldUI( s, world )
@@ -234,14 +230,7 @@ class MainWindow( QtGui.QMainWindow ):
     pos = s.tabwidget.addTab( worldui, world.title() )
     s.tabwidget.setCurrentIndex( pos )
 
-    s.updateActionsState()
-
     return pos
-
-
-  def currentWorldUI( s ):
-
-    return s.tabwidget.currentWidget()
 
 
   def closeWorld( s, worldui ):
@@ -262,7 +251,7 @@ class MainWindow( QtGui.QMainWindow ):
       result = messagebox.exec_()
 
       if result == QtGui.QMessageBox.Cancel:
-        return
+        return False
 
     ## The call to ensureWorldDisconnected below is done outside the above
     ## if statement because the world, even if not connected, might be
@@ -275,9 +264,9 @@ class MainWindow( QtGui.QMainWindow ):
     pos = s.tabwidget.indexOf( worldui )
     s.tabwidget.removeTab( pos )
 
-    s.updateActionsState()
-
     worldui.cleanupBeforeDelete()
+
+    return True
 
 
   def closeEvent( s, event ):
@@ -353,14 +342,6 @@ class MainWindow( QtGui.QMainWindow ):
       s.openWorld( 
         singletons.worldsmanager.newAnonymousWorld( host, port, ssl )
       )
-
-
-  def actionCloseCurrentWorld( s ):
-
-    worldui = s.currentWorldUI()
-
-    if worldui:
-      s.closeWorld( worldui )
 
 
   def actionNewWorld( s ):

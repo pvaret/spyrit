@@ -30,9 +30,11 @@ from Singletons     import singletons
 from SocketPipeline import SocketPipeline
 
 
-class World:
+class World( QtCore.QObject ):
 
   def __init__( s, conf=None ):
+
+    QtCore.QObject.__init__( s )
 
     if not conf: conf = singletons.worldsmanager.newWorldConf()
 
@@ -90,6 +92,23 @@ class World:
       s.socketpipeline.connectToHost()
 
 
+  def disconnectFromWorld( s ):
+
+    if s.connected:
+    
+      messagebox = QtGui.QMessageBox( singletons.mw )
+      messagebox.setWindowTitle( "Confirm disconnect" )
+      messagebox.setIcon( QtGui.QMessageBox.Question )
+      messagebox.setText( "Really disconnect from this world?" )
+      messagebox.addButton( "Disconnect", QtGui.QMessageBox.AcceptRole )
+      messagebox.addButton( QtGui.QMessageBox.Cancel )
+
+      if messagebox.exec_() == QtGui.QMessageBox.Cancel:
+        return
+
+    s.ensureWorldDisconnected()
+
+
   def ensureWorldDisconnected( s ):
 
     if s.connected:
@@ -126,13 +145,15 @@ class World:
 
       s.disconnected = ( chunk.data == NetworkChunk.DISCONNECTED )
 
+      emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
+
 
   def close( s ):
 
     if s.worldui:
       
-      singletons.mw.closeWorld( s.worldui )
-      s.worldui = None
+      if singletons.mw.closeWorld( s.worldui ):
+        s.worldui = None
 
 
   def cleanupBeforeDelete( s ):

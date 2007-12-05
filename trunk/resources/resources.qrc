@@ -2,6 +2,7 @@
 <qresource prefix="/icon">
   <file alias="close">close.png</file>
   <file alias="connect">connect.png</file>
+  <file alias="disconnect">disconnect.png</file>
   <file alias="down">down.png</file>
   <file alias="new_world">new_world.png</file>
   <file alias="qt-logo">qt-logo.png</file>

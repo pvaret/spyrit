@@ -58,18 +58,41 @@ class WorldUI( QtGui.QSplitter ):
 
     connect( s, SIGNAL( "splitterMoved( int, int )" ), s.saveSplitterPosition )
 
+    ## Create toolbar and bind World-related actions.
+
+    s.toolbar = QtGui.QToolBar()
+    s.toolbar.setMovable( False )
+    s.toolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
+
     s.actionset = ActionSet( s )
-    s.createActions()
-
-
-  def createActions( s ):
 
     s.actionset.bindAction( "historyup",   s.inputui.historyUp )
     s.actionset.bindAction( "historydown", s.inputui.historyDown )
     s.actionset.bindAction( "pageup",      s.outputui.pageUp )
     s.actionset.bindAction( "pagedown",    s.outputui.pageDown )
-    s.actionset.bindAction( "connect",     s.world.connectToWorld )
-    s.actionset.bindAction( "disconnect",  s.world.ensureWorldDisconnected )
+
+    connect_action    = s.actionset.bindAction( "connect",
+                                              s.world.connectToWorld )
+    disconnect_action = s.actionset.bindAction( "disconnect",
+                                              s.world.disconnectFromWorld )
+
+    connect_action.setEnabled( False )
+    disconnect_action.setEnabled( False )
+    
+    connect( world, SIGNAL( "connected( bool )" ),
+             connect_action, SLOT( "setDisabled( bool )" ) )
+
+    connect( world, SIGNAL( "connected( bool )" ),
+             disconnect_action, SLOT( "setEnabled( bool )" ) )
+
+    s.toolbar.addAction( connect_action )
+    s.toolbar.addAction( disconnect_action )
+
+    s.toolbar.addAction(
+      s.actionset.bindAction( "close", s.world.close )
+    )
+
+    s.toolbar.addSeparator()
 
 
   def saveSplitterPosition( s ):
@@ -89,3 +112,4 @@ class WorldUI( QtGui.QSplitter ):
     del s.inputui
     del s.outputui
     del s.actionset
+    del s.toolbar

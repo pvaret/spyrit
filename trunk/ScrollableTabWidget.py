@@ -23,6 +23,7 @@
 
 from localqt import *
 
+
 class TabBarWheelEventHandler( QtCore.QObject ):
 
   def eventFilter( s, tabbar, event ):
@@ -49,18 +50,17 @@ class ScrollableTabBar( QtGui.QTabBar ):
     QtGui.QTabBar.__init__( s, *args )
     s.installEventFilter( TabBarWheelEventHandler( s ) )
   
+
   def nextTab( s ):
     
-    if s.count() <= 1:
-      return
+    if s.count() <= 1: return
     
     s.setCurrentIndex( ( s.currentIndex() + 1 ) % s.count() )
     
     
   def previousTab( s ):
     
-    if s.count() <= 1:
-      return
+    if s.count() <= 1: return
     
     s.setCurrentIndex( ( s.currentIndex() - 1 ) % s.count() ) 
     
@@ -76,7 +76,18 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
     
     connect( s, SIGNAL( "currentChanged ( int )" ), s.ensureTabFocus )
   
+
+  def tabInserted( s, i ):
   
+    emit( s, SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
+
+
+  def tabRemoved( s, i ):
+
+    emit( s, SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
+
+
   def ensureTabFocus( s, i ):
 
-    s.widget( i ).setFocus()
+    widget = s.widget( i )
+    if widget: widget.setFocus()

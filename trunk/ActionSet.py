@@ -34,22 +34,28 @@ class ActionSet:
     s.parent  = parent
     
     s.actions = {
+
+      ## Global actions
+
       "about":        ( "About %s..." % \
                          config._app_name, ":/app/icon",        None       ),
       "aboutqt":      ( "About Qt...",     ":/icon/qt-logo",    None       ),
       "newworld":     ( "New world...",    ":/icon/new_world", "Ctrl+N"    ),
       "quickconnect": ( "Quick connect...", None,               None       ),
       "quit":         ( "Quit",            ":/icon/quit",      "Ctrl+Q"    ),
-      "closecurrent": ( "Close",           ":/icon/close",     "Ctrl+W"    ),
       "nexttab":      ( "Next Tab",         None,              "Shift+Tab" ),
       "previoustab":  ( "Previous Tab",     None,         "Shift+Ctrl+Tab" ),
 
-      "connect":     ( "Connect",       None,         "Ctrl+Shift+S" ),
-      "disconnect":  ( "Disconnect",    None,         "Ctrl+Shift+D" ),
-      "historyup":   ( "History Up",   ":/icon/up",   "Ctrl+Up"      ),
-      "historydown": ( "History Down", ":/icon/down", "Ctrl+Down"    ),
-      "pageup":      ( "Page Up",      ":/icon/up",   "PgUp"    ),
-      "pagedown":    ( "Page Down",    ":/icon/down", "PgDown"  ),
+      ## Per-world actions
+
+      "close":       ( "Close",        ":/icon/close",   "Ctrl+W"    ),
+      "connect":     ( "Connect",      ":/icon/connect", "Ctrl+Shift+S" ),
+      "disconnect":  ( "Disconnect",   ":/icon/disconnect",    "Ctrl+Shift+D" ),
+      "historyup":   ( "History Up",   ":/icon/up",      "Ctrl+Up"      ),
+      "historydown": ( "History Down", ":/icon/down",    "Ctrl+Down"    ),
+      "pageup":      ( "Page Up",      ":/icon/up",      "PgUp"    ),
+      "pagedown":    ( "Page Down",    ":/icon/down",    "PgDown"  ),
+
     }
 
     ## Very few actions have a specific role, so it's more effective to put

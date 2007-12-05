@@ -7,6 +7,7 @@
   <file alias="qt-logo">qt-logo.png</file>
   <file alias="quit">quit.png</file>
   <file alias="up">up.png</file>
+  <file alias="worlds">worlds.png</file>
 </qresource>
 <qresource prefix="/app">
  <!-- <file alias="splash">splash.jpg</file> -->

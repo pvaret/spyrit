@@ -143,7 +143,12 @@ class World( QtCore.QObject ):
 
         QtCore.QTimer.singleShot( 0, s.setDisconnected )
 
-      s.disconnected = ( chunk.data == NetworkChunk.DISCONNECTED )
+      s.disconnected = ( chunk.data in ( 
+                                         NetworkChunk.DISCONNECTED,
+                                         NetworkChunk.HOSTNOTFOUND,
+                                         NetworkChunk.TIMEOUT,
+                                         NetworkChunk.CONNECTIONREFUSED,
+                                       ) )
 
       emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
 

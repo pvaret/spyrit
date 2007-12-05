@@ -152,15 +152,16 @@ class ConfigBasket( object ):
 
   __metaclass__ = MetaDictProxy
 
-  SECTIONS = "_sections"
+  SECTIONS = "__domains__"
 
 
   def __init__( s, parent=None ):
 
-    s.name    = None
-    s.basket  = {}
-    s.domains = {}
-    s.parent  = parent
+    s.name      = None
+    s.basket    = {}
+    s.domains   = {}
+    s.parent    = parent
+    s.notifiers = []
 
 
   def __getitem__( s, k ):
@@ -208,20 +209,31 @@ class ConfigBasket( object ):
     else:
       s.basket[ attr ] = value
 
+    s.notifyKeyChanged( attr )
+
 
   def __delitem__( s, attr ):
 
     del s.basket[ attr ]
 
+    s.notifyKeyChanged( attr )
+
 
   def reset( s ):
   
+    keys = s.basket.keys()
+
     s.basket.clear()
+
+    for key in keys:
+      s.notifyKeyChanged( key )
 
 
   def resetDomains( s ):
   
     s.domains.clear()
+
+    s.notifyKeyChanged( s.SECTIONS )
 
 
   def owns( s, attr ):
@@ -285,6 +297,8 @@ class ConfigBasket( object ):
 
     s.domains[ name ] = domain
 
+    s.notifyKeyChanged( s.SECTIONS )
+
 
   def saveAsDomain( s, name ):
 
@@ -306,6 +320,8 @@ class ConfigBasket( object ):
     s.deleteDomain( oldname )
     domain.saveAsDomain( newname )
 
+    s.notifyKeyChanged( s.SECTIONS )
+
 
   def deleteDomain( s, name ):
     
@@ -315,6 +331,8 @@ class ConfigBasket( object ):
     except KeyError:
       raise KeyError( "This configuration object doesn't have a domain called "
                     + "%s." % domain )
+
+    s.notifyKeyChanged( s.SECTIONS )
 
 
   def createAnonymousDomain( s ):
@@ -371,7 +389,19 @@ class ConfigBasket( object ):
     
     s.updateFromDict( d )
 
-      
+
+  def notifyKeyChanged( s, key ):
+
+    for notify in s.notifiers: notify( key )
+
+    for subdomain in s.domains.itervalues():
+      subdomain.notifyKeyChanged( key )
+
+
+  def registerNotifier( s, notifier ):
+
+    s.notifiers.append( notifier )
+
 
 
 ## ---[ Class ConfigBasketUpdater ]------------------------------------

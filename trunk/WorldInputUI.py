@@ -94,6 +94,8 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     text = unicode( s.toPlainText() ).rstrip( "\r\n" )
 
+    s.clear()
+
     if text:
       s.history.update( text )
 
@@ -103,7 +105,6 @@ class WorldInputUI( QtGui.QTextEdit ):
     else:
       s.world.socketpipeline.send( text + "\r\n" )
 
-    s.clear()
 
 
   def historyUp( s ):

@@ -27,6 +27,7 @@ from World               import World
 from WorldUI             import WorldUI
 from ActionSet           import ActionSet
 from Singletons          import singletons
+from ConfigObserver      import ConfigObserver
 from ScrollableTabWidget import ScrollableTabWidget
 
 from Messages  import messages
@@ -38,12 +39,6 @@ class MainWindow( QtGui.QMainWindow ):
   def __init__( s, parent=None ):
 
     QtGui.QMainWindow.__init__( s, parent )
-
-    ## Create needed members.
-
-    s.maintoolbar = None
-    s.tabtoolbar  = None
-    s.connectmenu = QtGui.QMenu()
 
     ## Set up main window according to its configuration.
 
@@ -60,125 +55,127 @@ class MainWindow( QtGui.QMainWindow ):
     pos = tuple_to_QPoint( config._mainwindow_pos )
     if pos: s.move( pos )
 
+
     ## Create the central widget.
 
     s.tabwidget = ScrollableTabWidget( s )
     s.setCentralWidget( s.tabwidget )
 
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
-                          s.setCurrentTabToolbar )
+                          s.setCurrentWorldToolbar )
+
     
     ## Create all the actions.
     
-    s.actionset     = ActionSet( s )
-    s.actions       = lambda: None  ## This is the simplest object to which you
-                                    ## can add attributes. :)
+    s.actionset = ActionSet( s )
 
-    s.actions.about        = s.actionset.bindAction( "about",   s.actionAbout ) 
-    s.actions.aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
-    s.actions.newworld     = s.actionset.bindAction( "newworld",
-                                                      s.actionNewWorld )
-    s.actions.quickconnect = s.actionset.bindAction( "quickconnect",
-                                                      s.actionQuickConnect )
-    s.actions.quit         = s.actionset.bindAction( "quit", s.close )
+    s.action_about        = s.actionset.bindAction( "about",   s.actionAbout ) 
+    s.action_aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
+    s.action_newworld     = s.actionset.bindAction( "newworld",
+                                                     s.actionNewWorld )
+    s.action_quickconnect = s.actionset.bindAction( "quickconnect",
+                                                     s.actionQuickConnect )
+    s.action_quit         = s.actionset.bindAction( "quit", s.close )
     
     s.actionset.bindAction( "nexttab",     s.tabwidget.tabbar.nextTab )
     s.actionset.bindAction( "previoustab", s.tabwidget.tabbar.previousTab )
 
-    ## Aaand apply the configuration.
 
-    s.refresh()
-    s.createToolbar()
-
-
-  def refresh( s ):
-
-    ## Prepare dynamic "Connect to..." menu.
-
-    s.connectmenu.setTitle( "Connect to..." )
-    s.connectmenu.setIcon( QtGui.QIcon( ":/icon/worlds" ) )
-    s.connectmenu.clear()
-
-    worlds = singletons.worldsmanager.knownWorldList()
-
-    if not worlds:
-      s.connectmenu.setEnabled( False )
-
-    else:
-
-      s.connectmenu.setEnabled( True )
-
-      for world in worlds:
-        s.connectmenu.addAction( s.makeConnectToWorldAction( world ) )
-
-
-    ## (Re-)create menus and, if need be, the main toolbar.
-
-    s.createMenus()
-
-
-  def createMenus( s ):
+    ## Create menus.
 
     menubar = s.menuBar()
-    menubar.clear()
 
-    filemenu = menubar.addMenu( "File" )
-    filemenu.addAction( s.actions.quit )
+    s.menu_file = menubar.addMenu( "File" )
+    s.menu_file.addAction( s.action_quit )
 
+    s.menu_worlds = menubar.addMenu( "Worlds" )
 
-    worldsmenu = menubar.addMenu( "Worlds" )
-    worldsmenu.addAction( s.actions.quickconnect )
-    worldsmenu.addAction( s.actions.newworld )
+    s.menu_connect = QtGui.QMenu()
+    s.menu_connect.setTitle( "Connect to..." )
+    s.menu_connect.setIcon( QtGui.QIcon( ":/icon/worlds" ) )
 
-    worldsmenu.addSeparator()
+    s.refreshMenuWorlds()
 
-    if s.connectmenu.isEnabled():
-      worldsmenu.addMenu( s.connectmenu )
-
-    else:
-      worldsmenu.addAction( s.disabledMenuText( "(No world created)" ) )
+    s.menu_help = menubar.addMenu( "Help" )
+    s.menu_help.addAction( s.action_about )
+    s.menu_help.addAction( s.action_aboutqt )
 
 
-    helpmenu = menubar.addMenu( "Help" )
-    helpmenu.addAction( s.actions.about )
-    helpmenu.addAction( s.actions.aboutqt )
+    ## Create toolbars.
 
+    s.toolbar_main = QtGui.QToolBar( "Main Toolbar", s )
+    s.toolbar_main.setMovable( False )
+    s.toolbar_main.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
 
-  def createToolbar( s ):
-
-    ## Create main toolbar.
-
-    s.maintoolbar = QtGui.QToolBar( "Main Toolbar", s )
-    s.maintoolbar.setMovable( False )
-    s.maintoolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
-
-    s.addToolBar( s.maintoolbar )
+    s.addToolBar( s.toolbar_main )
 
     ## Create and add dynamic world list action.
 
-    connectaction = s.connectmenu.menuAction()
-    s.maintoolbar.addAction( connectaction )
+    connectaction = s.menu_connect.menuAction()
+    s.toolbar_main.addAction( connectaction )
 
     ## ... And don't forget to set the button for that action to the correct
     ## menu popup mode.
 
-    connectbutton = s.maintoolbar.widgetForAction( connectaction )
+    connectbutton = s.toolbar_main.widgetForAction( connectaction )
     connectbutton.setPopupMode( QtGui.QToolButton.InstantPopup )
 
-    ## Add remaining actions.
+    ## Add remaining toolbar actions.
 
-    s.maintoolbar.addAction( s.actions.newworld )
-    s.maintoolbar.addSeparator()
-    s.maintoolbar.addAction( s.actions.quit )
-    s.maintoolbar.addSeparator()
+    s.toolbar_main.addAction( s.action_newworld )
+    s.toolbar_main.addSeparator()
+    s.toolbar_main.addAction( s.action_quit )
+    s.toolbar_main.addSeparator()
  
+    s.toolbar_world = None  ## This will be populated when Worlds are created.
 
-  def setCurrentTabToolbar( s, i ):
+
+    ## Link configuration changes to the appropriate updaters.
+
+    ConfigObserver( config.getDomain( config._worlds_section ) ) \
+                   .addCallback( config.SECTIONS, s.refreshMenuWorlds )
+
+    ## And with this, our Main Window is created, whee!
+
+
+  def refreshMenuWorlds( s ):
 
     s.setUpdatesEnabled( False )
 
-    if s.tabtoolbar:
-      s.removeToolBar( s.tabtoolbar )
+    s.menu_worlds.clear()
+
+    s.menu_worlds.addAction( s.action_quickconnect )
+    s.menu_worlds.addAction( s.action_newworld )
+
+    s.menu_worlds.addSeparator()
+
+    s.menu_connect.clear()
+
+    worlds = singletons.worldsmanager.knownWorldList()
+
+    if not worlds:
+
+      s.menu_connect.setEnabled( False )
+      s.menu_worlds.addAction( s.disabledMenuText( "(No world created)" ) )
+
+    else:
+
+      s.menu_connect.setEnabled( True )
+
+      for world in worlds:
+        s.menu_connect.addAction( s.makeConnectToWorldAction( world ) )
+
+      s.menu_worlds.addMenu( s.menu_connect )
+
+    s.setUpdatesEnabled( True )
+
+
+  def setCurrentWorldToolbar( s, i ):
+
+    s.setUpdatesEnabled( False )
+
+    if s.toolbar_world:
+      s.removeToolBar( s.toolbar_world )
 
     try:
       toolbar = s.tabwidget.widget( i ).toolbar
@@ -186,7 +183,7 @@ class MainWindow( QtGui.QMainWindow ):
     except AttributeError:
       toolbar = None
 
-    s.tabtoolbar = toolbar
+    s.toolbar_world = toolbar
 
     if toolbar:
       s.addToolBar( toolbar )
@@ -207,20 +204,6 @@ class MainWindow( QtGui.QMainWindow ):
 
     for i in range( s.tabwidget.count() ):
       yield s.tabwidget.widget( i )
-
-
-  def applyNewConf( s ):
-
-    s.setUpdatesEnabled( False )
-
-    s.refresh()
-
-    for world in s.iterateOnOpenWorlds():
-      world.refresh()
-
-    s.setUpdatesEnabled( True )
-
-    singletons.config.save()
 
 
   def newWorldUI( s, world ):
@@ -354,7 +337,6 @@ class MainWindow( QtGui.QMainWindow ):
     if dialog.exec_():
 
       world.save()
-      s.applyNewConf()  ## TODO: Have conf autonotify the interested parties
       s.openWorld( world )
 
     else:

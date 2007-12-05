@@ -25,8 +25,6 @@ from Singletons import singletons
 from Utilities  import case_insensitive_cmp, remove_accents
 
 
-## TODO: Have WorldsManager emit signal when world list changed.
-
 class WorldsManager( QtCore.QObject ):
   
   def __init__( s ):

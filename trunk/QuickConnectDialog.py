@@ -16,7 +16,7 @@
 ##
 ## QuickConnectDialog.py
 ##
-## This class holds the Quick Connect dialog. Y'know.
+## This file holds the Quick Connect dialog. Y'know.
 ##
 
 from localqt import *

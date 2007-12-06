@@ -190,28 +190,27 @@ class ConfigBasket( object ):
   def __setitem__( s, attr, value ):
     
     attr = attr.lower().strip()
+
+    if s.existsInParent( attr ) and s.parent[ attr ] == value:
+
+      ## If the parent's value is already set to the new value, we delete
+      ## the attribute on this object instead so we'll inherit that of its
+      ## parent instead.
+
+      try:
+        del s[ attr ]
+
+      except KeyError:
+        pass
+
+      return
  
     if s.exists( attr ) and s[ attr ] == value:
 
         ## If the value hasn't changed, we quit right away.
         return
  
-    ## If the parent already has this configuration key AND its value
-    ## is the same, then we can safely delete it from the child
-    ## configuration object, since the value can then be inherited
-    ## from the parent.
-
-    if s.parent and s.parent.exists( attr ) \
-                and value == s.parent[ attr ]:
-      
-      try:
-        del s.basket[ attr ]
-        
-      except KeyError:
-        pass
-
-    else:
-      s.basket[ attr ] = value
+    s.basket[ attr ] = value
 
     s.notifyKeyChanged( attr )
 

@@ -29,9 +29,23 @@ class InputHistory:
 
     s.inputwidget = inputwidget
     s.maxlength   = maxlength
-    s.history     = []
     s.cursor      = -1
     s.currenttext = ""
+
+    conf = inputwidget.world.conf
+
+    if conf._save_input_history:
+
+      try:
+        count = int( conf._save_input_history )
+
+      except ValueError:
+        count = 0
+
+      s.history = conf._input_history[ -count: ]
+
+    else:
+      s.history = []
 
 
   def historyUp( s ):
@@ -73,3 +87,20 @@ class InputHistory:
     
     if s.maxlength and len( s.history ) > s.maxlength:
       s.history.pop()
+
+
+  def cleanupBeforeDelete( s ):
+
+    conf = s.inputwidget.world.conf
+
+    if conf._save_input_history:
+
+      try:
+        count = int( conf._save_input_history )
+
+      except ValueError:
+        count = 0
+
+      conf._input_history = s.history[ -count: ]
+
+    del s.inputwidget

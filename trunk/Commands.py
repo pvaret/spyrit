@@ -21,9 +21,12 @@
 ##
 
 import re
+import demjson
 
 from localqt    import *
 from Singletons import singletons
+
+json = demjson.JSON()
 
 
 class Commands:
@@ -132,6 +135,24 @@ class Commands:
     raise Exception( args and " ".join( args ) or None )
 
 
+  def command_Connect( s ):
+
+    """
+    Opens connection to the current world if it is currently closed.
+    """
+
+    s.world.connectToWorld()
+
+
+  def command_Disconnect( s ):
+
+    """
+    Closes connection to the current world.
+    """
+
+    s.world.disconnectFromWorld()
+
+
   def command_Quit( s ):
     """
     Quits the application.
@@ -144,6 +165,40 @@ class Commands:
     Closes the current world.
     """
     QtCore.QTimer.singleShot( 0, s.world.close )
+
+
+  def command_Set_Conf_Key( s, key, *args ):
+
+    """
+    Sets the given configuration key to the given value on the current world.
+    """
+
+    args = " ".join( args )
+
+    try:
+      args = json.decode( args )
+
+    except demjson.JSONDecodeError:
+      pass
+
+    s.world.conf[ key ] = args
+
+
+  def command_Set_Global_Conf_Key( s, key, *args ):
+
+    """
+    Sets the given configuration key to the given value in the global scope.
+    """
+
+    args = " ".join( args )
+
+    try:
+      args = json.decode( args )
+
+    except demjson.JSONDecodeError:
+      pass
+
+    singletons.config[ key ] = args
 
 
   def cleanupBeforeDelete( s ):

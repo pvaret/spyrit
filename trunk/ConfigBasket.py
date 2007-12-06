@@ -166,6 +166,8 @@ class ConfigBasket( object ):
 
   def __getitem__( s, k ):
 
+    k = k.lower().strip()
+
     try:
       return s.basket[ k ]
       
@@ -187,6 +189,8 @@ class ConfigBasket( object ):
 
   def __setitem__( s, attr, value ):
     
+    attr = attr.lower().strip()
+ 
     if s.exists( attr ) and s[ attr ] == value:
 
         ## If the value hasn't changed, we quit right away.
@@ -238,7 +242,7 @@ class ConfigBasket( object ):
 
   def owns( s, attr ):
   
-    return s.basket.has_key( attr )
+    return s.basket.has_key( attr.lower().strip() )
     
 
   def existsInParent( s, attr ):

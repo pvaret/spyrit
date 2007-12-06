@@ -19,6 +19,8 @@
 ## Contains the default configuration items.
 ##
 
+from localqt import *
+
 
 _defaults = dict(
 
@@ -34,8 +36,8 @@ _defaults = dict(
   mainwindow_size   = ( 800, 600 ),
 
   output_font_name  = "Courier",
-  output_font_size  = 12,
-  output_font_color = "#a0a0a4",  ## grey
+  output_font_size  = 0,  ## Nothing, system default will be used.
+  output_font_color = "#c0c0c0",  ## light grey
 
   bold_as_highlight = True,
 

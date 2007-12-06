@@ -178,10 +178,12 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     ## in case we're in bold-as-highlight mode and the world wants to display
     ## bold text in the default color. This is what this static helper method
     ## computes.
-    ## The value of 1.4 (40% lighter) is admittedly somewhat arbitrary.
+    ## The value of 255/192 underneath (about 33% lighter) is the value that
+    ## will turn Qt.lightGray (used as unhighlighted white in ANSI) into
+    ## Qt.white (or hightlighted white in ANSI).
 
     H, S, V, A = color.getHsv()
-    V = min( V * 1.4, 256 )
+    V = min( int( round( V * 255/192.0 ) ), 255 )
     return QtGui.QColor.fromHsv( H, S, V, A )
 
 
@@ -230,9 +232,14 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def refresh( s ):
 
-    s.setStyleSheet( 'QTextEdit { font-family: "%s" ;  font-size: %dpt }'
-                              % ( s.conf._output_font_name,
-                                  s.conf._output_font_size ) )
+    stylesheet = 'QTextEdit { font-family: "%s" ' % s.conf._output_font_name
+
+    if s.conf._output_font_size:
+      stylesheet += ';  font-size: %dpt ' % s.conf._output_font_size
+
+    stylesheet += "}"
+
+    s.setStyleSheet( stylesheet )
 
     s.viewport().palette().setColor( QtGui.QPalette.Base,
                        QtGui.QColor( s.conf._output_background_color ) )

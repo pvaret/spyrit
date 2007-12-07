@@ -208,10 +208,14 @@ class MainWindow( QtGui.QMainWindow ):
 
   def newWorldUI( s, world ):
 
+    s.setUpdatesEnabled( False )
+
     worldui = WorldUI( s, world )
 
     pos = s.tabwidget.addTab( worldui, world.title() )
     s.tabwidget.setCurrentIndex( pos )
+
+    s.setUpdatesEnabled( True )
 
     return pos
 

@@ -24,8 +24,11 @@
 from localqt import *
 
 from ActionSet      import ActionSet
+from TabDelegate    import TabDelegate
 from WorldInputUI   import WorldInputUI
 from WorldOutputUI  import WorldOutputUI
+
+from Singletons     import singletons
 from PipelineChunks import chunktypes
 
 
@@ -38,6 +41,10 @@ class WorldUI( QtGui.QSplitter ):
     s.world = world
 
     s.world.setUI( s )
+
+    s.tab = TabDelegate( s )
+
+    connect( s.tab, SIGNAL( "tabChanged( bool )" ), s.onTabChanged )
 
     s.outputui = WorldOutputUI( s, world )
     s.addWidget( s.outputui )
@@ -89,15 +96,54 @@ class WorldUI( QtGui.QSplitter ):
     s.toolbar.addAction( disconnect_action )
 
     s.toolbar.addAction(
-      s.actionset.bindAction( "close", s.world.close )
+      s.actionset.bindAction( "close", s.close )
     )
 
     s.toolbar.addSeparator()
 
 
+  def onTabChanged( s, is_now_visible ):
+
+    if is_now_visible:
+
+      ## Ensure the currently visible world has focus.
+      s.setFocus()
+
+
   def saveSplitterPosition( s ):
 
     s.world.conf._splitter_sizes = s.sizes()
+
+
+  def close( s ):
+
+    if s.world.connected:
+
+      messagebox = QtGui.QMessageBox( singletons.mw )
+
+      messagebox.setWindowTitle( "Confirm close" )
+      messagebox.setIcon( QtGui.QMessageBox.Question )
+
+      messagebox.setText( "You are still connected to this world. "
+                        + "Disconnect and close this tab?" )
+
+      messagebox.addButton( "Close tab", QtGui.QMessageBox.AcceptRole )
+      messagebox.addButton( QtGui.QMessageBox.Cancel )
+
+      result = messagebox.exec_()
+
+      if result == QtGui.QMessageBox.Cancel:
+        return
+
+    ## The call to ensureWorldDisconnected below is done outside the above
+    ## if statement because the world, even if not connected, might be
+    ## *trying* to connect, and if so, we want to abort the attempt so that
+    ## we don't leak the connection. And ensureWorldDisconnected does just
+    ## that.
+
+    s.world.ensureWorldDisconnected()
+    s.tab.removeTab()
+    s.cleanupBeforeDelete()
 
 
   def cleanupBeforeDelete( s ):
@@ -113,3 +159,4 @@ class WorldUI( QtGui.QSplitter ):
     del s.outputui
     del s.actionset
     del s.toolbar
+    del s.tab

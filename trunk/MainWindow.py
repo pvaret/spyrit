@@ -216,42 +216,6 @@ class MainWindow( QtGui.QMainWindow ):
     return pos
 
 
-  def closeWorld( s, worldui ):
-
-    if worldui.world.connected:
-
-      messagebox = QtGui.QMessageBox( s )
-
-      messagebox.setWindowTitle( "Confirm close" )
-      messagebox.setIcon( QtGui.QMessageBox.Question )
-
-      messagebox.setText( "You are still connected to this world. "
-                        + "Disconnect and close this tab?" )
-
-      messagebox.addButton( "Close tab", QtGui.QMessageBox.AcceptRole )
-      messagebox.addButton( QtGui.QMessageBox.Cancel )
-
-      result = messagebox.exec_()
-
-      if result == QtGui.QMessageBox.Cancel:
-        return False
-
-    ## The call to ensureWorldDisconnected below is done outside the above
-    ## if statement because the world, even if not connected, might be
-    ## *trying* to connect, and if so, we want to abort the attempt so that
-    ## we don't leak the connection. And ensureWorldDisconnected does just
-    ## that.
-
-    worldui.world.ensureWorldDisconnected()
-
-    pos = s.tabwidget.indexOf( worldui )
-    s.tabwidget.removeTab( pos )
-
-    worldui.cleanupBeforeDelete()
-
-    return True
-
-
   def closeEvent( s, event ):
 
     ## Confirm close if some worlds are still connected.

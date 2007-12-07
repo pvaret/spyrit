@@ -28,8 +28,7 @@ class TabBarWheelEventHandler( QtCore.QObject ):
 
   def eventFilter( s, tabbar, event ):
 
-    if event.type() == QtCore.QEvent.Wheel \
-       and isinstance( tabbar, QtGui.QTabBar ):
+    if event.type() == QtCore.QEvent.Wheel:
 
       if event.delta() < 0:
         tabbar.nextTab()
@@ -73,21 +72,19 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
     
     s.tabbar = ScrollableTabBar( s )
     s.setTabBar( s.tabbar )
-    
-    connect( s, SIGNAL( "currentChanged ( int )" ), s.ensureTabFocus )
   
 
   def tabInserted( s, i ):
-  
-    emit( s, SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
+ 
+    ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
+    ## is modified, even if Qt doesn't think it should.
+ 
+    s.emit( SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
 
 
   def tabRemoved( s, i ):
 
-    emit( s, SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
+    ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
+    ## is modified, even if Qt doesn't think it should.
 
-
-  def ensureTabFocus( s, i ):
-
-    widget = s.widget( i )
-    if widget: widget.setFocus()
+    s.emit( SIGNAL( "currentChanged ( int )" ), s.currentIndex() )

@@ -153,14 +153,6 @@ class World( QtCore.QObject ):
       emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
 
 
-  def close( s ):
-
-    if s.worldui:
-      
-      if singletons.mw.closeWorld( s.worldui ):
-        s.worldui = None
-
-
   def cleanupBeforeDelete( s ):
 
     s.socketpipeline.cleanupBeforeDelete()

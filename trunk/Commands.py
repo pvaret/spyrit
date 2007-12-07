@@ -164,7 +164,7 @@ class Commands:
     """
     Closes the current world.
     """
-    QtCore.QTimer.singleShot( 0, s.world.close )
+    QtCore.QTimer.singleShot( 0, s.world.worldui.close )
 
 
   def command_Set_Conf_Key( s, key, *args ):

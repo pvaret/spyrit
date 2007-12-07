@@ -22,39 +22,41 @@
 
 from localqt    import *
 
-from Singletons import singletons
+from Singletons     import singletons
+from ConfigObserver import ConfigObserver
 
 
 class ActionSet:
   
   def __init__( s, parent ):
    
-    config    = singletons.config
-    
     s.parent  = parent
+
+    config     = singletons.config
+    s.observer = ConfigObserver( config )
     
     s.actions = {
 
       ## Global actions
 
       "about":        ( "About %s..." % \
-                         config._app_name, ":/app/icon",        None       ),
-      "aboutqt":      ( "About Qt...",     ":/icon/qt-logo",    None       ),
-      "newworld":     ( "New world...",    ":/icon/new_world", "Ctrl+N"    ),
-      "quickconnect": ( "Quick connect...", None,               None       ),
-      "quit":         ( "Quit",            ":/icon/quit",      "Ctrl+Q"    ),
-      "nexttab":      ( "Next Tab",         None,              "Shift+Tab" ),
-      "previoustab":  ( "Previous Tab",     None,         "Shift+Ctrl+Tab" ),
+                         config._app_name,  ":/app/icon"       ),
+      "aboutqt":      ( "About Qt...",      ":/icon/qt-logo"   ),
+      "newworld":     ( "New world...",     ":/icon/new_world" ),
+      "quickconnect": ( "Quick connect...", None               ),
+      "quit":         ( "Quit",             ":/icon/quit"      ),
+      "nexttab":      ( "Next Tab",         None               ),
+      "previoustab":  ( "Previous Tab",     None               ),
 
       ## Per-world actions
 
-      "close":       ( "Close",        ":/icon/close",   "Ctrl+W"    ),
-      "connect":     ( "Connect",      ":/icon/connect", "Ctrl+Shift+S" ),
-      "disconnect":  ( "Disconnect",   ":/icon/disconnect",    "Ctrl+Shift+D" ),
-      "historyup":   ( "History Up",   ":/icon/up",      "Ctrl+Up"      ),
-      "historydown": ( "History Down", ":/icon/down",    "Ctrl+Down"    ),
-      "pageup":      ( "Page Up",      ":/icon/up",      "PgUp"    ),
-      "pagedown":    ( "Page Down",    ":/icon/down",    "PgDown"  ),
+      "close":       ( "Close",        ":/icon/close"      ),
+      "connect":     ( "Connect",      ":/icon/connect"    ),
+      "disconnect":  ( "Disconnect",   ":/icon/disconnect" ),
+      "historyup":   ( "History Up",   ":/icon/up"         ),
+      "historydown": ( "History Down", ":/icon/down"       ),
+      "pageup":      ( "Page Up",      ":/icon/up"         ),
+      "pagedown":    ( "Page Down",    ":/icon/down"       ),
 
     }
 
@@ -70,17 +72,29 @@ class ActionSet:
 
   def bindAction( s, action, slot ):
     
-    text, icon, shortcut = s.actions[ action ]
+    text, icon = s.actions[ action ]
     
     if icon:
       a = QtGui.QAction( QtGui.QIcon( icon ), text, s.parent )
       
     else:
       a = QtGui.QAction( text, s.parent )
-      
-    if shortcut:
-      a.setShortcut( QtGui.QKeySequence( shortcut ) )
-    
+
+    shortcutname = "shortcut_" + action
+
+    def set_action_shortcut():
+
+      ## Note how this closure uses 'a' and 'shortcutname' as bound variables.
+
+      shortcut = singletons.config[ shortcutname ]
+
+      if shortcut: a.setShortcut( QtGui.QKeySequence( shortcut ) )
+      else:        a.setShortcut( QtGui.QKeySequence() )
+     
+    s.observer.addCallback( shortcutname, set_action_shortcut )
+
+    set_action_shortcut()  ## Set the shortcut at least once!
+
     role = s.roles.get( action )
     
     if role:
@@ -93,9 +107,3 @@ class ActionSet:
     s.parent.addAction( a )
     
     return a
-    
-    
-  def allShortcuts( s ):
-    
-    return [ shortcut for text, icon, shortcut in s.actions.iteritems()
-                                                            if shortcut ]

@@ -56,6 +56,21 @@ _defaults = dict(
   save_input_history = 10,
   input_history      = [],
 
+  shortcut_about        = None,
+  shortcut_aboutqt      = None,
+  shortcut_newworld     = "Ctrl+N",
+  shortcut_quickconnect = None,
+  shortcut_quit         = "Ctrl+Q",
+  shortcut_nexttab      = "Shift+Tab",
+  shortcut_previoustab  = "Shift+Ctrl+Tab",
+  shortcut_close        = "Ctrl+W",
+  shortcut_connect      = "Ctrl+Shift+S",
+  shortcut_disconnect   = "Ctrl+Shift+D",
+  shortcut_historyup    = "Ctrl+Up",
+  shortcut_historydown  = "Ctrl+Down",
+  shortcut_pageup       = "PgUp",
+  shortcut_pagedown     = "PgDown",
+
   alert_on_activity  = True,
 
 )

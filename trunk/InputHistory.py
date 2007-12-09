@@ -25,10 +25,9 @@ from localqt import *
 
 class InputHistory:
 
-  def __init__( s, inputwidget, maxlength=0 ):
+  def __init__( s, inputwidget ):
 
     s.inputwidget = inputwidget
-    s.maxlength   = maxlength
     s.cursor      = -1
     s.currenttext = ""
 
@@ -42,7 +41,7 @@ class InputHistory:
       except ValueError:
         count = 0
 
-      s.history = conf._input_history[ -count: ]
+      s.history = conf._input_history[ :count ]
 
     else:
       s.history = []
@@ -50,7 +49,7 @@ class InputHistory:
 
   def historyUp( s ):
 
-    if len ( s.history ) ==  0 or s.cursor >= len( s.history ) - 1:
+    if len ( s.history ) == 0 or s.cursor >= len( s.history ) - 1:
       return
 
     s.cursor += 1
@@ -84,14 +83,17 @@ class InputHistory:
     s.cursor      = -1
 
     s.history.insert( 0, text )
-    
-    if s.maxlength and len( s.history ) > s.maxlength:
-      s.history.pop()
-
-
-  def cleanupBeforeDelete( s ):
 
     conf = s.inputwidget.world.conf
+
+    try:
+      maxlength = int( conf._max_history_length )
+      
+    except ValueError:
+      maxlength = 0
+
+    if maxlength and len( s.history ) > maxlength:
+      s.history.pop()
 
     if conf._save_input_history:
 
@@ -101,6 +103,9 @@ class InputHistory:
       except ValueError:
         count = 0
 
-      conf._input_history = s.history[ -count: ]
+      conf._input_history = s.history[ :count ]
+
+
+  def cleanupBeforeDelete( s ):
 
     del s.inputwidget

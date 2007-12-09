@@ -53,6 +53,7 @@ _defaults = dict(
   splitter_sizes = [ 1000, 100, 100 ],
 
   input_command_char = "/",
+  max_history_length = 0, ## Unlimited.
   save_input_history = 10,
   input_history      = [],
 

@@ -38,8 +38,6 @@ class World( QtCore.QObject ):
 
     if not conf: conf = singletons.worldsmanager.newWorldConf()
 
-    ## TODO: Update all this when a conf change SIGNAL is emitted.
-
     s.conf    = conf
     s.worldui = None
 

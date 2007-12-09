@@ -32,6 +32,25 @@ from Singletons     import singletons
 from PipelineChunks import chunktypes
 
 
+
+class LED:
+
+  CONNECTED_UNLIT    = QtGui.QIcon( ":/icon/unlit_green_led" )
+  CONNECTED_LIT      = QtGui.QIcon( ":/icon/lit_green_led" )
+  DISCONNECTED_UNLIT = QtGui.QIcon( ":/icon/unlit_red_led" )
+  DISCONNECTED_LIT   = QtGui.QIcon( ":/icon/lit_red_led" )
+
+  @staticmethod
+  def select( connected, lit ):
+
+    if connected:
+      return lit and LED.CONNECTED_LIT or LED.CONNECTED_UNLIT
+
+    else:
+      return lit and LED.DISCONNECTED_LIT or LED.DISCONNECTED_UNLIT
+
+
+
 class WorldUI( QtGui.QSplitter ):
 
   def __init__( s, parent, world ):
@@ -46,6 +65,15 @@ class WorldUI( QtGui.QSplitter ):
 
     connect( s.tab, SIGNAL( "tabChanged( bool )" ), s.onTabChanged )
 
+    s.blinker = QtCore.QTimeLine( 200 ) ## ms
+    s.blinker.setFrameRange( 0, 3 )
+    connect( s.blinker, SIGNAL( "frameChanged( int )" ), s.iconBlink )
+    connect( s.blinker, SIGNAL( "finished()" ), s.steadyIcon )
+
+    s.world.socketpipeline.addSink( s.startIconBlink )
+
+    ## Setup input and output UI.
+
     s.outputui = WorldOutputUI( s, world )
     s.addWidget( s.outputui )
 
@@ -58,7 +86,7 @@ class WorldUI( QtGui.QSplitter ):
     s.setFocusProxy( s.inputui )  ## TODO: correlate this with action of
                                   ## mousewheel on tab bar.
 
-    QtCore.QTimer.singleShot( 0, s.inputui, SLOT( "setFocus()" ) )
+    ## Setup splitter.
 
     s.setChildrenCollapsible( False )
     s.setSizes( world.conf._splitter_sizes )
@@ -108,6 +136,30 @@ class WorldUI( QtGui.QSplitter ):
 
       ## Ensure the currently visible world has focus.
       s.setFocus()
+      s.steadyIcon()
+
+
+  def startIconBlink( s, chunks ):
+
+    if not s.blinker.state() == QtCore.QTimeLine.Running:
+      s.blinker.start()
+
+
+  def iconBlink( s, frame ):
+
+    led = LED.select( connected=s.world.connected,
+                      lit=( frame % 2 != 1 ) )
+    s.tab.setTabIcon( led )
+
+
+  def steadyIcon( s ):
+
+    if s.blinker.state() == QtCore.QTimeLine.Running:
+      return
+
+    led = LED.select( connected=s.world.connected,
+                      lit=not s.isVisible() )
+    s.tab.setTabIcon( led )
 
 
   def saveSplitterPosition( s ):

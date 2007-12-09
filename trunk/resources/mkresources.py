@@ -2,8 +2,13 @@
 
 import os
 
+this_dir = os.path.dirname( __file__ )
+
+
 PYRCC    = "pyrcc4"
-RESOURCE = "resources.qrc"
-OUTPUT   = "../resources.py"
+RESOURCE = os.path.join( this_dir, "resources.qrc" )
+OUTPUT   = os.path.join( this_dir, "../resources.py" )
+
+
 
 os.execlp( PYRCC, PYRCC, "-o", OUTPUT, RESOURCE )

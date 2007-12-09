@@ -159,3 +159,4 @@ class SocketPipeline:
 
     s.pipeline.cleanupBeforeDelete()
     del s.pipeline
+    del s.socket

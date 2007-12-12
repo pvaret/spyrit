@@ -71,7 +71,6 @@ class WorldInputUI( QtGui.QTextEdit ):
       style_elements.append( "color: %s" \
                             % s.conf._input_font_color )
 
-
     if s.conf._input_font_name:
       
       style_elements.append( "font-family: %s" \
@@ -82,11 +81,13 @@ class WorldInputUI( QtGui.QTextEdit ):
       style_elements.append( "font-size: %dpt" \
                             % s.conf._input_font_size )
 
+    if s.conf._input_background_color:
+
+      style_elements.append( "background-color: %s" \
+                            % s.conf._input_background_color )
+
     if style_elements:
       s.setStyleSheet( "QTextEdit { %s }" % " ; ".join( style_elements ) )
-
-    s.viewport().palette().setColor( QtGui.QPalette.Base,
-                       QtGui.QColor( s.conf._input_background_color ) )
 
 
   def keyPressEvent( s, e ):

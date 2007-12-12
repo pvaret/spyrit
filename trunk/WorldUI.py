@@ -82,7 +82,6 @@ class WorldUI( QtGui.QSplitter ):
     
     world.socketpipeline.addSink( s.outputui.formatAndDisplay )
 
-    s.outputui.setFocusProxy( s.inputui )
     s.setFocusProxy( s.inputui )  ## TODO: correlate this with action of
                                   ## mousewheel on tab bar.
 

@@ -24,9 +24,11 @@
 
 from localqt import *
 
-from Utilities      import check_alert_is_available
-from ConfigObserver import ConfigObserver
-from PipelineChunks import *
+from Utilities          import check_alert_is_available
+from PipelineChunks     import *
+from ConfigObserver     import ConfigObserver
+from WorldBaseOutputUI  import WorldBaseOutputUI
+from WorldOutputOverlay import WorldOutputOverlay
 
 
 ## This is used a lot, so define it right away.
@@ -189,18 +191,13 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
 
 
-class WorldOutputUI( QtGui.QTextEdit ):
+class WorldOutputUI( WorldBaseOutputUI ):
  
   def __init__( s, parent, world ):
 
-    QtGui.QTextEdit.__init__( s, parent )
+    WorldBaseOutputUI.__init__( s, parent )
 
-    s.setReadOnly( True )
-    s.setUndoRedoEnabled( False )
-    s.setAutoFormatting( QtGui.QTextEdit.AutoNone )
-    s.setTabChangesFocus( True )
     s.setVerticalScrollBarPolicy( Qt.ScrollBarAlwaysOn )
-    s.viewport().setCursor( Qt.ArrowCursor )
 
     s.world = world
     s.conf  = world.conf
@@ -211,20 +208,26 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.charformat     = WorldOutputCharFormat( s.conf )
     s.infocharformat = WorldOutputCharFormat( s.conf )
 
+    s.refreshInfoCharFormat()
+
+    ConfigObserver( s.conf ).addCallback( "info_font_color",
+                                          s.refreshInfoCharFormat )
+
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
-                                   s.ensureScrollbarAtBottom )
+                                            s.ensureScrollbarAtBottom )
 
     s.pending_newline = False
-   
+
+    s.overlay = WorldOutputOverlay( s )
+
     s.refresh()
 
-    ConfigObserver( s.conf ).addCallback( 
+    ConfigObserver( s.conf ).addCallback(
                                           [
                                             "output_font_name",
                                             "output_font_size",
-                                            "output_background_color",
-                                            "info_font_color"
+                                            "output_background_color"
                                           ],
                                           s.refresh
                                         )
@@ -237,12 +240,12 @@ class WorldOutputUI( QtGui.QTextEdit ):
     if s.conf._output_font_size:
       stylesheet += ';  font-size: %dpt ' % s.conf._output_font_size
 
-    stylesheet += "}"
+    stylesheet += "; background-color: %s }" % s.conf._output_background_color
 
     s.setStyleSheet( stylesheet )
 
-    s.viewport().palette().setColor( QtGui.QPalette.Base,
-                       QtGui.QColor( s.conf._output_background_color ) )
+
+  def refreshInfoCharFormat( s ):
 
     s.infocharformat.reset()
     s.infocharformat.setFontItalic( True )
@@ -252,7 +255,24 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def onScroll( s, pos ):
 
+    previous = s.atbottom
+
     s.atbottom = ( pos == s.scrollbar.maximum() )
+
+    if previous == s.atbottom or not s.conf._output_scrollback_overlay:
+      return
+
+    if s.atbottom:
+
+      s.setUpdatesEnabled( False )
+      s.overlay.hide()
+      s.setUpdatesEnabled( True )
+
+    else:
+
+      s.setUpdatesEnabled( False )
+      s.overlay.show()
+      s.setUpdatesEnabled( True )
 
 
   def ensureScrollbarAtBottom( s, min, max ):
@@ -416,3 +436,4 @@ class WorldOutputUI( QtGui.QTextEdit ):
   def cleanupBeforeDelete( s ):
 
     del s.world
+    del s.overlay

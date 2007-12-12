@@ -35,20 +35,21 @@ _defaults = dict(
   show_splashscreen = False,
   mainwindow_size   = ( 800, 600 ),
 
-  output_font_name  = "Courier",
-  output_font_size  = 0,  ## Nothing, system default will be used.
-  output_font_color = "#c0c0c0",  ## light grey
+  output_font_name        = "Courier",
+  output_font_size        = 0,  ## Nothing, system default will be used.
+  output_font_color       = "#c0c0c0",  ## light grey
+  output_background_color = "#000000",  ## black
+
+  output_scrollback_overlay = False,
 
   bold_as_highlight = True,
 
   info_font_color   = "#606060",  ## dark grey
 
-  input_font_name  = "",  ## Nothing, system default will be used.
-  input_font_size  = 0,   ## Nothing, system default will be used.
-  input_font_color = "",  ## Nothing, system default will be used.
-
-  output_background_color = "#000000",  ## black
-  input_background_color  = "#ffffff",  ## white
+  input_font_name        = "",  ## Nothing, system default will be used.
+  input_font_size        = 0,   ## Nothing, system default will be used.
+  input_font_color       = "",  ## Nothing, system default will be used.
+  input_background_color = "#ffffff",  ## white
 
   splitter_sizes = [ 1000, 100, 100 ],
 

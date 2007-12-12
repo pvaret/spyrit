@@ -135,7 +135,22 @@ class MainWindow( QtGui.QMainWindow ):
     ConfigObserver( config.getDomain( config._worlds_section ) ) \
                    .addCallback( config.SECTIONS, s.refreshMenuWorlds )
 
+    s.refreshStyle()
+
+    ConfigObserver( config ).addCallback( "widget_style", s.refreshStyle )
+
     ## And with this, our Main Window is created, whee!
+
+
+  def refreshStyle( s ):
+
+    style = singletons.config._widget_style
+
+    if style:
+
+      s.setUpdatesEnabled( False )
+      QtGui.QApplication.setStyle( style )
+      s.setUpdatesEnabled( True )
 
 
   def refreshMenuWorlds( s ):

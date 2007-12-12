@@ -30,6 +30,8 @@ _defaults = dict(
   mainwindow_pos      = None,
   worlds_section      = "Worlds",
 
+  widget_style        = None,
+
   ssl                 = False,  ## By default, no SSL on sockets.
 
   show_splashscreen = False,

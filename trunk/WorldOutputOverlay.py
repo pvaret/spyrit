@@ -33,17 +33,35 @@ class WorldOutputOverlay ( WorldBaseOutputUI ):
     WorldBaseOutputUI.__init__( s, outputui )
 
     s.outputui = outputui
+    s.outputui.installEventFilter( s )
 
     s.setLineWrapMode( QtGui.QTextEdit.NoWrap )  ## TODO: Allow manual wrap 
                                                  ## calculation.
     s.setDocument( outputui.document() )
+
+    s.bar = QtGui.QWidget( s )
+    s.bar.setStyleSheet( "QWidget { background-color: palette(window) }" )
 
     connect( s.verticalScrollBar(), SIGNAL( "rangeChanged( int, int )" ),
                                              s.ensureAtBottom )
     s.hide()
 
 
-  def showEvent( s, e ):
+  def eventFilter( s, widget, e ):
+
+    if e.type() == QtCore.QEvent.Resize:
+
+      QtCore.QTimer.singleShot( 0, s.onResize )
+
+    return QtCore.QObject.eventFilter( s, widget, e )
+
+
+  def onResize( s ):
+
+    if s.isVisible(): s.computeSizes()
+
+
+  def computeSizes( s ):
 
     FACTOR = 4
     
@@ -56,7 +74,14 @@ class WorldOutputOverlay ( WorldBaseOutputUI ):
     frame_x = s.geometry().width() - s.viewport().geometry().width()
     frame_y = s.geometry().height() - s.viewport().geometry().height()
 
+    s.bar.setGeometry( 0, 0, width+frame_x, 1 )
+
     s.setGeometry( x, y+frame_y, width+frame_x, height )
+
+
+  def showEvent( s, e ):
+
+    s.computeSizes()
 
     return WorldBaseOutputUI.showEvent( s, e )
 
@@ -112,3 +137,9 @@ class WorldOutputOverlay ( WorldBaseOutputUI ):
 
     if scrollbar.value() != max:
       scrollbar.setValue( max )
+
+
+  def cleanupBeforeDelete( s ):
+
+    del s.bar
+    s.setDocument( None )

@@ -435,5 +435,7 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
   def cleanupBeforeDelete( s ):
 
+    s.overlay.cleanupBeforeDelete()
+
     del s.world
     del s.overlay

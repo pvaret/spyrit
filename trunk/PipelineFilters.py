@@ -306,8 +306,8 @@ class AnsiFilter( BaseFilter ):
 
         startmatch = possible_unfinished.start()
 
-        if startmatch > pos:
-          yield( ByteChunk( text[ pos:startmatch ] ) )
+        if startmatch > currentpos:
+          yield( ByteChunk( text[ currentpos:startmatch ] ) )
 
         s.postpone( ByteChunk( text[ startmatch: ] ) )
         

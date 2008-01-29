@@ -43,7 +43,8 @@ class WorldOutputOverlay ( WorldBaseOutputUI ):
     s.bar.setStyleSheet( "QWidget { background-color: palette(window) }" )
 
     connect( s.verticalScrollBar(), SIGNAL( "rangeChanged( int, int )" ),
-                                             s.ensureAtBottom )
+                                    s.ensureAtBottom )
+
     s.hide()
 
 
@@ -83,7 +84,12 @@ class WorldOutputOverlay ( WorldBaseOutputUI ):
 
     s.computeSizes()
 
-    return WorldBaseOutputUI.showEvent( s, e )
+    ret = WorldBaseOutputUI.showEvent( s, e )
+
+    scrollbar = s.verticalScrollBar()
+    scrollbar.setValue( scrollbar.maximum() )
+
+    return ret
 
 
   def mousePressEvent( s, e ):
@@ -141,5 +147,7 @@ class WorldOutputOverlay ( WorldBaseOutputUI ):
 
   def cleanupBeforeDelete( s ):
 
-    del s.bar
+    s.outputui.removeEventFilter( s )
+    s.bar      = None
+    s.outputui = None
     s.setDocument( None )

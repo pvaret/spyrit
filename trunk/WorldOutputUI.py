@@ -210,8 +210,9 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
     s.refreshInfoCharFormat()
 
-    ConfigObserver( s.conf ).addCallback( "info_font_color",
-                                          s.refreshInfoCharFormat )
+    s.observer = ConfigObserver( s.conf )
+
+    s.observer.addCallback( "info_font_color", s.refreshInfoCharFormat )
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
@@ -219,18 +220,18 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
     s.pending_newline = False
 
-    s.overlay = WorldOutputOverlay( s )
-
     s.refresh()
 
-    ConfigObserver( s.conf ).addCallback(
-                                          [
-                                            "output_font_name",
-                                            "output_font_size",
-                                            "output_background_color"
-                                          ],
-                                          s.refresh
-                                        )
+    s.observer.addCallback( [ "output_font_name",
+                              "output_font_size",
+                              "output_background_color" ],
+                            s.refresh )
+
+    s.overlay = None
+
+    s.setupOverlay()
+
+    s.observer.addCallback( "output_scrollback_overlay", s.setupOverlay )
 
 
   def refresh( s ):
@@ -253,13 +254,25 @@ class WorldOutputUI( WorldBaseOutputUI ):
                QtGui.QBrush( QtGui.QColor( s.conf._info_font_color ) ) )
 
 
+  def setupOverlay( s ):
+
+    if not s.overlay and     s.conf._output_scrollback_overlay:
+
+      s.overlay = WorldOutputOverlay( s )
+
+    if     s.overlay and not s.conf._output_scrollback_overlay:
+
+      s.overlay.cleanupBeforeDelete()
+      s.overlay = None
+
+
   def onScroll( s, pos ):
 
     previous = s.atbottom
 
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
-    if previous == s.atbottom or not s.conf._output_scrollback_overlay:
+    if previous == s.atbottom or not s.overlay:
       return
 
     if s.atbottom:
@@ -439,3 +452,4 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
     del s.world
     del s.overlay
+    del s.observer

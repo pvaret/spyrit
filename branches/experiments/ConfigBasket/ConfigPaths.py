@@ -1,1 +1,0 @@
-ConfigFilename = "toto.ini"

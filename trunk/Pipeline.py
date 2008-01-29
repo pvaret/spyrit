@@ -106,5 +106,5 @@ class Pipeline:
 
   def cleanupBeforeDelete( s ):
 
-    del s.filters
-    del s.sinks
+    s.filters = None
+    s.sinks   = None

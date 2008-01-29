@@ -469,5 +469,5 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def cleanupBeforeDelete( s ):
 
-    del s.world
-    del s.observer
+    s.world    = None
+    s.observer = None

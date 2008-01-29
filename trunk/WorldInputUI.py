@@ -135,5 +135,5 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.commands.cleanupBeforeDelete()
     s.history.cleanupBeforeDelete()
 
-    del s.commands
-    del s.history
+    s.commands = None
+    s.history  = None

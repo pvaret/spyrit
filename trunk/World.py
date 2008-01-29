@@ -155,5 +155,5 @@ class World( QtCore.QObject ):
 
     s.socketpipeline.cleanupBeforeDelete()
 
-    del s.worldui
-    del s.socketpipeline
+    s.worldui        = None
+    s.socketpipeline = None

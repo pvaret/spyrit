@@ -203,5 +203,5 @@ class Commands:
 
   def cleanupBeforeDelete( s ):
 
-    del s.commands
-    del s.world
+    s.commands = None
+    s.world    = None

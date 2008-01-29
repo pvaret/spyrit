@@ -108,4 +108,4 @@ class InputHistory:
 
   def cleanupBeforeDelete( s ):
 
-    del s.inputwidget
+    s.inputwidget = None

@@ -205,9 +205,9 @@ class WorldUI( QtGui.QSplitter ):
     s.inputui.cleanupBeforeDelete()
     s.outputui.cleanupBeforeDelete()
 
-    del s.world
-    del s.inputui
-    del s.outputui
-    del s.actionset
-    del s.toolbar
-    del s.tab
+    s.world     = None
+    s.inputui   = None
+    s.outputui  = None
+    s.actionset = None
+    s.toolbar   = None
+    s.tab       = None

@@ -158,5 +158,5 @@ class SocketPipeline:
   def cleanupBeforeDelete( s ):
 
     s.pipeline.cleanupBeforeDelete()
-    del s.pipeline
-    del s.socket
+    s.pipeline = None
+    s.socket   = None

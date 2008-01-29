@@ -27,8 +27,6 @@ from localqt import *
 from Utilities          import check_alert_is_available
 from PipelineChunks     import *
 from ConfigObserver     import ConfigObserver
-from WorldBaseOutputUI  import WorldBaseOutputUI
-from WorldOutputOverlay import WorldOutputOverlay
 
 
 ## This is used a lot, so define it right away.
@@ -191,13 +189,21 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
 
 
-class WorldOutputUI( WorldBaseOutputUI ):
+class WorldOutputUI( QtGui.QTextEdit ):
  
   def __init__( s, parent, world ):
 
-    WorldBaseOutputUI.__init__( s, parent )
+    QtGui.QTextEdit.__init__( s, parent )
 
-    s.setVerticalScrollBarPolicy( Qt.ScrollBarAlwaysOn )
+    s.setReadOnly( True )
+    s.setUndoRedoEnabled( False )
+    s.setAutoFormatting( QtGui.QTextEdit.AutoNone )
+    s.setTabChangesFocus( True )
+    s.viewport().setCursor( Qt.ArrowCursor )
+    s.setFocusPolicy( Qt.NoFocus )
+
+    s.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
+    s.setVerticalScrollBarPolicy(   Qt.ScrollBarAlwaysOn )
 
     s.world = world
     s.conf  = world.conf
@@ -227,8 +233,6 @@ class WorldOutputUI( WorldBaseOutputUI ):
                               "output_background_color" ],
                             s.refresh )
 
-    s.overlay = None
-
     s.setupOverlay()
 
     s.observer.addCallback( "output_scrollback_overlay", s.setupOverlay )
@@ -256,14 +260,8 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
   def setupOverlay( s ):
 
-    if not s.overlay and     s.conf._output_scrollback_overlay:
-
-      s.overlay = WorldOutputOverlay( s )
-
-    if     s.overlay and not s.conf._output_scrollback_overlay:
-
-      s.overlay.cleanupBeforeDelete()
-      s.overlay = None
+    s.has_overlay = s.conf._output_scrollback_overlay
+    s.repaint()
 
 
   def onScroll( s, pos ):
@@ -272,20 +270,43 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
-    if previous == s.atbottom or not s.overlay:
+
+  def paintEvent( s, e ):
+
+    FACTOR = 4
+
+    if s.atbottom or not s.has_overlay:
+
+      QtGui.QTextEdit.paintEvent( s, e )
       return
 
-    if s.atbottom:
+    ## Draw the top half of the viewport.
 
-      s.setUpdatesEnabled( False )
-      s.overlay.hide()
-      s.setUpdatesEnabled( True )
+    height, width = s.viewport().height(), s.viewport().width()
+    split_y = int( height * ( 1 - 1.0/FACTOR ) )
 
-    else:
+    rect = e.rect().intersected( QtCore.QRect( 0, 0, width, split_y ) )
 
-      s.setUpdatesEnabled( False )
-      s.overlay.show()
-      s.setUpdatesEnabled( True )
+    if not rect.isEmpty():
+      QtGui.QTextEdit.paintEvent( s, QtGui.QPaintEvent( rect ) )
+
+    ## Draw separation line.
+
+    p = QtGui.QPainter( s.viewport() )
+
+    p.setPen( qApp().palette().color( QtGui.QPalette.Window ) )
+    p.drawLine( 0, split_y, width, split_y )
+
+    ## Draw the bottom of the document on the bottom half of the viewport.
+
+    doc        = s.document()
+    doc_height = doc.size().height()
+
+    p.translate( 0, -doc_height + height )
+
+    doc.drawContents( p, QtCore.QRectF( 0, doc_height - height + split_y + 1,
+                                        width, height - split_y - 1 ) )
+
 
 
   def ensureScrollbarAtBottom( s, min, max ):
@@ -448,8 +469,5 @@ class WorldOutputUI( WorldBaseOutputUI ):
 
   def cleanupBeforeDelete( s ):
 
-    s.overlay.cleanupBeforeDelete()
-
     del s.world
-    del s.overlay
     del s.observer

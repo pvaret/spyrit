@@ -42,7 +42,7 @@ _defaults = dict(
   output_font_color       = "#c0c0c0",  ## light grey
   output_background_color = "#000000",  ## black
 
-  output_scrollback_overlay = False,
+  output_scrollback_overlay = True,
 
   bold_as_highlight = True,
 

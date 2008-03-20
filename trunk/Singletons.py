@@ -26,35 +26,24 @@
 
 class Singletons:
 
-  def __init__( s, *items ):
+  def __init__( s ):
 
-    s._classes   = {}
     s._instances = {}
 
-    for name, klass in items:
-      s.addClass( name, klass )
 
+  def addInstance( s, name, instance ):
 
-  def addClass( s, name, klass ):
+    assert name not in s._instances
 
-    assert klass not in s
-
-    s._classes[ name ] = klass
+    s._instances[ name ] = instance
 
 
   def __getattr__( s, name ):
 
-    if name not in s._classes.keys():
+    if name not in s._instances:
       raise AttributeError( name )
 
-    if name not in s._instances.keys():
-      s._instances[ name ] = s._classes[ name ] ()
-
     return s._instances[ name ]
-
-
-  def __contains__( s, item ):
-    return ( item in s._classes.values() )
 
 
 singletons = Singletons()

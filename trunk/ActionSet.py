@@ -93,8 +93,6 @@ class ActionSet:
      
     s.observer.addCallback( shortcutname, set_action_shortcut )
 
-    set_action_shortcut()  ## Set the shortcut at least once!
-
     role = s.roles.get( action )
     
     if role:

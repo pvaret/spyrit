@@ -42,8 +42,6 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.history  = InputHistory( s )
     s.commands = Commands( world )
 
-    s.refresh()
-
     ConfigObserver( s.conf ).addCallback( 
                                           [
                                             "input_font_color",

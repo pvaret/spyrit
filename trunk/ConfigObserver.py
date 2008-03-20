@@ -34,9 +34,11 @@ class ConfigObserver:
     for callback in s.callbacks.get( key, [] ): callback()
 
 
-  def addCallback( s, keys, callback ):
+  def addCallback( s, keys, callback, call_once=True ):
 
     if type( keys ) not in ( type( [] ), type( () ) ): keys = [ keys ]
 
     for key in keys:
       s.callbacks.setdefault( key, [] ).append( callback )
+
+    if call_once: callback()

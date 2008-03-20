@@ -57,18 +57,12 @@ class Application( QtGui.QApplication ):
     except ImportError:
       messages.warn( "Resource file not found. No graphics will be loaded." )
 
-    ## Load and register the singleton classes that are used throughout the
-    ## software.
+    ## Load and register the Congig singleton instance.
 
-    from Config        import Config
-    from MainWindow    import MainWindow
-    from WorldsManager import WorldsManager
-    
-    singletons.addClass( "mw",            MainWindow )
-    singletons.addClass( "config",        Config )
-    singletons.addClass( "worldsmanager", WorldsManager )
+    from Config import Config
+    singletons.addInstance( "config", Config() )
 
-    if False: #config._show_splashscreen:
+    if False: #singletons.config._show_splashscreen:
 
       splash = QtGui.QSplashScreen( QtGui.QPixmap( ":/app/splash" ) )
       splash.show()
@@ -77,6 +71,17 @@ class Application( QtGui.QApplication ):
     else: splash = None
 
     s.setWindowIcon( QtGui.QIcon( ":/app/icon" ) )
+
+
+    ## Load and register the rest of the singleton instances that are used
+    ## throughout the software. Note that they are created in the order they
+    ## depend on each other.
+
+    from WorldsManager import WorldsManager
+    from MainWindow    import MainWindow
+    
+    singletons.addInstance( "worldsmanager", WorldsManager() )
+    singletons.addInstance( "mw",            MainWindow() )
 
     singletons.mw.show()
 
@@ -128,4 +133,5 @@ class Application( QtGui.QApplication ):
 
       else:
 
+        ## Assume arguments are given as UTF-8.
         singletons.mw.openWorldByName( arg.decode( "utf8", "replace" ) )

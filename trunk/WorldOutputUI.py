@@ -79,10 +79,9 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     s.highlight = False
     s.fgcolor   = None
 
-    s.refresh()
-    s.reset()
-
     ConfigObserver( s.conf ).addCallback( "output_font_color", s.refresh )
+
+    s.reset()
 
 
   def refresh( s ):

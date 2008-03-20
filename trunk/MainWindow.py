@@ -94,8 +94,6 @@ class MainWindow( QtGui.QMainWindow ):
     s.menu_connect.setTitle( "Connect to..." )
     s.menu_connect.setIcon( QtGui.QIcon( ":/icon/worlds" ) )
 
-    s.refreshMenuWorlds()
-
     s.menu_help = menubar.addMenu( "Help" )
     s.menu_help.addAction( s.action_about )
     s.menu_help.addAction( s.action_aboutqt )
@@ -134,8 +132,6 @@ class MainWindow( QtGui.QMainWindow ):
 
     ConfigObserver( config.getDomain( config._worlds_section ) ) \
                    .addCallback( config.SECTIONS, s.refreshMenuWorlds )
-
-    s.refreshStyle()
 
     ConfigObserver( config ).addCallback( "widget_style", s.refreshStyle )
 

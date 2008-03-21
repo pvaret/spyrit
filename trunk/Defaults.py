@@ -37,6 +37,8 @@ _defaults = dict(
   show_splashscreen = False,
   mainwindow_size   = ( 800, 600 ),
 
+  toolbar_icon_size = 24,
+
   output_font_name        = "Courier",
   output_font_size        = 0,  ## Nothing, system default will be used.
   output_font_color       = "#c0c0c0",  ## light grey

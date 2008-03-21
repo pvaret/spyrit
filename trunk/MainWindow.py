@@ -133,7 +133,8 @@ class MainWindow( QtGui.QMainWindow ):
     ConfigObserver( config.getDomain( config._worlds_section ) ) \
                    .addCallback( config.SECTIONS, s.refreshMenuWorlds )
 
-    ConfigObserver( config ).addCallback( "widget_style", s.refreshStyle )
+    ConfigObserver( config ).addCallback( "widget_style", s.refreshStyle ) \
+                            .addCallback( "toolbar_icon_size", s.refreshIcons )
 
     ## And with this, our Main Window is created, whee!
 
@@ -146,7 +147,19 @@ class MainWindow( QtGui.QMainWindow ):
 
       s.setUpdatesEnabled( False )
       QtGui.QApplication.setStyle( style )
+      s.refreshIcons()
       s.setUpdatesEnabled( True )
+
+
+  def refreshIcons( s ):
+
+    size = singletons.config._toolbar_icon_size
+
+    if not size:
+      size = QtGui.QApplication.style() \
+                  .pixelMetric( QtGui.QStyle.PM_ToolBarIconSize )
+
+    s.toolbar_main.setIconSize( QtCore.QSize( size, size ) )
 
 
   def refreshMenuWorlds( s ):

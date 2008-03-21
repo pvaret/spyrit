@@ -128,6 +128,20 @@ class WorldUI( QtGui.QSplitter ):
 
     s.toolbar.addSeparator()
 
+    s.updateToolBarIcons()
+
+    connect( singletons.mw.toolbar_main, SIGNAL( "iconSizeChanged( QSize )" ),
+                                         s.updateToolBarIcons )
+
+
+  def updateToolBarIcons( s, new_size=None ):
+
+    if new_size:
+      s.toolbar.setIconSize( new_size )
+
+    else:
+      s.toolbar.setIconSize( singletons.mw.toolbar_main.iconSize() )
+
 
   def onTabChanged( s, is_now_visible ):
 

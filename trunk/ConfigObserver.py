@@ -42,3 +42,5 @@ class ConfigObserver:
       s.callbacks.setdefault( key, [] ).append( callback )
 
     if call_once: callback()
+
+    return s  ## Return self, so as to make it possible to chain calls.

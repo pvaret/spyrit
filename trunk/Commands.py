@@ -167,7 +167,7 @@ class Commands:
     QtCore.QTimer.singleShot( 0, s.world.worldui.close )
 
 
-  def command_Set_Conf_Key( s, key, *args ):
+  def command_World_Conf_Set( s, key, *args ):
 
     """
     Sets the given configuration key to the given value on the current world.
@@ -184,7 +184,7 @@ class Commands:
     s.world.conf[ key ] = args
 
 
-  def command_Set_Global_Conf_Key( s, key, *args ):
+  def command_Conf_Set( s, key, *args ):
 
     """
     Sets the given configuration key to the given value in the global scope.

@@ -96,7 +96,11 @@ class WorldUI( QtGui.QSplitter ):
 
     s.toolbar = QtGui.QToolBar()
     s.toolbar.setMovable( False )
+    s.toolbar.setFloatable( False )
+    s.toolbar.setContextMenuPolicy( Qt.PreventContextMenu )
     s.toolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
+
+    s.toolbar.setWindowTitle( world.title() )
 
     s.actionset = ActionSet( s )
 
@@ -160,8 +164,8 @@ class WorldUI( QtGui.QSplitter ):
 
   def iconBlink( s, frame ):
 
-    led = LED.select( connected=s.world.connected,
-                      lit=( frame % 2 != 1 ) )
+    led = LED.select( connected = s.world.connected,
+                      lit       = ( frame % 2 != 1 ) )
     s.tab.setTabIcon( led )
 
 
@@ -170,8 +174,8 @@ class WorldUI( QtGui.QSplitter ):
     if s.blinker.state() == QtCore.QTimeLine.Running:
       return
 
-    led = LED.select( connected=s.world.connected,
-                      lit=not s.isVisible() )
+    led = LED.select( connected = s.world.connected,
+                      lit       = not s.isVisible() )
     s.tab.setTabIcon( led )
 
 
@@ -214,6 +218,8 @@ class WorldUI( QtGui.QSplitter ):
   def cleanupBeforeDelete( s ):
 
     s.setParent( None )
+
+    s.blinker.stop()
 
     s.world.cleanupBeforeDelete()
     s.inputui.cleanupBeforeDelete()

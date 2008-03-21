@@ -201,6 +201,18 @@ class Commands:
     singletons.config[ key ] = args
 
 
+  def command_Conf_Reset( s, key ):
+
+    try: del singletons.config[ key ]
+    except KeyError: pass
+
+
+  def command_World_Conf_Reset( s, key ):
+
+    try: del s.world.conf[ key ]
+    except KeyError: pass
+
+
   def cleanupBeforeDelete( s ):
 
     s.commands = None

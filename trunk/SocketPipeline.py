@@ -75,7 +75,6 @@ class SocketPipeline:
   def disconnectFromHost( s ):
 
     s.socket.disconnectFromHost()
-    s.pipeline.resetInternalState()
   
   
   def abort( s ):

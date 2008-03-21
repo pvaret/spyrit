@@ -84,6 +84,7 @@ class MainWindow( QtGui.QMainWindow ):
     ## Create menus.
 
     menubar = s.menuBar()
+    menubar.setContextMenuPolicy( Qt.PreventContextMenu )
 
     s.menu_file = menubar.addMenu( "File" )
     s.menu_file.addAction( s.action_quit )
@@ -103,6 +104,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.toolbar_main = QtGui.QToolBar( "Main Toolbar", s )
     s.toolbar_main.setMovable( False )
+    s.toolbar_main.setFloatable( False )
+    s.toolbar_main.setContextMenuPolicy( Qt.PreventContextMenu )
     s.toolbar_main.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
 
     s.addToolBar( s.toolbar_main )
@@ -130,6 +133,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Link configuration changes to the appropriate updaters.
 
+    s.initial_style = QtGui.QApplication.style().objectName()
+
     ConfigObserver( config.getDomain( config._worlds_section ) ) \
                    .addCallback( config.SECTIONS, s.refreshMenuWorlds )
 
@@ -143,12 +148,12 @@ class MainWindow( QtGui.QMainWindow ):
 
     style = singletons.config._widget_style
 
-    if style:
+    if not style: style = s.initial_style
 
-      s.setUpdatesEnabled( False )
-      QtGui.QApplication.setStyle( style )
-      s.refreshIcons()
-      s.setUpdatesEnabled( True )
+    s.setUpdatesEnabled( False )
+    QtGui.QApplication.setStyle( style )
+    s.refreshIcons()
+    s.setUpdatesEnabled( True )
 
 
   def refreshIcons( s ):

@@ -19,9 +19,6 @@
 ## Contains the default configuration items.
 ##
 
-from localqt import *
-
-
 _defaults = dict(
 
   app_name            = "Spyrit",

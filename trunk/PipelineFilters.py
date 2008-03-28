@@ -371,42 +371,59 @@ class EndLineFilter( BaseFilter ):
 
 ## ---[ Class UnicodeTextFilter ]--------------------------------------
 
-class Stream:
-
-  ## Small buffer class meant for use by the Unicode stream decoder.
-
-  def __init__( s ):
-
-    s._buffer = ""
-
-
-  def write( s, str ):
-
-    s._buffer = str
-
-
-  def read( s ):
-
-    data      = s._buffer
-    s._buffer = ""
-    return data
-
-
 import codecs
+
+class StreamingDecoder:
+
+  ## WORKAROUND: Python 2.4 doesn't come with an incremental Unicode decoder,
+  ## so we need to provide one until Python 2.5 is installed everywhere.
+
+  class Buffer:
+
+    ## Small file-like buffer class meant for use by the Unicode stream decoder.
+
+    def __init__( s ):
+
+      s._buffer = ""
+
+
+    def write( s, str ):
+
+      s._buffer = str
+
+
+    def read( s ):
+
+      data      = s._buffer
+      s._buffer = ""
+      return data
+
+
+  def __init__( s, encoding, errors="strict" ):
+
+    s.buffer  = s.Buffer()
+    s.decoder = codecs.getreader( encoding ) ( s.buffer, errors )
+  
+
+  def decode( s, str ):
+
+    s.buffer.write( str )
+    return s.decoder.read()
+
+
+  def reset( s ):
+
+    s.buffer.read()
+    s.decoder.reset()
+
+
 
 class UnicodeTextFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
-  
-  def __init__( s, *args ):
-    
-    s.decoderstream = Stream()
-    s.setEncoding( "ascii" )
-
-    BaseFilter.__init__( s, *args )
 
 
-  def setEncoding( s, encoding ):
+  def setEncoding( s, encoding="ascii" ):
 
     try:
       codecs.lookup( encoding )
@@ -417,22 +434,25 @@ class UnicodeTextFilter( BaseFilter ):
       encoding = "ascii"
 
     s.encoding = encoding
-    s.decoder  = codecs.getreader( encoding ) ( s.decoderstream, "replace" )
+
+    if hasattr( codecs, "getincrementaldecoder" ):  ## True as of Python 2.5
+      s.decoder = codecs.getincrementaldecoder( encoding ) ( "replace" )
+
+    else:
+      s.decoder = StreamingDecoder( encoding, "replace" )
 
 
   def resetInternalState( s ):
 
     BaseFilter.resetInternalState( s )
 
-    s.decoderstream.read() ## Clear the stream buffer.
+    s.setEncoding()
     s.decoder.reset()
-    s.setEncoding( "ascii" )
 
 
   def processChunk( s, chunk ):
  
-    s.decoderstream.write( chunk.data )
-    text = s.decoder.read()
+    text = s.decoder.decode( chunk.data )
 
     if text: yield UnicodeTextChunk( text )
 

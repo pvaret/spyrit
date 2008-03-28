@@ -22,6 +22,7 @@
 
 import re
 
+from Messages       import messages
 from PipelineChunks import *
 
 
@@ -370,31 +371,70 @@ class EndLineFilter( BaseFilter ):
 
 ## ---[ Class UnicodeTextFilter ]--------------------------------------
 
+class Stream:
+
+  ## Small buffer class meant for use by the Unicode stream decoder.
+
+  def __init__( s ):
+
+    s._buffer = ""
+
+
+  def write( s, str ):
+
+    s._buffer = str
+
+
+  def read( s ):
+
+    data      = s._buffer
+    s._buffer = ""
+    return data
+
+
+import codecs
+
 class UnicodeTextFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
   
   def __init__( s, *args ):
     
+    s.decoderstream = Stream()
+    s.setEncoding( "ascii" )
+
     BaseFilter.__init__( s, *args )
-    s.encoding = "ascii"
+
+
+  def setEncoding( s, encoding ):
+
+    try:
+      codecs.lookup( encoding )
+
+    except LookupError:
+
+      messages.warn( "Unknown encoding '%s'; reverting to ASCII." % encoding )
+      encoding = "ascii"
+
+    s.encoding = encoding
+    s.decoder  = codecs.getreader( encoding ) ( s.decoderstream, "replace" )
 
 
   def resetInternalState( s ):
 
     BaseFilter.resetInternalState( s )
-    s.encoding = "ascii"
+
+    s.decoderstream.read() ## Clear the stream buffer.
+    s.decoder.reset()
+    s.setEncoding( "ascii" )
 
 
   def processChunk( s, chunk ):
  
-    ## FIXME: this may break if the chunk ends with an unfinished UTF-8
-    ## sequence. I.e., the character whose UTF-8 encoding is split over
-    ## two packets (is that even possible?), would be ignored.
-    ## Mostly a theorical concern, though, since the default encoding here is
-    ## ASCII.
- 
-    yield UnicodeTextChunk( chunk.data.decode( s.encoding, "replace" ) )
+    s.decoderstream.write( chunk.data )
+    text = s.decoder.read()
+
+    if text: yield UnicodeTextChunk( text )
 
 
   def formatForSending( s, data ):

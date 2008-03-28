@@ -136,7 +136,9 @@ class WorldsManager( QtCore.QObject ):
 
     confs = s.hostport_mapping.get( ( host, port ) )
 
-    if len( confs ) == 1:  ## One matching configuration found, and only one.
+    if confs and len( confs ) == 1:
+
+      ## One matching configuration found, and only one.
       return s.newWorld( confs[ 0 ] )
 
     return None

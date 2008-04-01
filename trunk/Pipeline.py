@@ -21,11 +21,7 @@
 ## It works by assembling a series of Filters.
 ##
 
-
-from PipelineChunks  import *
-from PipelineFilters import *
-
-## ---[ Class Pipeline ]-----------------------------------------------
+from PipelineChunks import ByteChunk, theEndOfPacketChunk
 
 class Pipeline:
   

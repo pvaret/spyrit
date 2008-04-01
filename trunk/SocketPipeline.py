@@ -23,12 +23,16 @@
 
 from localqt import *
 
-from Pipeline        import *
-from PipelineChunks  import *
-from PipelineFilters import *
+from Pipeline        import Pipeline
+from PipelineChunks  import NetworkChunk
 
-from Messages        import messages
-from Utilities       import check_ssl_is_available
+from TelnetFilter      import TelnetFilter
+from AnsiFilter        import AnsiFilter
+from EndLineFilter     import EndLineFilter
+from UnicodeTextFilter import UnicodeTextFilter
+
+from Messages  import messages
+from Utilities import check_ssl_is_available
 
 
 class SocketPipeline:

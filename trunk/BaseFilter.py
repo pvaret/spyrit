@@ -21,7 +21,7 @@
 ##
 
 
-from PipelineChunks import theEndOfPacketChunk
+from PipelineChunks import theEndOfPacketChunk, ChunkTypeMismatch
 
 
 class BaseFilter:

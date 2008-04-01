@@ -272,7 +272,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def paintEvent( s, e ):
 
-    FACTOR = 4
+    FACTOR = 6
 
     if s.atbottom or not s.has_overlay:
 

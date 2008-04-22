@@ -92,13 +92,14 @@ class WorldsManager( QtCore.QObject ):
            ]
 
 
-  def newWorldConf( s, host="", port=8000, ssl=False, name="" ):
+  def newWorldConf( s, host="", port=0, ssl=False, name="" ):
 
     worldconf       = s.worldconfig.createAnonymousDomain()
-    worldconf._host = host
-    worldconf._port = port
-    worldconf._name = name
-    worldconf._ssl  = ssl
+
+    if host: worldconf._host = host
+    if port: worldconf._port = port
+    if name: worldconf._name = name
+    if ssl:  worldconf._ssl  = ssl
 
     return worldconf
     
@@ -116,7 +117,7 @@ class WorldsManager( QtCore.QObject ):
     return World( conf )
     
 
-  def newAnonymousWorld( s, host="", port=8000, ssl=False ):
+  def newAnonymousWorld( s, host="", port=0, ssl=False ):
 
     conf = s.newWorldConf( host, port, ssl )
     return s.newWorld( conf )

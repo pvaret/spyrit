@@ -160,6 +160,7 @@ class ConfigBasket( object ):
     s.name      = None
     s.basket    = {}
     s.domains   = {}
+    s.types     = {}
     s.parent    = parent
     s.notifiers = []
 
@@ -220,6 +221,23 @@ class ConfigBasket( object ):
     del s.basket[ attr ]
 
     s.notifyKeyChanged( attr )
+
+
+  def setTypes( s, types ):
+
+    s.types = types
+
+
+  def getType( s, attr ):
+
+    if s.types:
+      return s.types.get( attr )
+
+    if s.parent:
+      return s.parent.getType( attr )
+
+    else:
+      return None
 
 
   def reset( s ):

@@ -74,11 +74,9 @@ class ActionSet:
     
     text, icon = s.actions[ action ]
     
-    if icon:
-      a = QtGui.QAction( QtGui.QIcon( icon ), text, s.parent )
-      
-    else:
-      a = QtGui.QAction( text, s.parent )
+    a = QtGui.QAction( text, s.parent )
+
+    if icon: a.setIcon( QtGui.QIcon( icon ) )
 
     shortcutname = "shortcut_" + action
 
@@ -95,8 +93,7 @@ class ActionSet:
 
     role = s.roles.get( action )
     
-    if role:
-      a.setMenuRole( role )
+    if role: a.setMenuRole( role )
     
     connect( a, SIGNAL( "triggered()" ), slot )
 

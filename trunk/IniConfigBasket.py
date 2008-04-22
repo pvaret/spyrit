@@ -20,16 +20,19 @@
 ##
 
 
+from Messages import messages
+
+
 ## ---[ function parseIniLine ]----------------------------------------
 
 import re
 
-RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)" )
-RE_KEYVALUE = re.compile( r"^(\w+)\s*=\s*(.*)" )
+RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
+RE_KEYVALUE = re.compile( r"^(\w+)\s*=\s*(.*)", re.UNICODE )
 
 def parseIniLine( line ):
 
-  result = dict( key="", value="", section="", sectiondepth=0 )
+  result = dict( key=u"", value=u"", section=u"", sectiondepth=0 )
   
   line=line.strip()
 
@@ -53,13 +56,15 @@ def parseIniLine( line ):
 ## ---[ Class IniConfigBasket ]----------------------------------------
 
 import codecs
-import demjson
+
+from Defaults     import defaults
 from ConfigBasket import ConfigBasket
+
 
 class IniConfigBasket( ConfigBasket ):
 
   ENCODING = "utf-8"
-  INDENT   = "  "
+  INDENT   = u"  "
 
 
   def __init__( s, filename ):
@@ -77,12 +82,11 @@ class IniConfigBasket( ConfigBasket ):
 
     except IOError:
       ## Unable to load configuration. Aborting.
+      messages.error( "Unable to load configuration file %s!" % s.filename )
       return
 
     s.reset()
     s.resetDomains()
-
-    json = demjson.JSON()
 
     data        = {}
     currentdict = data
@@ -94,21 +98,22 @@ class IniConfigBasket( ConfigBasket ):
       result = parseIniLine( line )
       if not result: continue
 
-      if result[ "key" ] and not skipsection:
+      key = result[ "key" ]
 
-        try:
-          value = json.decode( result[ "value" ] )
+      assert type( key ) is type( u"" )
 
-        except demjson.JSONDecodeError:
-          ## Error in the line. We carry on.
+      if key and not skipsection:
+        
+        t = defaults.getType( key )
+
+        if not t:
+
+          messages.warn( "Unknown configuration variable: %s" % key )
           continue
 
-        if type( value ) is type ( "" ):  ## If demJSON stupidly returned
-                                          ## a bytestring instead of Unicode...
-          try: value = value.decode( s.ENCODING )
-          except UnicodeDecodeError: continue
+        value = t().from_string( result[ "value" ] )
 
-        currentdict[ result[ "key" ] ] = value
+        currentdict[ key ] = value
 
       elif result[ "section" ]:
 
@@ -149,15 +154,14 @@ class IniConfigBasket( ConfigBasket ):
   def save( s ):
 
     try:
-      f = file( s.filename, "w" )
+      f = codecs.getwriter( s.ENCODING ) ( open( s.filename, "w" ), "ignore" )
 
     except IOError:
       ## Unable to save configuration. Aborting.
+      messages.error( "Unable to save configuration to file %s!" % s.filename )
       return
-      
-    json = demjson.JSON( strict=True, escape_unicode=False )
 
-
+  
     def save_section( basketdump, indent_level=0 ):
 
       subsections = None
@@ -168,8 +172,14 @@ class IniConfigBasket( ConfigBasket ):
           subsections = v
 
         else:
+          t = defaults.getType( k )
+
+          if not t: continue
+
+          v = t().to_string( v )
+
           f.write( s.INDENT * indent_level )
-          f.write( "%s = %s\n" % ( k, json.encode( v ) ) )
+          f.write( u"%s = %s\n" % ( k, v ) )
 
       if subsections:
 
@@ -177,15 +187,12 @@ class IniConfigBasket( ConfigBasket ):
 
         for sectionname, sectiondata in subsections.iteritems():
 
-          if type( sectionname ) is type( u"" ): ## Unicode
-            sectionname = sectionname.encode( s.ENCODING )
-
-          f.write( "\n" )
+          f.write( u"\n" )
           f.write( s.INDENT * ( indent_level-1 ) )
-          f.write( "[" * indent_level )
-          f.write( "%s" % sectionname.strip() )
-          f.write( "]" * indent_level )
-          f.write( "\n" )
+          f.write( u"[" * indent_level )
+          f.write( u"%s" % sectionname.strip() )
+          f.write( u"]" * indent_level )
+          f.write( u"\n" )
 
           save_section( sectiondata, indent_level )
 

@@ -40,10 +40,7 @@ class Singletons:
 
   def __getattr__( s, name ):
 
-    if name not in s._instances:
-      raise AttributeError( name )
-
-    return s._instances[ name ]
+    return s._instances.get( name )
 
 
 singletons = Singletons()

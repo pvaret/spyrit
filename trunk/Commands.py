@@ -21,17 +21,16 @@
 ##
 
 import re
-import demjson
 
 from localqt    import *
-from Singletons import singletons
 
-json = demjson.JSON()
+from Messages   import messages
+from Singletons import singletons
 
 
 class Commands:
 
-  QUOTED  = re.compile( r'"(.*?)"' + '|' r"'(.*?)'" )
+  QUOTED  = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
   COMMAND = "command_"
 
 
@@ -119,7 +118,7 @@ class Commands:
 
       parent_exception = __builtins__.get( "BaseException", Exception )
 
-      exc =  __builtins__.get( args[0], None )
+      exc = __builtins__.get( args[0], None )
 
       try:
         is_an_exception = issubclass( exc, parent_exception )
@@ -175,13 +174,14 @@ class Commands:
 
     args = " ".join( args )
 
-    try:
-      args = json.decode( args )
+    t = s.world.conf.getType( key )
 
-    except demjson.JSONDecodeError:
-      pass
+    if not t:
+      messages.warn( "Unknown configuration variable: %s" % key )
 
-    s.world.conf[ key ] = args
+    else:
+      args = t().from_string( args )
+      s.world.conf[ key ] = args
 
 
   def command_Conf_Set( s, key, *args ):
@@ -192,13 +192,14 @@ class Commands:
 
     args = " ".join( args )
 
-    try:
-      args = json.decode( args )
+    t = s.world.conf.getType( key )
 
-    except demjson.JSONDecodeError:
-      pass
+    if not t:
+      messages.warn( "Unknown configuration variable: %s" % key )
 
-    singletons.config[ key ] = args
+    else:
+      args = t().from_string( args )
+      singletons.config[ key ] = args
 
 
   def command_Conf_Reset( s, key ):

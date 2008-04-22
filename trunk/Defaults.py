@@ -19,62 +19,68 @@
 ## Contains the default configuration items.
 ##
 
-_defaults = dict(
+from Types import *
 
-  app_name            = "Spyrit",
-  app_version         = "0.3pre",
-  mainwindow_min_size = ( 320, 200 ),
-  mainwindow_pos      = None,
-  worlds_section      = "Worlds",
 
-  widget_style        = None,
+_defaults = (
 
-  ssl                 = False,  ## By default, no SSL on sockets.
+  ( 'app_name',            "Spyrit",     STR ),
+  ( 'app_version',         "0.3pre",     STR ),
+  ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
+  ( 'mainwindow_pos',      None,         INTLIST ),
+  ( 'worlds_section',      "Worlds",     STR ),
 
-  show_splashscreen = False,
-  mainwindow_size   = ( 800, 600 ),
+  ( 'widget_style',        None, STR ),
 
-  toolbar_icon_size = 24,
+  ( 'name',                "",    STR ),   ## Default name in config dialogs.
+  ( 'host',                "",    STR ),   ## Default host in config dialogs.
+  ( 'port',                4201,  INT ),   ## Default port in config dialogs.
+  ( 'ssl',                 False, BOOL ),  ## By default, no SSL on sockets.
 
-  output_font_name        = "Courier",
-  output_font_size        = 0,  ## Nothing, system default will be used.
-  output_font_color       = "#c0c0c0",  ## light grey
-  output_background_color = "#000000",  ## black
+  ( 'show_splashscreen', False,        BOOL ),
+  ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
 
-  output_scrollback_overlay = True,
+  ( 'toolbar_icon_size', 24, INT ),
 
-  bold_as_highlight = True,
+  ( 'output_font_name',        "Courier", STR ),
+  ( 'output_font_size',        0,         INT ),  ## 0 = Use system default.
+  ( 'output_font_color',       "#c0c0c0", STR ),  ## light grey
+  ( 'output_background_color', "#000000", STR ),  ## black
 
-  info_font_color   = "#606060",  ## dark grey
+  ( 'output_scrollback_overlay', True, BOOL ),
 
-  input_font_name        = "",  ## Nothing, system default will be used.
-  input_font_size        = 0,   ## Nothing, system default will be used.
-  input_font_color       = "",  ## Nothing, system default will be used.
-  input_background_color = "#ffffff",  ## white
+  ( 'bold_as_highlight', True, BOOL ),
 
-  splitter_sizes = [ 1000, 100, 100 ],
+  ( 'info_font_color',   "#606060", STR ),  ## dark grey
 
-  input_command_char = "/",
-  max_history_length = 0, ## Unlimited.
-  save_input_history = 10,
-  input_history      = [],
+  ( 'input_font_name',        "", STR ),  ## "" = Use system default.
+  ( 'input_font_size',        0,  INT ),  ## 0 = Use system default.
+  ( 'input_font_color',       "", STR ),  ## "" = Use system default.
+  ( 'input_background_color', "#ffffff", STR ),  ## white
 
-  shortcut_about        = None,
-  shortcut_aboutqt      = None,
-  shortcut_newworld     = "Ctrl+N",
-  shortcut_quickconnect = None,
-  shortcut_quit         = "Ctrl+Q",
-  shortcut_nexttab      = "Shift+Tab",
-  shortcut_previoustab  = "Shift+Ctrl+Tab",
-  shortcut_close        = "Ctrl+W",
-  shortcut_connect      = "Ctrl+Shift+S",
-  shortcut_disconnect   = "Ctrl+Shift+D",
-  shortcut_historyup    = "Ctrl+Up",
-  shortcut_historydown  = "Ctrl+Down",
-  shortcut_pageup       = "PgUp",
-  shortcut_pagedown     = "PgDown",
+  ( 'splitter_sizes', [ 1000, 100, 100 ], INTLIST ),
 
-  alert_on_activity  = True,
+  ( 'input_command_char', "/", STR ),
+  ( 'max_history_length', 0,   INT ), ## Unlimited.
+  ( 'save_input_history', 10,  INT ),
+  ( 'input_history',      [],  STRLIST ),
+
+  ( 'shortcut_about',        None,             STR ),
+  ( 'shortcut_aboutqt',      None,             STR ),
+  ( 'shortcut_newworld',     "Ctrl+N",         STR ),
+  ( 'shortcut_quickconnect', None,             STR ),
+  ( 'shortcut_quit',         "Ctrl+Q",         STR ),
+  ( 'shortcut_nexttab',      "Shift+Tab",      STR ),
+  ( 'shortcut_previoustab',  "Shift+Ctrl+Tab", STR ),
+  ( 'shortcut_close',        "Ctrl+W",         STR ),
+  ( 'shortcut_connect',      "Ctrl+Shift+S",   STR ),
+  ( 'shortcut_disconnect',   "Ctrl+Shift+D",   STR ),
+  ( 'shortcut_historyup',    "Ctrl+Up",        STR ),
+  ( 'shortcut_historydown',  "Ctrl+Down",      STR ),
+  ( 'shortcut_pageup',       "PgUp",           STR ),
+  ( 'shortcut_pagedown',     "PgDown",         STR ),
+
+  ( 'alert_on_activity',  True, BOOL ),
 
 )
 
@@ -82,4 +88,9 @@ _defaults = dict(
 from ConfigBasket import ConfigBasket
 
 defaults = ConfigBasket()
-defaults.updateFromDict( _defaults )
+
+default_types  = dict( ( k, t ) for k, v, t in _defaults )
+default_values = dict( ( k, v ) for k, v, t in _defaults )
+
+defaults.setTypes( default_types )
+defaults.updateFromDict( default_values )

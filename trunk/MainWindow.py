@@ -31,7 +31,7 @@ from ConfigObserver      import ConfigObserver
 from ScrollableTabWidget import ScrollableTabWidget
 
 from Messages  import messages
-from Utilities import tuple_to_QSize, tuple_to_QPoint, case_insensitive_cmp
+from Utilities import case_insensitive_cmp
 
 
 class MainWindow( QtGui.QMainWindow ):
@@ -46,14 +46,15 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.setWindowTitle( config._app_name )
 
-    size = tuple_to_QSize( config._mainwindow_size )
-    if size: s.resize( size )
+    min_size = config._mainwindow_min_size
+    if len( min_size ) >= 2:
+      s.setMinimumSize( QtCore.QSize( min_size[0], min_size[1] ) )
 
-    min_size = tuple_to_QSize( config._mainwindow_min_size )
-    if min_size: s.setMinimumSize( min_size )
+    size = config._mainwindow_size
+    if len( size ) >= 2: s.resize( QtCore.QSize( size[0], size[1] ) )
 
-    pos = tuple_to_QPoint( config._mainwindow_pos )
-    if pos: s.move( pos )
+    pos = config._mainwindow_pos
+    if len( pos ) >= 2: s.move( QtCore.QPoint( pos[0], pos[1] ) )
 
 
     ## Create the central widget.

@@ -94,41 +94,6 @@ def check_alert_is_available():
   return hasattr( QtGui.QApplication, "alert" )
 
 
-def tuple_to_QPoint( t ):
-
-  try:
-    x, y = int( t[0] ), int( t[1] )
-
-  except ( TypeError, IndexError, ValueError ):
-    return None
-
-  from localqt import QtCore
-  return QtCore.QPoint( x, y )
-
-
-def tuple_to_QSize( t ):
-
-  try:
-    w, h = int( t[0] ), int( t[1] )
-
-  except ( TypeError, IndexError, ValueError ):
-    return None
-
-  from localqt import QtCore
-  return QtCore.QSize( w, h )
-
-
-def str_to_int( s ):
-
-  try:
-    v = int( s )
-
-  except ValueError:
-    v = 0
-
-  return v
-
-
 def case_insensitive_cmp( x, y ):
 
   return ( x.lower() < y.lower() ) and -1 or 1
@@ -166,11 +131,7 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
   from Singletons import singletons
 
-  try:
-    mw = singletons.mw
-
-  except AttributeError:
-    mw = None
+  mw = singletons.mw  ## Will be set to None if no main window yet.
 
   QtGui.QMessageBox.critical( mw, "Houston, we have a problem...",
     "<center>Whoops. A critical error has occured. This is most likely a bug "

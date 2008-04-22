@@ -26,7 +26,7 @@ import sys
 from localqt    import *
 
 from Messages   import messages
-from Utilities  import handle_exception, str_to_int
+from Utilities  import handle_exception
 from Singletons import singletons
 
 
@@ -123,7 +123,9 @@ class Application( QtGui.QApplication ):
       if ":" in arg:  ## This is probably a 'server:port' argument.
 
         server, port = arg.split( ":", 1 )
-        port         = str_to_int( port )  
+
+        try:               port = int( port )
+        except ValueError: port = 0
 
         if not port or not server:
           messages.warn( "Invalid <server>:<port> command line: %s" % arg )

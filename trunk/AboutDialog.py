@@ -22,8 +22,6 @@
 
 from localqt           import *
 
-from Utilities         import tuple_to_QSize
-
 from Singletons        import singletons
 from PrettyPanelHeader import PrettyPanelHeader
 
@@ -60,8 +58,8 @@ class AboutDialog( QtGui.QDialog ):
 
     s.setLayout( QtGui.QVBoxLayout( s ) )
 
-    min_size = tuple_to_QSize( config._mainwindow_min_size )
-    if min_size: s.setMinimumSize( min_size )
+    min_size = config._mainwindow_min_size
+    if len( min_size ) >= 2: s.setMinimumSize( min_size[0], min_size[1] )
 
     title = "About %s" % config._app_name
 

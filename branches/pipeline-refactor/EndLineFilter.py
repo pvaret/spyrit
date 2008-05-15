@@ -26,7 +26,7 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, ByteChunk, theEndOfLineChunk
+from PipelineChunks import chunktypes
 
 
 class EndLineFilter( BaseFilter ):
@@ -40,7 +40,12 @@ class EndLineFilter( BaseFilter ):
 
   def processChunk( s, chunk ):
     
-    text = chunk.data
+    type, text = chunk
+
+    if type != chunktypes.BYTES:
+
+      yield chunk
+      raise StopIteration
 
     while len( text ) > 0:
 
@@ -53,9 +58,9 @@ class EndLineFilter( BaseFilter ):
         text = tail
 
         if head:
-          yield ByteChunk( head )
+          yield ( chunktypes.BYTES, head )
 
-        yield theEndOfLineChunk
+        yield ( chunktypes.ENDOFLINE, None )
 
       else:
         ## The remaining text doesn't contain any identifiable carriage
@@ -65,10 +70,10 @@ class EndLineFilter( BaseFilter ):
     if text:
       
       if text.endswith( s.unfinished ):
-        s.postpone( ByteChunk( text ) )
+        s.postpone( ( chunktypes.BYTES, text ) )
         
       else:
-        yield( ByteChunk( text ) )
+        yield ( chunktypes.BYTES, text )
 
 
   def formatForSending( s, data ):

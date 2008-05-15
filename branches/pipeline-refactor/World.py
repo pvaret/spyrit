@@ -128,25 +128,25 @@ class World( QtCore.QObject ):
 
   def sink( s, chunks ):
 
-    for chunk in chunks:
+    for type, data in chunks:
       
-      if not chunk.chunktype == ChunkTypes.NETWORK:
+      if not type == ChunkTypes.NETWORK:
         continue
 
-      if   chunk.data == NetworkChunk.CONNECTED:
+      if   data == NetworkChunk.CONNECTED:
 
         QtCore.QTimer.singleShot( 0, s.setConnected )
 
-      elif chunk.data == NetworkChunk.DISCONNECTED:
+      elif data == NetworkChunk.DISCONNECTED:
 
         QtCore.QTimer.singleShot( 0, s.setDisconnected )
 
-      s.disconnected = ( chunk.data in ( 
-                                         NetworkChunk.DISCONNECTED,
-                                         NetworkChunk.HOSTNOTFOUND,
-                                         NetworkChunk.TIMEOUT,
-                                         NetworkChunk.CONNECTIONREFUSED,
-                                       ) )
+      s.disconnected = ( data in ( 
+                                   NetworkChunk.DISCONNECTED,
+                                   NetworkChunk.HOSTNOTFOUND,
+                                   NetworkChunk.TIMEOUT,
+                                   NetworkChunk.CONNECTIONREFUSED,
+                                 ) )
 
       emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
 

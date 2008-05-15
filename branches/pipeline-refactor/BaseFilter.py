@@ -21,15 +21,7 @@
 ##
 
 
-from PipelineChunks import theEndOfPacketChunk, ChunkTypeMismatch
-
-
 class BaseFilter:
-
-  ## This class attribute lists the chunk types that this filter will process.
-  ## Those unlisted will be passed down the filter chain untouched.
-  relevant_types = []
-  
 
   def __init__( s, context=None ):
 
@@ -80,7 +72,9 @@ class BaseFilter:
     if not s.postponedChunk:
       return chunk
 
-    if chunk is theEndOfPacketChunk:
+    type, payload = chunk
+
+    if type == chunktypes.ENDOFPACKET:
       ## The End Of Packet chunk is a special case, and is never merged
       ## with other chunks.
       return chunk
@@ -90,12 +84,11 @@ class BaseFilter:
     s.postponedChunk = None
     ## We retrieve it...
     
-    try:
+    if type == postponed[0]:
       ## And try to merge it with the new chunk.
-      postponed.concat( chunk )
-      chunk = postponed
+      chunk = ( type, postponed[1] + payload )
       
-    except ChunkTypeMismatch:
+    else:
       ## If they're incompatible, it means the postponed chunk was really
       ## complete, so we send it downstream.
       s.sink( postponed )
@@ -113,14 +106,9 @@ class BaseFilter:
     ## This mean that the postponed chunk should ALWAYS have been cleared
     ## when processChunk() is called. If not, there's something shifty
     ## going on...
-    
-    if chunk.chunktype in s.relevant_types:
 
-      chunks = s.processChunk( chunk )
-      for chunk in chunks: s.sink( chunk )
-      
-    else:
-      s.sink( chunk )
+    chunks = s.processChunk( chunk )
+    for chunk in chunks: s.sink( chunk )
 
 
   def formatForSending( s, data ):

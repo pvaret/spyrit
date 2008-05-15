@@ -25,7 +25,7 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import ByteChunk, chunktypes
+from PipelineChunks import chunktypes
 
 
 class TelnetFilter( BaseFilter ):
@@ -75,7 +75,12 @@ class TelnetFilter( BaseFilter ):
 
   def processChunk( s, chunk ):
     
-    text = chunk.data
+    type, text = chunk
+
+    if type != chunktypes.BYTES:
+
+      yield chunk
+      raise StopIteration
 
     while len( text ) > 0:
 
@@ -87,7 +92,7 @@ class TelnetFilter( BaseFilter ):
         text = text[ telnet.end():   ]
 
         if head:
-          yield ByteChunk( head )
+          yield ( chunktypes.BYTES, head )
 
         parameters = telnet.groupdict()
 
@@ -96,7 +101,7 @@ class TelnetFilter( BaseFilter ):
 
         if   command == s.IAC:
           ## This is an escaped IAC. Yield it as such.
-          yield ByteChunk( s.IAC )
+          yield ( chunktypes.BYTES, s.IAC )
           continue
 
         ## TODO: Implement other commands?
@@ -113,10 +118,10 @@ class TelnetFilter( BaseFilter ):
     if text:
       if s.unfinished.search( text ): ## Remaining text contains an unfinished
                                       ## Telnet sequence!
-        s.postpone( ByteChunk( text ) )
+        s.postpone( ( chunktypes.BYTES, text ) )
         
       else:
-        yield( ByteChunk( text ) )
+        yield ( chunktypes.BYTES, text )
 
 
   def formatForSending( s, data ):

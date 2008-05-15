@@ -21,7 +21,7 @@
 ## It works by assembling a series of Filters.
 ##
 
-from PipelineChunks import ByteChunk, theEndOfPacketChunk
+from PipelineChunks import chunktypes
 
 class Pipeline:
   
@@ -36,10 +36,10 @@ class Pipeline:
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
     
-    s.feedChunk( ByteChunk( packet ) )
+    s.feedChunk( ( chunktypes.BYTES, packet ) )
     
     ## Then we notify the filters that this is the end of the packet.
-    s.feedChunk( theEndOfPacketChunk )
+    s.feedChunk( ( chunktypes.ENDOFPACKET, None ) )
   
 
   def feedChunk( s, chunk ):
@@ -49,7 +49,7 @@ class Pipeline:
 
     s.filters[0].feedChunk( chunk )
 
-    ## When the above call returns, the chunk as been fully processed through
+    ## When the above call returns, the chunk has been fully processed through
     ## the chain of filters, and the resulting chunks are waiting in the
     ## output bucket. So we can flush it.
 

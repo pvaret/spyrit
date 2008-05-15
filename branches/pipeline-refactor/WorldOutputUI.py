@@ -338,27 +338,27 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.textcursor.beginEditBlock()
 
-    for chunk in chunks:
+    for type, data in chunks:
 
       ## Then process each chunk according to its type.
 
       ## Text:
 
-      if   chunk.chunktype == chunktypes.TEXT:
-        s.insertText( chunk.data )
+      if   type == chunktypes.TEXT:
+        s.insertText( data )
 
 
       ## Newline:
 
-      elif chunk.chunktype == chunktypes.ENDOFLINE:
+      elif type == chunktypes.ENDOFLINE:
         s.insertNewLine()
 
 
       ## Formatting information:
       
-      elif chunk.chunktype == chunktypes.FORMAT:
+      elif type == chunktypes.FORMAT:
 
-        for param, value in chunk.data:
+        for param, value in data:
 
           if   param == "RESET":
             s.charformat.reset()
@@ -381,41 +381,41 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
       ## Network events:
 
-      elif chunk.chunktype == chunktypes.NETWORK:
+      elif type == chunktypes.NETWORK:
 
         ## Handle the network event...
 
-        if   chunk.data == NetworkChunk.CONNECTING:
+        if   data == NetworkChunk.CONNECTING:
           s.insertInfoText( "Connecting..." )
 
-        elif chunk.data == NetworkChunk.CONNECTED:
+        elif data == NetworkChunk.CONNECTED:
 
           if not s.world.connected:
             s.insertInfoText( "Connected!" )
 
-        elif chunk.data == NetworkChunk.ENCRYPTED:
+        elif data == NetworkChunk.ENCRYPTED:
           s.insertInfoText( "SSL encryption started." )
 
-        elif chunk.data == NetworkChunk.DISCONNECTED:
+        elif data == NetworkChunk.DISCONNECTED:
 
           if s.world.connected:
             s.insertInfoText( "Connection closed." )
 
-        elif chunk.data == NetworkChunk.RESOLVING:
+        elif data == NetworkChunk.RESOLVING:
           s.insertInfoText( "Resolving %s ..." % s.world.host() )
 
         ## ... Or the network error.
 
-        elif chunk.data == NetworkChunk.CONNECTIONREFUSED:
+        elif data == NetworkChunk.CONNECTIONREFUSED:
           s.insertInfoText( "Connection refused." )
 
-        elif chunk.data == NetworkChunk.HOSTNOTFOUND:
+        elif data == NetworkChunk.HOSTNOTFOUND:
           s.insertInfoText( "Host not found." )
 
-        elif chunk.data == NetworkChunk.TIMEOUT:
+        elif data == NetworkChunk.TIMEOUT:
           s.insertInfoText( "Network timeout." )
 
-        elif chunk.data == NetworkChunk.OTHERERROR:
+        elif data == NetworkChunk.OTHERERROR:
           s.insertInfoText( "Network error." )
 
 

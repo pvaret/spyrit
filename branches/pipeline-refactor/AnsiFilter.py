@@ -24,7 +24,7 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, ByteChunk, FormatChunk
+from PipelineChunks import chunktypes, FormatChunk
 
 
 class AnsiFilter( BaseFilter ):
@@ -49,7 +49,13 @@ class AnsiFilter( BaseFilter ):
 
   def processChunk( s, chunk ):
    
-    text       = chunk.data
+    type, text = chunk
+
+    if type != chunktypes.BYTES:
+
+      yield chunk
+      raise StopIteration ## Stop the processing right there.
+
     currentpos = 0
 
     while True:
@@ -62,7 +68,7 @@ class AnsiFilter( BaseFilter ):
       startmatch = ansi.start()
 
       if startmatch > currentpos:
-        yield ByteChunk( text[ currentpos:startmatch ] )
+        yield ( chunktypes.BYTES, text[ currentpos:startmatch ] )
 
       currentpos = ansi.end()
 
@@ -81,7 +87,7 @@ class AnsiFilter( BaseFilter ):
           formats.append( format )
 
       if formats:
-        yield( FormatChunk( formats ) )
+        yield ( chunktypes.FORMAT, formats )
 
       ## Done searching for complete ANSI sequences.
 
@@ -99,9 +105,9 @@ class AnsiFilter( BaseFilter ):
         startmatch = possible_unfinished.start()
 
         if startmatch > currentpos:
-          yield( ByteChunk( text[ currentpos:startmatch ] ) )
+          yield ( chunktypes.BYTES, text[ currentpos:startmatch ] )
 
-        s.postpone( ByteChunk( text[ startmatch: ] ) )
+        s.postpone( ( chunktypes.BYTES, text[ startmatch: ] ) )
         
       else:
-        yield( ByteChunk( text[ currentpos: ] ) )
+        yield ( chunktypes.BYTES, text[ currentpos: ] )

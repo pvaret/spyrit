@@ -21,20 +21,6 @@
 ##
 
 
-## ---[ Exception ChunkTypeMismatch ]----------------------------------
-
-
-class ChunkTypeMismatch( Exception ):
-  """
-  Exception ChunkTypeMismatch
-  
-  Raised when a combining operation is attempted on two chunks of incompatible
-  types.
-  """
-  pass
-
-
-
 ## ---[ Class ChunkTypes ]---------------------------------------------
 
 class ChunkTypes:
@@ -69,70 +55,9 @@ class ChunkTypes:
 chunktypes = ChunkTypes()
 
 
-## ---[ Class BaseChunk ]----------------------------------------------
-
-class BaseChunk:
-  """
-  This is the base class for all chunks. It should never be used on its own;
-  use a subclass instead.
-  """
-
-  chunktype = None
-
-  def __init__( s, data=None ):
-
-    s.data = data
-
-
-  def concat( s, other ):
-  
-    ## Only chunks of the same type and whose data are strings can be
-    ## concatenated.
-    if s.chunktype != other.chunktype \
-                   or type( other.data ) not in ( type( "" ), type( u"" ) ):
-    
-      chunktypename      = chunktypes.name[     s.chunktype ]
-      otherchunktypename = chunktypes.name[ other.chunktype ]
-      
-      raise ChunkTypeMismatch( "Trying to concat %s chunk with %s chunk!" % \
-                               ( chunktypename, otherchunktypename ) )
-    
-    ## The chunks are compatible, so we concatenate their data.
-    ## We just need to be careful in case one of the two is None,
-    ## because None and strings don't add up too well.
-    if s.data is None:
-      s.data = other.data or None
-
-    else:
-      s.data += other.data or ""
-
-
-  def __repr__( s ):
-
-    chunktype = chunktypes.name[ s.chunktype ]
-
-    if s.data:
-      return '<Chunk Type: %s; Data: "%s">' % ( chunktype, s.data )
-      
-    else:
-      return '<Chunk Type: %s>' % chunktype
-
-
-## ---[ Class ByteChunk ]----------------------------------------------
-
-class ByteChunk( BaseChunk ):
-  """
-  This chunk type represents a chunk of raw bytes, typically ASCII
-  characters, but telnet or ANSI codes or otherwise can also be encoded in
-  there. Those will have to be decoded at some point through the pipeline.
-  """
-
-  chunktype = chunktypes.BYTES
-
-
 ## ---[ Class FormatChunk ]--------------------------------------------
 
-class FormatChunk( BaseChunk ):
+class FormatChunk:
   """
   This chunk type represents a formatting parameter, typically extracted from
   an ANSI SGR escape sequences, although they might conceivably come from
@@ -172,16 +97,9 @@ class FormatChunk( BaseChunk ):
   ANSI_TO_FORMAT = dict( ANSI_MAPPING )
 
 
-## ---[ Class UnicodeTextChunk ]---------------------------------------
-
-class UnicodeTextChunk( BaseChunk ):
-  
-  chunktype = chunktypes.TEXT
-
-
 ## ---[ Class NetworkChunk ]-------------------------------------------
 
-class NetworkChunk( BaseChunk ):
+class NetworkChunk:
   
   chunktype = chunktypes.NETWORK
 
@@ -196,54 +114,3 @@ class NetworkChunk( BaseChunk ):
   HOSTNOTFOUND      = 7
   TIMEOUT           = 8
   OTHERERROR        = 9
-
-
-  def __init__( s, data ):
-
-    ## The following is an ugly hack to generate the reverse mapping from value
-    ## to network state, as above.
-
-    IntegerType = type( 1 )
-
-    stateList = [ name for name in dir( NetworkChunk )
-                    if  name.isalpha()
-                    and name.isupper()
-                    and type( getattr( NetworkChunk, name ) ) is IntegerType ]
-
-    s.states = dict( ( getattr( NetworkChunk, name ), name )
-                                     for name in stateList )
-
-
-    BaseChunk.__init__( s, data )
-
-
-  def __repr__( s ):
-
-    chunktype = chunktypes.name[ s.chunktype ]
-    return '<Chunk Type: %s; State: %s>' % ( chunktype, s.states[ s.data ] )
-
-
-## ---[ Class EndOfPacketChunk ]---------------------------------------
-
-class EndOfPacketChunk( BaseChunk ):
-  """
-  This chunk type represents the end of a given packet. It is necessary
-  because some filters in the pipeline need to be informed that the current
-  packet is done, so they can wrap up their processing.
-  """
-
-  chunktype = chunktypes.ENDOFPACKET
-
-
-theEndOfPacketChunk = EndOfPacketChunk()
-
-
-## ---[ Class EndOfLineChunk ]-----------------------------------------
-
-class EndOfLineChunk( BaseChunk ):
-  
-  chunktype = chunktypes.ENDOFLINE
-
-
-theEndOfLineChunk = EndOfLineChunk()
-

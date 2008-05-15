@@ -26,7 +26,7 @@ import codecs
 
 from Messages       import messages
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, UnicodeTextChunk
+from PipelineChunks import chunktypes
 
 
 
@@ -112,9 +112,16 @@ class UnicodeTextFilter( BaseFilter ):
 
   def processChunk( s, chunk ):
  
-    text = s.decoder.decode( chunk.data )
+    type, data = chunk
 
-    if text: yield UnicodeTextChunk( text )
+    if type != chunktypes.BYTES:
+
+      yield chunk
+      raise StopIteration
+
+    text = s.decoder.decode( data )
+
+    if text: yield ( chunktypes.TEXT, text )
 
 
   def formatForSending( s, data ):

@@ -109,10 +109,42 @@ class Commands:
                     % commandname )
 
 
-  def command_Raise_Exception( s, *args ):
-    """
-    Raises an exception (for debug purposes).
-    """
+  def command_Help( s, *args ):
+
+    "help <command>: Provides help on <command>."
+
+    c = s.world.conf._input_command_char
+
+    if not args:
+
+      for commandname, cmd in sorted( s.commands.iteritems() ):
+        doc = cmd.__doc__
+        s.world.info( doc and c + doc or c + commandname )
+
+    else:
+
+      commandname = " ".join( args )
+
+      try:
+        cmd = s.lookupCommand( commandname )
+
+      except KeyError:
+        s.world.info( "%s: no such command." % commandname )
+        return
+
+      doc = cmd.__doc__
+
+      if doc:
+        s.world.info( c + doc )
+
+      else:
+        s.world.info( "No help for command %s." % commandname )
+
+
+  def command_Raise( s, *args ):
+
+    "raise <exception> [parameters]: Raises <exception>. " \
+    "For debugging purposes."
 
     if args:
 
@@ -136,41 +168,35 @@ class Commands:
 
   def command_Connect( s ):
 
-    """
-    Opens connection to the current world if it is currently closed.
-    """
+    "connect: Opens connection to the current world if it is currently closed."
 
     s.world.connectToWorld()
 
 
   def command_Disconnect( s ):
 
-    """
-    Closes connection to the current world.
-    """
+    "close: Closes connection to the current world."
 
     s.world.disconnectFromWorld()
 
 
   def command_Quit( s ):
-    """
-    Quits the application.
-    """
+
+    "quit: Quits the application."
     singletons.mw.close()
 
 
   def command_Close( s ):
-    """
-    Closes the current world.
-    """
+
+    "close: Closes the current world."
+
     QtCore.QTimer.singleShot( 0, s.world.worldui.close )
 
 
   def command_World_Conf_Set( s, key, *args ):
 
-    """
-    Sets the given configuration key to the given value on the current world.
-    """
+    "world_conf_set <key> <value>: " \
+    "Sets this world's given configuration key to the given value."
 
     args = " ".join( args )
 
@@ -186,9 +212,8 @@ class Commands:
 
   def command_Conf_Set( s, key, *args ):
 
-    """
-    Sets the given configuration key to the given value in the global scope.
-    """
+    "conf_set <key> <value>: " \
+    "Sets the given configuration key to the given value globally."
 
     args = " ".join( args )
 
@@ -204,11 +229,17 @@ class Commands:
 
   def command_Conf_Reset( s, key ):
 
+    "conf_reset <key>: " \
+    "Resets the given configuration key to its default value."
+
     try: del singletons.config[ key ]
     except KeyError: pass
 
 
   def command_World_Conf_Reset( s, key ):
+
+    "world_conf_reset <key>: " \
+    "Resets this world's given configuration key to its global value."
 
     try: del s.world.conf[ key ]
     except KeyError: pass

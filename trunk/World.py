@@ -21,13 +21,16 @@
 ##
 
 
-from localqt        import *
-from PipelineChunks import *
+from localqt          import *
+from PipelineChunks   import *
 
-from Utilities      import check_ssl_is_available
+from Utilities        import check_ssl_is_available
 
-from Singletons     import singletons
-from SocketPipeline import SocketPipeline
+from Singletons       import singletons
+from SocketPipeline   import SocketPipeline
+
+from PlatformSpecific import platformSpecific
+
 
 
 class World( QtCore.QObject ):
@@ -149,6 +152,43 @@ class World( QtCore.QObject ):
                                        ) )
 
       emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
+
+
+  def selectFile( s, caption="Select file", dir="", filter="" ):
+
+    if not dir:
+      dir = platformSpecific.get_homedir()
+
+    return QtGui.QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
+
+
+  def loadFile( s, filename=None ):
+
+    if filename is None:
+      filename = s.selectFile(
+                               caption = "Select the file to load",
+                               filter  = "Text files (*.log *.txt)" \
+                                       + ";;All files (*)"
+                             )
+
+    filename = str( filename )
+
+    if not filename: return
+
+    try:
+      f = file( filename )
+
+    except IOError, e:
+      s.info( "Error: %s" % e.strerror )
+      return
+
+    while True:
+
+      data = f.read( 4096 )
+      if not data: break
+      s.socketpipeline.pipeline.feedBytes( data )
+
+    f.close()
 
 
   def cleanupBeforeDelete( s ):

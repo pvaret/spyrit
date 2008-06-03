@@ -30,6 +30,9 @@ class Win32Specific:
   CONFIG_FILE = "Spyrit.ini"
 
 
+  def get_homedir( s ):
+    return winpaths.get_homedir()
+
   def get_configuration_dir( s ):
     return os.path.join( winpaths.get_appdata(), s.CONFIG_DIR )
 

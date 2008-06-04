@@ -34,6 +34,11 @@ from ConfigObserver     import ConfigObserver
 NL = "\n"
 
 
+## Special Unicode characters.
+
+LEFTARROW = unichr( 0x2192 )
+
+
 ## Definition of the standard colors, highlighted and un-highlighted.
 
 STANDARDCOLORS = {
@@ -454,7 +459,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     if s.pending_newline:
       s.textcursor.insertText( NL, s.infocharformat )
 
-    s.textcursor.insertText( "% " + text, s.infocharformat )
+    s.textcursor.insertText( LEFTARROW + " " + text, s.infocharformat )
     s.pending_newline = True  ## There is always a new line after info text.
 
 

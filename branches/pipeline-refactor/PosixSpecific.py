@@ -28,11 +28,14 @@ class PosixSpecific:
   CONFIG_DIR  = ".spyrit"
   CONFIG_FILE = "spyrit.conf"
 
+  def get_homedir( s ):
+    return os.path.expanduser( "~" )
+
 
   def get_configuration_dir( s ):
 
     home_dir = os.path.expanduser( "~" )
-    return os.path.join( home_dir, s.CONFIG_DIR )
+    return os.path.join( s.get_homedir(), s.CONFIG_DIR )
 
 
   def get_configuration_file( s ):

@@ -21,13 +21,18 @@
 ##
 
 
-from localqt        import *
-from PipelineChunks import *
+import os
 
-from Utilities      import check_ssl_is_available
+from localqt          import *
+from PipelineChunks   import *
 
-from Singletons     import singletons
-from SocketPipeline import SocketPipeline
+from Utilities        import check_ssl_is_available
+
+from Singletons       import singletons
+from SocketPipeline   import SocketPipeline
+
+from PlatformSpecific import platformSpecific
+
 
 
 class World( QtCore.QObject ):
@@ -149,6 +154,53 @@ class World( QtCore.QObject ):
                                  ) )
 
       emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
+
+
+  def selectFile( s, caption="Select file", dir="", filter="" ):
+
+    if not dir:
+      dir = platformSpecific.get_homedir()
+
+    return QtGui.QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
+
+
+  def loadFile( s, filename=None ):
+
+    local_encoding = qApp().local_encoding
+
+    if filename is None:
+      filename = s.selectFile(
+                               caption = "Select the file to load",
+                               filter  = "Text files (*.log *.txt)" \
+                                       + ";;All files (*)"
+                             )
+
+    filename = str( filename )
+    basename = os.path.basename( filename ).decode( local_encoding, "replace" )
+
+    if not filename: return
+
+    try:
+      f = file( filename )
+
+    except IOError, e:
+
+      errormsg = e.strerror.decode( local_encoding, "replace" )
+      s.info( "Error: %s: %s" % ( basename, errormsg ) )
+      return
+
+    s.info( "Loading %s..." % basename )
+
+    while True:
+
+      data = f.read( 4096 )
+      if not data: break
+      s.socketpipeline.pipeline.feedBytes( data )
+      qApp().processEvents()
+
+    f.close()
+
+    s.info( "File loaded." )
 
 
   def cleanupBeforeDelete( s ):

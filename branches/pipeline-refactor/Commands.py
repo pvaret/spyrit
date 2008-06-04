@@ -213,7 +213,7 @@ class Commands:
   def command_Conf_Set( s, key, *args ):
 
     "conf_set <key> <value>: " \
-    "Sets the given configuration key to the given value globally."
+    "Sets the given configuration key to the given value."
 
     args = " ".join( args )
 
@@ -243,6 +243,12 @@ class Commands:
 
     try: del s.world.conf[ key ]
     except KeyError: pass
+
+
+  def command_Load( s, *args ):
+
+
+    s.world.loadFile( args and " ".join( args ) or None )
 
 
   def cleanupBeforeDelete( s ):

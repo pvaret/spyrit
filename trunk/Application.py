@@ -22,6 +22,7 @@
 
 
 import sys
+import locale
 
 from localqt    import *
 
@@ -39,7 +40,9 @@ class Application( QtGui.QApplication ):
 
     QtGui.QApplication.__init__( s, args )
 
-    s.bootstrapped = False
+    s.bootstrapped   = False
+    s.local_encoding = locale.getpreferredencoding()  ## Try to guess the
+                                                      ## local encoding.
 
     connect( s, SIGNAL( "aboutToQuit()" ), s.saveConfig )
 

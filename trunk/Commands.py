@@ -247,7 +247,8 @@ class Commands:
 
   def command_Load( s, *args ):
 
-    s.world.loadFile()
+
+    s.world.loadFile( args and " ".join( args ) or None )
 
 
   def cleanupBeforeDelete( s ):

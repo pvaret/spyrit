@@ -21,6 +21,8 @@
 ##
 
 
+import os
+
 from localqt          import *
 from PipelineChunks   import *
 
@@ -164,6 +166,8 @@ class World( QtCore.QObject ):
 
   def loadFile( s, filename=None ):
 
+    local_encoding = qApp().local_encoding
+
     if filename is None:
       filename = s.selectFile(
                                caption = "Select the file to load",
@@ -172,6 +176,7 @@ class World( QtCore.QObject ):
                              )
 
     filename = str( filename )
+    basename = os.path.basename( filename ).decode( local_encoding, "replace" )
 
     if not filename: return
 
@@ -179,16 +184,23 @@ class World( QtCore.QObject ):
       f = file( filename )
 
     except IOError, e:
-      s.info( "Error: %s" % e.strerror )
+
+      errormsg = e.strerror.decode( local_encoding, "replace" )
+      s.info( "Error: %s: %s" % ( basename, errormsg ) )
       return
+
+    s.info( "Loading %s..." % basename )
 
     while True:
 
       data = f.read( 4096 )
       if not data: break
       s.socketpipeline.pipeline.feedBytes( data )
+      qApp().processEvents()
 
     f.close()
+
+    s.info( "File loaded." )
 
 
   def cleanupBeforeDelete( s ):

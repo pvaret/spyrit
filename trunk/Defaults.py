@@ -22,7 +22,7 @@
 from Types import *
 
 
-_defaults = (
+DEFAULTS = (
 
   ( 'app_name',            "Spyrit",     STR ),
   ( 'app_version',         "0.3pre",     STR ),
@@ -83,14 +83,3 @@ _defaults = (
   ( 'alert_on_activity',  True, BOOL ),
 
 )
-
-
-from ConfigBasket import ConfigBasket
-
-defaults = ConfigBasket()
-
-default_types  = dict( ( k, t ) for k, v, t in _defaults )
-default_values = dict( ( k, v ) for k, v, t in _defaults )
-
-defaults.setTypes( default_types )
-defaults.updateFromDict( default_values )

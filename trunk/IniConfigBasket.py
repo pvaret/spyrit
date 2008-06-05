@@ -57,20 +57,19 @@ def parseIniLine( line ):
 
 import codecs
 
-from Defaults     import defaults
 from ConfigBasket import ConfigBasket
 
 
 class IniConfigBasket( ConfigBasket ):
 
-  ENCODING = "utf-8"
+  ENCODING = "UTF-8"
   INDENT   = u"  "
 
 
-  def __init__( s, filename ):
+  def __init__( s, filename, schema ):
 
     s.filename=filename
-    ConfigBasket.__init__( s )
+    ConfigBasket.__init__( s, schema=schema )
 
     s.load()
 
@@ -104,7 +103,7 @@ class IniConfigBasket( ConfigBasket ):
 
       if key and not skipsection:
         
-        t = defaults.getType( key )
+        t = s.getType( key )
 
         if not t:
 
@@ -172,7 +171,7 @@ class IniConfigBasket( ConfigBasket ):
           subsections = v
 
         else:
-          t = defaults.getType( k )
+          t = s.getType( k )
 
           if not t: continue
 

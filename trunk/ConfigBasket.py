@@ -155,7 +155,7 @@ class ConfigBasket( object ):
   SECTIONS = "__domains__"
 
 
-  def __init__( s, parent=None ):
+  def __init__( s, parent=None, schema=None ):
 
     s.name      = None
     s.basket    = {}
@@ -163,6 +163,8 @@ class ConfigBasket( object ):
     s.types     = {}
     s.parent    = parent
     s.notifiers = []
+
+    if schema: s.setSchema( schema )
 
 
   def __getitem__( s, k ):
@@ -221,6 +223,21 @@ class ConfigBasket( object ):
     del s.basket[ attr ]
 
     s.notifyKeyChanged( attr )
+
+
+  def setSchema( s, schema ):
+
+    ## schema is to be a list of triplets (name of key, default value, type).
+
+    d = ConfigBasket()
+
+    types  = dict( ( k, t ) for k, v, t in schema )
+    values = dict( ( k, v ) for k, v, t in schema )
+
+    d.setTypes( types )
+    d.updateFromDict( values )
+
+    s.parent = d
 
 
   def setTypes( s, types ):

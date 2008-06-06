@@ -22,6 +22,7 @@
 
 
 import os
+import time
 
 from localqt          import *
 from PipelineChunks   import *
@@ -191,6 +192,8 @@ class World( QtCore.QObject ):
 
     s.info( "Loading %s..." % basename )
 
+    t1 = time.time()
+
     while True:
 
       data = f.read( 4096 )
@@ -198,9 +201,11 @@ class World( QtCore.QObject ):
       s.socketpipeline.pipeline.feedBytes( data )
       qApp().processEvents()
 
+    t2 = time.time()
+
     f.close()
 
-    s.info( "File loaded." )
+    s.info( "File loaded in %.2fs." % ( t2 - t1 ) )
 
 
   def cleanupBeforeDelete( s ):

@@ -20,14 +20,12 @@
 ##
 
 
-from Defaults        import defaults
+from Defaults        import DEFAULTS
 from ConfigPaths     import CONFIG_FILE
+
 from IniConfigBasket import IniConfigBasket
 
-
-config        = IniConfigBasket( CONFIG_FILE )
-config.parent = defaults
-
+config = IniConfigBasket( CONFIG_FILE, DEFAULTS )
 
 def Config():
 

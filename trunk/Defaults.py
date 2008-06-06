@@ -47,7 +47,7 @@ DEFAULTS = (
   ( 'output_font_color',       "#c0c0c0", STR ),  ## light grey
   ( 'output_background_color', "#000000", STR ),  ## black
 
-  ( 'output_scrollback_overlay', True, BOOL ),
+  ( 'split_scrollback', True, BOOL ),
 
   ( 'bold_as_highlight', True, BOOL ),
 

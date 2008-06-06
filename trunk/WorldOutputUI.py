@@ -239,7 +239,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
                               "output_background_color" ],
                             s.refresh )
 
-    s.observer.addCallback( "output_scrollback_overlay", s.setupOverlay )
+    s.observer.addCallback( "split_scrollback", s.setupScrollback )
 
 
   def refresh( s ):
@@ -262,9 +262,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
                QtGui.QBrush( QtGui.QColor( s.conf._info_font_color ) ) )
 
 
-  def setupOverlay( s ):
+  def setupScrollback( s ):
 
-    s.has_overlay = s.conf._output_scrollback_overlay
+    s.split_scrollback = s.conf._split_scrollback
     s.repaint()
 
 
@@ -275,7 +275,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def paintEvent( s, e ):
 
-    if s.atbottom or not s.has_overlay:
+    if s.atbottom or not s.split_scrollback:
 
       QtGui.QTextEdit.paintEvent( s, e )
       return
@@ -322,7 +322,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     pagestep = s.viewport().height() - 1
 
-    if s.conf._output_scrollback_overlay:
+    if s.split_scrollback:
       pagestep = int( pagestep * s.SPLIT_FACTOR )
 
     s.scrollbar.setPageStep( pagestep )

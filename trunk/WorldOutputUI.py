@@ -194,7 +194,9 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
 
 class WorldOutputUI( QtGui.QTextEdit ):
- 
+
+  SPLIT_FACTOR = 0.84  ## Corresponds to 1/6th of the height.
+
   def __init__( s, parent, world ):
 
     QtGui.QTextEdit.__init__( s, parent )
@@ -237,8 +239,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
                               "output_background_color" ],
                             s.refresh )
 
-    s.setupOverlay()
-
     s.observer.addCallback( "output_scrollback_overlay", s.setupOverlay )
 
 
@@ -270,14 +270,10 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def onScroll( s, pos ):
 
-    previous = s.atbottom
-
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
 
   def paintEvent( s, e ):
-
-    FACTOR = 6
 
     if s.atbottom or not s.has_overlay:
 
@@ -287,7 +283,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## Draw the top half of the viewport.
 
     height, width = s.viewport().height(), s.viewport().width()
-    split_y = int( height * ( 1 - 1.0/FACTOR ) )
+    split_y = int( height * s.SPLIT_FACTOR )
 
     rect = e.rect().intersected( QtCore.QRect( 0, 0, width, split_y ) )
 
@@ -322,6 +318,16 @@ class WorldOutputUI( QtGui.QTextEdit ):
       s.scrollbar.setValue( max )
 
 
+  def setPageStep( s ):
+
+    pagestep = s.viewport().height() - 1
+
+    if s.conf._output_scrollback_overlay:
+      pagestep = int( pagestep * s.SPLIT_FACTOR )
+
+    s.scrollbar.setPageStep( pagestep )
+
+
   def contextMenuEvent( s, e ):
 
     menu = s.createStandardContextMenu()
@@ -330,12 +336,14 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
 
   def pageUp( s ):
-    
+   
+    s.setPageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )
    
    
   def pageDown( s ):
     
+    s.setPageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepAdd )
    
    

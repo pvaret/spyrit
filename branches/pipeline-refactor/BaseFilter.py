@@ -21,6 +21,9 @@
 ##
 
 
+from PipelineChunks import chunktypes
+
+
 class BaseFilter:
 
   def __init__( s, context=None ):

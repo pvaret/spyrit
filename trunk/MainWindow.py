@@ -47,14 +47,14 @@ class MainWindow( QtGui.QMainWindow ):
     s.setWindowTitle( config._app_name )
 
     min_size = config._mainwindow_min_size
-    if len( min_size ) >= 2:
+    if min_size and len( min_size ) >= 2:
       s.setMinimumSize( QtCore.QSize( min_size[0], min_size[1] ) )
 
     size = config._mainwindow_size
-    if len( size ) >= 2: s.resize( QtCore.QSize( size[0], size[1] ) )
+    if size and len( size ) >= 2: s.resize( QtCore.QSize( size[0], size[1] ) )
 
     pos = config._mainwindow_pos
-    if len( pos ) >= 2: s.move( QtCore.QPoint( pos[0], pos[1] ) )
+    if pos and len( pos ) >= 2: s.move( QtCore.QPoint( pos[0], pos[1] ) )
 
 
     ## Create the central widget.

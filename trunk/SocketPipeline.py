@@ -45,11 +45,17 @@ class SocketPipeline:
     s.pipeline.addFilter( EndLineFilter() )
     s.pipeline.addFilter( UnicodeTextFilter() )
 
-    s.conf = conf
+    s.using_ssl = False
+    s.socket    = None
+    s.conf      = conf
 
-    if conf._ssl and check_ssl_is_available():
 
-      s.socket = QtNetwork.QSslSocket()
+  def setupSocket( s ):
+
+    if s.conf._ssl and check_ssl_is_available():
+
+      s.using_ssl = True
+      s.socket    = QtNetwork.QSslSocket()
 
       connect( s.socket, SIGNAL( "encrypted()" ), s.reportEncrypted )
       connect( s.socket, SIGNAL( "sslErrors( const QList<QSslError> & )" ),
@@ -57,6 +63,10 @@ class SocketPipeline:
 
     else:
       s.socket = QtNetwork.QTcpSocket()
+
+      if s.conf._ssl:  ## SSL was requested but is not available...
+        messages.warn( "SSL functions not available; attempting unencrypted " \
+                     + "connection instead..." )
 
     connect( s.socket, SIGNAL( "stateChanged( QAbstractSocket::SocketState )" ),
                        s.reportStateChange )
@@ -67,9 +77,11 @@ class SocketPipeline:
 
   def connectToHost( s ):
 
+    if not s.socket: s.setupSocket()
+
     s.pipeline.resetInternalState()
 
-    if s.conf._ssl and check_ssl_is_available():
+    if s.using_ssl:
       s.socket.connectToHostEncrypted( s.conf._host, s.conf._port )
 
     else:

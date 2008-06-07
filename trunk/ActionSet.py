@@ -57,6 +57,8 @@ class ActionSet:
       "historydown": ( "History Down", ":/icon/down"       ),
       "pageup":      ( "Page Up",      ":/icon/up"         ),
       "pagedown":    ( "Page Down",    ":/icon/down"       ),
+      "stepup":      ( "Step Up",      None                ),
+      "stepdown":    ( "Step Down",    None                ),
 
     }
 

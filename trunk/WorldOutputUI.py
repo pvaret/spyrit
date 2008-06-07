@@ -335,6 +335,16 @@ class WorldOutputUI( QtGui.QTextEdit ):
     sip.delete( menu )
 
 
+  def stepUp( s ):
+
+    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderSingleStepSub )
+
+
+  def stepDown( s ):
+
+    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderSingleStepAdd )
+
+
   def pageUp( s ):
    
     s.setPageStep()

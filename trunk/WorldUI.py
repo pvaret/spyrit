@@ -106,6 +106,8 @@ class WorldUI( QtGui.QSplitter ):
 
     s.actionset.bindAction( "historyup",   s.inputui.historyUp )
     s.actionset.bindAction( "historydown", s.inputui.historyDown )
+    s.actionset.bindAction( "stepup",      s.outputui.stepUp )
+    s.actionset.bindAction( "stepdown",    s.outputui.stepDown )
     s.actionset.bindAction( "pageup",      s.outputui.pageUp )
     s.actionset.bindAction( "pagedown",    s.outputui.pageDown )
 

@@ -28,7 +28,7 @@ from PipelineChunks  import NetworkChunk
 
 from TelnetFilter      import TelnetFilter
 from AnsiFilter        import AnsiFilter
-from EndLineFilter     import EndLineFilter
+from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
 
 from Messages  import messages
@@ -42,7 +42,7 @@ class SocketPipeline:
     s.pipeline = Pipeline()
     s.pipeline.addFilter( TelnetFilter() )
     s.pipeline.addFilter( AnsiFilter() )
-    s.pipeline.addFilter( EndLineFilter() )
+    s.pipeline.addFilter( FlowControlFilter() )
     s.pipeline.addFilter( UnicodeTextFilter() )
 
     s.using_ssl = False

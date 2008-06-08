@@ -14,10 +14,10 @@
 ##
 
 ##
-## EndLineFilter.py
+## FlowControlFilter.py
 ##
-## This file holds the EndLineFilter class, whose purpose is to parse out end
-## of line characters (\r\n, in accordance with the Telnet specs) into a
+## This file holds the FlowControlFilter class, whose purpose is to parse out
+## special characters relevant to the flow of text (\n, typically) into a
 ## specific chunk, as the info will for instance be needed by the highlight
 ## filter.
 ##
@@ -26,49 +26,48 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, ByteChunk, theEndOfLineChunk
+from PipelineChunks import chunktypes, ByteChunk, FlowControlChunk
 
 
-class EndLineFilter( BaseFilter ):
+class FlowControlFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
 
+  match          = re.compile( r'(\r|\n)' )
   unix_like_cr   = re.compile( r'(?<!\r)\n' )
 
-  match          = re.compile( r'(\r\n)|\n' )
-  unfinished     = "\r"
+  typemapping = {
+    '\n': FlowControlChunk.LINEFEED,
+    '\r': FlowControlChunk.CARRIAGERETURN,
+  }
+
 
   def processChunk( s, chunk ):
-    
+
     text = chunk.data
 
     while len( text ) > 0:
 
-      cr = s.match.search( text )
+      fc = s.match.search( text )
       
-      if cr:
-        head = text[ :cr.start() ]
-        tail = text[ cr.end():   ]
+      if fc:
+        head = text[ :fc.start() ]
+        tail = text[ fc.end():   ]
 
         text = tail
 
         if head:
           yield ByteChunk( head )
 
-        yield theEndOfLineChunk
+        yield FlowControlChunk( s.typemapping[ fc.group() ] )
 
       else:
-        ## The remaining text doesn't contain any identifiable carriage
-        ## return. So we quit the loop.
+        ## The remaining text doesn't contain any flow control character that
+        ## we care about. So we quit the loop.
         break
 
     if text:
-      
-      if text.endswith( s.unfinished ):
-        s.postpone( ByteChunk( text ) )
-        
-      else:
-        yield( ByteChunk( text ) )
+      yield( ByteChunk( text ) )
 
 
   def formatForSending( s, data ):

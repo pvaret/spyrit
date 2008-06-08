@@ -373,7 +373,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
       ## Newline:
 
-      elif chunk.chunktype == chunktypes.ENDOFLINE:
+      elif     chunk.chunktype == chunktypes.FLOWCONTROL \
+           and chunk.data == FlowControlChunk.LINEFEED:
         s.insertNewLine()
 
 

@@ -44,7 +44,7 @@ class ChunkTypes:
   BYTES       = 2
   TELNET      = 3
   FORMAT      = 4
-  ENDOFLINE   = 5
+  FLOWCONTROL = 5
   TEXT        = 6
 
 
@@ -238,12 +238,36 @@ class EndOfPacketChunk( BaseChunk ):
 theEndOfPacketChunk = EndOfPacketChunk()
 
 
-## ---[ Class EndOfLineChunk ]-----------------------------------------
+## ---[ Class FlowControlChunk ]-----------------------------------------
 
-class EndOfLineChunk( BaseChunk ):
+class FlowControlChunk( BaseChunk ):
   
-  chunktype = chunktypes.ENDOFLINE
+  chunktype = chunktypes.FLOWCONTROL
+
+  LINEFEED       = 0
+  CARRIAGERETURN = 1
 
 
-theEndOfLineChunk = EndOfLineChunk()
+  def __init__( s, data ):
 
+    ## The following is an ugly hack to generate the reverse mapping from value
+    ## to network state, as above.
+
+    IntegerType = type( 1 )
+
+    typeList = [ name for name in dir( FlowControlChunk )
+                      if  name.isalpha()
+                      and name.isupper()
+                      and type( getattr( FlowControlChunk, name ) ) \
+                                                           is IntegerType ]
+
+    s.types = dict( ( getattr( FlowControlChunk, name ), name )
+                    for name in typeList )
+
+    BaseChunk.__init__( s, data )
+
+
+  def __repr__( s ):
+
+    chunktype = chunktypes.name[ s.chunktype ]
+    return '<Chunk Type: %s; Type: %s>' % ( chunktype, s.types[ s.data ] )

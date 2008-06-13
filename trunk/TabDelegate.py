@@ -23,8 +23,6 @@
 
 from localqt import *
 
-from Singletons import singletons
-
 
 class TabDelegate( QtCore.QObject ):
 
@@ -43,7 +41,9 @@ class TabDelegate( QtCore.QObject ):
     QtCore.QObject.__init__( s )
 
     s.widget    = widget
-    s.tabwidget = singletons.mw.centralWidget()
+    s.tabwidget = widget.parent()
+
+    assert isinstance( s.tabwidget, QtGui.QTabWidget )
 
     s.is_current_tab = False
 

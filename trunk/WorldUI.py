@@ -53,9 +53,11 @@ class LED:
 
 class WorldUI( QtGui.QSplitter ):
 
-  def __init__( s, parent, world ):
+  def __init__( s, tabwidget, world ):
     
-    QtGui.QSplitter.__init__( s, Qt.Vertical, parent )
+    QtGui.QSplitter.__init__( s, Qt.Vertical, tabwidget )
+
+    assert isinstance( tabwidget, QtGui.QTabWidget )
 
     s.world = world
 

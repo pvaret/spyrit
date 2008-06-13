@@ -80,6 +80,7 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
     ## is modified, even if Qt doesn't think it should.
  
     s.emit( SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
+    s.emit( SIGNAL( "numberOfTabChanged( int )" ), s.count() )
 
 
   def tabRemoved( s, i ):
@@ -88,3 +89,4 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
     ## is modified, even if Qt doesn't think it should.
 
     s.emit( SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
+    s.emit( SIGNAL( "numberOfTabChanged( int )" ), s.count() )

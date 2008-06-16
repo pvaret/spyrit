@@ -42,15 +42,16 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.history  = InputHistory( s )
     s.commands = Commands( world )
 
-    ConfigObserver( s.conf ).addCallback( 
-                                          [
-                                            "input_font_color",
-                                            "input_font_name",
-                                            "input_font_size",
-                                            "input_background_color" 
-                                          ],
-                                          s.refresh
-                                        )
+    s.observer = ConfigObserver( s.conf )
+    s.observer.addCallback(
+                            [
+                              "input_font_color",
+                              "input_font_name",
+                              "input_font_size",
+                              "input_background_color" 
+                            ],
+                            s.refresh
+                          )
 
     connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
 
@@ -132,6 +133,8 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     s.commands.cleanupBeforeDelete()
     s.history.cleanupBeforeDelete()
+    s.observer.cleanupBeforeDelete()
 
     s.commands = None
     s.history  = None
+    s.observer = None

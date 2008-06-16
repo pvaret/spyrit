@@ -175,7 +175,7 @@ class Commands:
 
   def command_Disconnect( s ):
 
-    "close: Closes connection to the current world."
+    "disconnect: Closes connection to the current world."
 
     s.world.disconnectFromWorld()
 
@@ -246,7 +246,6 @@ class Commands:
 
 
   def command_Load( s, *args ):
-
 
     s.world.loadFile( args and " ".join( args ) or None )
 

@@ -20,6 +20,7 @@
 ##
 
 
+from CallbackRegistry import CallbackRegistry
 
 
 ## ---[ Class MetaDictProxy ]------------------------------------------
@@ -162,7 +163,7 @@ class ConfigBasket( object ):
     s.domains   = {}
     s.types     = {}
     s.parent    = parent
-    s.notifiers = []
+    s.notifiers = CallbackRegistry()
 
     if schema: s.setSchema( schema )
 
@@ -430,7 +431,7 @@ class ConfigBasket( object ):
 
   def notifyKeyChanged( s, key ):
 
-    for notify in s.notifiers: notify( key )
+    s.notifiers.triggerAll( key )
 
     for subdomain in s.domains.itervalues():
       subdomain.notifyKeyChanged( key )
@@ -438,7 +439,7 @@ class ConfigBasket( object ):
 
   def registerNotifier( s, notifier ):
 
-    s.notifiers.append( notifier )
+    s.notifiers.add( notifier )
 
 
 

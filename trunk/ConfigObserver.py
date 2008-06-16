@@ -21,6 +21,9 @@
 ##
 
 
+from CallbackRegistry import CallbackRegistry
+
+
 class ConfigObserver:
 
   def __init__( s, conf ):
@@ -31,7 +34,9 @@ class ConfigObserver:
 
   def notify( s, key ):
 
-    for callback in s.callbacks.get( key, [] ): callback()
+    if s.callbacks:
+      callbacks = s.callbacks.get( key, None )
+      if callbacks: callbacks.triggerAll()
 
 
   def addCallback( s, keys, callback, call_once=True ):
@@ -39,8 +44,13 @@ class ConfigObserver:
     if type( keys ) not in ( type( [] ), type( () ) ): keys = [ keys ]
 
     for key in keys:
-      s.callbacks.setdefault( key, [] ).append( callback )
+      s.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
 
     if call_once: callback()
 
     return s  ## Return self, so as to make it possible to chain calls.
+
+
+  def cleanupBeforeDelete( s ):
+
+    s.callbacks = None

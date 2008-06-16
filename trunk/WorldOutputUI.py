@@ -84,7 +84,8 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     s.highlight = False
     s.fgcolor   = None
 
-    ConfigObserver( s.conf ).addCallback( "output_font_color", s.refresh )
+    s.observer = ConfigObserver( s.conf )
+    s.observer.addCallback( "output_font_color", s.refresh )
 
     s.reset()
 
@@ -190,6 +191,11 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     V = min( int( round( V * 255/192.0 ) ), 255 )
     return QtGui.QColor.fromHsv( H, S, V, A )
 
+
+  def cleanupBeforeDelete( s ):
+
+    s.observer.cleanupBeforeDelete()
+    s.observer = None
 
 
 
@@ -492,5 +498,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def cleanupBeforeDelete( s ):
 
-    s.world    = None
-    s.observer = None
+    s.observer.cleanupBeforeDelete()
+    s.charformat.cleanupBeforeDelete()
+    s.infocharformat.cleanupBeforeDelete
+
+    s.world          = None
+    s.observer       = None
+    s.charformat     = None
+    s.infocharformat = None

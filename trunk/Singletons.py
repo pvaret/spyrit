@@ -43,4 +43,9 @@ class Singletons:
     return s._instances.get( name )
 
 
+  def __repr__( s ):
+
+    instances = ", ".join( s._instances.keys() )
+    return "<Singleton container (%s)>" % instances
+
 singletons = Singletons()

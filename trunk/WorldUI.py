@@ -228,6 +228,7 @@ class WorldUI( QtGui.QSplitter ):
     s.world.cleanupBeforeDelete()
     s.inputui.cleanupBeforeDelete()
     s.outputui.cleanupBeforeDelete()
+    s.actionset.cleanupBeforeDelete()
 
     s.world     = None
     s.inputui   = None
@@ -235,3 +236,4 @@ class WorldUI( QtGui.QSplitter ):
     s.actionset = None
     s.toolbar   = None
     s.tab       = None
+    s.actionset = None

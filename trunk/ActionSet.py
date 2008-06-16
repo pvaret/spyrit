@@ -104,3 +104,9 @@ class ActionSet:
     s.parent.addAction( a )
     
     return a
+
+
+  def cleanupBeforeDelete( s ):
+
+    s.observer.cleanupBeforeDelete()
+    s.observer = None

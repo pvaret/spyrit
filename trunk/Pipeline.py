@@ -21,15 +21,18 @@
 ## It works by assembling a series of Filters.
 ##
 
-from PipelineChunks import ByteChunk, theEndOfPacketChunk
+
+from PipelineChunks   import ByteChunk, theEndOfPacketChunk
+from CallbackRegistry import CallbackRegistry
+
 
 class Pipeline:
   
   def __init__( s ):
 
     s.filters      = []
-    s.sinks        = []
     s.outputBuffer = []
+    s.sinks        = CallbackRegistry()
 
 
   def feedBytes( s, packet ):
@@ -63,8 +66,7 @@ class Pipeline:
   
   def flushOutputBuffer( s ):
   
-    for callback in s.sinks:
-      callback( s.outputBuffer )
+    s.sinks.triggerAll( s.outputBuffer )
 
     s.outputBuffer = []
 
@@ -83,7 +85,7 @@ class Pipeline:
   def addSink( s, callback ):
 
     ## 'callback' should be a callable that takes a list of chunks.
-    s.sinks.append( callback )
+    s.sinks.add( callback )
 
 
   def formatForSending( s, data ):

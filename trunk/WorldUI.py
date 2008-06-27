@@ -168,9 +168,11 @@ class WorldUI( QtGui.QSplitter ):
 
   def iconBlink( s, frame ):
 
-    led = LED.select( connected = s.world.connected,
-                      lit       = ( frame % 2 != 1 ) )
-    s.tab.setTabIcon( led )
+    if s.tab and s.world:
+
+      led = LED.select( connected = s.world.connected,
+                        lit       = ( frame % 2 != 1 ) )
+      s.tab.setTabIcon( led )
 
 
   def steadyIcon( s ):
@@ -178,9 +180,11 @@ class WorldUI( QtGui.QSplitter ):
     if s.blinker.state() == QtCore.QTimeLine.Running:
       return
 
-    led = LED.select( connected = s.world.connected,
-                      lit       = not s.isVisible() )
-    s.tab.setTabIcon( led )
+    if s.tab and s.world:
+
+      led = LED.select( connected = s.world.connected,
+                        lit       = not s.isVisible() )
+      s.tab.setTabIcon( led )
 
 
   def saveSplitterPosition( s ):
@@ -215,20 +219,34 @@ class WorldUI( QtGui.QSplitter ):
     ## that.
 
     s.world.ensureWorldDisconnected()
+
+    ## Then, schedule the closing of the world.
+    QtCore.QTimer.singleShot( 0, s.doClose )
+
+
+  def doClose( s ):
+
     s.tab.removeTab()
-    s.cleanupBeforeDelete()
-
-
-  def cleanupBeforeDelete( s ):
-
     s.setParent( None )
 
-    s.blinker.stop()
+    s.world.worldui               = None
+    s.inputui.commands.commands   = None
+    s.inputui.commands.world      = None
+    s.inputui.commands            = None
+    s.tab.widget                  = None
+    s.outputui.world              = None
+    s.inputui.world               = None
+    s.inputui.history.inputwidget = None
+    s.actionset.parent            = None
 
-    s.world.cleanupBeforeDelete()
-    s.inputui.cleanupBeforeDelete()
-    s.outputui.cleanupBeforeDelete()
-    s.actionset.cleanupBeforeDelete()
+    for f in s.world.socketpipeline.pipeline.filters:
+      f.context = None
+      f.sink = None
+
+    s.world = None
+
+
+  def __del__( s ):
 
     s.world     = None
     s.inputui   = None

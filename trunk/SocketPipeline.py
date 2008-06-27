@@ -170,8 +170,7 @@ class SocketPipeline:
     s.pipeline.addSink( sink )
 
 
-  def cleanupBeforeDelete( s ):
+  def __del__( s ):
 
-    s.pipeline.cleanupBeforeDelete()
     s.pipeline = None
     s.socket   = None

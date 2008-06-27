@@ -44,7 +44,7 @@ class Application( QtGui.QApplication ):
     s.local_encoding = locale.getpreferredencoding()  ## Try to guess the
                                                       ## local encoding.
 
-    connect( s, SIGNAL( "aboutToQuit()" ), s.saveConfig )
+    connect( s, SIGNAL( "aboutToQuit()" ), s.beforeStop )
 
 
   def bootstrap( s ):
@@ -140,3 +140,9 @@ class Application( QtGui.QApplication ):
 
         ## Assume arguments are given as UTF-8.
         singletons.mw.openWorldByName( arg.decode( "utf8", "replace" ) )
+
+
+  def beforeStop( s ):
+
+    s.saveConfig()
+    sys.excepthook = sys.__excepthook__

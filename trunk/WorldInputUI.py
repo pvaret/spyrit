@@ -23,10 +23,10 @@
 
 from localqt import *
 
-from Commands       import Commands
-from InputHistory   import InputHistory
-from ConfigObserver import ConfigObserver
-
+from Commands         import Commands
+from InputHistory     import InputHistory
+from ConfigObserver   import ConfigObserver
+from CallbackRegistry import WeakCallable
 
 
 class WorldInputUI( QtGui.QTextEdit ):
@@ -54,6 +54,9 @@ class WorldInputUI( QtGui.QTextEdit ):
                           )
 
     connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
+
+
+    s.keyPressEvent = WeakCallable( s._keyPressEvent )
 
 
   def refresh( s ):
@@ -89,7 +92,7 @@ class WorldInputUI( QtGui.QTextEdit ):
       s.setStyleSheet( "QTextEdit { %s }" % " ; ".join( style_elements ) )
 
 
-  def keyPressEvent( s, e ):
+  def _keyPressEvent( s, e ):
 
     if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] and \
        not e.modifiers() & Qt.CTRL:
@@ -118,7 +121,6 @@ class WorldInputUI( QtGui.QTextEdit ):
       s.world.socketpipeline.send( text + "\r\n" )
 
 
-
   def historyUp( s ):
 
     s.history.historyUp()
@@ -129,12 +131,10 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.history.historyDown()
 
 
-  def cleanupBeforeDelete( s ):
+  def __del__( s ):
 
-    s.commands.cleanupBeforeDelete()
-    s.history.cleanupBeforeDelete()
-    s.observer.cleanupBeforeDelete()
-
-    s.commands = None
+    s.world    = None
+    s.conf     = None
     s.history  = None
+    s.commands = None
     s.observer = None

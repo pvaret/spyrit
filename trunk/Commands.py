@@ -190,7 +190,7 @@ class Commands:
 
     "close: Closes the current world."
 
-    QtCore.QTimer.singleShot( 0, s.world.worldui.close )
+    s.world.worldui.close()
 
 
   def command_World_Conf_Set( s, key, *args ):
@@ -250,7 +250,7 @@ class Commands:
     s.world.loadFile( args and " ".join( args ) or None )
 
 
-  def cleanupBeforeDelete( s ):
+  def __del__( s ):
 
     s.commands = None
     s.world    = None

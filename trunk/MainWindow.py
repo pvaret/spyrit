@@ -136,11 +136,13 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.initial_style = QtGui.QApplication.style().objectName()
 
-    ConfigObserver( config.getDomain( config._worlds_section ) ) \
-                   .addCallback( config.SECTIONS, s.refreshMenuWorlds )
+    world_section = config._worlds_section
+    s.worldobserver = ConfigObserver( config.getDomain( world_section ) )
+    s.worldobserver.addCallback( config.SECTIONS, s.refreshMenuWorlds )
 
-    ConfigObserver( config ).addCallback( "widget_style", s.refreshStyle ) \
-                            .addCallback( "toolbar_icon_size", s.refreshIcons )
+    s.observer = ConfigObserver( config )
+    s.observer.addCallback( "widget_style", s.refreshStyle )
+    s.observer.addCallback( "toolbar_icon_size", s.refreshIcons )
 
     ## And with this, our Main Window is created, whee!
 
@@ -337,9 +339,6 @@ class MainWindow( QtGui.QMainWindow ):
       world.save()
       s.openWorld( world )
 
-    else:
-      world.cleanupBeforeDelete()
-
 
   def actionQuickConnect( s ):
 
@@ -350,9 +349,6 @@ class MainWindow( QtGui.QMainWindow ):
 
     if dialog.exec_():
       s.openWorld( world )
-
-    else:
-      world.cleanupBeforeDelete()
 
 
   def makeConnectToWorldAction( s, worldname ):

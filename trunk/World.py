@@ -208,9 +208,7 @@ class World( QtCore.QObject ):
     s.info( "File loaded in %.2fs." % ( t2 - t1 ) )
 
 
-  def cleanupBeforeDelete( s ):
-
-    s.socketpipeline.cleanupBeforeDelete()
+  def __del__( s ):
 
     s.worldui        = None
     s.socketpipeline = None

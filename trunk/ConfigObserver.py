@@ -34,9 +34,8 @@ class ConfigObserver:
 
   def notify( s, key ):
 
-    if s.callbacks:
-      callbacks = s.callbacks.get( key, None )
-      if callbacks: callbacks.triggerAll()
+    callbacks = s.callbacks.get( key, None )
+    if callbacks: callbacks.triggerAll()
 
 
   def addCallback( s, keys, callback, call_once=True ):
@@ -51,6 +50,6 @@ class ConfigObserver:
     return s  ## Return self, so as to make it possible to chain calls.
 
 
-  def cleanupBeforeDelete( s ):
+  def __del__( s ):
 
     s.callbacks = None

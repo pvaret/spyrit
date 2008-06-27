@@ -86,26 +86,10 @@ class InputHistory:
 
     conf = s.inputwidget.world.conf
 
-    try:
-      maxlength = int( conf._max_history_length )
-      
-    except ValueError:
-      maxlength = 0
+    maxlength = conf._max_history_length
 
     if maxlength and len( s.history ) > maxlength:
       s.history.pop()
 
-    if conf._save_input_history:
-
-      try:
-        count = int( conf._save_input_history )
-
-      except ValueError:
-        count = 0
-
-      conf._input_history = s.history[ :count ]
-
-
-  def cleanupBeforeDelete( s ):
-
-    s.inputwidget = None
+    count = int( conf._save_input_history )
+    if count: conf._input_history = s.history[ :count ]

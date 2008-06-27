@@ -24,9 +24,10 @@
 
 from localqt import *
 
-from Utilities          import check_alert_is_available
-from PipelineChunks     import *
-from ConfigObserver     import ConfigObserver
+from Utilities        import check_alert_is_available
+from PipelineChunks   import *
+from ConfigObserver   import ConfigObserver
+from CallbackRegistry import WeakCallable
 
 
 ## This is used a lot, so define it right away.
@@ -192,9 +193,8 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     return QtGui.QColor.fromHsv( H, S, V, A )
 
 
-  def cleanupBeforeDelete( s ):
+  def __del__( s ):
 
-    s.observer.cleanupBeforeDelete()
     s.observer = None
 
 
@@ -247,6 +247,10 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.observer.addCallback( "split_scrollback", s.setupScrollback )
 
+    s.paintEvent       = WeakCallable( s._paintEvent )
+    s.resizeEvent      = WeakCallable( s._resizeEvent )
+    s.contextMenuEvent = WeakCallable( s._contextMenuEvent )
+
 
   def refresh( s ):
 
@@ -279,7 +283,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
 
-  def paintEvent( s, e ):
+  def _paintEvent( s, e ):
 
     if s.atbottom or not s.split_scrollback:
 
@@ -334,7 +338,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.scrollbar.setPageStep( pagestep )
 
 
-  def contextMenuEvent( s, e ):
+  def _contextMenuEvent( s, e ):
 
     menu = s.createStandardContextMenu()
     menu.exec_( e.globalPos() )
@@ -488,7 +492,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.pending_newline = True  ## There is always a new line after info text.
 
 
-  def resizeEvent( s, e ):
+  def _resizeEvent( s, e ):
 
     if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
       s.scrollbar.setValue( s.scrollbar.maximum() )
@@ -496,13 +500,12 @@ class WorldOutputUI( QtGui.QTextEdit ):
     return QtGui.QTextEdit.resizeEvent( s, e )
 
 
-  def cleanupBeforeDelete( s ):
-
-    s.observer.cleanupBeforeDelete()
-    s.charformat.cleanupBeforeDelete()
-    s.infocharformat.cleanupBeforeDelete
+  def __del__( s ):
 
     s.world          = None
-    s.observer       = None
+    s.conf           = None
+    s.scrollbar      = None
+    s.textcursor     = None
     s.charformat     = None
     s.infocharformat = None
+    s.observer       = None

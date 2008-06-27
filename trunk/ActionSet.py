@@ -34,6 +34,7 @@ class ActionSet:
 
     config     = singletons.config
     s.observer = ConfigObserver( config )
+    s.closures = []
     
     s.actions = {
 
@@ -93,6 +94,10 @@ class ActionSet:
      
     s.observer.addCallback( shortcutname, set_action_shortcut )
 
+    ## Keep a reference to the closure, so it's not garbage-collected
+    ## right away.
+    s.closures.append( set_action_shortcut )
+
     role = s.roles.get( action )
     
     if role: a.setMenuRole( role )
@@ -106,7 +111,7 @@ class ActionSet:
     return a
 
 
-  def cleanupBeforeDelete( s ):
+  def __del__( s ):
 
-    s.observer.cleanupBeforeDelete()
     s.observer = None
+    s.closures = None

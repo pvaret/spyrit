@@ -37,6 +37,8 @@ DEFAULTS = (
   ( 'port',                4201,  INT ),   ## Default port in config dialogs.
   ( 'ssl',                 False, BOOL ),  ## By default, no SSL on sockets.
 
+  ( 'logfile_name',        "spyrit.log", STR ),
+
   ( 'show_splashscreen', False,        BOOL ),
   ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
 
@@ -81,6 +83,9 @@ DEFAULTS = (
   ( 'shortcut_pagedown',     "PgDown",          STR ),
   ( 'shortcut_stepup',       "Ctrl+Shift+Up",   STR ),
   ( 'shortcut_stepdown',     "Ctrl+Shift+Down", STR ),
+
+  ( 'shortcut_startlog',     None,              STR ),
+  ( 'shortcut_stoplog',      None,              STR ),
 
   ( 'alert_on_activity',  True, BOOL ),
 

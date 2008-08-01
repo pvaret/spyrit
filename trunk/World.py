@@ -34,6 +34,8 @@ from SocketPipeline   import SocketPipeline
 
 from PlatformSpecific import platformSpecific
 
+from Logger           import Logger
+
 
 
 class World( QtCore.QObject ):
@@ -46,6 +48,7 @@ class World( QtCore.QObject ):
 
     s.conf    = conf
     s.worldui = None
+    s.logger  = Logger()
 
     ## We need both of the following values, because there are cases (for
     ## instance, when resolving the server name) where we can't consider
@@ -56,6 +59,7 @@ class World( QtCore.QObject ):
 
     s.socketpipeline = SocketPipeline( conf )
     s.socketpipeline.addSink( s.sink )
+    s.socketpipeline.addSink( s.logger.logOutput )
 
 
   def title( s ):
@@ -130,6 +134,29 @@ class World( QtCore.QObject ):
   def setDisconnected( s ):
 
     s.connected = False
+
+    ## TODO: Most clients I know of close logs at disconnect time but it should
+    ##       probably be a config parameter
+
+    s.stopLogging()
+
+
+  def startLogging( s ):
+
+    ## TODO: Prompt for a logfile name if none is recorded in config
+
+    ## TODO: Insert InfoText to OutputUI (create new chunks?)
+    s.info( "Logging started." )
+
+    s.logger.startLogging( s.conf._logfile_name )
+
+
+  def stopLogging( s ):
+
+    ## TODO: Insert InfoText to OutputUI (create new chunks?)
+    s.info( "Logging stopped." )
+
+    s.logger.stopLogging()
 
 
   def sink( s, chunks ):
@@ -212,3 +239,4 @@ class World( QtCore.QObject ):
 
     s.worldui        = None
     s.socketpipeline = None
+    s.logger         = None

@@ -34,6 +34,7 @@ class ActionSet:
 
     config     = singletons.config
     s.observer = ConfigObserver( config )
+
     s.closures = []
     
     s.actions = {
@@ -54,12 +55,14 @@ class ActionSet:
       "close":       ( "Close",        ":/icon/close"      ),
       "connect":     ( "Connect",      ":/icon/connect"    ),
       "disconnect":  ( "Disconnect",   ":/icon/disconnect" ),
-      "historyup":   ( "History Up",   ":/icon/up"         ),
-      "historydown": ( "History Down", ":/icon/down"       ),
-      "pageup":      ( "Page Up",      ":/icon/up"         ),
-      "pagedown":    ( "Page Down",    ":/icon/down"       ),
-      "stepup":      ( "Step Up",      None                ),
-      "stepdown":    ( "Step Down",    None                ),
+      "historyup":   ( "History up",   ":/icon/up"         ),
+      "historydown": ( "History down", ":/icon/down"       ),
+      "pageup":      ( "Page up",      ":/icon/up"         ),
+      "pagedown":    ( "Page down",    ":/icon/down"       ),
+      "stepup":      ( "Step up",      None                ),
+      "stepdown":    ( "Step down",    None                ),
+      "startlog":    ( "Start log",    ":/icon/log_start"  ),
+      "stoplog":     ( "Stop log",     ":/icon/log_stop"   ),
 
     }
 

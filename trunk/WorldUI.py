@@ -121,11 +121,26 @@ class WorldUI( QtGui.QSplitter ):
     connect_action.setEnabled( False )
     disconnect_action.setEnabled( False )
     
-    connect( world, SIGNAL( "connected( bool )" ),
+    startlog_action   = s.actionset.bindAction( "startlog",
+                                              s.world.startLogging )
+    stoplog_action    = s.actionset.bindAction( "stoplog",
+                                              s.world.stopLogging )
+
+    startlog_action.setEnabled( True )
+    stoplog_action.setEnabled( False )
+
+
+    connect( world,          SIGNAL( "connected( bool )" ),
              connect_action, SLOT( "setDisabled( bool )" ) )
 
-    connect( world, SIGNAL( "connected( bool )" ),
+    connect( world,             SIGNAL( "connected( bool )" ),
              disconnect_action, SLOT( "setEnabled( bool )" ) )
+
+    connect( world.logger,    SIGNAL( "nowLogging( bool )" ),
+             startlog_action, SLOT( "setDisabled( bool )" ) )
+
+    connect( world.logger,   SIGNAL( "nowLogging( bool )" ),
+             stoplog_action, SLOT( "setEnabled( bool )" ) )
 
     s.toolbar.addAction( connect_action )
     s.toolbar.addAction( disconnect_action )
@@ -133,6 +148,11 @@ class WorldUI( QtGui.QSplitter ):
     s.toolbar.addAction(
       s.actionset.bindAction( "close", s.close )
     )
+
+    s.toolbar.addSeparator()
+
+    s.toolbar.addAction( startlog_action )
+    s.toolbar.addAction( stoplog_action )
 
     s.toolbar.addSeparator()
 

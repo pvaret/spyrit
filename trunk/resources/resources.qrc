@@ -6,6 +6,8 @@
   <file alias="down">down.png</file>
   <file alias="lit_green_led">lit_green_led.png</file>
   <file alias="lit_red_led">lit_red_led.png</file>
+  <file alias="log_start">open_logfile.png</file>
+  <file alias="log_stop">close_logfile.png</file>
   <file alias="new_world">new_world.png</file>
   <file alias="qt-logo">qt-logo.png</file>
   <file alias="quit">quit.png</file>

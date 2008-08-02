@@ -32,12 +32,14 @@ from Messages       import messages
 
 class Logger( QtCore.QObject ):
 
-  def __init__( s ):
+  def __init__( s, world ):
 
     QtCore.QObject.__init__( s )
 
-    s.buffer  = []
+    s.world   = world
+    
     s.logfile = None
+    s.buffer  = []
 
 
   def openLogFile( s, fname ):
@@ -52,9 +54,10 @@ class Logger( QtCore.QObject ):
 
     try:
       s.logfile = codecs.open( fname, "a", "utf-8" )
+      return True
 
     except IOError:
-      messages.warn( "Error while opening %s for log writing" % fname )
+      return False
 
 
   def close( s ):
@@ -92,6 +95,18 @@ class Logger( QtCore.QObject ):
       s.buffer = []
 
 
+  def connectionSlot( s, connected ):
+    
+    if not connected:
+    
+      ## TODO: Most clients I know of close logs at disconnect time but it should
+      ##       probably be a config parameter
+    
+      s.stopLogging()
+      
+    ## TODO: Handle automatic logging at connection time
+
+
   def startLogging( s, fileName, backlog="" ):
 
     ## TODO: handle toolbar / statusbar related stuff
@@ -99,10 +114,17 @@ class Logger( QtCore.QObject ):
     if s.isLogging():
       messages.warn( "A logging file is already open, it will be closed." )
 
-    s.openLogFile( fileName )
+    if not s.openLogFile( fileName ):
+    
+      messages.warn( "Error while opening %s for log writing" % fileName )
+      return
+
+    s.world.info( "Logging started." )
 
     if backlog:
+    
       s.buffer.append( backlog )
+      s.writeToFile()
 
     emit( s, SIGNAL( "nowLogging( bool )" ), s.isLogging() )
 
@@ -115,6 +137,8 @@ class Logger( QtCore.QObject ):
 
       s.writeToFile()
       s.close()
+      
+      s.world.info( "Logging stopped." )
 
     emit( s, SIGNAL( "nowLogging( bool )" ), s.isLogging() )
 

@@ -250,6 +250,7 @@ class WorldUI( QtGui.QSplitter ):
     s.setParent( None )
 
     s.world.worldui               = None
+    s.world.logger.world          = None
     s.inputui.commands.commands   = None
     s.inputui.commands.world      = None
     s.inputui.commands            = None

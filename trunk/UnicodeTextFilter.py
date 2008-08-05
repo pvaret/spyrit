@@ -82,8 +82,17 @@ class UnicodeTextFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
 
+  def __init__( s ):
 
-  def setEncoding( s, encoding="ascii" ):
+    s.encoding = "ascii"
+    s.makeStreamDecoder()
+
+    BaseFilter.__init__( s )  ## Must be called at the end, because it calls
+                              ## s.resetInternalState() which requires a
+                              ## decoder.
+
+
+  def setEncoding( s, encoding ):
 
     try:
       codecs.lookup( encoding )
@@ -95,18 +104,22 @@ class UnicodeTextFilter( BaseFilter ):
 
     s.encoding = encoding
 
+    s.makeStreamDecoder()
+
+
+  def makeStreamDecoder( s ):
+
     if hasattr( codecs, "getincrementaldecoder" ):  ## True as of Python 2.5
-      s.decoder = codecs.getincrementaldecoder( encoding ) ( "replace" )
+      s.decoder = codecs.getincrementaldecoder( s.encoding ) ( "replace" )
 
     else:
-      s.decoder = StreamingDecoder( encoding, "replace" )
+      s.decoder = StreamingDecoder( s.encoding, "replace" )
 
 
   def resetInternalState( s ):
 
     BaseFilter.resetInternalState( s )
 
-    s.setEncoding()
     s.decoder.reset()
 
 

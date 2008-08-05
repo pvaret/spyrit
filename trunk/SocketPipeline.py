@@ -30,6 +30,7 @@ from TelnetFilter      import TelnetFilter
 from AnsiFilter        import AnsiFilter
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
+from ConfigObserver    import ConfigObserver
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
@@ -43,11 +44,26 @@ class SocketPipeline:
     s.pipeline.addFilter( TelnetFilter() )
     s.pipeline.addFilter( AnsiFilter() )
     s.pipeline.addFilter( FlowControlFilter() )
-    s.pipeline.addFilter( UnicodeTextFilter() )
+
+    s.unicodefilter = UnicodeTextFilter()
+    s.pipeline.addFilter( s.unicodefilter )
 
     s.using_ssl = False
     s.socket    = None
     s.conf      = conf
+
+    s.applyStreamEncoding()
+
+    s.observer = ConfigObserver( s.conf )
+    s.observer.addCallback( "world_encoding", s.applyStreamEncoding )
+
+    ## TODO: Write message dispatcher, so that the World can notify encoding
+    ## changes 'to whom it may concern' without it being hardcoded.
+
+
+  def applyStreamEncoding( s ):
+
+    s.unicodefilter.setEncoding( s.conf._world_encoding )
 
 
   def setupSocket( s ):
@@ -174,3 +190,4 @@ class SocketPipeline:
 
     s.pipeline = None
     s.socket   = None
+    s.observer = None

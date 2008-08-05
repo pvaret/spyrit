@@ -21,73 +21,76 @@
 
 from Types import *
 
+from ConfigPaths import LOG_DIR
+
 
 DEFAULTS = (
 
-  ( 'app_name',            "Spyrit",     STR ),
-  ( 'app_version',         "0.3pre",     STR ),
+  ( 'app_name',            u"Spyrit",    STR ),
+  ( 'app_version',         u"0.3pre",    STR ),
   ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
   ( 'mainwindow_pos',      None,         INTLIST ),
-  ( 'worlds_section',      "Worlds",     STR ),
+  ( 'worlds_section',      u"Worlds",    STR ),
 
   ( 'widget_style',        None, STR ),
 
-  ( 'name',                "",    STR ),   ## Default name in config dialogs.
-  ( 'host',                "",    STR ),   ## Default host in config dialogs.
+  ( 'name',                u"",   STR ),   ## Default name in config dialogs.
+  ( 'host',                u"",   STR ),   ## Default host in config dialogs.
   ( 'port',                4201,  INT ),   ## Default port in config dialogs.
   ( 'ssl',                 False, BOOL ),  ## By default, no SSL on sockets.
 
-  ( 'logfile_name',        "spyrit.log", STR ),
+  ( 'logfile_name',        u"[WORLDNAME]-%Y.%m.%d.log", STR ),
+  ( 'logfile_dir',         LOG_DIR, STR ),
 
   ( 'show_splashscreen', False,        BOOL ),
   ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
 
   ( 'toolbar_icon_size', 24, INT ),
 
-  ( 'output_font_name',        "Courier", STR ),
-  ( 'output_font_size',        0,         INT ),  ## 0 = Use system default.
-  ( 'output_font_color',       "#c0c0c0", STR ),  ## light grey
-  ( 'output_background_color', "#000000", STR ),  ## black
+  ( 'output_font_name',        u"Courier", STR ),
+  ( 'output_font_size',        0,          INT ),  ## 0 = Use system default.
+  ( 'output_font_color',       u"#c0c0c0", STR ),  ## light grey
+  ( 'output_background_color', u"#000000", STR ),  ## black
 
-  ( 'world_encoding', 'ASCII', STR ),
+  ( 'world_encoding', u'ASCII', STR ),
 
   ( 'split_scrollback', True, BOOL ),
 
   ( 'bold_as_highlight', True, BOOL ),
 
-  ( 'info_font_color',   "#606060", STR ),  ## dark grey
+  ( 'info_font_color',   u"#606060", STR ),  ## dark grey
 
-  ( 'input_font_name',        "", STR ),  ## "" = Use system default.
-  ( 'input_font_size',        0,  INT ),  ## 0 = Use system default.
-  ( 'input_font_color',       "", STR ),  ## "" = Use system default.
-  ( 'input_background_color', "#ffffff", STR ),  ## white
+  ( 'input_font_name',        u"", STR ),  ## "" = Use system default.
+  ( 'input_font_size',        0,   INT ),  ## 0 = Use system default.
+  ( 'input_font_color',       u"", STR ),  ## "" = Use system default.
+  ( 'input_background_color', u"#ffffff", STR ),  ## white
 
   ( 'splitter_sizes', [ 1000, 100, 100 ], INTLIST ),
 
-  ( 'input_command_char', "/", STR ),
-  ( 'max_history_length', 0,   INT ), ## Unlimited.
-  ( 'save_input_history', 10,  INT ),
-  ( 'input_history',      [],  STRLIST ),
+  ( 'input_command_char', u"/", STR ),
+  ( 'max_history_length', 0,    INT ), ## Unlimited.
+  ( 'save_input_history', 10,   INT ),
+  ( 'input_history',      [],   STRLIST ),
 
-  ( 'shortcut_about',        None,              STR ),
-  ( 'shortcut_aboutqt',      None,              STR ),
-  ( 'shortcut_newworld',     "Ctrl+N",          STR ),
-  ( 'shortcut_quickconnect', None,              STR ),
-  ( 'shortcut_quit',         "Ctrl+Q",          STR ),
-  ( 'shortcut_nexttab',      "Shift+Tab",       STR ),
-  ( 'shortcut_previoustab',  "Shift+Ctrl+Tab",  STR ),
-  ( 'shortcut_close',        "Ctrl+W",          STR ),
-  ( 'shortcut_connect',      "Ctrl+Shift+S",    STR ),
-  ( 'shortcut_disconnect',   "Ctrl+Shift+D",    STR ),
-  ( 'shortcut_historyup',    "Ctrl+Up",         STR ),
-  ( 'shortcut_historydown',  "Ctrl+Down",       STR ),
-  ( 'shortcut_pageup',       "PgUp",            STR ),
-  ( 'shortcut_pagedown',     "PgDown",          STR ),
-  ( 'shortcut_stepup',       "Ctrl+Shift+Up",   STR ),
-  ( 'shortcut_stepdown',     "Ctrl+Shift+Down", STR ),
+  ( 'shortcut_about',        None,               STR ),
+  ( 'shortcut_aboutqt',      None,               STR ),
+  ( 'shortcut_newworld',     u"Ctrl+N",          STR ),
+  ( 'shortcut_quickconnect', None,               STR ),
+  ( 'shortcut_quit',         u"Ctrl+Q",          STR ),
+  ( 'shortcut_nexttab',      u"Shift+Tab",       STR ),
+  ( 'shortcut_previoustab',  u"Shift+Ctrl+Tab",  STR ),
+  ( 'shortcut_close',        u"Ctrl+W",          STR ),
+  ( 'shortcut_connect',      u"Ctrl+Shift+S",    STR ),
+  ( 'shortcut_disconnect',   u"Ctrl+Shift+D",    STR ),
+  ( 'shortcut_historyup',    u"Ctrl+Up",         STR ),
+  ( 'shortcut_historydown',  u"Ctrl+Down",       STR ),
+  ( 'shortcut_pageup',       u"PgUp",            STR ),
+  ( 'shortcut_pagedown',     u"PgDown",          STR ),
+  ( 'shortcut_stepup',       u"Ctrl+Shift+Up",   STR ),
+  ( 'shortcut_stepdown',     u"Ctrl+Shift+Down", STR ),
 
-  ( 'shortcut_startlog',     None,              STR ),
-  ( 'shortcut_stoplog',      None,              STR ),
+  ( 'shortcut_startlog',     None,               STR ),
+  ( 'shortcut_stoplog',      None,               STR ),
 
   ( 'alert_on_activity',  True, BOOL ),
 

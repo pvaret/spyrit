@@ -27,6 +27,8 @@ from PlatformSpecific import platformSpecific
 CONFIG_DIR  = platformSpecific.get_configuration_dir()
 CONFIG_FILE = platformSpecific.get_configuration_file()
 
+LOG_DIR     = os.path.join( CONFIG_DIR, "logs" )
+
 if not os.path.exists( CONFIG_DIR ):
 
   try:

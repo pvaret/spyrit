@@ -142,7 +142,13 @@ class World( QtCore.QObject ):
 
     ## TODO: Prompt for a logfile name if none is recorded in config
 
-    s.logger.startLogging( s.conf._logfile_name )
+    logfile = s.conf._logfile_name
+    logdir  = s.conf._logfile_dir
+
+    logfile = time.strftime( logfile )
+    logfile = logfile.replace( "[WORLDNAME]", s.title() )
+
+    s.logger.startLogging( os.path.join( logdir, logfile ) )
 
 
   def stopLogging( s ):

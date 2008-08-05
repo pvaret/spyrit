@@ -23,6 +23,8 @@
 import os
 import codecs
 
+from os.path        import basename, dirname, isdir
+
 from localqt        import *
 from PipelineChunks import *
 
@@ -48,6 +50,19 @@ class Logger( QtCore.QObject ):
     ## stopLogging() before attempting to open another logfile.
 
     s.close()
+
+    assert type( fname ) is unicode  ## The filename ought to be transmitted
+                                     ## internally as Unicode.
+
+    dir = dirname( fname )
+
+    if not isdir( dir ):
+
+      try: 
+        os.makedirs( dir )
+
+      except ( IOError, OSError ):
+        pass
 
     ## If logname exists, open it in append mode and let the codecs module
     ## handle encoding issues.
@@ -107,19 +122,19 @@ class Logger( QtCore.QObject ):
     ## TODO: Handle automatic logging at connection time
 
 
-  def startLogging( s, fileName, backlog="" ):
+  def startLogging( s, filename, backlog="" ):
 
     ## TODO: handle toolbar / statusbar related stuff
 
     if s.isLogging():
       messages.warn( "A logging file is already open, it will be closed." )
 
-    if not s.openLogFile( fileName ):
+    if not s.openLogFile( filename ):
     
-      messages.warn( "Error while opening %s for log writing" % fileName )
+      messages.warn( "Error while opening %s for log writing" % filename )
       return
 
-    s.world.info( "Logging started." )
+    s.world.info( "Started logging to %s" % basename( filename ) )
 
     if backlog:
     

@@ -119,7 +119,6 @@ class WorldsManager( QtCore.QObject ):
 
   def newAnonymousWorld( s, host="", port=0, ssl=False ):
 
-    ## TODO: Ensure global conf changes are also applied to anonymous worlds.
     conf = s.newWorldConf( host, port, ssl )
     return s.newWorld( conf )
 

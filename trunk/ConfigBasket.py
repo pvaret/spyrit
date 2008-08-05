@@ -21,6 +21,7 @@
 
 
 from CallbackRegistry import CallbackRegistry
+from weakref          import WeakValueDictionary
 
 
 ## ---[ Class MetaDictProxy ]------------------------------------------
@@ -142,6 +143,17 @@ class MetaDictProxy( type ):
 
 
 
+## ---[ Class WeakList ]---------------------------------------
+
+class WeakList( WeakValueDictionary ):
+
+  __iter__ = WeakValueDictionary.itervalues
+
+  def append( s, val ):
+
+    s[ id( val ) ] = val
+
+
 ## ---[ Class ConfigBasket ]---------------------------------------
 
 class ConfigBasket( object ):
@@ -162,8 +174,10 @@ class ConfigBasket( object ):
     s.basket    = {}
     s.domains   = {}
     s.types     = {}
-    s.parent    = parent
+    s.children  = WeakList()
     s.notifiers = CallbackRegistry()
+
+    s.setParent( parent )
 
     if schema: s.setSchema( schema )
 
@@ -238,7 +252,15 @@ class ConfigBasket( object ):
     d.setTypes( types )
     d.updateFromDict( values )
 
-    s.parent = d
+    s.setParent( d )
+
+
+  def setParent( s, parent ):
+
+    s.parent = parent
+
+    if parent:
+      parent.children.append( s )
 
 
   def setTypes( s, types ):
@@ -331,8 +353,8 @@ class ConfigBasket( object ):
 
   def saveDomain( s, domain, name ):
 
-    domain.name   = name
-    domain.parent = s
+    domain.name = name
+    domain.setParent( s )
 
     s.domains[ name ] = domain
 
@@ -433,8 +455,8 @@ class ConfigBasket( object ):
 
     s.notifiers.triggerAll( key )
 
-    for subdomain in s.domains.itervalues():
-      subdomain.notifyKeyChanged( key )
+    for child in s.children:
+      child.notifyKeyChanged( key )
 
 
   def registerNotifier( s, notifier ):
@@ -446,11 +468,6 @@ class ConfigBasket( object ):
 ## ---[ Class ConfigBasketUpdater ]------------------------------------
 
 class ConfigBasketUpdater( ConfigBasket ):
-
-  def __init__( s, parent ):
-  
-    ConfigBasket.__init__( s, parent )
-
 
   def commit( s ):
   

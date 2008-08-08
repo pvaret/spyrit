@@ -60,6 +60,9 @@ class Application( QtGui.QApplication ):
     except ImportError:
       messages.warn( "Resource file not found. No graphics will be loaded." )
 
+    ## Load up the dingbat symbols font.
+    QtGui.QFontDatabase.addApplicationFont( ":/app/symbols" )
+
     ## Load and register the Congig singleton instance.
 
     from Config import Config

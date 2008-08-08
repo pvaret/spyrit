@@ -46,6 +46,12 @@ ABOUT = """
   %(NAME)s is &#169;2007 P. Varet, and licensed under the 
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
+  <br/>
+  This software uses the 
+  <i><a href="http://code.activestate.com/recipes/473846/">winpath</a></i>
+  module by Chris Arndt.<br/>
+  Dingbat symbols imported from the
+  <a href="http://dejavu.sourceforge.net/">DejaVu Sans Mono</a> font.
   </center>
 """ % dict( NAME=config._app_name, VERSION=config._app_version )
 

@@ -17,7 +17,8 @@
 ## ScrollableTabWidget.py
 ##
 ## Holds the ScrollableTabWidget class, which is a customized QTabWidget with
-## feature such as tabs that react to the mouse wheel.
+## feature such as tabs that react to the mouse wheel and a default page
+## when no tab have been created yet.
 ##
 
 
@@ -44,9 +45,9 @@ class TabBarWheelEventHandler( QtCore.QObject ):
 
 class ScrollableTabBar( QtGui.QTabBar ):
 
-  def __init__( s, *args ):
+  def __init__( s, parent=None ):
     
-    QtGui.QTabBar.__init__( s, *args )
+    QtGui.QTabBar.__init__( s, parent )
     s.installEventFilter( TabBarWheelEventHandler( s ) )
   
 
@@ -66,13 +67,13 @@ class ScrollableTabBar( QtGui.QTabBar ):
     
 class ScrollableTabWidget( QtGui.QTabWidget ):
 
-  def __init__( s, *args ):
+  def __init__( s, parent=None ):
     
-    QtGui.QTabWidget.__init__( s, *args )
+    QtGui.QTabWidget.__init__( s, parent )
     
     s.tabbar = ScrollableTabBar( s )
     s.setTabBar( s.tabbar )
-  
+
 
   def tabInserted( s, i ):
  
@@ -90,3 +91,27 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
 
     s.emit( SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
     s.emit( SIGNAL( "numberOfTabChanged( int )" ), s.count() )
+
+
+
+class SmartTabWidget( QtGui.QStackedWidget ):
+
+  def __init__( s, parent=None, fallback=None ):
+    
+    QtGui.QStackedWidget.__init__( s, parent )
+
+    s.tabwidget = ScrollableTabWidget( s )
+    s.fallback  = fallback and fallback or QtGui.QWidget( s )
+
+    s.addWidget( s.tabwidget )
+    s.addWidget( s.fallback )
+
+    if fallback: s.setCurrentWidget( s.fallback )
+
+    connect( s.tabwidget, SIGNAL( "numberOfTabChanged( int )" ), s.switchView )
+
+
+  def switchView( s, tabcount ):
+
+    if tabcount > 0: s.setCurrentWidget( s.tabwidget )
+    else:            s.setCurrentWidget( s.fallback )

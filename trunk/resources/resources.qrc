@@ -19,6 +19,7 @@
 <qresource prefix="/app">
  <!-- <file alias="splash">splash.jpg</file> -->
   <file alias="icon">spyrit-icon.png</file>
+  <file alias="logo">spyrit-logo.png</file>
   <file alias="symbols">symbols.ttf</file>
 </qresource>
 </RCC>

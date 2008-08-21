@@ -23,12 +23,12 @@
 
 from localqt             import *
 
-from World               import World
-from WorldUI             import WorldUI
-from ActionSet           import ActionSet
-from Singletons          import singletons
-from ConfigObserver      import ConfigObserver
-from ScrollableTabWidget import ScrollableTabWidget
+from World          import World
+from WorldUI        import WorldUI
+from ActionSet      import ActionSet
+from Singletons     import singletons
+from ConfigObserver import ConfigObserver
+from SmartTabWidget import SmartTabWidget
 
 from Messages  import messages
 from Utilities import case_insensitive_cmp
@@ -59,8 +59,12 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Create the central widget.
 
-    s.tabwidget = ScrollableTabWidget( s )
-    s.setCentralWidget( s.tabwidget )
+    default_pane = QtGui.QLabel()
+    default_pane.setAlignment( Qt.AlignCenter )
+    default_pane.setPixmap( QtGui.QPixmap( ":/app/logo" ) )
+
+    s.setCentralWidget( SmartTabWidget( s, default_pane ) )
+    s.tabwidget = s.centralWidget().tabwidget
 
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
                           s.setCurrentWorldToolbar )

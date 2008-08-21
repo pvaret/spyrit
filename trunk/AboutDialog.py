@@ -43,7 +43,7 @@ ABOUT = """
   missing, namely logs, matches and highlights, and configuration dialogs for
   everything.<br/>
   <br/>
-  %(NAME)s is &#169;2007 P. Varet, and licensed under the 
+  %(NAME)s is &#169;2007-2008 P. Varet, and licensed under the 
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
   <br/>
@@ -51,7 +51,9 @@ ABOUT = """
   <i><a href="http://code.activestate.com/recipes/473846/">winpath</a></i>
   module by Chris Arndt.<br/>
   Dingbat symbols imported from the
-  <a href="http://dejavu.sourceforge.net/">DejaVu Sans Mono</a> font.
+  <a href="http://dejavu.sourceforge.net/">DejaVu Sans Mono</a> font.<br/>
+  Horse logo contributed by
+  <a href="http://waltervermeij.blogspot.com/">Walter Vermeij</a>.
   </center>
 """ % dict( NAME=config._app_name, VERSION=config._app_version )
 

@@ -27,7 +27,6 @@ from localqt import *
 from Utilities        import check_alert_is_available
 from PipelineChunks   import *
 from ConfigObserver   import ConfigObserver
-from CallbackRegistry import WeakCallable
 
 
 ## This is used a lot, so define it right away.
@@ -247,10 +246,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.observer.addCallback( "split_scrollback", s.setupScrollback )
 
-    s.paintEvent       = WeakCallable( s._paintEvent )
-    s.resizeEvent      = WeakCallable( s._resizeEvent )
-    s.contextMenuEvent = WeakCallable( s._contextMenuEvent )
-
 
   def refresh( s ):
 
@@ -283,7 +278,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
 
-  def _paintEvent( s, e ):
+  def paintEvent( s, e ):
 
     if s.atbottom or not s.split_scrollback:
 
@@ -338,7 +333,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.scrollbar.setPageStep( pagestep )
 
 
-  def _contextMenuEvent( s, e ):
+  def contextMenuEvent( s, e ):
 
     menu = s.createStandardContextMenu()
     menu.exec_( e.globalPos() )
@@ -492,7 +487,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.pending_newline = True  ## There is always a new line after info text.
 
 
-  def _resizeEvent( s, e ):
+  def resizeEvent( s, e ):
 
     if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
       s.scrollbar.setValue( s.scrollbar.maximum() )

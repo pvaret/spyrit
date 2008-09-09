@@ -26,7 +26,6 @@ from localqt import *
 from Commands         import Commands
 from InputHistory     import InputHistory
 from ConfigObserver   import ConfigObserver
-from CallbackRegistry import WeakCallable
 
 
 class WorldInputUI( QtGui.QTextEdit ):
@@ -54,9 +53,6 @@ class WorldInputUI( QtGui.QTextEdit ):
                           )
 
     connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
-
-
-    s.keyPressEvent = WeakCallable( s._keyPressEvent )
 
 
   def refresh( s ):
@@ -92,7 +88,7 @@ class WorldInputUI( QtGui.QTextEdit ):
       s.setStyleSheet( "QTextEdit { %s }" % " ; ".join( style_elements ) )
 
 
-  def _keyPressEvent( s, e ):
+  def keyPressEvent( s, e ):
 
     if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] and \
        not e.modifiers() & Qt.CTRL:

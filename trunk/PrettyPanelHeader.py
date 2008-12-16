@@ -25,36 +25,65 @@ from localqt import *
 
 class PrettyPanelHeader( QtGui.QFrame ):
 
-  SPACING = 20
+  ## A few spacing constants used during the layout:
 
-  def __init__( s, text, icon=None, parent=None ):
+  SPACING = 20
+  MARGIN  = 15
+
+  ## The header's stylesheet. The actual colors will be filled in when the
+  ## hader is instanciated.
+
+  STYLESHEET = """
+    QFrame#header {
+      background:
+        qlineargradient( x1:0, y1:0, x2:0, y2:1, stop:0 %s, stop:1 %s );
+      border-width: 1px;
+      border-style: outset;
+      border-radius: 3px;
+    }
+  """
+
+  def __init__( s, title, icon=None, parent=None ):
 
     QtGui.QFrame.__init__( s, parent )
+
+    ## The object gets a name so that we can apply the stylesheet to it
+    ## specifically.
+
+    s.setObjectName( "header" )
+
+    ## The colors that are used in the stylesheet are retrieved from the
+    ## currently configured palette.
+
+    color1 = s.palette().dark().color().name()
+    color2 = s.palette().midlight().color().name()
+
+    s.setStyleSheet( s.STYLESHEET % ( color1, color2 ) )
+
+    ## Legacy setup for platforms that don't support stylesheets (yet).
 
     s.setFrameShape(  QtGui.QFrame.StyledPanel )
     s.setFrameShadow( QtGui.QFrame.Plain )
 
-    bgcolor = s.palette().color( s.backgroundRole() )
-    H, S, V, A = bgcolor.getHsv()
-    V = V / 1.1
-    newbgcolor = QtGui.QColor.fromHsv( H, S, V, A )
-
-    s.setStyleSheet( "QFrame { background-color: %s }" % newbgcolor.name() )
+    ## Layout stuff.
 
     s.setSizePolicy( QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed )
 
     layout = QtGui.QHBoxLayout( s )
 
     layout.setSpacing( s.SPACING )
+    layout.setContentsMargins( s.MARGIN, s.MARGIN, s.MARGIN, s.MARGIN )
+
+    ## And creation of the header's contents.
 
     if icon:
       i = QtGui.QLabel( s )
       i.setPixmap( icon )
       layout.addWidget( i, 0, Qt.AlignLeft | Qt.AlignVCenter )
 
-    t = QtGui.QLabel( '<font size="+2"><b>%s</b></font>' % text, s )
-    t.setTextFormat( Qt.RichText )
-    layout.addWidget( t, 0, Qt.AlignRight | Qt.AlignVCenter )
+    text = QtGui.QLabel( '<font size="+2"><b>%s</b></font>' % title, s )
+    text.setTextFormat( Qt.RichText )
+    layout.addWidget( text, 0, Qt.AlignRight | Qt.AlignVCenter )
 
     s.setLayout( layout )
     

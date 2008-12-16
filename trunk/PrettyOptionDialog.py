@@ -26,6 +26,8 @@ from PrettyOptionPanel import *
 
 class PrettyOptionDialog( QtGui.QDialog ):
 
+  HEADER_SPACING = 20
+
   def __init__( s, mapper, header=None, oklabel=None, title=None, parent=None ):
 
     QtGui.QDialog.__init__( s, parent )
@@ -67,7 +69,7 @@ class PrettyOptionDialog( QtGui.QDialog ):
     if s.panel.layout():
 
       l, t, r, b = s.panel.layout().getContentsMargins()
-      s.panel.layout().setContentsMargins( 0, t, 0, b )
+      s.panel.layout().setContentsMargins( 0, max( t, s.HEADER_SPACING ), 0, b )
 
     s.layout().addWidget( s.panel )
     s.layout().addWidget( Separator( s ) )

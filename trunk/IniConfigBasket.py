@@ -81,7 +81,7 @@ class IniConfigBasket( ConfigBasket ):
 
     except IOError:
       ## Unable to load configuration. Aborting.
-      messages.error( "Unable to load configuration file %s!" % s.filename )
+      #messages.debug( "Unable to load configuration file %s!" % s.filename )
       return
 
     s.reset()

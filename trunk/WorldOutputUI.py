@@ -225,6 +225,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.charformat     = WorldOutputCharFormat( s.conf )
     s.infocharformat = WorldOutputCharFormat( s.conf )
 
+    s.was_connected  = False
+
     s.refreshInfoCharFormat()
 
     s.observer = ConfigObserver( s.conf )
@@ -419,16 +421,18 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
         elif chunk.data == NetworkChunk.CONNECTED:
 
-          if not s.world.connected:
+          if not s.was_connected:
             s.insertInfoText( "Connected!" )
+            s.was_connected = True
 
         elif chunk.data == NetworkChunk.ENCRYPTED:
           s.insertInfoText( "SSL encryption started." )
 
         elif chunk.data == NetworkChunk.DISCONNECTED:
 
-          if s.world.connected:
+          if s.was_connected:
             s.insertInfoText( "Connection closed." )
+            s.was_connected = False
 
         elif chunk.data == NetworkChunk.RESOLVING:
           s.insertInfoText( "Resolving %s ..." % s.world.host() )

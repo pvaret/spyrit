@@ -261,7 +261,7 @@ class MainWindow( QtGui.QMainWindow ):
     ## Confirm close if some worlds are still connected.
 
     connectedworlds = [ w for w in s.iterateOnOpenWorlds()
-                          if  w.world.connected ]
+                          if  w.world.isConnected() ]
 
     if len( connectedworlds ) > 0:
 

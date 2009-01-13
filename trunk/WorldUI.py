@@ -130,11 +130,11 @@ class WorldUI( QtGui.QSplitter ):
     stoplog_action.setEnabled( False )
 
 
-    connect( world,          SIGNAL( "connected( bool )" ),
-             connect_action, SLOT( "setDisabled( bool )" ) )
+    connect( world,          SIGNAL( "disconnected( bool )" ),
+             connect_action, SLOT( "setEnabled( bool )" ) )
 
-    connect( world,             SIGNAL( "connected( bool )" ),
-             disconnect_action, SLOT( "setEnabled( bool )" ) )
+    connect( world,             SIGNAL( "disconnected( bool )" ),
+             disconnect_action, SLOT( "setDisabled( bool )" ) )
 
     connect( world.logger,    SIGNAL( "nowLogging( bool )" ),
              startlog_action, SLOT( "setDisabled( bool )" ) )
@@ -190,7 +190,7 @@ class WorldUI( QtGui.QSplitter ):
 
     if s.tab and s.world:
 
-      led = LED.select( connected = s.world.connected,
+      led = LED.select( connected = s.world.isConnected(),
                         lit       = ( frame % 2 != 1 ) )
       s.tab.setTabIcon( led )
 
@@ -202,7 +202,7 @@ class WorldUI( QtGui.QSplitter ):
 
     if s.tab and s.world:
 
-      led = LED.select( connected = s.world.connected,
+      led = LED.select( connected = s.world.isConnected(),
                         lit       = not s.isVisible() )
       s.tab.setTabIcon( led )
 
@@ -214,7 +214,7 @@ class WorldUI( QtGui.QSplitter ):
 
   def close( s ):
 
-    if s.world.connected:
+    if s.world.isConnected():
 
       messagebox = QtGui.QMessageBox( singletons.mw )
 

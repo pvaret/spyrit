@@ -38,6 +38,14 @@ from Logger           import Logger
 
 
 
+class Status:
+
+  DISCONNECTED  = 0
+  CONNECTING    = 1
+  CONNECTED     = 2
+  DISCONNECTING = 3
+
+
 class World( QtCore.QObject ):
 
   def __init__( s, conf=None ):
@@ -52,12 +60,7 @@ class World( QtCore.QObject ):
     
     connect( s, SIGNAL( "connected( bool )" ), s.logger.connectionSlot ) 
 
-    ## We need both of the following values, because there are cases (for
-    ## instance, when resolving the server name) where we can't consider
-    ## ourselves connected nor disconnected.
-
-    s.connected    = False
-    s.disconnected = True
+    s.status = Status.DISCONNECTED
 
     s.socketpipeline = SocketPipeline( conf )
     s.socketpipeline.addSink( s.sink )
@@ -98,13 +101,13 @@ class World( QtCore.QObject ):
 
   def connectToWorld( s ):
 
-    if not s.connected:
+    if not s.isConnected():
       s.socketpipeline.connectToHost()
 
 
   def disconnectFromWorld( s ):
 
-    if s.connected:
+    if s.isConnected():
     
       messagebox = QtGui.QMessageBox( singletons.mw )
       messagebox.setWindowTitle( "Confirm disconnect" )
@@ -121,21 +124,11 @@ class World( QtCore.QObject ):
 
   def ensureWorldDisconnected( s ):
 
-    if s.connected:
+    if s.isConnected():
       s.socketpipeline.disconnectFromHost()
       
     else:
       s.socketpipeline.abort()
-
-
-  def setConnected( s ):
-
-    s.connected = True
-
-
-  def setDisconnected( s ):
-
-    s.connected = False
 
 
   def startLogging( s ):
@@ -158,27 +151,49 @@ class World( QtCore.QObject ):
 
   def sink( s, chunks ):
 
+    previous_status = s.status
+
     for chunk in chunks:
       
       if not chunk.chunktype == ChunkTypes.NETWORK:
         continue
 
-      if   chunk.data == NetworkChunk.CONNECTED:
+      if   chunk.data in ( NetworkChunk.RESOLVING, NetworkChunk.CONNECTING ):
 
-        QtCore.QTimer.singleShot( 0, s.setConnected )
+        s.status = Status.CONNECTING
 
-      elif chunk.data == NetworkChunk.DISCONNECTED:
+      elif chunk.data == NetworkChunk.CONNECTED:
 
-        QtCore.QTimer.singleShot( 0, s.setDisconnected )
+        s.status = Status.CONNECTED
 
-      s.disconnected = ( chunk.data in ( 
-                                         NetworkChunk.DISCONNECTED,
-                                         NetworkChunk.HOSTNOTFOUND,
-                                         NetworkChunk.TIMEOUT,
-                                         NetworkChunk.CONNECTIONREFUSED,
-                                       ) )
+      elif chunk.data == NetworkChunk.DISCONNECTING:
 
-      emit( s, SIGNAL( "connected( bool )" ), not s.disconnected )
+        s.status = Status.DISCONNECTING
+
+      elif chunk.data in (
+                            NetworkChunk.DISCONNECTED,
+                            NetworkChunk.CONNECTIONREFUSED,
+                            NetworkChunk.HOSTNOTFOUND,
+                            NetworkChunk.TIMEOUT,
+                            NetworkChunk.OTHERERROR,
+                         ):
+
+        s.status = Status.DISCONNECTED
+
+
+    if s.status != previous_status:
+      emit( s, SIGNAL( "connected( bool )" ),    s.isConnected() )
+      emit( s, SIGNAL( "disconnected( bool )" ), s.isDisconnected() )
+
+
+  def isConnected( s ):
+
+    return s.status == Status.CONNECTED
+
+
+  def isDisconnected( s ):
+
+    return s.status == Status.DISCONNECTED
 
 
   def selectFile( s, caption="Select file", dir="", filter="" ):

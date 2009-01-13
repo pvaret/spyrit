@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2002-2007 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2009 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##

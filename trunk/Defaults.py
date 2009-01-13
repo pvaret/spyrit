@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2002-2007 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2009 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -27,7 +27,7 @@ from ConfigPaths import LOG_DIR
 DEFAULTS = (
 
   ( 'app_name',            u"Spyrit",    STR ),
-  ( 'app_version',         u"0.3pre",    STR ),
+  ( 'app_version',         u"0.4pre",    STR ),
   ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
   ( 'mainwindow_pos',      None,         INTLIST ),
   ( 'worlds_section',      u"Worlds",    STR ),

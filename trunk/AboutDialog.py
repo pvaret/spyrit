@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2002-2007 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2009 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -33,17 +33,17 @@ ABOUT = """
   <center><br/>
   <font size="+2"><b>%(NAME)s v%(VERSION)s</b></font><br/>
   <br/>
-  "The light at the end of the tunnel may be an oncoming dragon. YAY!"<br/>
+  "Still alive!"<br/>
   <br/>
   This software is a beta version and as of yet incomplete, although it is
   already usable and, we hope, fast, stable and pleasant to use.<br/>
   <br/>
   Please stay tuned for further developments! We aim to release version 1.0
   within a few months, after adding the important features that are currently
-  missing, namely logs, matches and highlights, and configuration dialogs for
+  missing, namely matches, highlights and such, and configuration dialogs for
   everything.<br/>
   <br/>
-  %(NAME)s is &#169;2007-2008 P. Varet, and licensed under the 
+  %(NAME)s is &#169;2007-2009 P. Varet, and licensed under the 
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
   <br/>

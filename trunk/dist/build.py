@@ -6,6 +6,7 @@ import imp
 import bz2
 import time
 import struct
+import base64
 import marshal
 import os.path
 
@@ -21,7 +22,7 @@ EMBEDDED_MODULES = {
 import sys
 import imp
 import bz2
-import marshal
+import base64
 
 
 class embedded_module_importer:
@@ -39,8 +40,9 @@ class embedded_module_importer:
     if fullname == "MAIN":
       fullname = "__main__"
 
-    filename, code = EMBEDDED_MODULES[ fullname ]
-    code =  marshal.loads( bz2.decompress( code ) )
+    filename, source = EMBEDDED_MODULES[ fullname ]
+    source = bz2.decompress( base64.decodestring( source ) )
+    code   = compile( source, filename, 'exec' )
 
     mod = sys.modules.setdefault( fullname, imp.new_module( fullname ) )
     mod.__file__ = filename
@@ -59,16 +61,22 @@ import MAIN
 
 
 def get_timestamp_long():
+
   return struct.pack( "l", long( time.time() ) )
 
 
-def make_bytecode( filename ):
+def make_source_archive( filename ):
 
-  m  = compile( file( filename ).read(), filename, 'exec' )
-#  bc = imp.get_magic() + get_timestamp_long() + marshal.dumps( m )
-  bc = bz2.compress( marshal.dumps( m ) )
+  return base64.encodestring( bz2.compress( file( filename ).read() ) )
 
-  return bc
+
+#def make_bytecode( filename ):
+#
+#  m  = compile( file( filename ).read(), filename, 'exec' )
+# #  bc = imp.get_magic() + get_timestamp_long() + marshal.dumps( m )
+#  bc = bz2.compress( marshal.dumps( m ) )
+#
+#  return bc
 
 
 def make_module_dict( modules ):
@@ -76,10 +84,11 @@ def make_module_dict( modules ):
   mods = []
 
   for ( modulename, f ) in modules:
-    bc = make_bytecode( f )
-    mods.append( "  %s: ( %s, %s )" % ( modulename.__repr__(), 
-                                        f.__repr__(), 
-                                        make_bytecode( f ).__repr__() ) )
+    #bc = make_bytecode( f )
+    bc = make_source_archive( f )
+    mods.append( "  %s: ( %s, %s )" % ( repr( modulename ), 
+                                        repr( f ), 
+                                        repr( bc ) ) )
 
   return ",\n".join( mods )
 

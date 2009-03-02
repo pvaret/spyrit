@@ -55,6 +55,8 @@ ABOUT = """
   Horse logo contributed by
   <a href="http://waltervermeij.blogspot.com/">Walter Vermeij</a>.
   </center>
+  <br/>
+  <br/>
 """ % dict( NAME=config._app_name, VERSION=config._app_version )
 
 

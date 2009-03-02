@@ -48,29 +48,13 @@ class MetaDictProxy( type ):
     setattr( cls, '__delattr__', MetaDictProxy.__mydelattr )
 
 
-
-  class NotSpecialAttributeName( AttributeError ):
-    """
-    NotSpecialAttributeName( AttributeError )
-  
-    Internal use only.
-    This exception is used to distinguish between 'normal' attributes
-    and the ones, identified by having one '_' as their first character,
-    that are to be magically mapped to dictionary keys by the
-    MetaDictProxy metaclass.
-    """
-    pass
-
-
-
-
   @staticmethod
   def validatedAttr( attr ):
     """
     validatedAttr( attr )
     
     Static method. Determines whether the parameter begins with one
-    underscore '_' but not two. Raises NotSpecialAttributeName otherwise.
+    underscore '_' but not two. Returns None otherwise.
     Attributes beginning with one underscore will be looked up in the
     mapped dictionary.
     """
@@ -81,16 +65,15 @@ class MetaDictProxy( type ):
   
         return attr[ 1: ]
   
-    raise MetaDictProxy.NotSpecialAttributeName( attr )
+    return None
   
   
   @staticmethod
   def __mygetattr( obj, attr ):
  
-    try:
-      vattr = MetaDictProxy.validatedAttr( attr )
-      
-    except MetaDictProxy.NotSpecialAttributeName:
+    vattr = MetaDictProxy.validatedAttr( attr )
+
+    if vattr is None:      
       ## This is neither an existing native attribute, nor a 'special'
       ## attribute name that should be read off the mapped dictionary,
       ## so we raise an AttributeError.
@@ -106,25 +89,23 @@ class MetaDictProxy( type ):
   @staticmethod
   def __mysetattr( obj, attr, value ):
   
-    try:
-      attr = MetaDictProxy.validatedAttr( attr )
+    vattr = MetaDictProxy.validatedAttr( attr )
       
-    except MetaDictProxy.NotSpecialAttributeName:
+    if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
       obj.__dict__[ attr ] = value
       return
   
-    obj[ attr ] = value
+    obj[ vattr ] = value
   
   
   @staticmethod
   def __mydelattr( obj, attr ):
     
-    try:
-      vattr = MetaDictProxy.validatedAttr( attr )
+    vattr = MetaDictProxy.validatedAttr( attr )
   
-    except MetaDictProxy.NotSpecialAttributeName:
+    if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
       try:

@@ -24,9 +24,10 @@
 
 from localqt import *
 
-from Utilities        import check_alert_is_available
-from PipelineChunks   import *
-from ConfigObserver   import ConfigObserver
+from PipelineChunks import *
+from Utilities      import check_alert_is_available
+from SearchManager  import SearchManager
+from ConfigObserver import ConfigObserver
 
 
 ## This is used a lot, so define it right away.
@@ -225,6 +226,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.charformat     = WorldOutputCharFormat( s.conf )
     s.infocharformat = WorldOutputCharFormat( s.conf )
 
+    s.searchmanager  = SearchManager( s )
+
     s.was_connected  = False
 
     s.refreshInfoCharFormat()
@@ -235,7 +238,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
-                                            s.ensureScrollbarAtBottom )
+                                                     s.onRangeChanged )
 
     s.pending_newline = False
 
@@ -315,8 +318,15 @@ class WorldOutputUI( QtGui.QTextEdit ):
                                         width, height - split_y - 1 ) )
 
 
+  def moveScrollbarToBottom( s ):
 
-  def ensureScrollbarAtBottom( s, min, max ):
+    ## Since this triggers a valueChanged() signal, s.atbottom will be set
+    ## to True automatically.
+ 
+    s.scrollbar.setValue( s.scrollbar.maximum() )
+
+
+  def onRangeChanged( s, min, max ):
     
     ## 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'
     ## signal.
@@ -333,6 +343,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
       pagestep = int( pagestep * s.SPLIT_FACTOR )
 
     s.scrollbar.setPageStep( pagestep )
+
+
+  def findInHistory( s, string ):
+
+    return s.searchmanager.find( string )
 
 
   def contextMenuEvent( s, e ):
@@ -508,3 +523,4 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.charformat     = None
     s.infocharformat = None
     s.observer       = None
+    s.searchmanager  = None

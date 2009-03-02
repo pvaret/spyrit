@@ -141,6 +141,14 @@ class Commands:
         s.world.info( "No help for command %s." % commandname )
 
 
+  def command_Find( s, *args ):
+
+    "find [<string>]: Searches for <string> in the output window." \
+    "If <string> is omitted, repeat the last search."
+
+    s.world.worldui.outputui.findInHistory( " ".join( args ) )
+
+
   def command_Raise( s, *args ):
 
     "raise <exception> [parameters]: Raises <exception>. " \

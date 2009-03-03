@@ -76,7 +76,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
   BRUSH_CACHE = {}
 
-  def __init__( s, conf ):
+  def __init__( s, conf, color_attribute, italic_by_default=False ):
 
     QtGui.QTextCharFormat.__init__( s )
 
@@ -85,15 +85,18 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     s.highlight = False
     s.fgcolor   = None
 
+    s.color_attribute   = color_attribute
+    s.italic_by_default = italic_by_default
+
     s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback( "output_font_color", s.refresh )
+    s.observer.addCallback( color_attribute, s.refresh )
 
     s.reset()
 
 
   def refresh( s ):
 
-    default_color       = QtGui.QColor( s.conf._output_font_color )
+    default_color       = QtGui.QColor( s.conf[ s.color_attribute ] )
     default_highlighted = WorldOutputCharFormat.lighterColor( default_color )
 
     s.default_brush     = QtGui.QBrush( default_color )
@@ -112,7 +115,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     s.setForeground( s.computeCurrentBrush() )
 
     s.setFontWeight( QtGui.QFont.Normal )
-    s.setFontItalic( False )
+    s.setFontItalic( s.italic_by_default )
     s.setFontUnderline( False )
 
 
@@ -199,6 +202,10 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
 
 
+
+
+
+
 class WorldOutputUI( QtGui.QTextEdit ):
 
   SPLIT_FACTOR = 0.84  ## Corresponds to 1/6th of the height.
@@ -223,18 +230,14 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.atbottom       = True
     s.scrollbar      = s.verticalScrollBar()
     s.textcursor     = QtGui.QTextCursor( s.document() )
-    s.charformat     = WorldOutputCharFormat( s.conf )
-    s.infocharformat = WorldOutputCharFormat( s.conf )
+    s.charformat     = WorldOutputCharFormat( s.conf, "output_font_color" )
+    s.infocharformat = WorldOutputCharFormat( s.conf, "info_font_color", True )
 
     s.searchmanager  = SearchManager( s )
 
     s.was_connected  = False
 
-    s.refreshInfoCharFormat()
-
     s.observer = ConfigObserver( s.conf )
-
-    s.observer.addCallback( "info_font_color", s.refreshInfoCharFormat )
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
@@ -262,14 +265,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
     stylesheet += "; background-color: %s }" % s.conf._output_background_color
 
     s.setStyleSheet( stylesheet )
-
-
-  def refreshInfoCharFormat( s ):
-
-    s.infocharformat.reset()
-    s.infocharformat.setFontItalic( True )
-    s.infocharformat.setForeground( \
-               QtGui.QBrush( QtGui.QColor( s.conf._info_font_color ) ) )
 
 
   def setupScrollback( s ):

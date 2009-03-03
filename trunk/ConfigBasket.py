@@ -165,19 +165,14 @@ class ConfigBasket( object ):
 
   def __getitem__( s, k ):
 
-    k = k.lower().strip()
-
     if k in s.basket:    return s.basket[ k ]
     if s.parent:         return s.parent[ k ]
-    if s.hasDomain( k ): return s.getDomain( k )
 
     raise KeyError( k )
 
 
   def __setitem__( s, attr, value ):
     
-    attr = attr.lower().strip()
-
     if s.existsInParent( attr ) and s.parent[ attr ] == value:
 
       ## If the parent's value is already set to the new value, we delete
@@ -268,7 +263,7 @@ class ConfigBasket( object ):
 
   def owns( s, attr ):
   
-    return s.basket.has_key( attr.lower().strip() )
+    return attr in s.basket
     
 
   def existsInParent( s, attr ):

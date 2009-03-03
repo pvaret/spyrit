@@ -167,23 +167,11 @@ class ConfigBasket( object ):
 
     k = k.lower().strip()
 
-    try:
-      return s.basket[ k ]
-      
-    except KeyError:
+    if k in s.basket:    return s.basket[ k ]
+    if s.parent:         return s.parent[ k ]
+    if s.hasDomain( k ): return s.getDomain( k )
 
-      try:
-
-        if s.parent:
-          return s.parent[ k ]
-
-      except KeyError:
-        pass
-
-      if s.hasDomain( k ):
-        return s.getDomain( k )
-
-      raise
+    raise KeyError( k )
 
 
   def __setitem__( s, attr, value ):

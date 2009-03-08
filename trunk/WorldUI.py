@@ -81,11 +81,14 @@ class WorldUI( QtGui.QSplitter ):
 
     s.inputui = WorldInputUI( s, world )
     s.addWidget( s.inputui )
+
+    s.secondaryinputui = WorldInputUI( s, world, shouldsavehistory=False )
+    s.addWidget( s.secondaryinputui )
+    s.secondaryinputui.hide()
     
     world.socketpipeline.addSink( s.outputui.formatAndDisplay )
 
-    s.setFocusProxy( s.inputui )  ## TODO: correlate this with action of
-                                  ## mousewheel on tab bar.
+    s.setFocusProxy( s.inputui )
 
     ## Setup splitter.
 
@@ -106,12 +109,12 @@ class WorldUI( QtGui.QSplitter ):
 
     s.actionset = ActionSet( s )
 
-    s.actionset.bindAction( "historyup",   s.inputui.historyUp )
-    s.actionset.bindAction( "historydown", s.inputui.historyDown )
-    s.actionset.bindAction( "stepup",      s.outputui.stepUp )
-    s.actionset.bindAction( "stepdown",    s.outputui.stepDown )
-    s.actionset.bindAction( "pageup",      s.outputui.pageUp )
-    s.actionset.bindAction( "pagedown",    s.outputui.pageDown )
+    s.actionset.bindAction( "stepup",   s.outputui.stepUp )
+    s.actionset.bindAction( "stepdown", s.outputui.stepDown )
+    s.actionset.bindAction( "pageup",   s.outputui.pageUp )
+    s.actionset.bindAction( "pagedown", s.outputui.pageDown )
+
+    s.actionset.bindAction( "toggle2ndinput", s.toggleSecondaryInput )
 
     connect_action    = s.actionset.bindAction( "connect",
                                               s.world.connectToWorld )
@@ -169,6 +172,17 @@ class WorldUI( QtGui.QSplitter ):
 
     else:
       s.toolbar.setIconSize( singletons.mw.toolbar_main.iconSize() )
+
+
+  def toggleSecondaryInput( s ):
+
+    if s.secondaryinputui.isHidden():
+      s.secondaryinputui.show()
+      s.secondaryinputui.setFocus()
+
+    else:
+      s.secondaryinputui.hide()
+      s.inputui.setFocus()
 
 
   def onTabChanged( s, is_now_visible ):
@@ -269,10 +283,11 @@ class WorldUI( QtGui.QSplitter ):
 
   def __del__( s ):
 
-    s.world     = None
-    s.inputui   = None
-    s.outputui  = None
-    s.actionset = None
-    s.toolbar   = None
-    s.tab       = None
-    s.actionset = None
+    s.world            = None
+    s.inputui          = None
+    s.secondaryinputui = None
+    s.outputui         = None
+    s.actionset        = None
+    s.toolbar          = None
+    s.tab              = None
+    s.actionset        = None

@@ -30,7 +30,7 @@ class ActionSet:
   
   def __init__( s, parent ):
    
-    s.parent  = parent
+    s.parent = parent
 
     config     = singletons.config
     s.observer = ConfigObserver( config )
@@ -64,6 +64,8 @@ class ActionSet:
       "startlog":    ( "Start log",    ":/icon/log_start"  ),
       "stoplog":     ( "Stop log",     ":/icon/log_stop"   ),
 
+      "toggle2ndinput": ( "Toggle secondary input",   None ),
+
     }
 
     ## Very few actions have a specific role, so it's more effective to put
@@ -73,6 +75,13 @@ class ActionSet:
       "about":   QtGui.QAction.AboutRole,
       "aboutqt": QtGui.QAction.AboutQtRole,
       "quit":    QtGui.QAction.QuitRole,
+    }
+
+    ## Likewise, custom shortcut contexts.
+
+    s.contexts = {
+      "historyup":   Qt.WidgetShortcut,
+      "historydown": Qt.WidgetShortcut,
     }
 
 
@@ -103,7 +112,13 @@ class ActionSet:
 
     role = s.roles.get( action )
     
-    if role: a.setMenuRole( role )
+    if role is not None:
+      a.setMenuRole( role )
+
+    context = s.contexts.get( action )
+
+    if context is not None:
+      a.setShortcutContext( context )
     
     connect( a, SIGNAL( "triggered()" ), slot )
 

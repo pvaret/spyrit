@@ -24,13 +24,15 @@
 from localqt import *
 
 from Commands         import Commands
+from ActionSet        import ActionSet
 from InputHistory     import InputHistory
 from ConfigObserver   import ConfigObserver
 
 
+
 class WorldInputUI( QtGui.QTextEdit ):
 
-  def __init__( s, parent, world ):
+  def __init__( s, parent, world, shouldsavehistory=True ):
 
     QtGui.QTextEdit.__init__( s, parent )
 
@@ -38,8 +40,13 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     s.world    = world
     s.conf     = world.conf
-    s.history  = InputHistory( s )
+    s.history  = InputHistory( s, shouldsavehistory )
     s.commands = Commands( world )
+
+    s.actionset = ActionSet( s )
+
+    s.actionset.bindAction( "historyup",   s.historyUp )
+    s.actionset.bindAction( "historydown", s.historyDown )
 
     s.observer = ConfigObserver( s.conf )
     s.observer.addCallback(
@@ -129,8 +136,9 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def __del__( s ):
 
-    s.world    = None
-    s.conf     = None
-    s.history  = None
-    s.commands = None
-    s.observer = None
+    s.world     = None
+    s.conf      = None
+    s.history   = None
+    s.commands  = None
+    s.observer  = None
+    s.actionset = None

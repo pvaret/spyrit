@@ -25,15 +25,16 @@ from localqt import *
 
 class InputHistory:
 
-  def __init__( s, inputwidget ):
+  def __init__( s, inputwidget, shouldsave=True ):
 
     s.inputwidget = inputwidget
     s.cursor      = -1
     s.currenttext = ""
+    s.shouldsave  = shouldsave
 
     conf = inputwidget.world.conf
 
-    if conf._save_input_history:
+    if s.shouldsave and conf._save_input_history:
 
       try:
         count = int( conf._save_input_history )
@@ -92,4 +93,4 @@ class InputHistory:
       s.history.pop()
 
     count = int( conf._save_input_history )
-    if count: conf._input_history = s.history[ :count ]
+    if s.shouldsave and count: conf._input_history = s.history[ :count ]

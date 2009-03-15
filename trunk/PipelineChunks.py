@@ -247,24 +247,11 @@ class FlowControlChunk( BaseChunk ):
   LINEFEED       = 0
   CARRIAGERETURN = 1
 
-
-  def __init__( s, data ):
-
-    ## The following is an ugly hack to generate the reverse mapping from value
-    ## to network state, as above.
-
-    IntegerType = type( 1 )
-
-    typeList = [ name for name in dir( FlowControlChunk )
-                      if  name.isalpha()
-                      and name.isupper()
-                      and type( getattr( FlowControlChunk, name ) ) \
-                                                           is IntegerType ]
-
-    s.types = dict( ( getattr( FlowControlChunk, name ), name )
-                    for name in typeList )
-
-    BaseChunk.__init__( s, data )
+  ## Reverse table of the above, for convenience.
+  types = {
+    0: "LINEFEED",
+    1: "CARRIAGERETURN",
+  }
 
 
   def __repr__( s ):

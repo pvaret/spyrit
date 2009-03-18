@@ -22,7 +22,7 @@ from localqt import *
 
 from World      import World
 from Singletons import singletons
-from Utilities  import case_insensitive_cmp, remove_accents
+from Utilities  import case_insensitive_cmp, normalize_text
 
 
 class WorldsManager( QtCore.QObject ):
@@ -77,7 +77,7 @@ class WorldsManager( QtCore.QObject ):
  
   def normalize( s, name ):
 
-    return remove_accents( name.strip() ).lower()
+    return normalize_text( name.strip() )
 
 
   def knownWorldList( s ):

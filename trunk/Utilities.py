@@ -78,6 +78,10 @@ def test_qt_version():
     return False, "Qt v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
+
+
+
+
 def check_ssl_is_available():
 
   from PyQt4 import QtNetwork
@@ -94,18 +98,61 @@ def check_alert_is_available():
   return hasattr( QtGui.QApplication, "alert" )
 
 
+
+
+
 def case_insensitive_cmp( x, y ):
 
   return ( x.lower() < y.lower() ) and -1 or 1
+
+
+
+from unicodedata import normalize, category
+
+def make_unicode_translation_table():
+
+  d = {}
+
+  def is_latin_letter( l ):
+
+    return category( l )[ 0 ] == 'L'
+
+
+  for i in range( 0x1FFF ):
+
+    try:
+      c = unichr(i)
+
+    except ValueError:
+      continue
+
+    if not is_latin_letter( c ):
+      continue
+
+    ## Decompose, then keep only Latin letters in the result.
+    cn = normalize( "NFKD", c )
+    cn = ''.join( [ l for l in cn if is_latin_letter( l ) ] )
+
+    if cn and cn != c:
+      d[ i ] = cn
+
+  return d
+
+UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
 
 def remove_accents( s ):
 
   assert type( s ) is type( u'' )  ## Only accept Unicode strings.
 
-  from unicodedata import normalize
+  return s.translate( UNICODE_TRANSLATION_TABLE )
 
-  return ''.join( normalize( "NFKD", c )[0] for c in s )
+
+def normalize_text( s ):
+
+  return remove_accents( s ).lower()
+
+
 
 
 def handle_exception( exc_type, exc_value, exc_traceback ):

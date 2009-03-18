@@ -27,6 +27,7 @@ from ActionSet      import ActionSet
 from TabDelegate    import TabDelegate
 from WorldInputUI   import WorldInputUI
 from WorldOutputUI  import WorldOutputUI
+from Autocompleter  import Autocompleter
 
 from Singletons     import singletons
 from PipelineChunks import chunktypes
@@ -89,6 +90,11 @@ class WorldUI( QtGui.QSplitter ):
     world.socketpipeline.addSink( s.outputui.formatAndDisplay )
 
     s.setFocusProxy( s.inputui )
+
+    ## Setup autocompleter.
+
+    s.autocompleter = Autocompleter()
+    world.socketpipeline.addSink( s.autocompleter.sink )
 
     ## Setup splitter.
 
@@ -291,3 +297,4 @@ class WorldUI( QtGui.QSplitter ):
     s.toolbar          = None
     s.tab              = None
     s.actionset        = None
+    s.autocompleter    = None

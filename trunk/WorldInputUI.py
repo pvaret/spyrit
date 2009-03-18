@@ -60,6 +60,7 @@ class WorldInputUI( QtGui.QTextEdit ):
                           )
 
     connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
+    connect( s, SIGNAL( "tabPressed()" ),    s.autocomplete )
 
 
   def refresh( s ):
@@ -97,10 +98,17 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def keyPressEvent( s, e ):
 
-    if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] and \
-       not e.modifiers() & Qt.CTRL:
+    alt_ctrl_shift = e.modifiers() & \
+                   ( Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier )
+
+    if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] \
+      and alt_ctrl_shift == Qt.NoModifier:
 
       emit( s, SIGNAL( "returnPressed()" ) )
+      e.accept()
+
+    elif e.key() == Qt.Key_Tab and e.modifiers() == Qt.NoModifier:
+      emit( s, SIGNAL( "tabPressed()" ) )
       e.accept()
 
     else:
@@ -132,6 +140,11 @@ class WorldInputUI( QtGui.QTextEdit ):
   def historyDown( s ):
 
     s.history.historyDown()
+
+
+  def autocomplete( s ):
+
+    s.world.worldui.autocompleter.complete( s )
 
 
   def __del__( s ):

@@ -29,6 +29,7 @@ class Win32Specific:
   CONFIG_DIR  = "Spyrit"
   CONFIG_FILE = "Spyrit.ini"
 
+  should_repaint_on_scroll = False
 
   def get_homedir( s ):
     return winpaths.get_homedir()

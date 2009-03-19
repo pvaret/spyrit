@@ -22,11 +22,17 @@
 
 
 import os
+import sys
 
-if os.name in ( 'posix', 'mac' ):
-  from PosixSpecific import PosixSpecific as PlatformSpecific
+if os.name == 'posix':
 
-elif os.name in ( 'nt', ):
+  if sys.platform == 'darwin':
+    from MacosSpecific import MacosSpecific as PlatformSpecific
+
+  else:
+    from PosixSpecific import PosixSpecific as PlatformSpecific
+
+elif os.name == 'nt':
   from Win32Specific import Win32Specific as PlatformSpecific
 
 else:

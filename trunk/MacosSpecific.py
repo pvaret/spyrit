@@ -14,31 +14,17 @@
 ##
 
 ##
-## PosixSpecific.py
+## MacosSpecific.py
 ##
-## Contains the class that implements POSIX-specific elements.
+## Contains the class that implements Mac OS X-specific elements.
 ##
 
 
 import os.path
 
-
-class PosixSpecific:
-
-  CONFIG_DIR  = ".spyrit"
-  CONFIG_FILE = "spyrit.conf"
-
-  should_repaint_on_scroll = False
-
-  def get_homedir( s ):
-    return os.path.expanduser( "~" )
+from PosixSpecific import PosixSpecific
 
 
-  def get_configuration_dir( s ):
+class MacosSpecific( PosixSpecific ):
 
-    home_dir = os.path.expanduser( "~" )
-    return os.path.join( s.get_homedir(), s.CONFIG_DIR )
-
-
-  def get_configuration_file( s ):
-    return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )
+  should_repaint_on_scroll = True

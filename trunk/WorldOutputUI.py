@@ -29,6 +29,8 @@ from Utilities      import check_alert_is_available
 from SearchManager  import SearchManager
 from ConfigObserver import ConfigObserver
 
+from PlatformSpecific import platformSpecific
+
 
 ## This is used a lot, so define it right away.
 
@@ -239,6 +241,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.observer = ConfigObserver( s.conf )
 
+    if platformSpecific.should_repaint_on_scroll:
+      s.scrollbar.setTracking( True )
+
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
                                                      s.onRangeChanged )
@@ -276,6 +281,9 @@ class WorldOutputUI( QtGui.QTextEdit ):
   def onScroll( s, pos ):
 
     s.atbottom = ( pos == s.scrollbar.maximum() )
+
+    if platformSpecific.should_repaint_on_scroll:
+      s.repaint()
 
 
   def paintEvent( s, e ):

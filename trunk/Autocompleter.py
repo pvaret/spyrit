@@ -38,14 +38,6 @@ MAX_WORD_LIST_LENGTH = 1000
 
 class CompletionList:
 
-  ## This matches all alphanumeric characters (including Unicode ones, such as
-  ## 'é') plus a few punctuation signs so long as they are inside the matched
-  ## word.
-
-  wordmatch   = re.compile( "\w+[\w:`'-]*\w+", re.U )
-  prefixmatch = re.compile( "\w+[\w:`'-]*$" ,  re.U )
-
-
   def __init__( s, words=[] ):
 
     s.words = []
@@ -106,12 +98,18 @@ class CompletionList:
     return [ w[ 1 ] for w in s.words[ k+1:j ] ]
 
 
-  def split( s, line ):
-
-    return s.wordmatch.findall( line )
 
 
 class Autocompleter:
+
+  ## This matches all alphanumeric characters (including Unicode ones, such as
+  ## 'é') plus a few punctuation signs so long as they are inside the matched
+  ## word.
+
+  wordmatch      = re.compile( "\w+[\w:`'-]*\w+", re.U )
+  startwordmatch = re.compile( "\w+[\w:`'-]*$" ,  re.U )
+  endwordmatch   = re.compile( "^[\w:`'-]*" ,  re.U )
+
 
   def __init__( s ):
 
@@ -121,22 +119,39 @@ class Autocompleter:
     s.matchstate     = None
 
 
+  def moveCursorToEndOfWord( s, tc ):
+
+    ## Alright. Our problem here is that we'd like to move the cursor to the
+    ## end of the current word, but Qt's idea of what makes up a word is, it
+    ## seems, inconsistent across Qt versions, and also incompatible with
+    ## what Spyrit itself considers a word.
+    ## For instance, in the name "O'hara", Qt considers "O" and "hara" to be
+    ## separate words, which doesn't work at all for us.
+    ## Hence, this method, which essentially does a
+    ## QTextCursor.movePosition( EndOfWord ), but, our way. Phew.
+
+    pos = tc.position()
+    tc.movePosition( QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor )
+    line = unicode( tc.selectedText() )
+
+    m = s.endwordmatch.findall( line )
+    if m: prefix = m[ 0 ]
+    else: prefix = ""
+
+    tc.setPosition( pos + len( prefix ) )
+
+
   def complete( s, textedit ):
 
     s.textedit = textedit
 
     tc = textedit.textCursor()
 
-    ## TODO: Move cursor to end of word, not by Qt's standards, but by our
-    ## own according to the regexes defined above. Otherwise, when completing,
-    ## says, "one|-two", with | representing the cursor's position, the result
-    ## will be "one-two |-two" because to Qt '-two' is a different word. Blah.
-
-    tc.movePosition( QtGui.QTextCursor.EndOfWord )
+    s.moveCursorToEndOfWord( tc )
     tc.movePosition( QtGui.QTextCursor.StartOfLine,
                      QtGui.QTextCursor.KeepAnchor )
     line = unicode( tc.selectedText() )
-    m = s.completionlist.prefixmatch.findall( line )
+    m = s.startwordmatch.findall( line )
 
     if not m:
       return
@@ -157,8 +172,12 @@ class Autocompleter:
       lastcursor, lastresult = s.matchstate
 
       if lastcursor.isCopyOf( textedit.textCursor() ): ## Is it still relevant?
+
         currently_cycling = True
         result            = lastresult
+
+      else:  ## This is a new completion after all.
+        s.matchstate = None
 
     if not currently_cycling:
       result = s.completionlist.lookup( prefix )
@@ -173,7 +192,7 @@ class Autocompleter:
     ## cursor back to the QTextEdit.
 
     tc = textedit.textCursor()
-    tc.movePosition( QtGui.QTextCursor.EndOfWord )
+    s.moveCursorToEndOfWord( tc )
     tc.movePosition( QtGui.QTextCursor.Left,
                      QtGui.QTextCursor.KeepAnchor,
                      len( prefix ) )
@@ -239,5 +258,10 @@ class Autocompleter:
         data     = "".join( s.buffer )
         s.buffer = []
 
-        for word in s.completionlist.split( data ):
+        for word in s.split( data ):
           s.completionlist.addWord( word )
+
+
+  def split( s, line ):
+
+    return s.wordmatch.findall( line )

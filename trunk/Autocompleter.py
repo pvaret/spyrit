@@ -141,6 +141,26 @@ class Autocompleter:
     tc.setPosition( pos + len( prefix ) )
 
 
+  def finalize( s ):
+
+    tc = s.textedit.textCursor()
+
+    pos = tc.position()
+    tc.movePosition( QtGui.QTextCursor.EndOfLine )
+
+    if tc.position() == pos:  ## Cursor was at end of line.
+      tc.insertText( u" " )
+
+    else:
+      tc.setPosition( pos )
+      tc.movePosition( QtGui.QTextCursor.Right )
+
+    s.textedit.setTextCursor( tc )
+
+    s.matchstate = None
+    s.textedit   = None
+
+
   def complete( s, textedit ):
 
     s.textedit = textedit
@@ -204,8 +224,8 @@ class Autocompleter:
 
       if len( result ) == 1:
 
-        s.insertResult( result[ 0 ] + u" " )
-        s.matchstate = None
+        s.insertResult( result[ 0 ] )
+        s.finalize()
 
         return
 
@@ -216,8 +236,8 @@ class Autocompleter:
 
       if len( set( suffixes ) ) == 1:  ## All matches have the same suffix.
 
-        s.insertResult( prefix + suffixes.pop() + u" " )
-        s.matchstate = None
+        s.insertResult( prefix + suffixes.pop() )
+        s.finalize()
 
         return
 
@@ -229,6 +249,7 @@ class Autocompleter:
     ## And save the state of the completion cycle.
 
     s.matchstate = ( textedit.textCursor(), result )
+    s.textedit   = None
 
     ## And done!
     
@@ -241,8 +262,6 @@ class Autocompleter:
     tc = s.textedit.textCursor()
     tc.insertText( result )
     s.textedit.setTextCursor( tc )
-
-    s.textedit = None
 
 
   def sink( s, chunks ):

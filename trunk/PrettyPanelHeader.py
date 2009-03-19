@@ -38,8 +38,9 @@ class PrettyPanelHeader( QtGui.QFrame ):
       background:
         qlineargradient( x1:0, y1:0, x2:0, y2:1, stop:0 %s, stop:1 %s );
       border-width: 1px;
-      border-style: outset;
+      border-style: solid;
       border-radius: 3px;
+      border-color: %s;
     }
   """
 
@@ -57,8 +58,9 @@ class PrettyPanelHeader( QtGui.QFrame ):
 
     color1 = s.palette().dark().color().name()
     color2 = s.palette().midlight().color().name()
+    color3 = s.palette().windowText().color().name()
 
-    s.setStyleSheet( s.STYLESHEET % ( color1, color2 ) )
+    s.setStyleSheet( s.STYLESHEET % ( color1, color2, color3 ) )
 
     ## Legacy setup for platforms that don't support stylesheets (yet).
 

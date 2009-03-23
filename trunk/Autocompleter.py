@@ -106,9 +106,9 @@ class Autocompleter:
   ## 'é') plus a few punctuation signs so long as they are inside the matched
   ## word.
 
-  wordmatch      = re.compile( "\w+[\w:`'-]*\w+", re.U )
-  startwordmatch = re.compile( "\w+[\w:`'-]*$" ,  re.U )
-  endwordmatch   = re.compile( "^[\w:`'-]*" ,  re.U )
+  wordmatch      = re.compile( "\w+[\w:`'.-]*\w+", re.U )
+  startwordmatch = re.compile( "\w+[\w:`'.-]*$" ,  re.U )
+  endwordmatch   = re.compile( "^[\w:`'.-]*" ,  re.U )
 
 
   def __init__( s ):
@@ -119,26 +119,54 @@ class Autocompleter:
     s.matchstate     = None
 
 
-  def moveCursorToEndOfWord( s, tc ):
+  def selectCurrentWord( s, tc ):
 
-    ## Alright. Our problem here is that we'd like to move the cursor to the
-    ## end of the current word, but Qt's idea of what makes up a word is, it
-    ## seems, inconsistent across Qt versions, and also incompatible with
-    ## what Spyrit itself considers a word.
+    ## Alright. Our problem here is that we'd like to select the current word,
+    ## but Qt's idea of what makes up a word is, it seems, inconsistent across
+    ## Qt versions, and also incompatible with what Spyrit itself considers a
+    ## word.
     ## For instance, in the name "O'hara", Qt considers "O" and "hara" to be
     ## separate words, which doesn't work at all for us.
     ## Hence, this method, which essentially does a
-    ## QTextCursor.movePosition( EndOfWord ), but, our way. Phew.
+    ## QTextCursor.select( WordUnderCursor ), but, our way. Phew.
+
+    tc.clearSelection()
 
     pos = tc.position()
-    tc.movePosition( QtGui.QTextCursor.EndOfLine, QtGui.QTextCursor.KeepAnchor )
-    line = unicode( tc.selectedText() )
 
-    m = s.endwordmatch.findall( line )
-    if m: prefix = m[ 0 ]
-    else: prefix = ""
+    ## Determine right half of word.
 
-    tc.setPosition( pos + len( prefix ) )
+    tc.movePosition( QtGui.QTextCursor.EndOfLine,
+                     QtGui.QTextCursor.KeepAnchor )
+    line_end = unicode( tc.selectedText() )
+
+    m = s.endwordmatch.findall( line_end )
+    if m: word_after = m[ 0 ]
+    else: word_after = ""
+
+    ## Determine left half of word.
+
+    tc.setPosition( pos )
+
+    tc.movePosition( QtGui.QTextCursor.StartOfLine,
+                     QtGui.QTextCursor.KeepAnchor )
+    line_start = unicode( tc.selectedText() )
+
+    m = s.startwordmatch.findall( line_start )
+    if m: word_before = m[ 0 ]
+    else: word_before = ""
+
+    ## And select both halves.
+
+    word = word_before + word_after
+
+    tc.setPosition( pos - len( word_before ) )
+
+    if len( word ) > 0:
+
+      tc.movePosition( QtGui.QTextCursor.Right,
+                       QtGui.QTextCursor.KeepAnchor,
+                       len( word ) )
 
 
   def finalize( s ):
@@ -167,16 +195,17 @@ class Autocompleter:
 
     tc = textedit.textCursor()
 
-    s.moveCursorToEndOfWord( tc )
-    tc.movePosition( QtGui.QTextCursor.StartOfLine,
-                     QtGui.QTextCursor.KeepAnchor )
-    line = unicode( tc.selectedText() )
-    m = s.startwordmatch.findall( line )
+    s.selectCurrentWord( tc )
+    prefix = tc.selectedText()
 
-    if not m:
+    if prefix.isEmpty():
+
+      s.textedit   = None
+      s.matchstate = None
+
       return
 
-    prefix = m[ 0 ]
+    prefix = unicode( prefix )  ## Turn QString into Python string.
 
     ## Try to determine if we were previously cycling through a match list.
     ## This is not the textbook perfect way to do this; but then, the textbook
@@ -205,17 +234,15 @@ class Autocompleter:
     ## Case one: no match. Do nothing.
 
     if len( result ) == 0:
-      s.textedit = None
+
+      s.textedit   = None
+      s.matchstate = None
+      
       return
 
     ## All the following cases modify the textedit's content, so we apply the
     ## cursor back to the QTextEdit.
 
-    tc = textedit.textCursor()
-    s.moveCursorToEndOfWord( tc )
-    tc.movePosition( QtGui.QTextCursor.Left,
-                     QtGui.QTextCursor.KeepAnchor,
-                     len( prefix ) )
     textedit.setTextCursor( tc )
 
     if not currently_cycling:

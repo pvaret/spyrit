@@ -29,7 +29,7 @@ from PrettyPanelHeader import PrettyPanelHeader
 config = singletons.config
 
 
-ABOUT = """
+ABOUT = u"""
   <center><br/>
   <font size="+2"><b>%(NAME)s v%(VERSION)s</b></font><br/>
   <br/>
@@ -71,7 +71,7 @@ class AboutDialog( QtGui.QDialog ):
     min_size = config._mainwindow_min_size
     if len( min_size ) >= 2: s.setMinimumSize( min_size[0], min_size[1] )
 
-    title = "About %s" % config._app_name
+    title = u"About %s" % config._app_name
 
     s.setWindowTitle( title )
 
@@ -84,7 +84,7 @@ class AboutDialog( QtGui.QDialog ):
 
     s.layout().addWidget( label )
 
-    button = QtGui.QPushButton( "Ok" )
+    button = QtGui.QPushButton( u"Ok" )
     s.layout().addWidget( button )
     s.layout().setAlignment( button, Qt.AlignHCenter )
 

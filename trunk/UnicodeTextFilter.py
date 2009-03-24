@@ -82,9 +82,9 @@ class UnicodeTextFilter( BaseFilter ):
   
   relevant_types = [ chunktypes.BYTES ]
 
-  def __init__( s ):
+  def __init__( s, encoding ):
 
-    s.encoding = "ascii"
+    s.setEncoding( encoding )
     s.makeStreamDecoder()
 
     BaseFilter.__init__( s )  ## Must be called at the end, because it calls
@@ -94,13 +94,16 @@ class UnicodeTextFilter( BaseFilter ):
 
   def setEncoding( s, encoding ):
 
+    encoding = encoding.encode( "ascii", "ignore" )  ## unicode -> str
+
     try:
       codecs.lookup( encoding )
 
     except LookupError:
 
-      messages.warn( "Unknown encoding '%s'; reverting to ASCII." % encoding )
-      encoding = "ascii"
+      messages.warn( u"Unknown encoding '%s'; reverting to Latin1." \
+                     % encoding )
+      encoding = "latin1"
 
     s.encoding = encoding
 

@@ -70,7 +70,7 @@ class World( QtCore.QObject ):
   def title( s ):
 
     conf = s.conf
-    return conf._name or "(%s:%d)" % ( conf._host, conf._port )
+    return conf._name or u"(%s:%d)" % ( conf._host, conf._port )
 
 
   def host( s ):
@@ -110,10 +110,10 @@ class World( QtCore.QObject ):
     if s.isConnected():
     
       messagebox = QtGui.QMessageBox( singletons.mw )
-      messagebox.setWindowTitle( "Confirm disconnect" )
+      messagebox.setWindowTitle( u"Confirm disconnect" )
       messagebox.setIcon( QtGui.QMessageBox.Question )
-      messagebox.setText( "Really disconnect from this world?" )
-      messagebox.addButton( "Disconnect", QtGui.QMessageBox.AcceptRole )
+      messagebox.setText( u"Really disconnect from this world?" )
+      messagebox.addButton( u"Disconnect", QtGui.QMessageBox.AcceptRole )
       messagebox.addButton( QtGui.QMessageBox.Cancel )
 
       if messagebox.exec_() == QtGui.QMessageBox.Cancel:
@@ -139,7 +139,7 @@ class World( QtCore.QObject ):
     logdir  = s.conf._logfile_dir
 
     logfile = time.strftime( logfile )
-    logfile = logfile.replace( "[WORLDNAME]", s.title() )
+    logfile = logfile.replace( u"[WORLDNAME]", s.title() )
 
     s.logger.startLogging( os.path.join( logdir, logfile ) )
 
@@ -196,7 +196,7 @@ class World( QtCore.QObject ):
     return s.status == Status.DISCONNECTED
 
 
-  def selectFile( s, caption="Select file", dir="", filter="" ):
+  def selectFile( s, caption=u"Select file", dir=u"", filter=u"" ):
 
     if not dir:
       dir = platformSpecific.get_homedir()
@@ -209,27 +209,29 @@ class World( QtCore.QObject ):
     local_encoding = qApp().local_encoding
 
     if filename is None:
+
       filename = s.selectFile(
-                               caption = "Select the file to load",
-                               filter  = "Text files (*.log *.txt)" \
-                                       + ";;All files (*)"
+                               caption = u"Select the file to load",
+                               filter  = u"Text files (*.log *.txt)" \
+                                         u";;All files (*)"
                              )
 
-    filename = str( filename )
-    basename = os.path.basename( filename ).decode( local_encoding, "replace" )
+      filename = unicode( filename )  ## QString -> unicode
 
     if not filename: return
 
+    basename = os.path.basename( filename )
+
     try:
-      f = file( filename )
+      f = file( filename )  ## Note: filename is of type unicode. This is OK!
 
     except IOError, e:
 
       errormsg = e.strerror.decode( local_encoding, "replace" )
-      s.info( "Error: %s: %s" % ( basename, errormsg ) )
+      s.info( u"Error: %s: %s" % ( basename, errormsg ) )
       return
 
-    s.info( "Loading %s..." % basename )
+    s.info( u"Loading %s..." % basename )
 
     t1 = time.time()
 
@@ -244,7 +246,7 @@ class World( QtCore.QObject ):
 
     f.close()
 
-    s.info( "File loaded in %.2fs." % ( t2 - t1 ) )
+    s.info( u"File loaded in %.2fs." % ( t2 - t1 ) )
 
 
   def __del__( s ):

@@ -58,7 +58,7 @@ class Application( QtGui.QApplication ):
       import resources
 
     except ImportError:
-      messages.warn( "Resource file not found. No graphics will be loaded." )
+      messages.warn( u"Resource file not found. No graphics will be loaded." )
 
     ## Load up the dingbat symbols font.
     QtGui.QFontDatabase.addApplicationFont( ":/app/symbols" )
@@ -126,23 +126,24 @@ class Application( QtGui.QApplication ):
 
     for arg in sys.argv[ 1: ]:
 
-      if ":" in arg:  ## This is probably a 'server:port' argument.
+      arg = arg.decode( s.local_encoding, "replace" )
 
-        server, port = arg.split( ":", 1 )
+      if u":" in arg:  ## This is probably a 'server:port' argument.
+
+        server, port = arg.split( u":", 1 )
 
         try:               port = int( port )
         except ValueError: port = 0
 
         if not port or not server:
-          messages.warn( "Invalid <server>:<port> command line: %s" % arg )
+          messages.warn( u"Invalid <server>:<port> command line: %s" % arg )
 
         else:
           singletons.mw.openWorldByHostPort( server, port )
 
       else:
 
-        ## Assume arguments are given as UTF-8.
-        singletons.mw.openWorldByName( arg.decode( "utf8", "replace" ) )
+        singletons.mw.openWorldByName( arg )
 
 
   def beforeStop( s ):

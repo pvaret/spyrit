@@ -45,23 +45,21 @@ class SocketPipeline:
     s.pipeline.addFilter( AnsiFilter() )
     s.pipeline.addFilter( FlowControlFilter() )
 
-    s.unicodefilter = UnicodeTextFilter()
+    s.unicodefilter = UnicodeTextFilter( encoding=conf._world_encoding )
     s.pipeline.addFilter( s.unicodefilter )
 
     s.using_ssl = False
     s.socket    = None
     s.conf      = conf
 
-    s.applyStreamEncoding()
-
     s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback( "world_encoding", s.applyStreamEncoding )
+    s.observer.addCallback( "world_encoding", s.setStreamEncoding, False )
 
     ## TODO: Write message dispatcher, so that the World can notify encoding
     ## changes 'to whom it may concern' without it being hardcoded.
 
 
-  def applyStreamEncoding( s ):
+  def setStreamEncoding( s ):
 
     s.unicodefilter.setEncoding( s.conf._world_encoding )
 
@@ -81,8 +79,8 @@ class SocketPipeline:
       s.socket = QtNetwork.QTcpSocket()
 
       if s.conf._ssl:  ## SSL was requested but is not available...
-        messages.warn( "SSL functions not available; attempting unencrypted " \
-                     + "connection instead..." )
+        messages.warn( u"SSL functions not available; attempting" \
+                       u"unencrypted connection instead..." )
 
     connect( s.socket, SIGNAL( "stateChanged( QAbstractSocket::SocketState )" ),
                        s.reportStateChange )
@@ -161,7 +159,7 @@ class SocketPipeline:
     ## going to blame them for it.
 
     for err in errors:
-      messages.warn( "SSL Error: " + err.errorString() )
+      messages.warn( u"SSL Error: " + err.errorString() )
 
     s.socket.ignoreSslErrors()
 

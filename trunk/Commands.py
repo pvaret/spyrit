@@ -98,20 +98,20 @@ class Commands:
 
     except KeyError:
 
-      s.world.info( "%s: no such command." % commandname )
+      s.world.info( u"%s: no such command." % commandname )
       return
 
     try:
       command( *tokens )
 
     except TypeError:
-      s.world.info( "Invalid number of parameters for command %s." \
-                    % commandname )
+      s.world.info( u"Invalid number of parameters for command %s." \
+                     % commandname )
 
 
   def command_Help( s, *args ):
 
-    "help <command>: Provides help on <command>."
+    u"help <command>: Provides help on <command>."
 
     c = s.world.conf._input_command_char
 
@@ -129,7 +129,7 @@ class Commands:
         cmd = s.lookupCommand( commandname )
 
       except KeyError:
-        s.world.info( "%s: no such command." % commandname )
+        s.world.info( u"%s: no such command." % commandname )
         return
 
       doc = cmd.__doc__
@@ -138,21 +138,21 @@ class Commands:
         s.world.info( c + doc )
 
       else:
-        s.world.info( "No help for command %s." % commandname )
+        s.world.info( u"No help for command %s." % commandname )
 
 
   def command_Find( s, *args ):
 
-    "find [<string>]: Searches for <string> in the output window." \
-    "If <string> is omitted, repeat the last search."
+    u"find [<string>]: Searches for <string> in the output window." \
+    u"If <string> is omitted, repeat the last search."
 
-    s.world.worldui.outputui.findInHistory( " ".join( args ) )
+    s.world.worldui.outputui.findInHistory( u" ".join( args ) )
 
 
   def command_Raise( s, *args ):
 
-    "raise <exception> [parameters]: Raises <exception>. " \
-    "For debugging purposes."
+    u"raise <exception> [parameters]: Raises <exception>. " \
+    u"For debugging purposes."
 
     if args:
 
@@ -176,42 +176,42 @@ class Commands:
 
   def command_Connect( s ):
 
-    "connect: Opens connection to the current world if it is currently closed."
+    u"connect: Opens connection to the current world if it is currently closed."
 
     s.world.connectToWorld()
 
 
   def command_Disconnect( s ):
 
-    "disconnect: Closes connection to the current world."
+    u"disconnect: Closes connection to the current world."
 
     s.world.disconnectFromWorld()
 
 
   def command_Quit( s ):
 
-    "quit: Quits the application."
+    u"quit: Quits the application."
     singletons.mw.close()
 
 
   def command_Close( s ):
 
-    "close: Closes the current world."
+    u"close: Closes the current world."
 
     s.world.worldui.close()
 
 
   def command_World_Conf_Set( s, key, *args ):
 
-    "world_conf_set <key> <value>: " \
-    "Sets this world's given configuration key to the given value."
+    u"world_conf_set <key> <value>: " \
+    u"Sets this world's given configuration key to the given value."
 
     args = " ".join( args )
 
     t = s.world.conf.getType( key )
 
     if not t:
-      messages.warn( "Unknown configuration variable: %s" % key )
+      messages.warn( u"Unknown configuration variable: %s" % key )
 
     else:
       args = t().from_string( args )
@@ -220,15 +220,15 @@ class Commands:
 
   def command_Conf_Set( s, key, *args ):
 
-    "conf_set <key> <value>: " \
-    "Sets the given configuration key to the given value."
+    u"conf_set <key> <value>: " \
+    u"Sets the given configuration key to the given value."
 
     args = " ".join( args )
 
     t = s.world.conf.getType( key )
 
     if not t:
-      messages.warn( "Unknown configuration variable: %s" % key )
+      messages.warn( u"Unknown configuration variable: %s" % key )
 
     else:
       args = t().from_string( args )
@@ -237,8 +237,8 @@ class Commands:
 
   def command_Conf_Reset( s, key ):
 
-    "conf_reset <key>: " \
-    "Resets the given configuration key to its default value."
+    u"conf_reset <key>: " \
+    u"Resets the given configuration key to its default value."
 
     try: del singletons.config[ key ]
     except KeyError: pass
@@ -246,8 +246,8 @@ class Commands:
 
   def command_World_Conf_Reset( s, key ):
 
-    "world_conf_reset <key>: " \
-    "Resets this world's given configuration key to its global value."
+    u"world_conf_reset <key>: " \
+    u"Resets this world's given configuration key to its global value."
 
     try: del s.world.conf[ key ]
     except KeyError: pass

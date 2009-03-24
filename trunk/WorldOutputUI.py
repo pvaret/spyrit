@@ -435,39 +435,39 @@ class WorldOutputUI( QtGui.QTextEdit ):
         ## Handle the network event...
 
         if   chunk.data == NetworkChunk.CONNECTING:
-          s.insertInfoText( "Connecting..." )
+          s.insertInfoText( u"Connecting..." )
 
         elif chunk.data == NetworkChunk.CONNECTED:
 
           if not s.was_connected:
-            s.insertInfoText( "Connected!" )
+            s.insertInfoText( u"Connected!" )
             s.was_connected = True
 
         elif chunk.data == NetworkChunk.ENCRYPTED:
-          s.insertInfoText( "SSL encryption started." )
+          s.insertInfoText( u"SSL encryption started." )
 
         elif chunk.data == NetworkChunk.DISCONNECTED:
 
           if s.was_connected:
-            s.insertInfoText( "Connection closed." )
+            s.insertInfoText( u"Connection closed." )
             s.was_connected = False
 
         elif chunk.data == NetworkChunk.RESOLVING:
-          s.insertInfoText( "Resolving %s ..." % s.world.host() )
+          s.insertInfoText( u"Resolving %s ..." % s.world.host() )
 
         ## ... Or the network error.
 
         elif chunk.data == NetworkChunk.CONNECTIONREFUSED:
-          s.insertInfoText( "Connection refused." )
+          s.insertInfoText( u"Connection refused." )
 
         elif chunk.data == NetworkChunk.HOSTNOTFOUND:
-          s.insertInfoText( "Host not found." )
+          s.insertInfoText( u"Host not found." )
 
         elif chunk.data == NetworkChunk.TIMEOUT:
-          s.insertInfoText( "Network timeout." )
+          s.insertInfoText( u"Network timeout." )
 
         elif chunk.data == NetworkChunk.OTHERERROR:
-          s.insertInfoText( "Network error." )
+          s.insertInfoText( u"Network error." )
 
 
     ## We're done processing this set of chunks.

@@ -74,26 +74,26 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     if s.conf._input_font_color:
 
-      style_elements.append( "color: %s" \
-                            % s.conf._input_font_color )
+      style_elements.append( u"color: %s" \
+                             % s.conf._input_font_color )
 
     if s.conf._input_font_name:
       
-      style_elements.append( "font-family: %s" \
-                            % s.conf._input_font_name )
+      style_elements.append( u"font-family: %s" \
+                             % s.conf._input_font_name )
 
     if s.conf._input_font_size:
 
-      style_elements.append( "font-size: %dpt" \
-                            % s.conf._input_font_size )
+      style_elements.append( u"font-size: %dpt" \
+                             % s.conf._input_font_size )
 
     if s.conf._input_background_color:
 
-      style_elements.append( "background-color: %s" \
-                            % s.conf._input_background_color )
+      style_elements.append( u"background-color: %s" \
+                             % s.conf._input_background_color )
 
     if style_elements:
-      s.setStyleSheet( "QTextEdit { %s }" % " ; ".join( style_elements ) )
+      s.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
 
 
   def keyPressEvent( s, e ):
@@ -118,7 +118,7 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def clearAndSend( s ):
 
-    text = unicode( s.toPlainText() ).rstrip( "\r\n" )
+    text = unicode( s.toPlainText() ).rstrip( u"\r\n" )
 
     s.clear()
 
@@ -129,7 +129,7 @@ class WorldInputUI( QtGui.QTextEdit ):
       s.commands.execute( text[ len( s.conf._input_command_char ): ] )
 
     else:
-      s.world.socketpipeline.send( text + "\r\n" )
+      s.world.socketpipeline.send( text + u"\r\n" )
 
 
   def historyUp( s ):

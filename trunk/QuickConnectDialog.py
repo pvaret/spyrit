@@ -30,26 +30,26 @@ from PrettyOptionDialog import PrettyOptionDialog
 
 def QuickConnectDialog( conf, parent=None ):
 
-    header = PrettyPanelHeader( "Quick connect",
-                                 QtGui.QPixmap( ":/icon/connect" ) )
+    header = PrettyPanelHeader( u"Quick connect",
+                                  QtGui.QPixmap( ":/icon/connect" ) )
 
     mapper = ConfigMapper( conf )
 
-    mapper.addGroup( "Connection parameters", [
-                       mapper.lineedit( "host", "&Server:" ),
-                       mapper.spinbox(  "port", "&Port:" ),
+    mapper.addGroup( u"Connection parameters", [
+                       mapper.lineedit( "host", u"&Server:" ),
+                       mapper.spinbox(  "port", u"&Port:" ),
                      ] )
 
     if check_ssl_is_available():
-      mapper.addGroup( "Encryption", [
-                         mapper.checkbox( "ssl", "Use SSL &encryption"),
+      mapper.addGroup( u"Encryption", [
+                         mapper.checkbox( "ssl", u"Use SSL &encryption"),
                        ] )
 
     dialog = PrettyOptionDialog( mapper,
                                  parent  = parent,
                                  header  = header,
-                                 oklabel = "Connect",
-                                 title   = "Quick connect" )
+                                 oklabel = u"Connect",
+                                 title   = u"Quick connect" )
 
     return dialog
 

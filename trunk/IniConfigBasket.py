@@ -81,7 +81,7 @@ class IniConfigBasket( ConfigBasket ):
 
     except IOError:
       ## Unable to load configuration. Aborting.
-      #messages.debug( "Unable to load configuration file %s!" % s.filename )
+      #messages.debug( u"Unable to load configuration file %s!" % s.filename )
       return
 
     s.reset()
@@ -107,7 +107,7 @@ class IniConfigBasket( ConfigBasket ):
 
         if not t:
 
-          messages.warn( "Unknown configuration variable: %s" % key )
+          messages.warn( u"Unknown configuration variable: %s" % key )
           continue
 
         value = t().from_string( result[ "value" ] )
@@ -157,7 +157,7 @@ class IniConfigBasket( ConfigBasket ):
 
     except IOError:
       ## Unable to save configuration. Aborting.
-      messages.error( "Unable to save configuration to file %s!" % s.filename )
+      messages.error( u"Unable to save configuration to file %s!" % s.filename )
       return
 
   

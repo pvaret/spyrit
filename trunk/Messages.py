@@ -25,16 +25,16 @@
 class Messages:
 
   def info( s, txt ):
-    print "INFO:", txt
+    print u"INFO:", txt
 
   def debug( s, txt ):
-    print "DEBUG:", txt
+    print u"DEBUG:", txt
 
   def warn( s, txt ):
-    print "WARN:", txt
+    print u"WARN:", txt
 
   def error( s, txt ):
-    print "ERROR:", txt
+    print u"ERROR:", txt
 
 
 

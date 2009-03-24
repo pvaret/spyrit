@@ -238,13 +238,13 @@ class WorldUI( QtGui.QSplitter ):
 
       messagebox = QtGui.QMessageBox( singletons.mw )
 
-      messagebox.setWindowTitle( "Confirm close" )
+      messagebox.setWindowTitle( u"Confirm close" )
       messagebox.setIcon( QtGui.QMessageBox.Question )
 
-      messagebox.setText( "You are still connected to this world. "
-                        + "Disconnect and close this tab?" )
+      messagebox.setText( u"You are still connected to this world. " \
+                          u"Disconnect and close this tab?" )
 
-      messagebox.addButton( "Close tab", QtGui.QMessageBox.AcceptRole )
+      messagebox.addButton( u"Close tab", QtGui.QMessageBox.AcceptRole )
       messagebox.addButton( QtGui.QMessageBox.Cancel )
 
       result = messagebox.exec_()

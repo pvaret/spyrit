@@ -91,23 +91,23 @@ class MainWindow( QtGui.QMainWindow ):
     menubar = s.menuBar()
     menubar.setContextMenuPolicy( Qt.PreventContextMenu )
 
-    s.menu_file = menubar.addMenu( "File" )
+    s.menu_file = menubar.addMenu( u"File" )
     s.menu_file.addAction( s.action_quit )
 
-    s.menu_worlds = menubar.addMenu( "Worlds" )
+    s.menu_worlds = menubar.addMenu( u"Worlds" )
 
     s.menu_connect = QtGui.QMenu()
-    s.menu_connect.setTitle( "Connect to..." )
+    s.menu_connect.setTitle( u"Connect to..." )
     s.menu_connect.setIcon( QtGui.QIcon( ":/icon/worlds" ) )
 
-    s.menu_help = menubar.addMenu( "Help" )
+    s.menu_help = menubar.addMenu( u"Help" )
     s.menu_help.addAction( s.action_about )
     s.menu_help.addAction( s.action_aboutqt )
 
 
     ## Create toolbars.
 
-    s.toolbar_main = QtGui.QToolBar( "Main Toolbar", s )
+    s.toolbar_main = QtGui.QToolBar( u"Main Toolbar", s )
     s.toolbar_main.setMovable( False )
     s.toolbar_main.setFloatable( False )
     s.toolbar_main.setContextMenuPolicy( Qt.PreventContextMenu )
@@ -192,7 +192,7 @@ class MainWindow( QtGui.QMainWindow ):
     if not worlds:
 
       s.menu_connect.setEnabled( False )
-      s.menu_worlds.addAction( s.disabledMenuText( "(No world created)" ) )
+      s.menu_worlds.addAction( s.disabledMenuText( u"(No world created)" ) )
 
     else:
 
@@ -267,13 +267,13 @@ class MainWindow( QtGui.QMainWindow ):
 
       messagebox = QtGui.QMessageBox( s )
 
-      messagebox.setWindowTitle( "Confirm quit" )
+      messagebox.setWindowTitle( u"Confirm quit" )
       messagebox.setIcon( QtGui.QMessageBox.Question )
 
-      messagebox.setText( ( "You are still connected to <b>%s</b> world(s). "
-                          + "Close them and quit?" ) % len( connectedworlds ) )
+      messagebox.setText( ( u"You are still connected to <b>%s</b> world(s). "
+                            u"Close them and quit?" ) % len( connectedworlds ) )
 
-      messagebox.addButton( "Quit", QtGui.QMessageBox.AcceptRole )
+      messagebox.addButton( u"Quit", QtGui.QMessageBox.AcceptRole )
       messagebox.addButton( QtGui.QMessageBox.Cancel )
 
       result = messagebox.exec_()
@@ -315,7 +315,7 @@ class MainWindow( QtGui.QMainWindow ):
       s.openWorld( world )
 
     else:
-      messages.warn( "No such world: %s" % worldname )
+      messages.warn( u"No such world: %s" % worldname )
 
 
   def openWorldByHostPort( s, host, port, ssl=False ):

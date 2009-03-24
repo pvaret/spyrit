@@ -32,7 +32,7 @@ def test_python_version():
     return True, None
 
   else:
-    return False, "Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+    return False, u"Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 def test_pyqt4():
@@ -42,7 +42,7 @@ def test_pyqt4():
     return True, None
 
   except ImportError:
-    return False, "PyQt4 bindings required!"
+    return False, u"PyQt4 bindings required!"
 
 
 def test_sip_version():
@@ -58,7 +58,7 @@ def test_sip_version():
     return True, None
 
   else:
-    return False, "SIP v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+    return False, u"SIP v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 def test_qt_version():
@@ -75,7 +75,7 @@ def test_qt_version():
     return True, None
 
   else:
-    return False, "Qt v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+    return False, u"Qt v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 

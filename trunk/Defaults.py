@@ -52,7 +52,7 @@ DEFAULTS = (
   ( 'output_font_color',       u"#c0c0c0", STR ),  ## light grey
   ( 'output_background_color', u"#000000", STR ),  ## black
 
-  ( 'world_encoding', u'ASCII', STR ),
+  ( 'world_encoding', u'latin1', STR ),
 
   ( 'split_scrollback', True, BOOL ),
 

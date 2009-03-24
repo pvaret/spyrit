@@ -41,30 +41,30 @@ class ActionSet:
 
       ## Global actions
 
-      "about":        ( "About %s..." % \
-                         config._app_name,  ":/app/icon"       ),
-      "aboutqt":      ( "About Qt...",      ":/icon/qt-logo"   ),
-      "newworld":     ( "New world...",     ":/icon/new_world" ),
-      "quickconnect": ( "Quick connect...", None               ),
-      "quit":         ( "Quit",             ":/icon/quit"      ),
-      "nexttab":      ( "Next Tab",         None               ),
-      "previoustab":  ( "Previous Tab",     None               ),
+      "about":        ( u"About %s..." % \
+                          config._app_name,  ":/app/icon"       ),
+      "aboutqt":      ( u"About Qt...",      ":/icon/qt-logo"   ),
+      "newworld":     ( u"New world...",     ":/icon/new_world" ),
+      "quickconnect": ( u"Quick connect...", None               ),
+      "quit":         ( u"Quit",             ":/icon/quit"      ),
+      "nexttab":      ( u"Next Tab",         None               ),
+      "previoustab":  ( u"Previous Tab",     None               ),
 
       ## Per-world actions
 
-      "close":       ( "Close",        ":/icon/close"      ),
-      "connect":     ( "Connect",      ":/icon/connect"    ),
-      "disconnect":  ( "Disconnect",   ":/icon/disconnect" ),
-      "historyup":   ( "History up",   ":/icon/up"         ),
-      "historydown": ( "History down", ":/icon/down"       ),
-      "pageup":      ( "Page up",      ":/icon/up"         ),
-      "pagedown":    ( "Page down",    ":/icon/down"       ),
-      "stepup":      ( "Step up",      None                ),
-      "stepdown":    ( "Step down",    None                ),
-      "startlog":    ( "Start log",    ":/icon/log_start"  ),
-      "stoplog":     ( "Stop log",     ":/icon/log_stop"   ),
+      "close":       ( u"Close",        ":/icon/close"      ),
+      "connect":     ( u"Connect",      ":/icon/connect"    ),
+      "disconnect":  ( u"Disconnect",   ":/icon/disconnect" ),
+      "historyup":   ( u"History up",   ":/icon/up"         ),
+      "historydown": ( u"History down", ":/icon/down"       ),
+      "pageup":      ( u"Page up",      ":/icon/up"         ),
+      "pagedown":    ( u"Page down",    ":/icon/down"       ),
+      "stepup":      ( u"Step up",      None                ),
+      "stepdown":    ( u"Step down",    None                ),
+      "startlog":    ( u"Start log",    ":/icon/log_start"  ),
+      "stoplog":     ( u"Stop log",     ":/icon/log_stop"   ),
 
-      "toggle2ndinput": ( "Toggle secondary input",   None ),
+      "toggle2ndinput": ( u"Toggle secondary input",   None ),
 
     }
 

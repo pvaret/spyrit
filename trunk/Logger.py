@@ -96,7 +96,7 @@ class Logger( QtCore.QObject ):
 
       if       chunk.chunktype == chunktypes.FLOWCONTROL \
            and chunk.data == FlowControlChunk.LINEFEED:
-        s.buffer.append( "\n" )
+        s.buffer.append( u"\n" )
 
     QtCore.QTimer.singleShot( 0, s.writeToFile )
 
@@ -127,14 +127,14 @@ class Logger( QtCore.QObject ):
     ## TODO: handle toolbar / statusbar related stuff
 
     if s.isLogging():
-      messages.warn( "A logging file is already open, it will be closed." )
+      messages.warn( u"A logging file is already open, it will be closed." )
 
     if not s.openLogFile( filename ):
     
-      messages.warn( "Error while opening %s for log writing" % filename )
+      messages.warn( u"Error while opening %s for log writing" % filename )
       return
 
-    s.world.info( "Started logging to %s" % basename( filename ) )
+    s.world.info( u"Started logging to %s" % basename( filename ) )
 
     if backlog:
     
@@ -153,7 +153,7 @@ class Logger( QtCore.QObject ):
       s.writeToFile()
       s.close()
       
-      s.world.info( "Logging stopped." )
+      s.world.info( u"Logging stopped." )
 
     emit( s, SIGNAL( "nowLogging( bool )" ), s.isLogging() )
 

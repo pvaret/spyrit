@@ -164,7 +164,7 @@ class CheckBoxMapper( ConfigMapperWidget, QtGui.QCheckBox ):
     ConfigMapperWidget.__init__( s, mapper, option, label )
     QtGui.QCheckBox.__init__( s )
     
-    text    = s.label.rstrip( ":" )
+    text    = s.label.rstrip( u":" )
     s.label = None
     s.setText( text )
 
@@ -301,7 +301,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
 
   def addGroupRow( s, name ):
     
-    label = QtGui.QLabel( "<b>" + name + "</b>", s )
+    label = QtGui.QLabel( u"<b>" + name + u"</b>", s )
     label.setAlignment( Qt.AlignLeft | Qt.AlignBottom )
 
     s.layout().addWidget( label, s.currentrow, 0, 1, -1 )

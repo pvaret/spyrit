@@ -30,30 +30,30 @@ from PrettyOptionDialog import PrettyOptionDialog
 
 def NewWorldDialog( conf, parent=None ):
 
-    header = PrettyPanelHeader( "New world",
-                                 QtGui.QPixmap( ":/icon/new_world" ) )
+    header = PrettyPanelHeader( u"New world",
+                                  QtGui.QPixmap( ":/icon/new_world" ) )
 
     mapper = ConfigMapper( conf )
 
-    mapper.addGroup( "World name", [
+    mapper.addGroup( u"World name", [
                        mapper.lineedit( "name" )
                      ] )
 
-    mapper.addGroup( "Connection parameters", [
-                       mapper.lineedit( "host", "&Server:" ),
-                       mapper.spinbox(  "port", "&Port:" ),
+    mapper.addGroup( u"Connection parameters", [
+                       mapper.lineedit( "host", u"&Server:" ),
+                       mapper.spinbox(  "port", u"&Port:" ),
                      ] )
 
     if check_ssl_is_available():
-      mapper.addGroup( "Encryption", [
-                         mapper.checkbox( "ssl", "Use SSL &encryption"),
+      mapper.addGroup( u"Encryption", [
+                         mapper.checkbox( "ssl", u"Use SSL &encryption"),
                        ] )
 
     dialog = PrettyOptionDialog( mapper,
                                  parent  = parent,
                                  header  = header,
-                                 oklabel = "Connect",
-                                 title   = "New world" )
+                                 oklabel = u"Connect",
+                                 title   = u"New world" )
 
     return dialog
 

@@ -21,15 +21,16 @@
 ##
 
 
-from PipelineChunks import theEndOfPacketChunk, ChunkTypeMismatch
+from PipelineChunks import theEndOfPacketChunk, ChunkTypeMismatch, chunktypes
 
 
 class BaseFilter:
 
   ## This class attribute lists the chunk types that this filter will process.
   ## Those unlisted will be passed down the filter chain untouched.
-  relevant_types = []
-  
+
+  relevant_types = [ chunktypes.ALL_TYPES ]
+
 
   def __init__( s, context=None ):
 
@@ -114,7 +115,8 @@ class BaseFilter:
     ## when processChunk() is called. If not, there's something shifty
     ## going on...
     
-    if chunk.chunktype in s.relevant_types:
+    if chunk.chunktype in s.relevant_types \
+       or chunktypes.ALL_TYPES in s.relevant_types:
 
       chunks = s.processChunk( chunk )
       for chunk in chunks: s.sink( chunk )

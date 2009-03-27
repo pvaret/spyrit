@@ -39,13 +39,15 @@ class ChunkTypeMismatch( Exception ):
 
 class ChunkTypes:
 
-  NETWORK     = 0
-  ENDOFPACKET = 1
-  BYTES       = 2
-  TELNET      = 3
-  FORMAT      = 4
-  FLOWCONTROL = 5
-  TEXT        = 6
+  ALL_TYPES   = 0
+
+  NETWORK     = 1
+  ENDOFPACKET = 2
+  BYTES       = 3
+  TELNET      = 4
+  FORMAT      = 5
+  FLOWCONTROL = 6
+  TEXT        = 7
 
 
   def __init__( s ):

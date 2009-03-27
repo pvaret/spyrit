@@ -26,11 +26,13 @@ from localqt import *
 from Pipeline        import Pipeline
 from PipelineChunks  import NetworkChunk
 
-from TelnetFilter      import TelnetFilter
 from AnsiFilter        import AnsiFilter
+from TelnetFilter      import TelnetFilter
+from TriggersFilter    import TriggersFilter
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
-from ConfigObserver    import ConfigObserver
+
+from ConfigObserver import ConfigObserver
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
@@ -47,6 +49,8 @@ class SocketPipeline:
 
     s.unicodefilter = UnicodeTextFilter( encoding=conf._world_encoding )
     s.pipeline.addFilter( s.unicodefilter )
+
+    s.pipeline.addFilter( TriggersFilter() )
 
     s.using_ssl = False
     s.socket    = None

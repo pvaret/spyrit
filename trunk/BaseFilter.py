@@ -29,7 +29,7 @@ class BaseFilter:
   ## This class attribute lists the chunk types that this filter will process.
   ## Those unlisted will be passed down the filter chain untouched.
 
-  relevant_types = [ chunktypes.ALL_TYPES ]
+  relevant_types = chunktypes.ALL_TYPES
 
 
   def __init__( s, context=None ):
@@ -39,11 +39,6 @@ class BaseFilter:
     s.postponedChunk = []
 
     s.resetInternalState()
-
-
-  def setContext( s, context ):
-
-    s.context = context
 
 
   def setSink( s, sink ):
@@ -61,18 +56,22 @@ class BaseFilter:
 
 
   def processChunk( s, chunk ):
+
     ## This is the default implementation, which does nothing.
     ## Override this to implement your filter.
     ## Note that this must be a generator or return a list.
+
     yield chunk
 
 
   def resetInternalState( s ):
+
     ## Initialize the filter at the beginning of a connection (or when
     ## reconnecting). For instance the Telnet filter would drop all negociated
     ## options.
     ## Override this when implementing your filter if your filter uses any
     ## internal data.
+
     s.postponedChunk = []
 
 
@@ -115,8 +114,7 @@ class BaseFilter:
     ## when processChunk() is called. If not, there's something shifty
     ## going on...
     
-    if chunk.chunktype in s.relevant_types \
-       or chunktypes.ALL_TYPES in s.relevant_types:
+    if chunk.chunktype & s.relevant_types:
 
       chunks = s.processChunk( chunk )
       for chunk in chunks: s.sink( chunk )
@@ -126,8 +124,23 @@ class BaseFilter:
 
 
   def formatForSending( s, data ):
+
     ## Reimplement this function if the filter inherently requires the data
     ## sent to the world to be modified. I.e., the telnet filter would escape
     ## occurences of the IAC in the data.
 
     return data
+
+
+  def notifify( s, notification, *args ):
+
+    if not s.context: return
+
+    s.context.notify( notification, *args )
+
+
+  def bindNotificationListener( s, notification, callback ):
+
+    if not s.context: return
+
+    s.context.bindNotificationListener( notification, callback )

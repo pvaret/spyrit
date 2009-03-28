@@ -80,16 +80,15 @@ class StreamingDecoder:
 
 class UnicodeTextFilter( BaseFilter ):
   
-  relevant_types = [ chunktypes.BYTES ]
+  relevant_types = chunktypes.BYTES
 
-  def __init__( s, encoding ):
+
+  def __init__( s, encoding, context=None ):
+
+    BaseFilter.__init__( s, context )
 
     s.setEncoding( encoding )
-    s.makeStreamDecoder()
-
-    BaseFilter.__init__( s )  ## Must be called at the end, because it calls
-                              ## s.resetInternalState() which requires a
-                              ## decoder.
+    s.bindNotificationListener( "encoding_changed", s.setEncoding )
 
 
   def setEncoding( s, encoding ):
@@ -123,7 +122,7 @@ class UnicodeTextFilter( BaseFilter ):
 
     BaseFilter.resetInternalState( s )
 
-    s.decoder.reset()
+    if hasattr( s, "decoder" ): s.decoder.reset()
 
 
   def processChunk( s, chunk ):

@@ -29,7 +29,7 @@ from PipelineChunks import chunktypes, ByteChunk, FormatChunk
 
 class AnsiFilter( BaseFilter ):
 
-  relevant_types = [ chunktypes.BYTES ]
+  relevant_types = chunktypes.BYTES
 
   ## For the time being, we only catch the SGR (Set Graphics Rendition) part
   ## of the ECMA 48 specification (a.k.a. ANSI escape codes).

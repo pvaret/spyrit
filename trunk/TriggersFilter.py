@@ -32,10 +32,10 @@ from PipelineChunks import chunktypes, FlowControlChunk
 
 class TriggersFilter( BaseFilter ):
   
-  def __init__( s ):
+  def __init__( s, context=None ):
 
     s.buffer = []
-    BaseFilter.__init__( s )
+    BaseFilter.__init__( s, context )
 
 
   def resetInternalState( s ):

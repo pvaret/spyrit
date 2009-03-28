@@ -34,14 +34,18 @@ class Pipeline:
     s.outputBuffer = []
     s.sinks        = CallbackRegistry()
 
+    s.notification_registry = {}
+
 
   def feedBytes( s, packet ):
+
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
     
     s.feedChunk( ByteChunk( packet ) )
     
     ## Then we notify the filters that this is the end of the packet.
+
     s.feedChunk( theEndOfPacketChunk )
   
 
@@ -71,9 +75,10 @@ class Pipeline:
     s.outputBuffer = []
 
     
-  def addFilter( s, filter ):
+  def addFilter( s, filterclass, *params ):
 
-    filter.setContext( s )
+    filter = filterclass( *params, context=s )
+
     filter.setSink( s.appendToOutputBuffer )
 
     if s.filters:
@@ -102,7 +107,25 @@ class Pipeline:
       f.resetInternalState()
 
 
+  def notify( s, notification, *args ):
+
+    callbacks = s.notification_registry.get( notification )
+
+    if callbacks:
+      callbacks.triggerAll( *args )
+
+
+  def bindNotificationListener( s, notification, callback ):
+
+    if notification not in s.notification_registry:
+      s.notification_registry[ notification ] = CallbackRegistry()
+
+    s.notification_registry[ notification ].add( callback )
+
+
   def __del__( s ):
 
     s.filters = None
     s.sinks   = None
+
+    s.notification_registry = None

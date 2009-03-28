@@ -31,7 +31,7 @@ from PipelineChunks import chunktypes, ByteChunk, FlowControlChunk
 
 class FlowControlFilter( BaseFilter ):
   
-  relevant_types = [ chunktypes.BYTES ]
+  relevant_types = chunktypes.BYTES
 
   match          = re.compile( r'(\r|\n)' )
   unix_like_cr   = re.compile( r'(?<!\r)\n' )

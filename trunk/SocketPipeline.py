@@ -43,14 +43,12 @@ class SocketPipeline:
   def __init__( s, conf ):
 
     s.pipeline = Pipeline()
-    s.pipeline.addFilter( TelnetFilter() )
-    s.pipeline.addFilter( AnsiFilter() )
-    s.pipeline.addFilter( FlowControlFilter() )
 
-    s.unicodefilter = UnicodeTextFilter( encoding=conf._world_encoding )
-    s.pipeline.addFilter( s.unicodefilter )
-
-    s.pipeline.addFilter( TriggersFilter() )
+    s.pipeline.addFilter( TelnetFilter )
+    s.pipeline.addFilter( AnsiFilter )
+    s.pipeline.addFilter( FlowControlFilter )
+    s.pipeline.addFilter( UnicodeTextFilter, conf._world_encoding )
+    s.pipeline.addFilter( TriggersFilter )
 
     s.using_ssl = False
     s.socket    = None
@@ -59,13 +57,10 @@ class SocketPipeline:
     s.observer = ConfigObserver( s.conf )
     s.observer.addCallback( "world_encoding", s.setStreamEncoding, False )
 
-    ## TODO: Write message dispatcher, so that the World can notify encoding
-    ## changes 'to whom it may concern' without it being hardcoded.
-
 
   def setStreamEncoding( s ):
 
-    s.unicodefilter.setEncoding( s.conf._world_encoding )
+    s.pipeline.notify( "encoding_changed", s.conf._world_encoding )
 
 
   def setupSocket( s ):

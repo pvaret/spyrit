@@ -124,7 +124,7 @@ class MetaDictProxy( type ):
 
 
 
-## ---[ Class WeakList ]---------------------------------------
+## ---[ Class WeakList ]-------------------------------------------
 
 class WeakList( WeakValueDictionary ):
 
@@ -133,6 +133,20 @@ class WeakList( WeakValueDictionary ):
   def append( s, val ):
 
     s[ id( val ) ] = val
+
+
+## ---[ Class AutoType ]-------------------------------------------
+
+class AutoType:
+
+  def __init__( s, type_ ):
+
+    s.type = type_
+
+
+  def get( s, *args ):
+
+    return s.type
 
 
 ## ---[ Class ConfigBasket ]---------------------------------------
@@ -149,7 +163,7 @@ class ConfigBasket( object ):
   SECTIONS = "__domains__"
 
 
-  def __init__( s, parent=None, schema=None ):
+  def __init__( s, parent=None, schema=None, autotypes=None ):
 
     s.name      = None
     s.basket    = {}
@@ -157,6 +171,8 @@ class ConfigBasket( object ):
     s.types     = {}
     s.children  = WeakList()
     s.notifiers = CallbackRegistry()
+
+    s.autotypes = autotypes and dict( autotypes ) or None
 
     s.setParent( parent )
 
@@ -244,6 +260,18 @@ class ConfigBasket( object ):
       return None
 
 
+  def getAutoTypes( s ):
+
+    if s.autotypes:
+      return s.autotypes
+
+    if s.parent:
+      return s.parent.getAutoTypes()
+
+    else:
+      return None
+
+
   def reset( s ):
   
     keys = s.basket.keys()
@@ -292,7 +320,7 @@ class ConfigBasket( object ):
 
   def isEmpty( s ):
   
-    return len( s.basket ) == 0
+    return len( s.basket ) == 0 and len ( s.domains ) == 0
 
 
   def hasDomain( s, domain ):
@@ -319,6 +347,15 @@ class ConfigBasket( object ):
 
     domain.name = name
     domain.setParent( s )
+
+    autotypes = s.getAutoTypes()
+
+    if autotypes:
+
+      type_ = autotypes.get( name )
+
+      if type_:
+        domain.setTypes( AutoType( type_ ) )
 
     s.domains[ name ] = domain
 

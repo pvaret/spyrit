@@ -28,7 +28,7 @@ from Messages import messages
 import re
 
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
-RE_KEYVALUE = re.compile( r"^(\w+)\s*=\s*(.*)", re.UNICODE )
+RE_KEYVALUE = re.compile( r"^(\w[\w\d]*)\s*=\s*(.*)", re.UNICODE )
 
 def parseIniLine( line ):
 
@@ -66,10 +66,11 @@ class IniConfigBasket( ConfigBasket ):
   INDENT   = u"  "
 
 
-  def __init__( s, filename, schema ):
+  def __init__( s, filename, schema, autotypes=None ):
 
-    s.filename=filename
-    ConfigBasket.__init__( s, schema=schema )
+    s.filename = filename
+
+    ConfigBasket.__init__( s, schema=schema, autotypes=autotypes )
 
     s.load()
 
@@ -87,10 +88,9 @@ class IniConfigBasket( ConfigBasket ):
     s.reset()
     s.resetDomains()
 
-    data        = {}
-    currentdict = data
-    currentpath = []
-    skipsection = False
+    currentconf  = s
+    currentdepth = 0
+    skipsection  = False
 
     for line in f:
 
@@ -99,11 +99,9 @@ class IniConfigBasket( ConfigBasket ):
 
       key = result[ "key" ]
 
-      assert type( key ) is type( u"" )
+      if key and not skipsection:  ## This is a key/value line.
 
-      if key and not skipsection:
-        
-        t = s.getType( key )
+        t = currentconf.getType( key )
 
         if not t:
 
@@ -112,14 +110,15 @@ class IniConfigBasket( ConfigBasket ):
 
         value = t().from_string( result[ "value" ] )
 
-        currentdict[ key ] = value
+        currentconf[ key ] = value
 
-      elif result[ "section" ]:
+      elif result[ "section" ]:  ## This is a section line.
 
         skipsection = False
-        depth       = result[ "sectiondepth" ]
 
-        if depth > len( currentpath ) + 1:
+        depth = result[ "sectiondepth" ]
+
+        if depth > currentdepth + 1:
           ## Okay, this subsection is too deep, i.e. it looks something like:
           ##   [[ some section ]]
           ##   ...
@@ -128,26 +127,15 @@ class IniConfigBasket( ConfigBasket ):
           skipsection = True
           continue
 
-        section     = result[ "section" ]
-        currentdict = data
-        currentpath = currentpath[ :depth-1 ]
+        while currentdepth >= depth:
 
-        for subsection in currentpath:
-          currentdict = currentdict[ ConfigBasket.SECTIONS ][ subsection ]
+          currentconf   = currentconf.parent
+          currentdepth -= 1
 
-        if ConfigBasket.SECTIONS not in currentdict:
-          currentdict[ ConfigBasket.SECTIONS ] = {}
-
-        if section not in currentdict[ ConfigBasket.SECTIONS ]:
-          currentdict[ ConfigBasket.SECTIONS ][ section ] = {}        
-
-        currentdict = currentdict[ ConfigBasket.SECTIONS ][ section ]
-        currentpath.append( section )
-
-     ## Phew, done.
+        currentconf   = currentconf.createDomain( result[ "section" ] )
+        currentdepth += 1
 
     f.close()
-    s.updateFromDictTree( data )
 
 
   def save( s ):
@@ -161,40 +149,34 @@ class IniConfigBasket( ConfigBasket ):
       return
 
   
-    def save_section( basketdump, indent_level=0 ):
+    def save_section( configobj, indent_level=0 ):
 
-      subsections = None
+      for k, v in configobj.getOwnDict().iteritems():
 
-      for k, v in basketdump.iteritems():
+        t = configobj.getType( k )
 
-        if k == ConfigBasket.SECTIONS:
-          subsections = v
+        if not t:  ## Unknown key!
+          continue
 
-        else:
-          t = s.getType( k )
+        v = t().to_string( v )
 
-          if not t: continue
+        f.write( s.INDENT * indent_level )
+        f.write( u"%s = %s\n" % ( k, v ) )
 
-          v = t().to_string( v )
+      for domainname, domain in configobj.domains.iteritems():
 
-          f.write( s.INDENT * indent_level )
-          f.write( u"%s = %s\n" % ( k, v ) )
+        if domain.isEmpty():  ## Section is empty
+          continue
 
-      if subsections:
+        f.write( u"\n" )
+        f.write( s.INDENT * indent_level )
+        f.write( u"[" * ( indent_level + 1 ) )
+        f.write( u" %s " % domainname.strip() )
+        f.write( u"]" * ( indent_level + 1 ) )
+        f.write( u"\n" )
 
-        indent_level += 1
+        save_section( domain, indent_level+1 )
 
-        for sectionname, sectiondata in subsections.iteritems():
-
-          f.write( u"\n" )
-          f.write( s.INDENT * ( indent_level-1 ) )
-          f.write( u"[" * indent_level )
-          f.write( u"%s" % sectionname.strip() )
-          f.write( u"]" * indent_level )
-          f.write( u"\n" )
-
-          save_section( sectiondata, indent_level )
-
-    save_section( s.dumpAsDict() )
+    save_section( s )
 
     f.close()

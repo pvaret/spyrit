@@ -97,3 +97,10 @@ DEFAULTS = (
   ( 'alert_on_activity', True, BOOL ),
 
 )
+
+
+MATCHES_DOMAIN = "matches"
+
+AUTOTYPES = (
+  ( MATCHES_DOMAIN, STR ),
+)

@@ -284,6 +284,9 @@ class WorldUI( QtGui.QSplitter ):
       f.context = None
       f.sink = None
 
+    s.world.socketpipeline.pipeline = None
+    s.world.socketpipeline          = None
+
     s.world = None
 
 

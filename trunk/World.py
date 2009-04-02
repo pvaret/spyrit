@@ -238,7 +238,10 @@ class World( QtCore.QObject ):
     while True:
 
       data = f.read( 4096 )
+
       if not data: break
+      if not s.socketpipeline: break
+
       s.socketpipeline.pipeline.feedBytes( data )
       qApp().processEvents()
 

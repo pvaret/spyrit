@@ -19,7 +19,7 @@
 ## Contains the default configuration items.
 ##
 
-from Types import *
+from ConfigTypes import *
 
 from ConfigPaths import LOG_DIR
 

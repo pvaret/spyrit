@@ -28,7 +28,7 @@ from Messages import messages
 import re
 
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
-RE_KEYVALUE = re.compile( r"^(\w[\w\d]*)\s*=\s*(.*)", re.UNICODE )
+RE_KEYVALUE = re.compile( r"^(\w(?:-*\w+)*)\s*=\s*(.*)", re.UNICODE )
 
 def parseIniLine( line ):
 

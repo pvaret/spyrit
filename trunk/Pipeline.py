@@ -28,8 +28,9 @@ from CallbackRegistry import CallbackRegistry
 
 class Pipeline:
   
-  def __init__( s ):
+  def __init__( s, parent=None ):
 
+    s.parent       = parent
     s.filters      = []
     s.outputBuffer = []
     s.sinks        = CallbackRegistry()
@@ -75,9 +76,11 @@ class Pipeline:
     s.outputBuffer = []
 
     
-  def addFilter( s, filterclass, *params ):
+  def addFilter( s, filterclass, *params, **kwargs ):
 
-    filter = filterclass( *params, context=s )
+    kwargs.setdefault( 'context', s )
+
+    filter = filterclass( *params, **kwargs )
 
     filter.setSink( s.appendToOutputBuffer )
 
@@ -125,6 +128,7 @@ class Pipeline:
 
   def __del__( s ):
 
+    s.parent  = None
     s.filters = None
     s.sinks   = None
 

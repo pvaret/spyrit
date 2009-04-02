@@ -34,8 +34,24 @@ class TriggersFilter( BaseFilter ):
   
   def __init__( s, context=None ):
 
-    s.buffer = []
+    s.buffer  = []
+    s.manager = None
+
+    if context:
+      s.setManager( context.parent.triggersmanager )
+
     BaseFilter.__init__( s, context )
+
+
+  def setManager( s, manager ):
+
+    s.manager = manager
+
+    if manager is None:
+      s.processChunk = s.defaultProcessChunk
+
+    else:
+      s.processChunk = s.activatedProcessChunk
 
 
   def resetInternalState( s ):
@@ -44,7 +60,14 @@ class TriggersFilter( BaseFilter ):
     BaseFilter.resetInternalState( s )
 
 
-  def processChunk( s, chunk ):
+  def defaultProcessChunk( s, chunk ):
+
+    yield chunk
+
+
+  def activatedProcessChunk( s, chunk ):
+
+    #assert s.manager is not None
 
     s.buffer.append( chunk )
 
@@ -57,6 +80,14 @@ class TriggersFilter( BaseFilter ):
       line = u"".join( [ chunk.data
                          for chunk in s.buffer
                          if chunk.chunktype == chunktypes.TEXT ] )
+
+
+      if line:
+
+        m = s.manager.lookupMatch( line )
+
+        if m:
+          print m.results
 
       for chunk in s.buffer:
         

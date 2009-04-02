@@ -32,7 +32,8 @@ from TriggersFilter    import TriggersFilter
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
 
-from ConfigObserver import ConfigObserver
+from ConfigObserver  import ConfigObserver
+from TriggersManager import TriggersManager
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
@@ -42,7 +43,9 @@ class SocketPipeline:
 
   def __init__( s, conf ):
 
-    s.pipeline = Pipeline()
+    s.triggersmanager = TriggersManager( conf )
+
+    s.pipeline = Pipeline( s )
 
     s.pipeline.addFilter( TelnetFilter )
     s.pipeline.addFilter( AnsiFilter )
@@ -185,6 +188,8 @@ class SocketPipeline:
 
   def __del__( s ):
 
-    s.pipeline = None
     s.socket   = None
+    s.pipeline = None
     s.observer = None
+
+    s.triggersmanager = None

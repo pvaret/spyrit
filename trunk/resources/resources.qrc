@@ -16,6 +16,9 @@
   <file alias="up">up.png</file>
   <file alias="worlds">worlds.png</file>
 </qresource>
+<qresource prefix="/ui">
+  <file alias="header_borders">header_borders.png</file>
+</qresource>
 <qresource prefix="/app">
   <file alias="icon">spyrit-icon.png</file>
   <file alias="logo">spyrit-logo.png</file>

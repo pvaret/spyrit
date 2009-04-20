@@ -35,16 +35,12 @@ class PrettyPanelHeader( QtGui.QFrame ):
 
   STYLESHEET = """
     QFrame#header {
-      background:
-        qlineargradient( x1:0, y1:0, x2:0, y2:1, stop:0 %s, stop:1 %s );
-      border-width: 1px;
-      border-style: solid;
-      border-radius: 3px;
-      border-color: %s;
+      border: 8px inset %s;
+      border-image: url(:ui/header_borders) 8px repeat stretch;
     }
   """
 
-  def __init__( s, title, icon=None, parent=None ):
+  def __init__( s, title, icon=None, desc=None, parent=None ):
 
     QtGui.QFrame.__init__( s, parent )
 
@@ -56,11 +52,9 @@ class PrettyPanelHeader( QtGui.QFrame ):
     ## The colors that are used in the stylesheet are retrieved from the
     ## currently configured palette.
 
-    color1 = s.palette().dark().color().name()
-    color2 = s.palette().midlight().color().name()
-    color3 = s.palette().windowText().color().name()
+    dark = s.palette().dark().color().name()
 
-    s.setStyleSheet( s.STYLESHEET % ( color1, color2, color3 ) )
+    s.setStyleSheet( s.STYLESHEET % dark )
 
     ## Legacy setup for platforms that don't support stylesheets (yet).
 
@@ -83,7 +77,14 @@ class PrettyPanelHeader( QtGui.QFrame ):
       i.setPixmap( icon )
       layout.addWidget( i, 0, Qt.AlignLeft | Qt.AlignVCenter )
 
-    text = QtGui.QLabel( '<font size="+2"><b>%s</b></font>' % title, s )
+    label = '<font size="+2"><b>%s</b></font>' % title
+    
+    if desc:
+      label += '<br><font size="-1"><i>%s</i></font>' % desc
+
+    text = QtGui.QLabel( label, s )
+    text.setAlignment( Qt.AlignRight )
+    
     text.setTextFormat( Qt.RichText )
     layout.addWidget( text, 0, Qt.AlignRight | Qt.AlignVCenter )
 

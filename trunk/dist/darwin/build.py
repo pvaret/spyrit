@@ -18,12 +18,33 @@ DISTDIR    = os.path.join( this_dir, "dist" )
 IMGGLOB    = "%s-*.*.dmg %s-*.*.sparseimage" % ( APPNAME, APPNAME )
 
 APP        = [ os.path.join( "..", "..", "%s.py" % APPNAME ) ]
-ICON_FILE  = os.path.join( "..", "..", "resources", "spyrit-icon.icns" )
+ICON_FILE  = os.path.join( "..", "..", "resources", "spyrit-logo.icns" )
 INCLUDES   = [ "PyQt4._qt", "sip" ]
 OPTIONS    = { "argv_emulation": True, 
                "iconfile": ICON_FILE, 
                "includes": INCLUDES }
-  
+
+PRUNE      = [ ( "Frameworks", "phonon.framework" ),
+               ( "Frameworks", "QtAssistant.framework" ),
+               ( "Frameworks", "QtDBus.framework" ),
+               ( "Frameworks", "QtDesigner.framework" ),
+               ( "Frameworks", "QtHelp.framework" ),
+               ( "Frameworks", "QtOpenGL.framework" ),
+               ( "Frameworks", "QtScript.framework" ),
+               ( "Frameworks", "QtSql.framework" ),
+               ( "Frameworks", "QtSvg.framework" ),
+               ( "Frameworks", "QtTest.framework" ),
+               ( "Frameworks", "QtWebKit.framework" ),
+               ( "Frameworks", "QtXml.framework" ),
+               ( "Frameworks", "QtXmlPatterns.framework" ),
+               ( "Frameworks", "QtGui.framework", "Versions", "4", 
+                 "QtGui_debug" ),
+               ( "Frameworks", "QtCore.framework", "Versions", "4", 
+                 "QtCore_debug" ),
+               ( "Frameworks", "QtNetwork.framework", "Versions", "4", 
+                 "QtNetwork_debug" ),
+             ]
+
 HDIUTIL    = "hdiutil"
 MKDIR      = "mkdir"
 CP         = "cp"
@@ -63,6 +84,18 @@ def build():
          setup_requires = [ "py2app" ] )
 
 
+def prune():
+
+  ## Manually remove Frameworks or libraries we know will NOT be used. This
+  ## is a dangerous solution at best but can lead up to a final image 50 to 60%
+  ## smaller than the full set.
+  
+  for path in PRUNE:
+  
+    fullPath = os.path.join( APPDIR, *path )
+    os.system( " ".join( [ RM, "-rf", fullPath ] ) )
+    
+
 def package():
 
   ## Packages the built .app into a shiny DMG template we'll resize
@@ -94,4 +127,5 @@ if __name__ == "__main__":
 
   cleanup()
   build()
+  prune()
   package()

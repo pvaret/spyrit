@@ -76,11 +76,11 @@ class Pipeline:
     s.outputBuffer = []
 
     
-  def addFilter( s, filterclass, *params, **kwargs ):
+  def addFilter( s, filterclass, **kwargs ):
 
-    kwargs.setdefault( 'context', s )
+    kwargs.setdefault( 'context', s ) ## Set up context if not already present.
 
-    filter = filterclass( *params, **kwargs )
+    filter = filterclass( **kwargs )
 
     filter.setSink( s.appendToOutputBuffer )
 

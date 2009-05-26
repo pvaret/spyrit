@@ -83,7 +83,7 @@ class UnicodeTextFilter( BaseFilter ):
   relevant_types = chunktypes.BYTES
 
 
-  def __init__( s, encoding, context=None ):
+  def __init__( s, context, encoding ):
 
     BaseFilter.__init__( s, context )
 

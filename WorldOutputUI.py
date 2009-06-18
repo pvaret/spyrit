@@ -91,7 +91,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     s.italic_by_default = italic_by_default
 
     s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback( color_attribute, s.refresh )
+    s.observer.addCallback( [ color_attribute, "bold_as_highlight" ], s.refresh )
 
     s.reset()
 
@@ -103,6 +103,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
     s.default_brush     = QtGui.QBrush( default_color )
     s.highlighted_brush = QtGui.QBrush( default_highlighted )
+    s.bold_as_highlight = s.conf._bold_as_highlight
 
     s.setForeground( s.computeCurrentBrush() )
 
@@ -123,7 +124,7 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
   def setHighlighted( s, highlighted ):
 
-    if not s.conf._bold_as_highlight:
+    if not s.bold_as_highlight:
 
       ## 'Highlighted' text is simply bold.
       s.setFontWeight( highlighted and QtGui.QFont.Bold

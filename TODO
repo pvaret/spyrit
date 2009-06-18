@@ -1,5 +1,6 @@
 This is a list of features that need implementing sooner or later.
 
+* Bugfix: don't extend selection when appending text while the selection anchor is at document's end.
 * Paging mode, where scrolling automatically stops after one page of new text.
 * GUI for search.
 * Bookmarking of lines in output.

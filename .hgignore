@@ -13,3 +13,4 @@ syntax:glob
 *.e3p
 *.e3s
 *.e3t
+resources.py

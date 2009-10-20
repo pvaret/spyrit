@@ -34,5 +34,15 @@ SLOT       = QtCore.SLOT
 
 Qt = QtCore.Qt
 
+
 def qApp():
+
   return QtGui.QApplication.instance()
+
+
+__all__ = [
+  "sip",
+  "Qt", "QtCore", "QtGui", "QtNetwork",
+  "connect", "disconnect", "emit", "SIGNAL", "SLOT",
+  "qApp"
+]

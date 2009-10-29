@@ -52,7 +52,7 @@ def test_sip_version():
 
   import sip
 
-  v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." ) )
+  v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." )[:2] )
 
   if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
     return True, None

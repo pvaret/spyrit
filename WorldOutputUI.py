@@ -260,6 +260,25 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.observer.addCallback( "split_scrollback", s.setupScrollback )
 
+    connect( s, SIGNAL( "textChanged()" ), s.perhapsRepaint )
+
+
+  def perhapsRepaint( s ):
+
+    ## Right, so we've got a problem: when the text changes but the scrollbar
+    ## is not to the bottom, Qt cleverly optimizes things by not repainting
+    ## the contents. Only, due to our split screen thingie, we need to
+    ## override that behavior. Hence this function.
+
+    if s.atbottom:             return
+    if not s.split_scrollback: return
+
+    ## Right, the scrollbar is not at bottom, and the screen is split. So
+    ## we repaint indeed.
+
+    s.repaint()
+
+
 
   def refresh( s ):
 

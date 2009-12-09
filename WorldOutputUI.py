@@ -240,6 +240,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.was_connected  = False
 
+    s.currently_updating = False
+
     s.observer = ConfigObserver( s.conf )
 
     if platformSpecific.should_repaint_on_scroll:
@@ -272,6 +274,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     if s.atbottom:             return
     if not s.split_scrollback: return
+    if s.currently_updating:   return
 
     ## Right, the scrollbar is not at bottom, and the screen is split. So
     ## we repaint indeed.
@@ -404,6 +407,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
    
   def formatAndDisplay( s, chunks ):
 
+    s.currently_updating = True
     s.textcursor.beginEditBlock()
 
     for chunk in chunks:
@@ -493,6 +497,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## We're done processing this set of chunks.
 
     s.textcursor.endEditBlock()
+    s.currently_updating = False
 
 
     ## And whew, we're done! Now let the application notify the user there's

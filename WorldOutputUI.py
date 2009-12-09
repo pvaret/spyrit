@@ -527,7 +527,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def insertInfoText( s, text ):
 
-    if s.pending_newline:
+    if s.textcursor.columnNumber() > 0:
       s.textcursor.insertText( NL, s.infocharformat )
 
     s.textcursor.insertText( LEFTARROW + " " + text, s.infocharformat )

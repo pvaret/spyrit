@@ -70,9 +70,9 @@ class TriggersFilter( BaseFilter ):
 
     type = chunk.chunktype
 
-    if type == chunktypes.NETWORK \
-      or ( type == chunktypes.FLOWCONTROL \
-           and chunk.data == FlowControlChunk.LINEFEED ):
+    if type in ( chunktypes.NETWORK, chunktypes.PROMPTSWEEP ) \
+      or   ( type       == chunktypes.FLOWCONTROL \
+         and chunk.data == FlowControlChunk.LINEFEED ):
 
       line = u"".join( [ chunk.data
                          for chunk in s.buffer

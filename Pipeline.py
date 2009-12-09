@@ -22,12 +22,18 @@
 ##
 
 
-from PipelineChunks   import ByteChunk, theEndOfPacketChunk
+from localqt import *
+
+from PipelineChunks   import ByteChunk
+from PipelineChunks   import theEndOfPacketChunk, thePromptSweepChunk
 from CallbackRegistry import CallbackRegistry
 
 
 class Pipeline:
   
+  PROMPT_TIMEOUT = 700 ## ms
+
+
   def __init__( s, parent=None ):
 
     s.parent       = parent
@@ -36,6 +42,11 @@ class Pipeline:
     s.sinks        = CallbackRegistry()
 
     s.notification_registry = {}
+
+    s.prompt_timer = QtCore.QTimer()
+    s.prompt_timer.setSingleShot( True )
+    s.prompt_timer.setInterval( s.PROMPT_TIMEOUT )
+    connect( s.prompt_timer, SIGNAL( "timeout()" ), s.sweepPrompt )
 
 
   def feedBytes( s, packet ):
@@ -48,7 +59,13 @@ class Pipeline:
     ## Then we notify the filters that this is the end of the packet.
 
     s.feedChunk( theEndOfPacketChunk )
+    s.prompt_timer.start()
   
+
+  def sweepPrompt( s ):
+
+    s.feedChunk( thePromptSweepChunk )
+
 
   def feedChunk( s, chunk ):
   

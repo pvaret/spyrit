@@ -41,13 +41,14 @@ class ChunkTypes:
 
   NETWORK     = 1 << 0
   ENDOFPACKET = 1 << 1
-  BYTES       = 1 << 2
-  TELNET      = 1 << 3
-  FORMAT      = 1 << 4
-  FLOWCONTROL = 1 << 5
-  TEXT        = 1 << 6
+  PROMPTSWEEP = 1 << 2
+  BYTES       = 1 << 3
+  TELNET      = 1 << 4
+  FORMAT      = 1 << 5
+  FLOWCONTROL = 1 << 6
+  TEXT        = 1 << 7
 
-  ALL_TYPES   = ( 1 << 7 ) - 1
+  ALL_TYPES   = ( 1 << 8 ) - 1
 
 
   def __init__( s ):
@@ -238,6 +239,24 @@ class EndOfPacketChunk( BaseChunk ):
 
 
 theEndOfPacketChunk = EndOfPacketChunk()
+
+
+## ---[ Class PromptSweepChunk ]-----------------------------------------
+
+class PromptSweepChunk( BaseChunk ):
+  """
+  This chunk type is sent down the pipeline when nothing has been received
+  after a given timeout (in TinyFugue it is 700ms). The purpose is to inform
+  filters that a line that doesn't end with a carriage return might be a
+  prompt, as opposed to a line unfinished because the rest is in an upcoming
+  packet.
+  """
+
+  chunktype = chunktypes.PROMPTSWEEP
+
+
+thePromptSweepChunk = PromptSweepChunk()
+
 
 
 ## ---[ Class FlowControlChunk ]-----------------------------------------

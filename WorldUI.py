@@ -207,8 +207,22 @@ class WorldUI( QtGui.QSplitter ):
 
   def startIconBlink( s, chunks ):
 
-    if not s.blinker.state() == QtCore.QTimeLine.Running:
-      s.blinker.start()
+    ## Don't blink if already blinking:
+
+    if s.blinker.state() == QtCore.QTimeLine.Running:
+      return
+
+    ## Only blink if something interesting is happening:
+
+    types = [ c.chunktype for c in chunks \
+              if c.chunktype in ( chunktypes.TEXT,
+                                  chunktypes.FLOWCONTROL,
+                                  chunktypes.NETWORK ) ]
+
+    if len( types ) == 0:
+      return
+
+    s.blinker.start()
 
 
   def iconBlink( s, frame ):

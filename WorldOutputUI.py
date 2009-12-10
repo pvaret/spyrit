@@ -241,6 +241,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.was_connected  = False
 
     s.currently_updating = False
+    s.last_page_position = 0
 
     s.observer = ConfigObserver( s.conf )
 
@@ -282,7 +283,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
     s.repaint()
 
 
-
   def refresh( s ):
 
     stylesheet = 'QTextEdit { font-family: "%s" ' % s.conf._output_font_name
@@ -303,7 +303,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def onScroll( s, pos ):
 
+    previous   = s.atbottom
     s.atbottom = ( pos == s.scrollbar.maximum() )
+
+    if s.atbottom and previous != s.atbottom:
+      s.last_page_position = s.scrollbar.maximum()
 
     if platformSpecific.should_repaint_on_scroll:
       s.repaint()
@@ -343,6 +347,15 @@ class WorldOutputUI( QtGui.QTextEdit ):
     doc.drawContents( p, QtCore.QRectF( 0, doc_height - height + split_y + 1,
                                         width, height - split_y - 1 ) )
 
+  def userSentText( s, text ):
+
+    ## The user has just sent text. Handle accordingly.
+
+    ## Paging implementation:
+
+    if s.atbottom and s.conf._paging:
+      s.last_page_position = s.scrollbar.value()
+
 
   def moveScrollbarToBottom( s ):
 
@@ -358,7 +371,14 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## signal.
 
     if s.atbottom and s.scrollbar.value() != max:
-      s.scrollbar.setValue( max )
+
+      next_page_position = s.last_page_position + s.scrollbar.pageStep() \
+                                                - s.scrollbar.singleStep()
+      if s.conf._paging and s.scrollbar.value() >= next_page_position:
+        s.scrollbar.setValue( next_page_position )
+
+      else:
+        s.scrollbar.setValue( max )
 
 
   def setPageStep( s ):
@@ -536,8 +556,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def resizeEvent( s, e ):
 
-    if s.atbottom and s.scrollbar.value() != s.scrollbar.maximum():
-      s.scrollbar.setValue( s.scrollbar.maximum() )
+    s.onRangeChanged( s.scrollbar.minimum(), s.scrollbar.maximum() )
 
     return QtGui.QTextEdit.resizeEvent( s, e )
 

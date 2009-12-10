@@ -55,6 +55,7 @@ DEFAULTS = (
   ( 'world_encoding', u'latin1', STR ),
 
   ( 'split_scrollback', True, BOOL ),
+  ( 'paging',           True, BOOL ),
 
   ( 'bold_as_highlight', True, BOOL ),
 

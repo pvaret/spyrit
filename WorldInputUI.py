@@ -130,6 +130,7 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     else:
       s.world.socketpipeline.send( text + u"\r\n" )
+      emit( s, SIGNAL( "textSent( str )" ), text )
 
 
   def historyUp( s ):

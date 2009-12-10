@@ -86,7 +86,12 @@ class WorldUI( QtGui.QSplitter ):
     s.secondaryinputui = WorldInputUI( s, world, shouldsavehistory=False )
     s.addWidget( s.secondaryinputui )
     s.secondaryinputui.hide()
-    
+   
+    connect( s.inputui,          SIGNAL( "textSent( str )" ),
+      s.outputui.userSentText )
+    connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
+      s.outputui.userSentText )
+
     world.socketpipeline.addSink( s.outputui.formatAndDisplay )
 
     s.setFocusProxy( s.inputui )

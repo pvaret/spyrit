@@ -344,8 +344,23 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     p.translate( 0, -doc_height + height )
 
-    doc.drawContents( p, QtCore.QRectF( 0, doc_height - height + split_y + 1,
-                                        width, height - split_y - 1 ) )
+    ctx      = QtGui.QAbstractTextDocumentLayout.PaintContext()
+    ctx.clip = QtCore.QRectF( 0, doc_height - height + split_y + 1,
+                              width, height - split_y - 1 )
+
+    cur = s.textCursor()
+
+    if cur.hasSelection():
+
+      sel        = QtGui.QAbstractTextDocumentLayout.Selection()
+      sel.cursor = cur
+      sel.format.setBackground( s.palette().highlight() )
+      sel.format.setForeground( s.palette().highlightedText() )
+
+      ctx.selections = [ sel ]
+
+    doc.documentLayout().draw( p, ctx )
+
 
   def userSentText( s, text ):
 

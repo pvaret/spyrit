@@ -339,6 +339,17 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def mousePressEvent( s, e ):
 
+    ## WORKAROUND: We need to clear the selection before the click, so the
+    ## drag and drop event that may otherwise follow doesn't get confused
+    ## by our remapped mouse coordinates. But doing so requires calling
+    ## setTextCursor(), and that method, itself, calls ensureCursorVisible(),
+    ## causing an unwanted scrolling of the viewport. So we 'pin down' the
+    ## viewport by saving the scrollbar's value and then restoring it, while
+    ## blocking its signals.
+
+    block = s.scrollbar.blockSignals( True )
+    val   = s.scrollbar.value()
+
     cur = s.textCursor()
 
     if cur.hasSelection() and e.buttons() & Qt.LeftButton:
@@ -346,12 +357,30 @@ class WorldOutputUI( QtGui.QTextEdit ):
       cur.clearSelection()
       s.setTextCursor( cur )
 
-    return QtGui.QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
+    res = QtGui.QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
+
+    s.scrollbar.setValue( val )
+    s.scrollbar.blockSignals( block )
+
+    return res
 
 
   def mouseReleaseEvent( s, e ):
 
-    return QtGui.QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
+    ## WORKAROUND: The same workaround as above is used here. Without it, Qt's
+    ## calling of ensureCursorVisible() while handling the mouse release event
+    ## causes the viewport to scroll if the mouse is released in the split
+    ## area.
+
+    block = s.scrollbar.blockSignals( True )
+    val   = s.scrollbar.value()
+
+    res = QtGui.QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
+
+    s.scrollbar.setValue( val )
+    s.scrollbar.blockSignals( block )
+
+    return res
 
 
   def mouseDoubleClickEvent( s, e ):

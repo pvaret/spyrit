@@ -263,7 +263,8 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.observer.addCallback( "split_scrollback", s.setupScrollback )
 
-    connect( s, SIGNAL( "textChanged()" ), s.perhapsRepaint )
+    connect( s, SIGNAL( "textChanged()" ),      s.perhapsRepaint )
+    connect( s, SIGNAL( "selectionChanged()" ), s.perhapsRepaint )
 
 
   def perhapsRepaint( s ):
@@ -311,6 +312,44 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     if platformSpecific.should_repaint_on_scroll:
       s.repaint()
+
+
+  def remapMouseEvent( s, e ):
+
+    if s.atbottom or not s.split_scrollback:
+      return e
+
+    height  = s.viewport().height()
+    split_y = int( height * s.SPLIT_FACTOR )
+
+    if e.y() <= split_y:
+      return e
+
+    y = e.y() + s.document().size().height() - height - s.scrollbar.value()
+
+    e = QtGui.QMouseEvent( e.type(), QtCore.QPoint( e.x(), y ), e.globalPos(),
+                           e.button(), e.buttons(), e.modifiers() )
+    return e
+
+
+  def mouseMoveEvent( s, e ):
+
+    return QtGui.QTextEdit.mouseMoveEvent( s, s.remapMouseEvent( e ) )
+
+
+  def mousePressEvent( s, e ):
+
+    return QtGui.QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
+
+
+  def mouseReleaseEvent( s, e ):
+
+    return QtGui.QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
+
+
+  def mouseDoubleClickEvent( s, e ):
+
+    return QtGui.QTextEdit.mouseDoubleClickEvent( s, s.remapMouseEvent( e ) )
 
 
   def paintEvent( s, e ):

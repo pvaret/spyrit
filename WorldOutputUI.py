@@ -339,6 +339,13 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def mousePressEvent( s, e ):
 
+    cur = s.textCursor()
+
+    if cur.hasSelection() and e.buttons() & Qt.LeftButton:
+
+      cur.clearSelection()
+      s.setTextCursor( cur )
+
     return QtGui.QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
 
 

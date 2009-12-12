@@ -333,6 +333,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## Draw separation line.
 
     p = QtGui.QPainter( s.viewport() )
+    p.setClipRect( QtCore.QRectF( 0, split_y, width, height ) )
 
     p.setPen( qApp().palette().color( QtGui.QPalette.Window ) )
     p.drawLine( 0, split_y, width, split_y )

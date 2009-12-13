@@ -240,13 +240,10 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.was_connected  = False
 
-    s.currently_updating = False
     s.last_page_position = 0
+    s.previous_selection = -1, -1
 
     s.observer = ConfigObserver( s.conf )
-
-    if platformSpecific.should_repaint_on_scroll:
-      s.scrollbar.setTracking( True )
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
@@ -263,10 +260,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.observer.addCallback( "split_scrollback", s.setupScrollback )
 
-    connect( s, SIGNAL( "textChanged()" ), s.perhapsRepaint )
+    connect( s, SIGNAL( "textChanged()" ),      s.perhapsRepaintText )
+    connect( s, SIGNAL( "selectionChanged()" ), s.perhapsRepaintSelection )
 
 
-  def perhapsRepaint( s ):
+  def perhapsRepaintText( s ):
 
     ## Right, so we've got a problem: when the text changes but the scrollbar
     ## is not to the bottom, Qt cleverly optimizes things by not repainting
@@ -275,12 +273,37 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     if s.atbottom:             return
     if not s.split_scrollback: return
-    if s.currently_updating:   return
 
     ## Right, the scrollbar is not at bottom, and the screen is split. So
-    ## we repaint indeed.
+    ## we repaint indeed, although only the bottom part, since the screen is
+    ## split and the top part doesn't change.
 
-    s.repaint()
+    s.update( s.splitBottomRect() )
+
+
+  def perhapsRepaintSelection( s ):
+
+    if s.atbottom:             return
+    if not s.split_scrollback: return
+
+    ## We force a repaint of the bottom area in two cases: when the mouse
+    ## pointer is in there, and thus may be updating the selection; and
+    ## when the selection is all new, in case there was a former selection
+    ## to be cleared. Hackish, but functional.
+
+    cursor_pos = s.viewport().mapFromGlobal( QtGui.QCursor.pos() )
+
+    if s.splitBottomRect().contains( cursor_pos ):
+      s.update( s.splitBottomRect() )
+
+    prev_pos, prev_anchor = s.previous_selection
+
+    sel = s.textCursor()
+
+    if sel.position() != prev_pos and sel.anchor() != prev_anchor:
+      s.update( s.splitBottomRect() )
+
+    s.previous_selection = sel.position(), sel.anchor()
 
 
   def refresh( s ):
@@ -294,11 +317,15 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
     s.setStyleSheet( stylesheet )
 
+    s.scrollbar.setSingleStep( s.viewport().fontMetrics().lineSpacing() + 1 )
+
 
   def setupScrollback( s ):
 
     s.split_scrollback = s.conf._split_scrollback
-    s.repaint()
+
+    if not s.atbottom:
+      s.update()
 
 
   def onScroll( s, pos ):
@@ -306,11 +333,106 @@ class WorldOutputUI( QtGui.QTextEdit ):
     previous   = s.atbottom
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
+    ## When the user moves back to the bottom of the view, paging is reset:
+
     if s.atbottom and previous != s.atbottom:
       s.last_page_position = s.scrollbar.maximum()
 
     if platformSpecific.should_repaint_on_scroll:
-      s.repaint()
+      s.update()
+
+
+  def remapMouseEvent( s, e ):
+
+    if s.atbottom or not s.split_scrollback:
+      return e
+
+    height  = s.viewport().height()
+
+    if e.y() <= s.splitY():
+      return e
+
+    y = e.y() + s.document().size().height() - height - s.scrollbar.value()
+
+    e = QtGui.QMouseEvent( e.type(), QtCore.QPoint( e.x(), y ), e.globalPos(),
+                           e.button(), e.buttons(), e.modifiers() )
+    return e
+
+
+  def mouseMoveEvent( s, e ):
+
+    return QtGui.QTextEdit.mouseMoveEvent( s, s.remapMouseEvent( e ) )
+
+
+  def mousePressEvent( s, e ):
+
+    ## WORKAROUND: We need to clear the selection before the click, so the
+    ## drag and drop event that may otherwise follow doesn't get confused
+    ## by our remapped mouse coordinates. But doing so requires calling
+    ## setTextCursor(), and that method, itself, calls ensureCursorVisible(),
+    ## causing an unwanted scrolling of the viewport. So we 'pin down' the
+    ## viewport by saving the scrollbar's value and then restoring it, while
+    ## blocking its signals.
+
+    block = s.scrollbar.blockSignals( True )
+    val   = s.scrollbar.value()
+
+    cur = s.textCursor()
+
+    if cur.hasSelection() and e.buttons() & Qt.LeftButton:
+
+      cur = s.cursorForPosition( e.pos() )
+      s.setTextCursor( cur )
+
+    res = QtGui.QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
+
+    s.scrollbar.setValue( val )
+    s.scrollbar.blockSignals( block )
+
+    return res
+
+
+  def mouseReleaseEvent( s, e ):
+
+    ## WORKAROUND: The same workaround as above is used here. Without it, Qt's
+    ## calling of ensureCursorVisible() while handling the mouse release event
+    ## causes the viewport to scroll if the mouse is released in the split
+    ## area.
+
+    block = s.scrollbar.blockSignals( True )
+    val   = s.scrollbar.value()
+
+    res = QtGui.QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
+
+    s.scrollbar.setValue( val )
+    s.scrollbar.blockSignals( block )
+
+    return res
+
+
+  def mouseDoubleClickEvent( s, e ):
+
+    return QtGui.QTextEdit.mouseDoubleClickEvent( s, s.remapMouseEvent( e ) )
+
+
+  def splitY( s ):
+
+    return int( s.viewport().height() * s.SPLIT_FACTOR )
+
+
+  def splitTopRect( s ):
+
+    w = s.viewport().width()
+
+    return QtCore.QRect( 0, 0, w, s.splitY() )
+
+
+  def splitBottomRect( s ):
+
+    w = s.viewport().width()
+    h = s.viewport().height()
+
+    return QtCore.QRect( 0, s.splitY() + 1, w, h )
 
 
   def paintEvent( s, e ):
@@ -320,34 +442,46 @@ class WorldOutputUI( QtGui.QTextEdit ):
       QtGui.QTextEdit.paintEvent( s, e )
       return
 
-    ## Draw the top half of the viewport.
+    ## Draw the top half of the viewport if necessary.
 
-    height, width = s.viewport().height(), s.viewport().width()
-    split_y = int( height * s.SPLIT_FACTOR )
+    top_r = e.rect().intersected( s.splitTopRect() )
 
-    rect = e.rect().intersected( QtCore.QRect( 0, 0, width, split_y ) )
+    if not top_r.isEmpty():
+      QtGui.QTextEdit.paintEvent( s, QtGui.QPaintEvent( top_r ) )
 
-    if not rect.isEmpty():
-      QtGui.QTextEdit.paintEvent( s, QtGui.QPaintEvent( rect ) )
+    ## Likewise the bottom half.
+    ## Create painter.
+
+    p = QtGui.QPainter( s.viewport() )
 
     ## Draw separation line.
 
-    p = QtGui.QPainter( s.viewport() )
-    p.setClipRect( QtCore.QRectF( 0, split_y, width, height ) )
+    split_y = s.splitY()
+    width   = s.viewport().width()
+    height  = s.viewport().height()
 
-    p.setPen( qApp().palette().color( QtGui.QPalette.Window ) )
-    p.drawLine( 0, split_y, width, split_y )
+    if e.rect().contains( e.rect().left(), split_y ):
 
-    ## Draw the bottom of the document on the bottom half of the viewport.
+      p.setPen( qApp().palette().color( QtGui.QPalette.Window ) )
+      p.drawLine( 0, split_y, width, split_y )
+
+    ## Clip painter.
+
+    clip_r = e.rect().intersected( s.splitBottomRect() )
+
+    if clip_r.isEmpty():
+      return
 
     doc        = s.document()
     doc_height = doc.size().height()
 
+    p.setClipRect( clip_r )
     p.translate( 0, -doc_height + height )
 
+    ## Draw the bottom of the document on the bottom half of the viewport.
+
     ctx      = QtGui.QAbstractTextDocumentLayout.PaintContext()
-    ctx.clip = QtCore.QRectF( 0, doc_height - height + split_y + 1,
-                              width, height - split_y - 1 )
+    ctx.clip = QtCore.QRectF( clip_r.translated( 0, doc_height - height ) )
 
     cur = s.textCursor()
 
@@ -370,7 +504,7 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## Paging implementation:
 
     if s.atbottom and s.conf._paging:
-      s.last_page_position = s.scrollbar.value()
+      s.last_page_position = s.scrollbar.maximum()
 
 
   def moveScrollbarToBottom( s ):
@@ -399,10 +533,11 @@ class WorldOutputUI( QtGui.QTextEdit ):
 
   def setPageStep( s ):
 
-    pagestep = s.viewport().height() - 1
-
     if s.split_scrollback:
-      pagestep = int( pagestep * s.SPLIT_FACTOR )
+      pagestep = s.splitY()            - s.scrollbar.singleStep() - 1
+
+    else:
+      pagestep = s.viewport().height() - s.scrollbar.singleStep() - 1
 
     s.scrollbar.setPageStep( pagestep )
 
@@ -443,7 +578,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
    
   def formatAndDisplay( s, chunks ):
 
-    s.currently_updating = True
     s.textcursor.beginEditBlock()
 
     for chunk in chunks:
@@ -533,7 +667,6 @@ class WorldOutputUI( QtGui.QTextEdit ):
     ## We're done processing this set of chunks.
 
     s.textcursor.endEditBlock()
-    s.currently_updating = False
 
 
     ## And whew, we're done! Now let the application notify the user there's

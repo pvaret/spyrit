@@ -22,8 +22,8 @@
 ## storage.
 ##
 
-import sys
 import os
+import sys
 import time
 import zlib
 
@@ -31,7 +31,7 @@ from xml.dom.minidom    import parse
 from PyQt4              import QtCore
 
 SPYRCC_MAJ   = 0
-SPYRCC_MIN   = 8
+SPYRCC_MIN   = 9
 
 TAG_RCC      = "RCC"
 TAG_RESOURCE = "qresource"
@@ -41,18 +41,17 @@ F_NOFLAGS    = 0x00
 F_COMPRESSED = 0x01
 F_DIRECTORY  = 0x02
 
-HEADER = """# -*- coding: utf-8 -*-
+HEADER = """## -*- coding: utf-8 -*-
 
-# Resource object code
-#
-# Created: %s
-#      by: The Spyrit Qt Resource Compiler v%d.%d
-#
-# WARNING! All changes made in this file will be lost!
+## Resource object code
+##
+## Created: %s
+##      by: The Spyrit Qt Resource Compiler v%d.%d
+##
+## WARNING! All changes made in this file will be lost!
 
 import zlib
 
-from encodings import base64_codec
 from PyQt4     import QtCore
 
 """
@@ -76,7 +75,7 @@ class RCCFileInfo:
 
   def __init__( s, name, fDesc, locale, flags ):
 
-    ## Store resource data
+    ## Store resource data.
 
     s.flags  = flags
     s.name   = name
@@ -92,7 +91,7 @@ class RCCFileInfo:
 
   def copy( s ):
 
-    ## Return a deep copy of the object
+    ## Return a deep copy of the object.
 
     c = RCCFileInfo( s.name, s.fDesc, s.locale, s.flags )
 
@@ -110,16 +109,7 @@ class RCCFileInfo:
     ## Print out a number to a string in a binary format
 
     stg = ""
-    div = 1
-
-    if width == 2:
-      div = 256
-
-    elif width == 3:
-      div = 65536
-
-    elif width == 4:
-      div = 16777216
+    div = 2 ** ( 8 * ( width - 1 ) )
 
     while div >= 1:
 
@@ -277,16 +267,12 @@ class RCCResourceLibrary:
           child = child.nextSibling
           continue
 
-        if   child.nodeName == TAG_RESOURCE:
+        if child.nodeName == TAG_RESOURCE:
 
           lang   = child.getAttribute( "lang" ) or "C"
           prefix = child.getAttribute( "prefix" )
 
-          if not prefix.startswith( "/" ):
-            prefix = "/" + prefix
-
-          if not prefix.endswith( "/" ):
-            prefix += "/"
+          prefix = "/" + prefix.strip( "/" ) + "/"
 
           ## Now, handle files for this resource path
 
@@ -417,7 +403,7 @@ class RCCResourceLibrary:
 
     blobs = "".join( blobs )
     blobs = zlib.compress( blobs, 9 ).encode( "base64" )
-    print >> out, "qt_resource_data = \"\"\"\n%s\"\"\"\n" % blobs
+    print >> out, 'qt_resource_data = """\n%s"""\n' % blobs
 
     return True
 
@@ -456,7 +442,7 @@ class RCCResourceLibrary:
 
     strNames = "".join( strNames )
     strNames = zlib.compress( strNames, 9 ).encode( "base64" )
-    print >> out, "qt_resource_name = \"\"\"\n%s\"\"\"\n" % strNames
+    print >> out, 'qt_resource_name = """\n%s"""\n' % strNames
 
     return True
 
@@ -529,7 +515,7 @@ class RCCResourceLibrary:
     structs = "".join( structs )
     structs = zlib.compress( structs, 9 ).encode( "base64" )
 
-    print >> out, "qt_resource_struct = \"\"\"\n%s\"\"\"\n" % structs
+    print >> out, 'qt_resource_struct = """\n%s"""\n' % structs
 
     return True
 
@@ -552,50 +538,30 @@ class RCCResourceLibrary:
     ## Print out compiled resource file
 
     if s.verbose:
-        print "Outputting code"
+        print "Outputting code."
 
     if not s.writeHeader( out ):
-        print "Couldn't write header"
+        print "Couldn't write header!"
         return False
 
     if not s.writeDataBlobs( out ):
-        print "Couldn't write data blob"
+        print "Couldn't write data blob!"
         return False
 
     if not s.writeDataNames( out ):
-        print "Couldn't write file names"
+        print "Couldn't write file names!"
         return False
 
     if not s.writeDataStructure( out ):
-        print "Couldn't write data tree"
+        print "Couldn't write data tree!"
         return False
 
     if not s.writeInitializer( out ):
-        print "Couldn't write footer"
+        print "Couldn't write footer!"
         return False
 
     return True
 
-
-def usage( err = "" ):
-
-  ## SpyRCC help
-
-  print "Spyrit Qt Resource Compiler v%d.%d" % ( SPYRCC_MAJ, SPYRCC_MIN )
-
-  if err:
-    print "%s: %s" % ( sys.argv[0], err )
-
-  print "Usage: %s  [options] <inputs>\n\n" \
-        "Options:\n" \
-        "\t-o file           Write output to file rather than stdout\n" \
-        "\t-name name        Create an external initialization function with name\n" \
-        "\t-threshold level  Threshold to consider compressing files\n" \
-        "\t-compress level   Compress input files by level\n" \
-        "\t-root path        Prefix resource access path with root path\n" \
-        "\t-no-compress      Disable all compression\n" \
-        "\t-version          Display version\n" \
-        "\t-help             Display this information\n" % sys.argv[0]
 
 
 def main():
@@ -609,58 +575,54 @@ def main():
   cmpThres = 70
   encode   = True
   qrcFiles = []
-  errMsg   = ""
 
   ## Handle command-line options here
 
-  for i in range( len( sys.argv[1:] ) ):
+  from optparse import OptionParser
 
-    if sys.argv[i].startswith( "-" ):
+  parser = OptionParser( usage="%prog [options] <QRC files>",
+                         version="Spyrit Qt Resource Compiler v%d.%d" \
+                                 % ( SPYRCC_MAJ, SPYRCC_MIN ) )
 
-      opt = sys.argv[i][1:]
+  parser.add_option( "-o", "--output", dest="outFileName",
+                     help="output to FILE rather than stdout",
+                     metavar="FILE" )
 
-      if opt == "o":
+  options, args = parser.parse_args()
 
-        if not i < len( sys.argv ):
-          errMsg = "Missing output name"
-          break
+  if not args:
+    parser.error( "No QRC file provided!" )
 
-        i += 1
-        outFileName = sys.argv[i]
+  outFileName = options.outFileName
+
+  for arg in args:
+
+    if os.path.exists( arg ):
+      qrcFiles.append( arg )
 
     else:
+      parser.error( "File %s doesn't exist!" % arg )
+  
+  rcl = RCCResourceLibrary( args )
 
-      if os.path.exists( sys.argv[i] ):
-        qrcFiles.append( sys.argv[i] )
-
-      else:
-        errMsg = "File %s doesn't exist" % sys.argv[i]
-        break
-
-
-  if errMsg or len( sys.argv ) < 2:
-    usage( errMsg )
+  if not outFileName:
+    outFile = sys.stdout
 
   else:
-    rcl = RCCResourceLibrary( sys.argv[1:] )
 
-    if not outFile:
-      outFile = sys.stdout
+    try:
+      outFile = file( outFileName, "w" )
 
-    else:
+    except IOError:
+      print "Unable to open %s for writing!" % outFileName
+      sys.exit()
 
-      try:
-        outFile = open( outFileName, "w" )
+  rcl.output( outFile )
 
-      except:
-        print "Unable to open %s for writing" % outFileName
+  ## Tidy up
 
-    rcl.output( outFile )
-
-    ## Tidy up
-
-    if outFile != sys.stdout:
-      outFile.close()
+  if outFile != sys.stdout:
+    outFile.close()
 
 
 if __name__ == "__main__":

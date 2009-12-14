@@ -24,10 +24,10 @@ from localqt           import *
 
 class SearchManager:
 
-  def __init__( s, textedit ):
+  def __init__( s, textedit, conf ):
 
     s.textedit = textedit
-    s.conf     = textedit.conf
+    s.conf     = conf
 
     s.cursor          = None
     s.previous_search = None

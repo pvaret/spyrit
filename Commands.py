@@ -146,7 +146,7 @@ class Commands:
     u"find [<string>]: Searches for <string> in the output window." \
     u"If <string> is omitted, repeat the last search."
 
-    s.world.worldui.outputui.findInHistory( u" ".join( args ) )
+    s.world.worldui.output_manager.findInHistory( u" ".join( args ) )
 
 
   def command_Raise( s, *args ):

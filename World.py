@@ -96,7 +96,7 @@ class World( QtCore.QObject ):
   def info( s, text ):
 
     if s.worldui:
-      s.worldui.outputui.insertInfoText( text )
+      s.worldui.output_manager.insertInfoText( text )
 
 
   def connectToWorld( s ):

@@ -23,14 +23,15 @@
 
 from localqt import *
 
-from ActionSet      import ActionSet
-from TabDelegate    import TabDelegate
-from WorldInputUI   import WorldInputUI
-from WorldOutputUI  import WorldOutputUI
-from Autocompleter  import Autocompleter
+from ActionSet          import ActionSet
+from TabDelegate        import TabDelegate
+from WorldInputUI       import WorldInputUI
+from Autocompleter      import Autocompleter
+from OutputManager      import OutputManager
+from SplittableTextView import SplittableTextView
 
-from Singletons     import singletons
-from PipelineChunks import chunktypes
+from Singletons         import singletons
+from PipelineChunks     import chunktypes
 
 
 
@@ -77,8 +78,10 @@ class WorldUI( QtGui.QSplitter ):
 
     ## Setup input and output UI.
 
-    s.outputui = WorldOutputUI( s, world )
+    s.outputui = SplittableTextView( s )
     s.addWidget( s.outputui )
+
+    s.output_manager = OutputManager( world, s.outputui )
 
     s.inputui = WorldInputUI( s, world )
     s.addWidget( s.inputui )
@@ -88,11 +91,12 @@ class WorldUI( QtGui.QSplitter ):
     s.secondaryinputui.hide()
    
     connect( s.inputui,          SIGNAL( "textSent( str )" ),
-      s.outputui.userSentText )
-    connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
-      s.outputui.userSentText )
+      s.outputui.pingPage )
 
-    world.socketpipeline.addSink( s.outputui.formatAndDisplay )
+    connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
+      s.outputui.pingPage )
+
+    world.socketpipeline.addSink( s.output_manager.formatAndDisplay )
 
     s.setFocusProxy( s.inputui )
 
@@ -129,6 +133,7 @@ class WorldUI( QtGui.QSplitter ):
 
     connect_action    = s.actionset.bindAction( "connect",
                                               s.world.connectToWorld )
+
     disconnect_action = s.actionset.bindAction( "disconnect",
                                               s.world.disconnectFromWorld )
 
@@ -137,6 +142,7 @@ class WorldUI( QtGui.QSplitter ):
     
     startlog_action   = s.actionset.bindAction( "startlog",
                                               s.world.startLogging )
+
     stoplog_action    = s.actionset.bindAction( "stoplog",
                                               s.world.stopLogging )
 
@@ -294,7 +300,7 @@ class WorldUI( QtGui.QSplitter ):
     s.inputui.commands.world      = None
     s.inputui.commands            = None
     s.tab.widget                  = None
-    s.outputui.world              = None
+    s.output_manager.world        = None
     s.inputui.world               = None
     s.inputui.history.inputwidget = None
     s.actionset.parent            = None
@@ -315,6 +321,7 @@ class WorldUI( QtGui.QSplitter ):
     s.inputui          = None
     s.secondaryinputui = None
     s.outputui         = None
+    s.output_manager   = None
     s.actionset        = None
     s.toolbar          = None
     s.tab              = None

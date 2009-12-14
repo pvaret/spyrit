@@ -51,7 +51,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.scrollbar = s.verticalScrollBar()
 
     s.paging             = True
-    s.last_page_position = 0
+    s.next_page_position = 0
     s.previous_selection = -1, -1
 
     s.font_name        = None
@@ -130,7 +130,8 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     s.setStyleSheet( stylesheet )
 
-    s.scrollbar.setSingleStep( s.viewport().fontMetrics().lineSpacing() + 1 )
+    s.scrollbar.setSingleStep( s.viewport().fontMetrics().lineSpacing() + 2 )
+    s.setPageStep()
 
 
   def setFontFamily( s, font_name ):
@@ -166,6 +167,8 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     s.split_scrollback = split_scrollback
 
+    s.setPageStep()
+
     if not s.atbottom:
       s.update()
 
@@ -178,10 +181,17 @@ class SplittableTextView( QtGui.QTextEdit ):
     ## When the user moves back to the bottom of the view, paging is reset:
 
     if s.atbottom and previous != s.atbottom:
-      s.last_page_position = s.scrollbar.maximum()
+      s.next_page_position = s.nextPageForPos( pos )
 
     if platformSpecific.should_repaint_on_scroll:
       s.update()
+
+
+  def nextPageForPos( s, pos ):
+
+    l, t, r, b = s.getContentsMargins()
+
+    return pos + s.viewport().height() - s.scrollbar.singleStep() - t - b
 
 
   def remapMouseEvent( s, e ):
@@ -344,14 +354,11 @@ class SplittableTextView( QtGui.QTextEdit ):
     ## Paging implementation:
 
     if s.atbottom and s.paging:
-      s.last_page_position = s.scrollbar.maximum()
+      s.next_page_position = s.nextPageForPos( s.scrollbar.value() )
 
 
   def moveScrollbarToBottom( s ):
 
-    ## Since this triggers a valueChanged() signal, s.atbottom will be set
-    ## to True automatically.
- 
     s.scrollbar.setValue( s.scrollbar.maximum() )
 
 
@@ -361,17 +368,20 @@ class SplittableTextView( QtGui.QTextEdit ):
 
 
   def onRangeChanged( s, min, max ):
-    
+
     ## 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'
     ## signal.
 
-    if s.atbottom and s.scrollbar.value() != max:
+    pos = s.scrollbar.value()
 
-      next_page_position = s.last_page_position + s.scrollbar.pageStep() \
-                                                - s.scrollbar.singleStep()
+    if s.atbottom and pos != max:
 
-      if s.paging and s.scrollbar.value() >= next_page_position:
-        s.scrollbar.setValue( next_page_position )
+      if s.paging and max > s.next_page_position:
+
+        s.atbottom = False
+
+        if pos < s.next_page_position:
+          s.scrollbar.setValue( s.next_page_position )
 
       else:
         s.moveScrollbarToBottom()
@@ -380,10 +390,10 @@ class SplittableTextView( QtGui.QTextEdit ):
   def setPageStep( s ):
 
     if s.split_scrollback:
-      pagestep = s.splitY()            - s.scrollbar.singleStep() - 1
+      pagestep = s.splitY()            - s.scrollbar.singleStep()
 
     else:
-      pagestep = s.viewport().height() - s.scrollbar.singleStep() - 1
+      pagestep = s.viewport().height() - s.scrollbar.singleStep()
 
     s.scrollbar.setPageStep( pagestep )
 
@@ -406,7 +416,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
 
   def pageUp( s ):
-   
+  
     s.setPageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )
    

@@ -130,8 +130,23 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     s.setStyleSheet( stylesheet )
 
-    s.scrollbar.setSingleStep( s.viewport().fontMetrics().lineSpacing() + 2 )
+    s.scrollbar.setSingleStep( s.lineHeight() )
     s.setPageStep()
+
+
+  def lineHeight( s ):
+
+    metrics = s.viewport().fontMetrics()
+
+    height = metrics.ascent() + metrics.descent() + 1
+
+    ## Leading is ignored if negative, which can happen on certain platforms,
+    ## such as X11.
+
+    if metrics.leading() > 0:
+      height += metrics.leading()
+
+    return height
 
 
   def setFontFamily( s, font_name ):

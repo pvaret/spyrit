@@ -175,13 +175,17 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def onScroll( s, pos ):
 
-    previous   = s.atbottom
     s.atbottom = ( pos == s.scrollbar.maximum() )
 
     ## When the user moves back to the bottom of the view, paging is reset:
 
-    if s.atbottom and previous != s.atbottom:
-      s.next_page_position = s.nextPageForPos( pos )
+    if s.atbottom:
+
+      if s.next_page_position == -1:
+        s.next_page_position = s.nextPageForPos( pos )
+
+    else:
+      s.next_page_position = -1
 
     if platformSpecific.should_repaint_on_scroll:
       s.update()
@@ -374,16 +378,36 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     pos = s.scrollbar.value()
 
-    if s.atbottom and pos != max:
+    ## Handle rare case where the view got smaller, for instance if the user
+    ## switches to a smaller font:
 
-      if s.paging and max > s.next_page_position:
+    if pos > max:
+      return
 
-        s.atbottom = False
+    if s.next_page_position > s.nextPageForPos( max ):
+      s.next_page_position = -1
 
-        if pos < s.next_page_position:
-          s.scrollbar.setValue( s.next_page_position )
+    if pos != max and s.atbottom:  ## Do we need to scroll?
+
+      if s.paging and s.next_page_position != -1:
+        ## Case 1: We are paging and have a valid next page break.
+
+        if max > s.next_page_position:
+          ## Case 1.1: Scrolling would move us past the next page break.
+
+          if pos != s.next_page_position:
+            s.scrollbar.setValue( s.next_page_position )
+
+          else:  ## If the scrollbar value didn't change even though we
+                 ## switched to paging mode, trigger scroll event manually.
+            s.onScroll( pos )
+
+        else:
+          ## Case 1.2: Not at page break yet. Proceed as usual for now.
+          s.moveScrollbarToBottom()
 
       else:
+        ## Case 2: We are not paging. Proceed as usual.
         s.moveScrollbarToBottom()
 
 

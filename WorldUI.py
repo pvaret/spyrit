@@ -128,6 +128,8 @@ class WorldUI( QtGui.QSplitter ):
     s.actionset.bindAction( "stepdown", s.outputui.stepDown )
     s.actionset.bindAction( "pageup",   s.outputui.pageUp )
     s.actionset.bindAction( "pagedown", s.outputui.pageDown )
+    s.actionset.bindAction( "home",     s.outputui.moveScrollbarToTop )
+    s.actionset.bindAction( "end",      s.outputui.moveScrollbarToBottom )
 
     s.actionset.bindAction( "toggle2ndinput", s.toggleSecondaryInput )
 

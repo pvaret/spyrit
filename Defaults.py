@@ -85,10 +85,13 @@ DEFAULTS = (
   ( 'shortcut_disconnect',     u"Ctrl+Shift+D",    STR ),
   ( 'shortcut_historyup',      u"Ctrl+Up",         STR ),
   ( 'shortcut_historydown',    u"Ctrl+Down",       STR ),
+  ( 'shortcut_autocomplete',   u"Tab",             STR ),
   ( 'shortcut_pageup',         u"PgUp",            STR ),
   ( 'shortcut_pagedown',       u"PgDown",          STR ),
   ( 'shortcut_stepup',         u"Ctrl+Shift+Up",   STR ),
   ( 'shortcut_stepdown',       u"Ctrl+Shift+Down", STR ),
+  ( 'shortcut_home',           u"Ctrl+Home",       STR ),
+  ( 'shortcut_end',            u"Ctrl+End",        STR ),
 
   ( 'shortcut_startlog',       None,               STR ),
   ( 'shortcut_stoplog',        None,               STR ),

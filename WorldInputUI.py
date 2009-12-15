@@ -45,8 +45,9 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     s.actionset = ActionSet( s )
 
-    s.actionset.bindAction( "historyup",   s.historyUp )
-    s.actionset.bindAction( "historydown", s.historyDown )
+    s.actionset.bindAction( "historyup",    s.historyUp )
+    s.actionset.bindAction( "historydown",  s.historyDown )
+    s.actionset.bindAction( "autocomplete", s.autocomplete )
 
     s.observer = ConfigObserver( s.conf )
     s.observer.addCallback(
@@ -60,7 +61,6 @@ class WorldInputUI( QtGui.QTextEdit ):
                           )
 
     connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
-    connect( s, SIGNAL( "tabPressed()" ),    s.autocomplete )
 
 
   def refresh( s ):
@@ -98,21 +98,33 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def keyPressEvent( s, e ):
 
+    ## Custom key sequence handler: since all our shortcuts are configurable,
+    ## and are allowed to override the default QTextEdit shortcuts, we have to
+    ## override the key event handler to preempt the use of those shortcuts.
+
+    key = QtGui.QKeySequence( int( e.modifiers() ) + e.key() )
+
+    for a in s.actions() + s.parentWidget().actions():
+      for shortcut in a.shortcuts():
+
+        if key.matches( shortcut ) == QtGui.QKeySequence.ExactMatch:
+
+          a.trigger()
+          e.accept()
+          return
+
+    ## Special case: disallow overriding of Return/Enter.
+
     alt_ctrl_shift = e.modifiers() & \
                    ( Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier )
 
-    if e.key() in [ Qt.Key_Return, Qt.Key_Enter ] \
+    if e.key() in ( Qt.Key_Return, Qt.Key_Enter ) \
       and alt_ctrl_shift == Qt.NoModifier:
 
       emit( s, SIGNAL( "returnPressed()" ) )
       e.accept()
 
-    elif e.key() == Qt.Key_Tab and e.modifiers() == Qt.NoModifier:
-      emit( s, SIGNAL( "tabPressed()" ) )
-      e.accept()
-
     else:
-
       QtGui.QTextEdit.keyPressEvent( s, e )
 
 

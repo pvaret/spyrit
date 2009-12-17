@@ -378,7 +378,15 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def moveScrollbarToBottom( s ):
 
-    s.scrollbar.setValue( s.scrollbar.maximum() )
+    max = s.scrollbar.maximum()
+
+    if s.scrollbar.value() == max:
+
+      ## Trigger onScroll event even if not moving:
+      s.onScroll( max )
+
+    else:
+      s.scrollbar.setValue( max )
 
 
   def moveScrollbarToTop( s ):
@@ -413,7 +421,7 @@ class SplittableTextView( QtGui.QTextEdit ):
           if pos != s.next_page_position:
             s.scrollbar.setValue( s.next_page_position )
 
-          else:  ## If the scrollbar value didn't change even though we
+          else:  ## If the scrollbar value shouldn't change even though we
                  ## switched to paging mode, trigger scroll event manually.
             s.onScroll( pos )
 

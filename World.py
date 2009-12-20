@@ -57,8 +57,8 @@ class World( QtCore.QObject ):
     s.conf    = conf
     s.worldui = None
     s.logger  = Logger( s )
-    
-    connect( s, SIGNAL( "connected( bool )" ), s.logger.connectionSlot ) 
+
+    connect( s, SIGNAL( "connected( bool )" ), s.connectionStatusChanged )
 
     s.status = Status.DISCONNECTED
 
@@ -108,7 +108,7 @@ class World( QtCore.QObject ):
   def disconnectFromWorld( s ):
 
     if s.isConnected():
-    
+
       messagebox = QtGui.QMessageBox( singletons.mw )
       messagebox.setWindowTitle( u"Confirm disconnect" )
       messagebox.setIcon( QtGui.QMessageBox.Question )
@@ -126,9 +126,20 @@ class World( QtCore.QObject ):
 
     if s.isConnected():
       s.socketpipeline.disconnectFromHost()
-      
+
     else:
       s.socketpipeline.abort()
+
+
+  def connectionStatusChanged( s, connected ):
+
+    if connected:
+
+      if s.conf._autolog:
+        s.startLogging()
+
+    else:
+      s.stopLogging()
 
 
   def startLogging( s ):
@@ -154,7 +165,7 @@ class World( QtCore.QObject ):
     previous_status = s.status
 
     for chunk in chunks:
-      
+
       if not chunk.chunktype == ChunkTypes.NETWORK:
         continue
 

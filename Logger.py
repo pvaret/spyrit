@@ -110,18 +110,6 @@ class Logger( QtCore.QObject ):
       s.buffer = []
 
 
-  def connectionSlot( s, connected ):
-    
-    if not connected:
-    
-      ## TODO: Most clients I know of close logs at disconnect time but it should
-      ##       probably be a config parameter
-    
-      s.stopLogging()
-      
-    ## TODO: Handle automatic logging at connection time
-
-
   def startLogging( s, filename, backlog="" ):
 
     ## TODO: handle toolbar / statusbar related stuff

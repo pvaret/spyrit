@@ -40,7 +40,8 @@ DEFAULTS = (
   ( 'ssl',                 False, BOOL ),  ## By default, no SSL on sockets.
 
   ( 'logfile_name',        u"[WORLDNAME]-%Y.%m.%d.log", STR ),
-  ( 'logfile_dir',         LOG_DIR, STR ),
+  ( 'logfile_dir',         LOG_DIR,                     STR ),
+  ( 'autolog',             False,                       BOOL ),
 
   ( 'show_splashscreen', False,        BOOL ),
   ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),

@@ -242,9 +242,9 @@ class OutputManager:
 
   def refresh( s ):
 
-    s.textview.setFontFamily(      s.conf._output_font_name )
-    s.textview.setFontSize(        s.conf._output_font_size )
-    s.textview.setBackgroundColor( s.conf._output_background_color )
+    s.textview.setConfiguration( s.conf._output_font_name,
+                                 s.conf._output_font_size,
+                                 s.conf._output_background_color )
 
 
   def setupScrollback( s ):

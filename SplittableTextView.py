@@ -28,6 +28,77 @@ from PlatformSpecific import platformSpecific
 
 
 
+class LineCount( QtGui.QLabel ):
+
+  def __init__( s, parent ):
+
+    QtGui.QLabel.__init__( s, parent )
+
+    s.setAutoFillBackground( True )
+    s.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
+    s.hide()
+
+    s.anchor_x   = 0
+    s.anchor_y   = 0
+    s.line_count = 0
+
+    s.previous_size = QtCore.QSize()
+
+    s.updateTimer = QtCore.QTimer()
+    s.updateTimer.setSingleShot( True )
+
+    connect( s.updateTimer, SIGNAL( "timeout()" ), s.applyChanges )
+
+
+  def setAnchor( s, x, y ):
+
+    s.anchor_x = x
+    s.anchor_y = y
+
+    s.reposition()
+
+
+  def setLineCount( s, count ):
+
+    s.line_count = count
+
+    if not s.updateTimer.isActive():
+      s.updateTimer.start()
+
+
+  def applyChanges( s ):
+
+    if s.isVisible() and s.line_count == 0:
+      s.hide()
+
+    elif not s.isVisible() and s.line_count > 0:
+      s.show()
+
+    count = s.line_count
+    txt = ( count < 2 ) and " (%d more line) " or " (%d more lines) "
+    s.setText( txt % count )
+
+    new_size = s.sizeHint()
+
+    if new_size != s.previous_size:
+
+      s.resize( new_size )
+      s.previous_size = new_size
+      s.reposition()
+
+
+  def reposition( s ):
+
+    size = s.size()
+    s.move( s.anchor_x - size.width(), s.anchor_y - size.height() )
+
+
+
+
+
+
+
+
 class SplittableTextView( QtGui.QTextEdit ):
 
   SPLIT_FACTOR = 0.84  ## Corresponds to 1/6th of the height.
@@ -50,19 +121,10 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.atbottom  = True
     s.scrollbar = s.verticalScrollBar()
 
+    s.split_scrollback   = True
     s.paging             = True
     s.next_page_position = 0
     s.previous_selection = -1, -1
-
-    s.font_name        = None
-    s.font_size        = 0
-    s.background_color = None
-
-    s.refresh_timer = QtCore.QTimer()
-    s.refresh_timer.setInterval( 0 )
-    s.refresh_timer.setSingleShot( True )
-
-    connect( s.refresh_timer, SIGNAL( "timeout()" ), s.applyConfiguration )
 
     connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
     connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
@@ -70,6 +132,9 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     connect( s, SIGNAL( "textChanged()" ),      s.perhapsRepaintText )
     connect( s, SIGNAL( "selectionChanged()" ), s.perhapsRepaintSelection )
+
+    s.more = LineCount( s )
+    s.setMoreAnchor()
 
 
   def perhapsRepaintText( s ):
@@ -114,14 +179,14 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.previous_selection = sel.position(), sel.anchor()
 
 
-  def applyConfiguration( s ):
+  def setConfiguration( s, font_name, font_size, background_color ):
 
     stylesheet = "QTextEdit {\n"
 
     for key, value in ( 
-                        ( 'font-family: "%s"',    s.font_name ),
-                        ( 'font-size: %dpt',      s.font_size ),
-                        ( 'background-color: %s', s.background_color ),
+                        ( 'font-family: "%s"',    font_name ),
+                        ( 'font-size: %dpt',      font_size ),
+                        ( 'background-color: %s', background_color ),
                       ):
       if value:
         stylesheet += ( key % value ) + ';\n'
@@ -149,30 +214,6 @@ class SplittableTextView( QtGui.QTextEdit ):
     return height
 
 
-  def setFontFamily( s, font_name ):
-
-    s.font_name = font_name
-
-    if not s.refresh_timer.isActive():
-      s.refresh_timer.start()
-
-
-  def setFontSize( s, font_size ):
-
-    s.font_size = font_size
-
-    if not s.refresh_timer.isActive():
-      s.refresh_timer.start()
-
-
-  def setBackgroundColor( s, color ):
-
-    s.background_color = color
-
-    if not s.refresh_timer.isActive():
-      s.refresh_timer.start()
-
-
   def setPaging( s, is_paging ):
 
     s.paging = is_paging
@@ -183,6 +224,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.split_scrollback = split_scrollback
 
     s.setPageStep()
+    s.setMoreAnchor()
 
     if not s.atbottom:
       s.update()
@@ -205,12 +247,22 @@ class SplittableTextView( QtGui.QTextEdit ):
     if platformSpecific.should_repaint_on_scroll:
       s.update()
 
+    s.more.setLineCount( s.linesRemaining() )
+
 
   def nextPageForPos( s, pos ):
 
     l, t, r, b = s.getContentsMargins()
 
     return pos + s.viewport().height() - s.scrollbar.singleStep() - t - b
+
+
+  def linesRemaining( s ):
+
+    sb = s.scrollbar
+    max, val, step = sb.maximum(), sb.value(), sb.singleStep()
+
+    return ( max - val + step - 1 ) / step
 
 
   def remapMouseEvent( s, e ):
@@ -433,6 +485,8 @@ class SplittableTextView( QtGui.QTextEdit ):
         ## Case 2: We are not paging. Proceed as usual.
         s.moveScrollbarToBottom()
 
+    s.more.setLineCount( s.linesRemaining() )
+
 
   def setPageStep( s ):
 
@@ -476,9 +530,25 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def resizeEvent( s, e ):
 
-    s.onRangeChanged( s.scrollbar.minimum(), s.scrollbar.maximum() )
+    res = QtGui.QTextEdit.resizeEvent( s, e )
 
-    return QtGui.QTextEdit.resizeEvent( s, e )
+    s.onRangeChanged( s.scrollbar.minimum(), s.scrollbar.maximum() )
+    s.setMoreAnchor()
+
+    return res
+
+
+  def setMoreAnchor( s ):
+
+    x = s.viewport().width()
+
+    if s.split_scrollback:
+      y = s.splitY()
+
+    else:
+      y = s.viewport().height()
+
+    s.more.setAnchor( x, y )
 
 
   def __del__( s ):

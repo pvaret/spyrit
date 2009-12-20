@@ -1,7 +1,5 @@
 This is a list of features that need implementing sooner or later.
 
-* Bugfix: don't extend selection when appending text while the selection anchor is at document's end.
-* Paging mode, where scrolling automatically stops after one page of new text.
 * GUI for search.
 * Bookmarking of lines in output.
 * Option parsing for commands.
@@ -11,5 +9,4 @@ This is a list of features that need implementing sooner or later.
 * Switch between on/off icons rather than having two of them side by side.
 * Opera-like default page.
 * Split state data and configuration.
-* Investigate possibility and benefits of replacing QTextEdits with QPlainTextEdits.
 * Investigate possibility to unwind circular references by introducing weak references to World object.

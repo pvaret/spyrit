@@ -47,8 +47,8 @@ def test_pyqt4():
 
 def test_sip_version():
 
-  REQUIRED_MAJOR      = 4
-  REQUIRED_MINOR      = 5
+  REQUIRED_MAJOR = 4
+  REQUIRED_MINOR = 5
 
   import sip
 

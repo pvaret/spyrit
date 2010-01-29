@@ -81,6 +81,8 @@ class WorldUI( QtGui.QSplitter ):
     s.outputui = SplittableTextView( s )
     s.addWidget( s.outputui )
 
+    s.outputui.setFocusProxy( s )
+
     s.output_manager = OutputManager( world, s.outputui )
 
     s.inputui = WorldInputUI( s, world )

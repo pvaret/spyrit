@@ -111,9 +111,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.setReadOnly( True )
     s.setUndoRedoEnabled( False )
     s.setAutoFormatting( QtGui.QTextEdit.AutoNone )
-    s.setTabChangesFocus( True )
     s.viewport().setCursor( Qt.ArrowCursor )
-    s.setFocusPolicy( Qt.NoFocus )
 
     s.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
     s.setVerticalScrollBarPolicy(   Qt.ScrollBarAlwaysOn )
@@ -270,10 +268,10 @@ class SplittableTextView( QtGui.QTextEdit ):
     if s.atbottom or not s.split_scrollback:
       return e
 
-    height  = s.viewport().height()
-
     if e.y() <= s.splitY():
       return e
+
+    height  = s.viewport().height()
 
     y = e.y() + s.document().size().height() - height - s.scrollbar.value()
 
@@ -408,12 +406,20 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     cur = s.textCursor()
 
+    palette = s.palette()
+
+    QPalette = QtGui.QPalette
+
+    focus  = ( qApp().focusWidget() is s )
+    cgroup = not focus and QPalette.Inactive or QPalette.Active
+
     if cur.hasSelection():
 
       sel        = QtGui.QAbstractTextDocumentLayout.Selection()
       sel.cursor = cur
-      sel.format.setBackground( s.palette().highlight() )
-      sel.format.setForeground( s.palette().highlightedText() )
+      sel.format.setBackground( palette.brush( cgroup, QPalette.Highlight) )
+      sel.format.setForeground( palette.brush( cgroup, \
+                                               QPalette.HighlightedText ) )
 
       ctx.selections = [ sel ]
 

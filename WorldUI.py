@@ -98,7 +98,7 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
       s.outputui.pingPage )
 
-    world.socketpipeline.addSink( s.output_manager.formatAndDisplay )
+    world.socketpipeline.addSink( s.output_manager.processChunks )
 
     s.setFocusProxy( s.inputui )
 

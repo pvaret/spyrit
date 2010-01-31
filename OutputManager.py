@@ -262,104 +262,94 @@ class OutputManager:
     return s.searchmanager.find( string )
 
 
-  def formatAndDisplay( s, chunks ):
-
+  def processChunks( s, chunks ):
+    
     s.textcursor.beginEditBlock()
 
     for chunk in chunks:
 
-      ## Then process each chunk according to its type.
-
-      ## Text:
-
       if   chunk.chunktype == chunktypes.TEXT:
         s.insertText( chunk.data )
 
+      elif chunk.chunktype == chunktypes.FLOWCONTROL:
+        s.processFlowControlChunk( chunk.data )
 
-      ## Newline:
-
-      elif     chunk.chunktype == chunktypes.FLOWCONTROL \
-           and chunk.data == FlowControlChunk.LINEFEED:
-        s.insertNewLine()
-
-
-      ## Formatting information:
-      
       elif chunk.chunktype == chunktypes.FORMAT:
-
-        for param, value in chunk.data:
-
-          if   param == "RESET":
-            s.charformat.reset()
-
-          elif param == "BOLD":
-            s.charformat.setHighlighted( value )
-
-          elif param == "ITALIC":
-            s.charformat.setFontItalic( value )
-
-          elif param == "UNDERLINE":
-            s.charformat.setFontUnderline( value )
-
-          elif param == "FG":
-            s.charformat.setFgColor( value != "DEFAULT" and value or None )
-
-          elif param == "BG":
-            s.charformat.setBgColor( value != "DEFAULT" and value or None )
-
-
-      ## Network events:
+        s.processFormatChunk( chunk.data )
 
       elif chunk.chunktype == chunktypes.NETWORK:
-
-        ## Handle the network event...
-
-        if   chunk.data == NetworkChunk.CONNECTING:
-          s.insertInfoText( u"Connecting..." )
-
-        elif chunk.data == NetworkChunk.CONNECTED:
-
-          if not s.was_connected:
-            s.insertInfoText( u"Connected!" )
-            s.was_connected = True
-
-        elif chunk.data == NetworkChunk.ENCRYPTED:
-          s.insertInfoText( u"SSL encryption started." )
-
-        elif chunk.data == NetworkChunk.DISCONNECTED:
-
-          if s.was_connected:
-            s.insertInfoText( u"Connection closed." )
-            s.was_connected = False
-
-        elif chunk.data == NetworkChunk.RESOLVING:
-          s.insertInfoText( u"Resolving %s ..." % s.world.host() )
-
-        ## ... Or the network error.
-
-        elif chunk.data == NetworkChunk.CONNECTIONREFUSED:
-          s.insertInfoText( u"Connection refused." )
-
-        elif chunk.data == NetworkChunk.HOSTNOTFOUND:
-          s.insertInfoText( u"Host not found." )
-
-        elif chunk.data == NetworkChunk.TIMEOUT:
-          s.insertInfoText( u"Network timeout." )
-
-        elif chunk.data == NetworkChunk.OTHERERROR:
-          s.insertInfoText( u"Network error." )
-
-
-    ## We're done processing this set of chunks.
+        s.processNetworkChunk( chunk.data )
 
     s.textcursor.endEditBlock()
 
-
-    ## And whew, we're done! Now let the application notify the user there's
-    ## some new stuff in the window. :)
-
     if check_alert_is_available() and s.conf._alert_on_activity: 
       qApp().alert( s.textview.window() )
+
+
+  def processFlowControlChunk( s, event ):
+
+    if event == FlowControlChunk.LINEFEED:
+      s.insertNewLine()
+
+
+  def processFormatChunk( s, format ):
+
+    for param, value in format:
+
+      if   param == "RESET":
+        s.charformat.reset()
+
+      elif param == "BOLD":
+        s.charformat.setHighlighted( value )
+
+      elif param == "ITALIC":
+        s.charformat.setFontItalic( value )
+
+      elif param == "UNDERLINE":
+        s.charformat.setFontUnderline( value )
+
+      elif param == "FG":
+        s.charformat.setFgColor( value != "DEFAULT" and value or None )
+
+      elif param == "BG":
+        s.charformat.setBgColor( value != "DEFAULT" and value or None )
+
+
+  def processNetworkChunk( s, event ):
+
+    if   event == NetworkChunk.CONNECTING:
+      s.insertInfoText( u"Connecting..." )
+
+    elif event == NetworkChunk.CONNECTED:
+
+      if not s.was_connected:
+        s.insertInfoText( u"Connected!" )
+        s.was_connected = True
+
+    elif event == NetworkChunk.ENCRYPTED:
+      s.insertInfoText( u"SSL encryption started." )
+
+    elif event == NetworkChunk.DISCONNECTED:
+
+      if s.was_connected:
+        s.insertInfoText( u"Connection closed." )
+        s.was_connected = False
+
+    elif event == NetworkChunk.RESOLVING:
+      s.insertInfoText( u"Resolving %s ..." % s.world.host() )
+
+
+    elif event == NetworkChunk.CONNECTIONREFUSED:
+      s.insertInfoText( u"Connection refused." )
+
+    elif event == NetworkChunk.HOSTNOTFOUND:
+      s.insertInfoText( u"Host not found." )
+
+    elif event == NetworkChunk.TIMEOUT:
+      s.insertInfoText( u"Network timeout." )
+
+    elif event == NetworkChunk.OTHERERROR:
+      s.insertInfoText( u"Network error." )
 
 
   def insertNewLine( s ):

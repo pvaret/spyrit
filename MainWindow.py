@@ -140,13 +140,14 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.initial_style = QtGui.QApplication.style().objectName()
 
-    world_section = config._worlds_section
-    s.worldobserver = ConfigObserver( config.getSection( world_section ) )
-    s.worldobserver.addCallback( config.SECTIONS, s.refreshMenuWorlds )
-
     s.observer = ConfigObserver( config )
     s.observer.addCallback( "widget_style", s.refreshStyle )
     s.observer.addCallback( "toolbar_icon_size", s.refreshIcons )
+
+    s.refreshMenuWorlds()
+
+    connect( singletons.worldsmanager, SIGNAL( "worldListChanged()" ),
+             s.refreshMenuWorlds )
 
     ## And with this, our Main Window is created, whee!
 

@@ -111,6 +111,8 @@ class WorldsManager( QtCore.QObject ):
       world.conf.saveAsSection( s.normalize( world.conf._name ) )
       s.generateMappings()
 
+      emit( s, SIGNAL( "worldListChanged()" ) )
+
 
   def newWorld( s, conf ):
 

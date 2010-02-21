@@ -284,8 +284,6 @@ class ConfigBasket( object ):
   
     s.sections.clear()
 
-    s.notifyKeyChanged( s.SECTIONS )
-
 
   def owns( s, attr ):
   
@@ -357,8 +355,6 @@ class ConfigBasket( object ):
 
     s.sections[ name ] = section
 
-    s.notifyKeyChanged( s.SECTIONS )
-
 
   def saveAsSection( s, name ):
 
@@ -380,8 +376,6 @@ class ConfigBasket( object ):
     s.deleteSection( oldname )
     section.saveAsSection( newname )
 
-    s.notifyKeyChanged( s.SECTIONS )
-
 
   def deleteSection( s, name ):
     
@@ -391,8 +385,6 @@ class ConfigBasket( object ):
     except KeyError:
       raise KeyError( "This configuration object doesn't have a section "
                     + "called %s." % section )
-
-    s.notifyKeyChanged( s.SECTIONS )
 
 
   def createAnonymousSection( s ):

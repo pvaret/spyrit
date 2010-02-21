@@ -51,8 +51,6 @@ class MetaDictProxy( type ):
   @staticmethod
   def validatedAttr( attr ):
     """
-    validatedAttr( attr )
-    
     Static method. Determines whether the parameter begins with one
     underscore '_' but not two. Returns None otherwise.
     Attributes beginning with one underscore will be looked up in the
@@ -160,14 +158,14 @@ class ConfigBasket( object ):
 
   __metaclass__ = MetaDictProxy
 
-  SECTIONS = "__domains__"
+  SECTIONS = "__sections__"
 
 
   def __init__( s, parent=None, schema=None, autotypes=None ):
 
     s.name      = None
     s.basket    = {}
-    s.domains   = {}
+    s.sections  = {}
     s.types     = {}
     s.children  = WeakList()
     s.notifiers = CallbackRegistry()
@@ -282,9 +280,9 @@ class ConfigBasket( object ):
       s.notifyKeyChanged( key )
 
 
-  def resetDomains( s ):
+  def resetSections( s ):
   
-    s.domains.clear()
+    s.sections.clear()
 
     s.notifyKeyChanged( s.SECTIONS )
 
@@ -320,33 +318,33 @@ class ConfigBasket( object ):
 
   def isEmpty( s ):
   
-    return len( s.basket ) == 0 and len ( s.domains ) == 0
+    return len( s.basket ) == 0 and len ( s.sections ) == 0
 
 
-  def hasDomain( s, domain ):
+  def hasSection( s, section ):
 
-    return s.domains.has_key( domain )
+    return s.sections.has_key( section )
 
 
-  def getDomain( s, domain ):
+  def getSection( s, section ):
     
     try:
-      return s.domains[ domain ]
+      return s.sections[ section ]
       
     except KeyError:
-      raise KeyError( "This configuration object doesn't have a domain called " 
-                    + "%s." % domain )
+      raise KeyError( "This configuration object doesn't have a section "
+                    + "called %s." % section )
 
 
-  def getDomainList( s ):
+  def getSectionList( s ):
 
-    return list( s.domains.iterkeys() )
+    return list( s.sections.iterkeys() )
 
 
-  def saveDomain( s, domain, name ):
+  def saveSection( s, section, name ):
 
-    domain.name = name
-    domain.setParent( s )
+    section.name = name
+    section.setParent( s )
 
     autotypes = s.getAutoTypes()
 
@@ -355,57 +353,57 @@ class ConfigBasket( object ):
       type_ = autotypes.get( name )
 
       if type_:
-        domain.setTypes( AutoType( type_ ) )
+        section.setTypes( AutoType( type_ ) )
 
-    s.domains[ name ] = domain
+    s.sections[ name ] = section
 
     s.notifyKeyChanged( s.SECTIONS )
 
 
-  def saveAsDomain( s, name ):
+  def saveAsSection( s, name ):
 
     ## Watch the difference with the above method: here, THIS object is being
-    ## saved into its PARENT as a new domain.
+    ## saved into its PARENT as a new section.
     
-    s.parent.saveDomain( s, name )
+    s.parent.saveSection( s, name )
 
 
-  def renameDomain( s, oldname, newname ):
+  def renameSection( s, oldname, newname ):
 
-    ## Warning: this function doesn't check whether the new domain name is
-    ## already in use -- if so, that domain will be overridden. In other words,
-    ## this is an 'mv' and not 'mv -i'.
+    ## Warning: this function doesn't check whether the new section name is
+    ## already in use -- if so, that section will be overridden. In other
+    ## words, this is an 'mv' and not 'mv -i'.
     ## Code that makes use of this method should check that 'newname' is free,
     ## if it thinks it matters.
 
-    domain = s.getDomain( oldname )  ## Will raise KeyError if no such domain.
-    s.deleteDomain( oldname )
-    domain.saveAsDomain( newname )
+    section = s.getSection( oldname )  ## Raises KeyError if no such section.
+    s.deleteSection( oldname )
+    section.saveAsSection( newname )
 
     s.notifyKeyChanged( s.SECTIONS )
 
 
-  def deleteDomain( s, name ):
+  def deleteSection( s, name ):
     
     try:
-      del s.domains[ name ]
+      del s.sections[ name ]
       
     except KeyError:
-      raise KeyError( "This configuration object doesn't have a domain called "
-                    + "%s." % domain )
+      raise KeyError( "This configuration object doesn't have a section "
+                    + "called %s." % section )
 
     s.notifyKeyChanged( s.SECTIONS )
 
 
-  def createAnonymousDomain( s ):
+  def createAnonymousSection( s ):
     
     return ConfigBasket( s )
 
 
-  def createDomain( s, name ):
+  def createSection( s, name ):
       
-    c = s.createAnonymousDomain()
-    c.saveAsDomain( name )
+    c = s.createAnonymousSection()
+    c.saveAsSection( name )
     return c
 
 
@@ -423,9 +421,9 @@ class ConfigBasket( object ):
 
     d = s.getOwnDict().copy()
 
-    if s.domains:
-      d[ s.SECTIONS ] = dict( [ ( name, s.domains[ name ].dumpAsDict() ) \
-                                  for name in s.domains ] )
+    if s.sections:
+      d[ s.SECTIONS ] = dict( [ ( name, s.sections[ name ].dumpAsDict() ) \
+                                  for name in s.sections ] )
     return d
 
 
@@ -445,7 +443,7 @@ class ConfigBasket( object ):
       sections = d[ ConfigBasket.SECTIONS ]
 
       for name, section in sections.iteritems():
-        s.saveDomain( ConfigBasket.buildFromDict( section ), name )
+        s.saveSection( ConfigBasket.buildFromDict( section ), name )
 
       del d[ ConfigBasket.SECTIONS ]
     

@@ -23,7 +23,7 @@
 
 from SmartMatch import SmartMatch
 
-from Defaults   import MATCHES_DOMAIN
+from Defaults   import MATCHES_SECTION
 
 
 class TriggersManager:
@@ -38,10 +38,10 @@ class TriggersManager:
   def loadConfiguration( s ):
 
     try:
-      matches = s.conf.getDomain( MATCHES_DOMAIN )
+      matches = s.conf.getSection( MATCHES_SECTION )
 
     except KeyError:
-      matches = s.conf.createDomain( MATCHES_DOMAIN )
+      matches = s.conf.createSection( MATCHES_SECTION )
 
     s.matches = []
 

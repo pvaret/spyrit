@@ -104,8 +104,8 @@ DEFAULTS = (
 )
 
 
-MATCHES_DOMAIN = "matches"
+MATCHES_SECTION = "matches"
 
 AUTOTYPES = (
-  ( MATCHES_DOMAIN, STR ),
+  ( MATCHES_SECTION, STR ),
 )

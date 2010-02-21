@@ -141,7 +141,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.initial_style = QtGui.QApplication.style().objectName()
 
     world_section = config._worlds_section
-    s.worldobserver = ConfigObserver( config.getDomain( world_section ) )
+    s.worldobserver = ConfigObserver( config.getSection( world_section ) )
     s.worldobserver.addCallback( config.SECTIONS, s.refreshMenuWorlds )
 
     s.observer = ConfigObserver( config )

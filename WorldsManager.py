@@ -36,15 +36,15 @@ class WorldsManager( QtCore.QObject ):
 
     config = singletons.config 
 
-    if not config.hasDomain( config._worlds_section ):
-      config.createDomain( config._worlds_section )
+    if not config.hasSection( config._worlds_section ):
+      config.createSection( config._worlds_section )
       
-    s.worldconfig = config.getDomain( config._worlds_section )
+    s.worldconfig = config.getSection( config._worlds_section )
 
     ## LEGACY: The following code manages the case of old configuration files
     ## with a different world section naming convention. (v0.2 and before.)
 
-    for worldname, worldconf in list( s.worldconfig.domains.iteritems() ):
+    for worldname, worldconf in list( s.worldconfig.sections.iteritems() ):
 
       ## Note how we duplicate the .iteritems() iterator into a list: that's
       ## because we'll be modifying some of its elements on the fly.
@@ -52,7 +52,7 @@ class WorldsManager( QtCore.QObject ):
       if not hasattr( worldconf, "_name" ):
         worldconf._name = worldname
 
-      s.worldconfig.renameDomain( worldname, s.normalize( worldname ) )
+      s.worldconfig.renameSection( worldname, s.normalize( worldname ) )
 
     s.generateMappings()
 
@@ -64,12 +64,12 @@ class WorldsManager( QtCore.QObject ):
     
     s.name_mapping = dict( 
                            ( s.normalize( conf._name ), conf )
-                           for conf in s.worldconfig.domains.itervalues()
+                           for conf in s.worldconfig.sections.itervalues()
                          )
 
     s.hostport_mapping = {}
 
-    for conf in s.worldconfig.domains.itervalues():
+    for conf in s.worldconfig.sections.itervalues():
       s.hostport_mapping.setdefault(
                                      ( conf._host, conf._port ), []
                                    ).append( conf )
@@ -87,14 +87,14 @@ class WorldsManager( QtCore.QObject ):
                in sorted (
                            ( s.normalize( conf._name ), conf._name )
                              for conf
-                             in s.worldconfig.domains.itervalues()
+                             in s.worldconfig.sections.itervalues()
                          )
            ]
 
 
   def newWorldConf( s, host="", port=0, ssl=False, name="" ):
 
-    worldconf       = s.worldconfig.createAnonymousDomain()
+    worldconf       = s.worldconfig.createAnonymousSection()
 
     if host: worldconf._host = host
     if port: worldconf._port = port
@@ -108,7 +108,7 @@ class WorldsManager( QtCore.QObject ):
 
     if world.isAnonymous():
 
-      world.conf.saveAsDomain( s.normalize( world.conf._name ) )
+      world.conf.saveAsSection( s.normalize( world.conf._name ) )
       s.generateMappings()
 
 

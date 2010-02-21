@@ -86,7 +86,7 @@ class IniConfigBasket( ConfigBasket ):
       return
 
     s.reset()
-    s.resetDomains()
+    s.resetSections()
 
     currentconf  = s
     currentdepth = 0
@@ -132,7 +132,7 @@ class IniConfigBasket( ConfigBasket ):
           currentconf   = currentconf.parent
           currentdepth -= 1
 
-        currentconf   = currentconf.createDomain( result[ "section" ] )
+        currentconf   = currentconf.createSection( result[ "section" ] )
         currentdepth += 1
 
     f.close()
@@ -163,19 +163,19 @@ class IniConfigBasket( ConfigBasket ):
         f.write( s.INDENT * indent_level )
         f.write( u"%s = %s\n" % ( k, v ) )
 
-      for domainname, domain in configobj.domains.iteritems():
+      for sectionname, section in configobj.sections.iteritems():
 
-        if domain.isEmpty():  ## Section is empty
+        if section.isEmpty():  ## Section is empty
           continue
 
         f.write( u"\n" )
         f.write( s.INDENT * indent_level )
         f.write( u"[" * ( indent_level + 1 ) )
-        f.write( u" %s " % domainname.strip() )
+        f.write( u" %s " % sectionname.strip() )
         f.write( u"]" * ( indent_level + 1 ) )
         f.write( u"\n" )
 
-        save_section( domain, indent_level+1 )
+        save_section( section, indent_level+1 )
 
     save_section( s )
 

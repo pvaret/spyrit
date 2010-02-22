@@ -309,11 +309,6 @@ class ConfigBasket( object ):
       s[ k ] = v
 
 
-  def getConfigUpdater( s ):
-  
-    return ConfigBasketUpdater( s )
-
-
   def isEmpty( s ):
   
     return len( s.basket ) == 0 and len ( s.sections ) == 0
@@ -455,15 +450,7 @@ class ConfigBasket( object ):
     s.notifiers.add( notifier )
 
 
-
-## ---[ Class ConfigBasketUpdater ]------------------------------------
-
-class ConfigBasketUpdater( ConfigBasket ):
-
   def commit( s ):
-  
+
     s.parent.updateFromDict( s.basket )
     s.reset()
-
-
-

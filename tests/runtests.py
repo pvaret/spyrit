@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
   for f in find_all_tests():
 
-    print "**", f
+    print "--", f
     failed, run = doctest.testfile( f, report=True, optionflags=OPTIONS )
     print "Ran %d tests, %d failed." % ( run, failed )
     print

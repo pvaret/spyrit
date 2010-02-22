@@ -107,6 +107,33 @@ TEST 1
 >>> print cc[ 'key' ]
 TEST 2
 
+Lastly, a configuration object can notify a callback when a key changes.
+
+>>> def notifier( key, value ):
+...   print "Notified: %s=%s" % ( key, value )
+
+>>> cc.registerNotifier( notifier )
+
+>>> cc[ 'key' ] = 'NEW VALUE'
+Notified: key=NEW VALUE
+
+Notifications are also propagated from parent to children:
+
+>>> c[ 'otherkey' ] = 'OTHER VALUE'
+Notified: otherkey=OTHER VALUE
+
+This happens even if the child is anonymous:
+
+>>> c.deleteSection( 'section1' )
+>>> del cc
+>>> c2 = c.createAnonymousSection()
+>>> c2.registerNotifier( notifier )
+>>> c[ 'newkey' ] = 'TEST'
+Notified: newkey=TEST
+
+>>> del c, c2
+
+
 
 MetaDictProxy
 -------------

@@ -9,6 +9,14 @@ of hierarchal configuration keys.
 >>> print c[ 'key1' ]
 TEST
 
+Key names must be made of alphanumerical or underscore characters. A KeyError
+is raised otherwise.
+
+>>> c[ 'key?' ] = 'TEST'
+Traceback (most recent call last):
+    ...
+KeyError: "Invalid key name 'key?'"
+
 Configuration objects are hierarchal: an object can have children, and they
 inherit its keys. Children of a base configuration object are considered as
 *sections* of the configuration.
@@ -94,11 +102,11 @@ Configuration trees can be imported and exported as dicts.
 
 >>> c.getSection( 'subsection' )[ 'key2' ] = 'TEST 2'
 >>> print c.dumpAsDict()
-{'__sections__': {'subsection': {'key2': 'TEST 2'}}, 'key1': 'NEW TEST'}
+{'key1': 'NEW TEST', '@subsection': {'key2': 'TEST 2'}}
 
 >>> del c, cc
 >>> c = ConfigBasket.buildFromDict(
-...   {'key': 'TEST 1', '__sections__': {'section1': {'key': 'TEST 2'}}}
+...   {'key': 'TEST 1', '@section1': {'key': 'TEST 2'}}
 ... )
 
 >>> print c[ 'key' ]

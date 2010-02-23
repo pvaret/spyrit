@@ -23,13 +23,17 @@
 from CallbackRegistry import CallbackRegistry
 from weakref          import WeakValueDictionary
 
+import string
+
+VALID_KEY_CHARACTER = string.ascii_letters + string.digits + "_"
+
 
 ## ---[ Class MetaDictProxy ]------------------------------------------
 
 class MetaDictProxy( type ):
   """
   MetaDictProxy( type )
-  
+
   Metaclass that makes the items of a dictionary-like class accessible
   as attributes. Set it as a the metaclass for that class, and you can
   then access:
@@ -41,7 +45,7 @@ class MetaDictProxy( type ):
   """
 
   def __init__( cls, name, bases, dict ):
-    
+
     super( MetaDictProxy, cls ).__init__( name, bases, dict )
     setattr( cls, '__setattr__', MetaDictProxy.__mysetattr )
     setattr( cls, '__getattr__', MetaDictProxy.__mygetattr )
@@ -56,67 +60,67 @@ class MetaDictProxy( type ):
     Attributes beginning with one underscore will be looked up in the
     mapped dictionary.
     """
-  
+
     if len( attr ) >= 2 \
       and attr.startswith( "_" ) \
       and not attr.startswith( "__" ):
-  
+
         return attr[ 1: ]
-  
+
     return None
-  
-  
+
+
   @staticmethod
   def __mygetattr( obj, attr ):
- 
+
     vattr = MetaDictProxy.validatedAttr( attr )
 
-    if vattr is None:      
+    if vattr is None:
       ## This is neither an existing native attribute, nor a 'special'
       ## attribute name that should be read off the mapped dictionary,
       ## so we raise an AttributeError.
       raise AttributeError( attr )
-    
+
     try:
-      return obj[ vattr ]    
+      return obj[ vattr ]
 
     except KeyError:
       raise AttributeError( attr )
-  
-  
+
+
   @staticmethod
   def __mysetattr( obj, attr, value ):
-  
+
     vattr = MetaDictProxy.validatedAttr( attr )
-      
+
     if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
       obj.__dict__[ attr ] = value
       return
-  
+
     obj[ vattr ] = value
-  
-  
+
+
   @staticmethod
   def __mydelattr( obj, attr ):
-    
+
     vattr = MetaDictProxy.validatedAttr( attr )
-  
+
     if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
       try:
         del obj.__dict__[ attr ]
-        
+
       except KeyError:
         raise AttributeError( attr )
-        
+
       return
-      
+
     try:
       del obj[ vattr ]
-      
+
     except KeyError:
       raise AttributeError( attr )
 
@@ -152,13 +156,13 @@ class AutoType:
 class ConfigBasket( object ):
   """
   ConfigBasket( object )
-  
+
   This class holds the core behavior for a set of configuration keys.
   """
 
   __metaclass__ = MetaDictProxy
 
-  SECTIONS = "__sections__"
+  SECTION_CHAR = "@"
 
 
   def __init__( s, parent=None, schema=None, autotypes=None ):
@@ -177,6 +181,11 @@ class ConfigBasket( object ):
     if schema: s.setSchema( schema )
 
 
+  def isValidKeyName( s, key ):
+
+    return all( c in VALID_KEY_CHARACTER for c in key )
+
+
   def __getitem__( s, key ):
 
     if key in s.basket: return s.basket[ key ]
@@ -186,7 +195,10 @@ class ConfigBasket( object ):
 
 
   def __setitem__( s, key, value ):
-    
+
+    if not s.isValidKeyName( key ):
+      raise KeyError( "Invalid key name '%s'" % key )
+
     if s.existsInParent( key ) and s.parent[ key ] == value:
 
       ## If the parent's value is already set to the new value, we delete
@@ -201,7 +213,7 @@ class ConfigBasket( object ):
         pass
 
       return
- 
+
     if s.exists( key ):
 
       old_value = s[ key ]
@@ -289,7 +301,7 @@ class ConfigBasket( object ):
 
 
   def reset( s ):
-  
+
     keys = s.basket.keys()
 
     for key in keys:
@@ -297,14 +309,14 @@ class ConfigBasket( object ):
 
 
   def resetSections( s ):
-  
+
     s.sections.clear()
 
 
   def owns( s, key ):
-  
+
     return key in s.basket
-    
+
 
   def existsInParent( s, key ):
 
@@ -320,13 +332,15 @@ class ConfigBasket( object ):
 
 
   def updateFromDict( s, d ):
-    
+
     for k, v in d.iteritems():
-      s[ k ] = v
+
+      if not k.startswith( s.SECTION_CHAR ):
+        s[ k ] = v
 
 
   def isEmpty( s ):
-  
+
     return len( s.basket ) == 0 and len( s.sections ) == 0
 
 
@@ -336,10 +350,10 @@ class ConfigBasket( object ):
 
 
   def getSection( s, section ):
-    
+
     try:
       return s.sections[ section ]
-      
+
     except KeyError:
       raise KeyError( "This configuration object doesn't have a section "
                     + "called %s." % section )
@@ -371,7 +385,7 @@ class ConfigBasket( object ):
 
     ## Watch the difference with the above method: here, THIS object is being
     ## saved into its PARENT as a new section.
-    
+
     s.parent.saveSection( s, name )
 
 
@@ -389,22 +403,22 @@ class ConfigBasket( object ):
 
 
   def deleteSection( s, name ):
-    
+
     try:
       del s.sections[ name ]
-      
+
     except KeyError:
       raise KeyError( "This configuration object doesn't have a section "
                     + "called %s." % section )
 
 
   def createAnonymousSection( s ):
-    
+
     return ConfigBasket( s )
 
 
   def createSection( s, name ):
-      
+
     c = s.createAnonymousSection()
     c.saveAsSection( name )
     return c
@@ -419,14 +433,14 @@ class ConfigBasket( object ):
 
     return s.basket
 
-  
+
   def dumpAsDict( s ):
 
     d = s.getOwnDict().copy()
 
-    if s.sections:
-      d[ s.SECTIONS ] = dict( [ ( name, s.sections[ name ].dumpAsDict() ) \
-                                  for name in s.sections ] )
+    d.update( dict( ( s.SECTION_CHAR + name, section.dumpAsDict() )
+                      for name, section in s.sections.iteritems() ) )
+
     return d
 
 
@@ -441,15 +455,11 @@ class ConfigBasket( object ):
 
   def updateFromDictTree( s, d ):
 
-    if ConfigBasket.SECTIONS in d:
+    for name, section in d.iteritems():
 
-      sections = d[ ConfigBasket.SECTIONS ]
+      if name.startswith( s.SECTION_CHAR ):
+        s.saveSection( ConfigBasket.buildFromDict( section ), name[1:] )
 
-      for name, section in sections.iteritems():
-        s.saveSection( ConfigBasket.buildFromDict( section ), name )
-
-      del d[ ConfigBasket.SECTIONS ]
-    
     s.updateFromDict( d )
 
 

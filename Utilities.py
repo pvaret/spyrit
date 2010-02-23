@@ -23,7 +23,7 @@
 def test_python_version():
 
   REQUIRED_MAJOR = 2
-  REQUIRED_MINOR = 4
+  REQUIRED_MINOR = 5
 
   import sys
   v = sys.version_info[ 0:2 ]

@@ -194,6 +194,7 @@ class ConfigBasket( object ):
       ## parent instead.
 
       try:
+        ## Note: this calls __delitem__, which takes care of notifications.
         del s[ attr ]
 
       except KeyError:
@@ -201,21 +202,38 @@ class ConfigBasket( object ):
 
       return
  
-    if s.exists( attr ) and s[ attr ] == value:
+    if s.exists( attr ):
 
+      old_value = s[ attr ]
+
+      if old_value == value:
         ## If the value hasn't changed, we quit right away.
         return
- 
+
+    else:
+      old_value = None
+
     s.basket[ attr ] = value
 
-    s.notifyKeyChanged( attr )
+    if old_value != value:
+      s.notifyKeyChanged( attr, value )
 
 
   def __delitem__( s, attr ):
 
+    if not s.owns( attr ):
+      raise KeyError( attr )
+
+    old_value = s[ attr ]
+
     del s.basket[ attr ]
 
-    s.notifyKeyChanged( attr )
+    if s.exists( attr ):
+
+      value = s[ attr ]
+
+      if old_value != value:
+        s.notifyKeyChanged( attr, value )
 
 
   def setSchema( s, schema ):
@@ -274,10 +292,8 @@ class ConfigBasket( object ):
   
     keys = s.basket.keys()
 
-    s.basket.clear()
-
     for key in keys:
-      s.notifyKeyChanged( key )
+      del s[ key ]
 
 
   def resetSections( s ):
@@ -437,12 +453,15 @@ class ConfigBasket( object ):
     s.updateFromDict( d )
 
 
-  def notifyKeyChanged( s, key ):
+  def notifyKeyChanged( s, key, value ):
 
-    s.notifiers.triggerAll( key )
+    s.notifiers.triggerAll( key, value )
+
+    ## TODO: Only propagate to childrens if the new value of the parent is
+    ## also new to them.
 
     for child in s.children:
-      child.notifyKeyChanged( key )
+      child.notifyKeyChanged( key, value )
 
 
   def registerNotifier( s, notifier ):

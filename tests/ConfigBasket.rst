@@ -109,18 +109,18 @@ TEST 2
 
 Lastly, a configuration object can notify a callback when a key changes.
 
->>> def notifier( key ):
-...   print "Notified: %s" % key
+>>> def notifier( key, value ):
+...   print "Notified: %s=%s" % ( key, value )
 
 >>> cc.registerNotifier( notifier )
 
 >>> cc[ 'key' ] = 'NEW VALUE'
-Notified: key
+Notified: key=NEW VALUE
 
 Notifications are also propagated from parent to children:
 
 >>> c[ 'otherkey' ] = 'OTHER VALUE'
-Notified: otherkey
+Notified: otherkey=OTHER VALUE
 
 This happens even if the child is anonymous:
 
@@ -129,7 +129,20 @@ This happens even if the child is anonymous:
 >>> c2 = c.createAnonymousSection()
 >>> c2.registerNotifier( notifier )
 >>> c[ 'newkey' ] = 'TEST'
-Notified: newkey
+Notified: newkey=TEST
+
+Notifications are not emitted when the assigned value of a key doesn't change:
+
+>>> c[ 'newkey' ] = 'TEST'
+
+## Nothing happens -- the new value is identical to the old!
+
+The callbacks are linked to with weak references, to ease garbage collection.
+
+>>> del notifier
+>>> c['key'] = 'YET ANOTHER VALUE'
+
+## Nothing happens -- the notifier has been recycled!
 
 >>> del c, c2
 

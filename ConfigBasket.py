@@ -177,17 +177,17 @@ class ConfigBasket( object ):
     if schema: s.setSchema( schema )
 
 
-  def __getitem__( s, k ):
+  def __getitem__( s, key ):
 
-    if k in s.basket:    return s.basket[ k ]
-    if s.parent:         return s.parent[ k ]
+    if key in s.basket: return s.basket[ key ]
+    if s.parent:        return s.parent[ key ]
 
-    raise KeyError( k )
+    raise KeyError( key )
 
 
-  def __setitem__( s, attr, value ):
+  def __setitem__( s, key, value ):
     
-    if s.existsInParent( attr ) and s.parent[ attr ] == value:
+    if s.existsInParent( key ) and s.parent[ key ] == value:
 
       ## If the parent's value is already set to the new value, we delete
       ## the attribute on this object instead so we'll inherit that of its
@@ -195,16 +195,16 @@ class ConfigBasket( object ):
 
       try:
         ## Note: this calls __delitem__, which takes care of notifications.
-        del s[ attr ]
+        del s[ key ]
 
       except KeyError:
         pass
 
       return
  
-    if s.exists( attr ):
+    if s.exists( key ):
 
-      old_value = s[ attr ]
+      old_value = s[ key ]
 
       if old_value == value:
         ## If the value hasn't changed, we quit right away.
@@ -213,27 +213,27 @@ class ConfigBasket( object ):
     else:
       old_value = None
 
-    s.basket[ attr ] = value
+    s.basket[ key ] = value
 
     if old_value != value:
-      s.notifyKeyChanged( attr, value )
+      s.notifyKeyChanged( key, value )
 
 
-  def __delitem__( s, attr ):
+  def __delitem__( s, key ):
 
-    if not s.owns( attr ):
-      raise KeyError( attr )
+    if not s.owns( key ):
+      raise KeyError( key )
 
-    old_value = s[ attr ]
+    old_value = s[ key ]
 
-    del s.basket[ attr ]
+    del s.basket[ key ]
 
-    if s.exists( attr ):
+    if s.exists( key ):
 
-      value = s[ attr ]
+      value = s[ key ]
 
       if old_value != value:
-        s.notifyKeyChanged( attr, value )
+        s.notifyKeyChanged( key, value )
 
 
   def setSchema( s, schema ):
@@ -264,13 +264,13 @@ class ConfigBasket( object ):
     s.types = types
 
 
-  def getType( s, attr ):
+  def getType( s, key ):
 
     if s.types:
-      return s.types.get( attr )
+      return s.types.get( key )
 
     if s.parent:
-      return s.parent.getType( attr )
+      return s.parent.getType( key )
 
     else:
       return None
@@ -301,22 +301,22 @@ class ConfigBasket( object ):
     s.sections.clear()
 
 
-  def owns( s, attr ):
+  def owns( s, key ):
   
-    return attr in s.basket
+    return key in s.basket
     
 
-  def existsInParent( s, attr ):
+  def existsInParent( s, key ):
 
     if s.parent:
-      return s.parent.exists( attr )
+      return s.parent.exists( key )
 
     return False
 
 
-  def exists( s, attr ):
+  def exists( s, key ):
 
-    return s.owns( attr ) or s.existsInParent( attr )
+    return s.owns( key ) or s.existsInParent( key )
 
 
   def updateFromDict( s, d ):
@@ -327,7 +327,7 @@ class ConfigBasket( object ):
 
   def isEmpty( s ):
   
-    return len( s.basket ) == 0 and len ( s.sections ) == 0
+    return len( s.basket ) == 0 and len( s.sections ) == 0
 
 
   def hasSection( s, section ):

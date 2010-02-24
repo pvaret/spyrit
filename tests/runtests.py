@@ -37,7 +37,7 @@ def find_all_tests():
       fname = os.path.join( current, f )
 
       if is_probably_test( fname ):
-        yield fname
+        yield f  ## And not fname: doctest is module-relative.
 
 
 

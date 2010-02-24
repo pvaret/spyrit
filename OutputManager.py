@@ -90,8 +90,10 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
     s.italic_by_default = italic_by_default
 
     s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback( [ color_attribute, "bold_as_highlight" ], s.refresh )
+    s.observer.addCallback( [ color_attribute, "bold_as_highlight" ],
+                            s.refresh )
 
+    s.refresh()
     s.reset()
 
 
@@ -235,6 +237,9 @@ class OutputManager:
                               "output_font_size",
                               "output_background_color" ],
                             s.refresh )
+
+    s.setupScrollback()
+    s.setupPaging()
 
     s.observer.addCallback( "split_scrollback", s.setupScrollback )
     s.observer.addCallback( "paging",           s.setupPaging )

@@ -58,7 +58,7 @@ class SocketPipeline:
     s.conf      = conf
 
     s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback( "world_encoding", s.setStreamEncoding, False )
+    s.observer.addCallback( "world_encoding", s.setStreamEncoding )
 
 
   def setStreamEncoding( s ):

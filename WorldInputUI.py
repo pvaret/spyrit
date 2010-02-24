@@ -49,6 +49,12 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.actionset.bindAction( "historydown",  s.historyDown )
     s.actionset.bindAction( "autocomplete", s.autocomplete )
 
+    ## Apply configuration:
+
+    s.refresh()
+
+    ## And bind it to key changes:
+
     s.observer = ConfigObserver( s.conf )
     s.observer.addCallback(
                             [

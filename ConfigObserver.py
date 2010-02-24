@@ -21,10 +21,13 @@
 ##
 
 import inspect
+import weakref
 
 from functools        import wraps
 from CallbackRegistry import CallbackRegistry
 
+
+SLOTIFIED_FN_CACHE = weakref.WeakKeyDictionary()
 
 def slotify( fn ):
 
@@ -50,6 +53,9 @@ def slotify( fn ):
 
     return fn( *args )
 
+  ## Keep a reference to the slotified version:
+  SLOTIFIED_FN_CACHE[ fn ] = slotified
+
   return slotified
 
 
@@ -58,7 +64,6 @@ class ConfigObserver:
 
   def __init__( s, conf ):
 
-    s.conf      = conf
     s.callbacks = {}
 
     conf.registerNotifier( s.notify )
@@ -72,7 +77,7 @@ class ConfigObserver:
       callbacks.triggerAll( key, value )
 
 
-  def addCallback( s, keys, callback, call_once=True ):
+  def addCallback( s, keys, callback ):
 
     if type( keys ) not in ( type( [] ), type( () ) ): keys = [ keys ]
 
@@ -80,11 +85,6 @@ class ConfigObserver:
 
     for key in keys:
       s.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
-
-    if call_once:
-
-      for key in keys:
-        callback( key, s.conf[ key ] )
 
     return s  ## Return self, so as to make it possible to chain calls.
 

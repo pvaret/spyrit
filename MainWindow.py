@@ -140,6 +140,13 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.initial_style = QtGui.QApplication.style().objectName()
 
+    ## Apply configuration:
+
+    s.refreshStyle()
+    s.refreshIcons()
+
+    ## And bind it to the appropriate configuration keys:
+
     s.observer = ConfigObserver( config )
     s.observer.addCallback( "widget_style", s.refreshStyle )
     s.observer.addCallback( "toolbar_icon_size", s.refreshIcons )

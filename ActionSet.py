@@ -107,7 +107,10 @@ class ActionSet:
 
       if shortcut: a.setShortcut( QtGui.QKeySequence( shortcut ) )
       else:        a.setShortcut( QtGui.QKeySequence() )
-     
+
+    ## Call it once:
+    set_action_shortcut()
+
     s.observer.addCallback( shortcutname, set_action_shortcut )
 
     ## Keep a reference to the closure, so it's not garbage-collected

@@ -140,14 +140,7 @@ class IniConfigBasket( ConfigBasket ):
 
   def save( s ):
 
-    try:
-      f = codecs.getwriter( s.ENCODING ) ( open( s.filename, "w" ), "ignore" )
-
-    except IOError:
-      ## Unable to save configuration. Aborting.
-      messages.error( u"Unable to save configuration to file %s!" % s.filename )
-      return
-
+    config_txt = []
   
     def save_section( configobj, indent_level=0 ):
 
@@ -160,23 +153,33 @@ class IniConfigBasket( ConfigBasket ):
 
         v = t().to_string( v )
 
-        f.write( s.INDENT * indent_level )
-        f.write( u"%s = %s\n" % ( k, v ) )
+        config_txt.append( s.INDENT * indent_level )
+        config_txt.append( u"%s = %s\n" % ( k, v ) )
 
       for sectionname, section in configobj.sections.iteritems():
 
         if section.isEmpty():  ## Section is empty
           continue
 
-        f.write( u"\n" )
-        f.write( s.INDENT * indent_level )
-        f.write( u"[" * ( indent_level + 1 ) )
-        f.write( u" %s " % sectionname.strip() )
-        f.write( u"]" * ( indent_level + 1 ) )
-        f.write( u"\n" )
+        config_txt.append( u"\n" )
+        config_txt.append( s.INDENT * indent_level )
+        config_txt.append( u"[" * ( indent_level + 1 ) )
+        config_txt.append( u" %s " % sectionname.strip() )
+        config_txt.append( u"]" * ( indent_level + 1 ) )
+        config_txt.append( u"\n" )
 
         save_section( section, indent_level+1 )
 
     save_section( s )
+
+    try:
+      f = codecs.getwriter( s.ENCODING ) ( open( s.filename, "w" ), "ignore" )
+
+    except IOError:
+      ## Unable to save configuration. Aborting.
+      messages.error( u"Unable to save configuration to file %s!" % s.filename )
+      return
+
+    f.write( ''.join(  config_txt ) )
 
     f.close()

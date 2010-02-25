@@ -10,4 +10,3 @@ This is a list of features that need implementing sooner or later.
 * Opera-like default page.
 * Split state data and configuration.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
-* Don't destroy configuration file if an exception is raised while saving configuration.

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2009 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2010 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -43,7 +43,7 @@ ABOUT = u"""
   missing, namely matches, highlights and such, and configuration dialogs for
   everything.<br/>
   <br/>
-  %(NAME)s is &#169;2007-2009 P. Varet, and licensed under the 
+  %(NAME)s is &#169;2007-2010 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
   <br/>

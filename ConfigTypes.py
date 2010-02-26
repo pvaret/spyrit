@@ -162,3 +162,64 @@ class STRLIST:
       result.append( token )
 
     return result
+
+
+class FORMAT:
+
+  ## FORMAT describes the formatting for a given piece of text: color,
+  ## italic, underlined...
+  ## Its string serialization is a semicolon-separated list of tokens and
+  ## looks like this: 'color:#ffffff; italic; bold'.
+  ## Its deserialized form is a dictionary.
+
+  def to_string( s, d ):
+
+    l = []
+
+    for k, v in d.iteritems():
+
+      if   k == "c":
+        l.insert( 0, "color: %s" % v )
+
+      elif k == "i":
+        l.append( "italic" )
+
+      elif k == "b":
+        l.append( "bold" )
+
+      elif k == "u":
+        l.append( "underlined" )
+
+    return " ; ".join( l )
+
+
+  def from_string( s, l ):
+
+    d = {}
+
+    for item in l.split( ";" ):
+
+      item  = item.strip().lower()
+      value = None
+
+      if ":" in item:
+
+        item, value = item.split( ":", 1 )
+        item  = item.strip()
+        value = value.strip()
+
+      if   item.startswith( "i" ):
+        d['i'] = True
+
+      elif item.startswith( "b" ):
+        d['b'] = True
+
+      elif item.startswith( "u" ):
+        d['u'] = True
+
+      elif item.startswith( "c" ):
+
+        if value:
+          d['c'] = value
+
+    return d

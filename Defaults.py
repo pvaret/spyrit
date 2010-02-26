@@ -50,8 +50,9 @@ DEFAULTS = (
 
   ( 'output_font_name',        u"Courier", STR ),
   ( 'output_font_size',        0,          INT ),  ## 0 = Use system default.
-  ( 'output_font_color',       u"#c0c0c0", STR ),  ## light grey
   ( 'output_background_color', u"#000000", STR ),  ## black
+
+  ( 'output_format',  { "color": u"#c0c0c0" }, FORMAT ),  ## light grey
 
   ( 'world_encoding', u'latin1', STR ),
 
@@ -60,7 +61,8 @@ DEFAULTS = (
 
   ( 'bold_as_highlight', True, BOOL ),
 
-  ( 'info_font_color',   u"#606060", STR ),  ## dark grey
+  ## Dark grey, italic:
+  ( 'info_format', { "color": u"#606060", "italic": True }, FORMAT ),
 
   ( 'input_font_name',        u"", STR ),  ## "" = Use system default.
   ( 'input_font_size',        0,   INT ),  ## 0 = Use system default.

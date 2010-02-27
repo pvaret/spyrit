@@ -10,3 +10,6 @@ This is a list of features that need implementing sooner or later.
 * Opera-like default page.
 * Split state data and configuration.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
+* Ensure split scrollback doesn't cover search terms during a find.
+* Fix focus on secondary input box when the output is mouse-scrolled.
+* Investigate why display is slower when window has focus.

@@ -49,7 +49,16 @@ def slotify( fn ):
       ## Account for 'self' implicit argument.
       n_args -= 1
 
-    args = args[ :n_args ]
+    ## We use the LAST n arguments. The reason for this is, our most common
+    ## use case for this decorator is to bind configuration changes to
+    ## the appropriate callbacks. Configuration change notifications emit
+    ## a (key, value) tuple of arguments, and the typical signatures for our
+    ## callbacks will use both key and value, or value alone, or nothing at
+    ## all.
+    ## If we used the FIRST n arguments, then in the second case we'd only
+    ## transmit the key, which is not as useful as the value.
+
+    args = args[ -n_args: ]
 
     return fn( *args )
 

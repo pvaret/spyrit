@@ -208,6 +208,39 @@ class WorldOutputCharFormat( QtGui.QTextCharFormat ):
 
 
 
+class FormatManager:
+
+  def __init__( s, textformat ):
+
+    s.textformat = textformat
+
+
+  def reset( s ):
+
+    for id in s.textformat.properties():
+      s.textformat.clearProperty( id )
+
+
+  def applyNewFormat( s, format ):
+
+    s.reset()
+
+    for k, v in format.iteritems():
+
+      if   k == "c":  ## color
+        brush = QtGui.QBrush( QtGui.QColor( v ) )
+        s.textformat.setForeground( brush )
+
+      elif k == "b":  ## bold
+        s.textformat.setFontWeight( QtGui.QFont.Bold )
+
+      elif k == "i":  ## italic
+        s.textformat.setFontItalic( True )
+
+      elif k == "u":  ## underline
+        s.textformat.setFontUnderline( True )
+
+
 
 
 class OutputManager:
@@ -220,15 +253,28 @@ class OutputManager:
     s.textview = textview
 
     s.textcursor     = QtGui.QTextCursor( textview.document() )
-    s.charformat     = WorldOutputCharFormat( s.conf, "output_font_color" )
-    s.infocharformat = WorldOutputCharFormat( s.conf, "info_font_color", True )
-
-    s.searchmanager  = SearchManager( textview, s.conf )
-
-    s.was_connected  = False
+    #s.charformat     = WorldOutputCharFormat( s.conf, "output_font_color" )
+    #s.infocharformat = WorldOutputCharFormat( s.conf, "info_font_color", True )
 
     s.observer = ConfigObserver( s.conf )
 
+    s.textformat = QtGui.QTextCharFormat()
+    s.infoformat = QtGui.QTextCharFormat()
+
+    s.textformatmanager = FormatManager( s.textformat )
+    s.infoformatmanager = FormatManager( s.infoformat )
+
+    s.textformatmanager.applyNewFormat( s.conf[ "output_format" ] )
+    s.infoformatmanager.applyNewFormat( s.conf[ "info_format" ] )
+
+    s.observer.addCallback( "output_format",
+                            s.textformatmanager.applyNewFormat )
+    s.observer.addCallback( "info_format",
+                            s.infoformatmanager.applyNewFormat )
+
+    s.searchmanager = SearchManager( textview, s.conf )
+
+    s.was_connected   = False
     s.pending_newline = False
 
     s.refresh()
@@ -238,11 +284,11 @@ class OutputManager:
                               "output_background_color" ],
                             s.refresh )
 
-    s.setupScrollback()
-    s.setupPaging()
+    s.textview.setSplitScrollback( s.conf[ "split_scrollback" ] )
+    s.textview.setPaging(          s.conf[ "paging" ] )
 
-    s.observer.addCallback( "split_scrollback", s.setupScrollback )
-    s.observer.addCallback( "paging",           s.setupPaging )
+    s.observer.addCallback( "split_scrollback", s.textview.setSplitScrollback )
+    s.observer.addCallback( "paging",           s.textview.setPaging )
 
 
   def refresh( s ):
@@ -250,16 +296,6 @@ class OutputManager:
     s.textview.setConfiguration( s.conf._output_font_name,
                                  s.conf._output_font_size,
                                  s.conf._output_background_color )
-
-
-  def setupScrollback( s ):
-
-    s.textview.setSplitScrollback( s.conf._split_scrollback )
-
-
-  def setupPaging( s ):
-
-    s.textview.setPaging( s.conf._paging )
 
 
   def findInHistory( s, string ):
@@ -299,25 +335,27 @@ class OutputManager:
 
   def processFormatChunk( s, format ):
 
-    for param, value in format:
+    return
 
-      if   param == "RESET":
-        s.charformat.reset()
-
-      elif param == "BOLD":
-        s.charformat.setHighlighted( value )
-
-      elif param == "ITALIC":
-        s.charformat.setFontItalic( value )
-
-      elif param == "UNDERLINE":
-        s.charformat.setFontUnderline( value )
-
-      elif param == "FG":
-        s.charformat.setFgColor( value != "DEFAULT" and value or None )
-
-      elif param == "BG":
-        s.charformat.setBgColor( value != "DEFAULT" and value or None )
+#    for param, value in format:
+#
+#      if   param == "RESET":
+#        s.charformat.reset()
+#
+#      elif param == "BOLD":
+#        s.charformat.setHighlighted( value )
+#
+#      elif param == "ITALIC":
+#        s.charformat.setFontItalic( value )
+#
+#      elif param == "UNDERLINE":
+#        s.charformat.setFontUnderline( value )
+#
+#      elif param == "FG":
+#        s.charformat.setFgColor( value != "DEFAULT" and value or None )
+#
+#      elif param == "BG":
+#        s.charformat.setBgColor( value != "DEFAULT" and value or None )
 
 
   def processNetworkChunk( s, event ):
@@ -360,7 +398,7 @@ class OutputManager:
   def insertNewLine( s ):
 
     if s.pending_newline:
-      s.textcursor.insertText( NL, s.charformat )
+      s.textcursor.insertText( NL, s.textformat )
 
     s.pending_newline = True
 
@@ -369,18 +407,18 @@ class OutputManager:
 
     if s.pending_newline:
 
-      s.textcursor.insertText( NL, s.charformat )
+      s.textcursor.insertText( NL, s.textformat )
       s.pending_newline = False
 
-    s.textcursor.insertText( text, s.charformat )
+    s.textcursor.insertText( text, s.textformat )
     
 
   def insertInfoText( s, text ):
 
     if s.textcursor.columnNumber() > 0:
-      s.textcursor.insertText( NL, s.infocharformat )
+      s.textcursor.insertText( NL, s.infoformat )
 
-    s.textcursor.insertText( LEFTARROW + " " + text, s.infocharformat )
+    s.textcursor.insertText( LEFTARROW + " " + text, s.infoformat )
     s.pending_newline = True  ## There is always a new line after info text.
 
 

@@ -68,20 +68,16 @@ class AnsiFilter( BaseFilter ):
 
       parameters = ansi.groups() [0]
 
-      if not parameters:
-        parameters = "0"  ## ESC [ m is an alias for ESC [ 0 m.
-
-      formats = []
+      formats = {}
 
       for param in parameters.split( ';' ):
 
-        format = FormatChunk.ANSI_TO_FORMAT.get( param )
+        prop, value = FormatChunk.ANSI_TO_FORMAT.get( param, ( None, None ) )
 
-        if format:
-          formats.append( format )
+        if prop:
+          formats[ prop ] = value
 
-      if formats:
-        yield( FormatChunk( formats ) )
+      yield( FormatChunk( formats ) )
 
       ## Done searching for complete ANSI sequences.
 

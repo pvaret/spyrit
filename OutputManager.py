@@ -214,33 +214,91 @@ class FormatManager:
 
     s.textformat = textformat
 
-
-  def reset( s ):
-
-    for id in s.textformat.properties():
-      s.textformat.clearProperty( id )
+    s.baseformat = {}
+    s.ansiformat = {}
 
 
-  def applyNewFormat( s, format ):
+  def refreshAllProperties( s ):
 
-    s.reset()
+    for property in ( "c", "b", "i", "u" ):
+      s.refreshProperty( property )
+
+
+  def refreshProperty( s, property ):
+
+    value = any( format.get( property )
+                 for format in ( s.ansiformat, s.baseformat ) )
+
+    if not value:
+      s.clearProperty( property )
+
+    else:
+      s.setProperty( property, value )
+
+
+  def setBaseFormat( s, format ):
+
+    s.baseformat = format
+    s.refreshAllProperties()
+
+
+  def clearProperty( s, property ):
+
+    if   property == "c":
+      s.textformat.clearProperty( s.textformat.ForegroundBrush )
+
+    elif property == "b":
+      s.textformat.clearProperty( s.textformat.FontWeight )
+
+    elif property == "i":
+      s.textformat.clearProperty( s.textformat.FontItalic )
+
+    elif property == "u":
+      s.textformat.clearProperty( s.textformat.TextUnderlineStyle )
+
+
+  def setProperty( s, property, value ):
+
+    if   property == "c":  ## color
+      brush = QtGui.QBrush( QtGui.QColor( value ) )
+      s.textformat.setForeground( brush )
+
+    elif property == "b":  ## bold
+      s.textformat.setFontWeight( QtGui.QFont.Bold )
+
+    elif property == "i":  ## italic
+      s.textformat.setFontItalic( True )
+
+    elif property == "u":  ## underline
+      s.textformat.setFontUnderline( True )
+
+
+  def formatSink( s, chunks ):
+
+    for c in chunks:
+
+      if c.chunktype == chunktypes.FORMAT:
+        s.applyAnsiFormat( c.data )
+
+
+  def applyAnsiFormat( s, format ):
+
+    if not format:  ## reset all
+
+      s.ansiformat.clear()
+      s.refreshAllProperties()
+
+      return
 
     for k, v in format.iteritems():
 
-      if   k == "c":  ## color
-        brush = QtGui.QBrush( QtGui.QColor( v ) )
-        s.textformat.setForeground( brush )
+      if not v:  ## reset property
+        del s.ansiformat[k]
 
-      elif k == "b":  ## bold
-        s.textformat.setFontWeight( QtGui.QFont.Bold )
+      else:      ## apply property
+        s.ansiformat[ k ] = v
 
-      elif k == "i":  ## italic
-        s.textformat.setFontItalic( True )
-
-      elif k == "u":  ## underline
-        s.textformat.setFontUnderline( True )
-
-
+      s.refreshProperty( k )
 
 
 class OutputManager:
@@ -253,8 +311,6 @@ class OutputManager:
     s.textview = textview
 
     s.textcursor     = QtGui.QTextCursor( textview.document() )
-    #s.charformat     = WorldOutputCharFormat( s.conf, "output_font_color" )
-    #s.infocharformat = WorldOutputCharFormat( s.conf, "info_font_color", True )
 
     s.observer = ConfigObserver( s.conf )
 
@@ -264,13 +320,13 @@ class OutputManager:
     s.textformatmanager = FormatManager( s.textformat )
     s.infoformatmanager = FormatManager( s.infoformat )
 
-    s.textformatmanager.applyNewFormat( s.conf[ "output_format" ] )
-    s.infoformatmanager.applyNewFormat( s.conf[ "info_format" ] )
+    s.textformatmanager.setBaseFormat( s.conf[ "output_format" ] )
+    s.infoformatmanager.setBaseFormat( s.conf[ "info_format" ] )
 
     s.observer.addCallback( "output_format",
-                            s.textformatmanager.applyNewFormat )
+                            s.textformatmanager.setBaseFormat )
     s.observer.addCallback( "info_format",
-                            s.infoformatmanager.applyNewFormat )
+                            s.infoformatmanager.setBaseFormat )
 
     s.searchmanager = SearchManager( textview, s.conf )
 
@@ -316,7 +372,7 @@ class OutputManager:
         s.processFlowControlChunk( chunk.data )
 
       elif chunk.chunktype == chunktypes.FORMAT:
-        s.processFormatChunk( chunk.data )
+        s.textformatmanager.formatSink( [ chunk ] )
 
       elif chunk.chunktype == chunktypes.NETWORK:
         s.processNetworkChunk( chunk.data )
@@ -333,10 +389,8 @@ class OutputManager:
       s.insertNewLine()
 
 
-  def processFormatChunk( s, format ):
-
-    return
-
+#  def processFormatChunk( s, format ):
+#
 #    for param, value in format:
 #
 #      if   param == "RESET":

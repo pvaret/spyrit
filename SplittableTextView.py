@@ -44,7 +44,7 @@ class LineCount( QtGui.QLabel ):
 
     s.previous_size = QtCore.QSize()
 
-    s.updateTimer = QtCore.QTimer()
+    s.updateTimer = QtCore.QTimer( s )
     s.updateTimer.setSingleShot( True )
 
     connect( s.updateTimer, SIGNAL( "timeout()" ), s.applyChanges )

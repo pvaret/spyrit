@@ -226,8 +226,11 @@ class FormatManager:
 
   def refreshProperty( s, property ):
 
-    value = any( format.get( property )
-                 for format in ( s.ansiformat, s.baseformat ) )
+    values = [ format.get( property )
+               for format in ( s.ansiformat, s.baseformat )
+               if property in format ] or [ None ]
+
+    value = values[0]
 
     if not value:
       s.clearProperty( property )

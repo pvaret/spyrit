@@ -74,10 +74,14 @@ class AnsiFilter( BaseFilter ):
 
         prop, value = FormatChunk.ANSI_TO_FORMAT.get( param, ( None, None ) )
 
-        if prop:
+        if not prop:
+          yield( FormatChunk( {} ) )
+
+        else:
           formats[ prop ] = value
 
-      yield( FormatChunk( formats ) )
+      if formats:
+        yield( FormatChunk( formats ) )
 
       ## Done searching for complete ANSI sequences.
 

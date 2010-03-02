@@ -69,7 +69,7 @@ class WorldUI( QtGui.QSplitter ):
 
     connect( s.tab, SIGNAL( "tabChanged( bool )" ), s.onTabChanged )
 
-    s.blinker = QtCore.QTimeLine( 200 ) ## ms
+    s.blinker = QtCore.QTimeLine( 200, s ) ## ms
     s.blinker.setFrameRange( 0, 3 )
     connect( s.blinker, SIGNAL( "frameChanged( int )" ), s.iconBlink )
     connect( s.blinker, SIGNAL( "finished()" ), s.steadyIcon )
@@ -237,11 +237,9 @@ class WorldUI( QtGui.QSplitter ):
 
   def iconBlink( s, frame ):
 
-    if s.tab and s.world:
-
-      led = LED.select( connected = s.world.isConnected(),
-                        lit       = ( frame % 2 != 1 ) )
-      s.tab.setTabIcon( led )
+    led = LED.select( connected = s.world.isConnected(),
+                      lit       = ( frame % 2 != 1 ) )
+    s.tab.setTabIcon( led )
 
 
   def steadyIcon( s ):
@@ -249,11 +247,9 @@ class WorldUI( QtGui.QSplitter ):
     if s.blinker.state() == QtCore.QTimeLine.Running:
       return
 
-    if s.tab and s.world:
-
-      led = LED.select( connected = s.world.isConnected(),
-                        lit       = not s.isVisible() )
-      s.tab.setTabIcon( led )
+    led = LED.select( connected = s.world.isConnected(),
+                      lit       = not s.isVisible() )
+    s.tab.setTabIcon( led )
 
 
   def saveSplitterPosition( s ):

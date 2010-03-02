@@ -22,6 +22,9 @@
 ##
 
 
+from localqt import *
+
+
 class INT:
 
   def from_string( s, i ):
@@ -171,6 +174,12 @@ class FORMAT:
   ## Its string serialization is a semicolon-separated list of tokens and
   ## looks like this: 'color:#ffffff; italic; bold'.
   ## Its deserialized form is a dictionary.
+  ## We also store format-related constants on it.
+
+  COLOR     = QtGui.QTextFormat.ForegroundBrush
+  BOLD      = QtGui.QTextFormat.FontWeight
+  ITALIC    = QtGui.QTextFormat.FontItalic
+  UNDERLINE = QtGui.QTextFormat.TextUnderlineStyle
 
   def to_string( s, d ):
 
@@ -178,16 +187,16 @@ class FORMAT:
 
     for k, v in d.iteritems():
 
-      if   k == "c":
+      if   k == s.COLOR:
         l.insert( 0, "color: %s" % v )
 
-      elif k == "i":
+      elif k == s.ITALIC:
         l.append( "italic" )
 
-      elif k == "b":
+      elif k == s.BOLD:
         l.append( "bold" )
 
-      elif k == "u":
+      elif k == UNDERLINE:
         l.append( "underlined" )
 
     return " ; ".join( l )
@@ -209,17 +218,17 @@ class FORMAT:
         value = value.strip()
 
       if   item.startswith( "i" ):
-        d['i'] = True
+        d[ s.ITALIC ] = True
 
       elif item.startswith( "b" ):
-        d['b'] = True
+        d[ s.BOLD ] = True
 
       elif item.startswith( "u" ):
-        d['u'] = True
+        d[ s.UNDERLINE ] = True
 
       elif item.startswith( "c" ):
 
         if value:
-          d['c'] = value
+          d[ s.COLOR ] = value
 
     return d

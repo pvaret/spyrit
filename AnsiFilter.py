@@ -74,7 +74,7 @@ class AnsiFilter( BaseFilter ):
 
         prop, value = FormatChunk.ANSI_TO_FORMAT.get( param, ( None, None ) )
 
-        if not prop:
+        if not prop:  ## reset
           yield( FormatChunk( {} ) )
 
         else:

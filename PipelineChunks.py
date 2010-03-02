@@ -135,6 +135,8 @@ class ByteChunk( BaseChunk ):
 
 ## ---[ Class FormatChunk ]--------------------------------------------
 
+from ConfigTypes import FORMAT
+
 class FormatChunk( BaseChunk ):
   """
   This chunk type represents a formatting parameter, typically extracted from
@@ -145,31 +147,31 @@ class FormatChunk( BaseChunk ):
   chunktype = chunktypes.FORMAT
 
   ANSI_MAPPING = (
-    ( "0",  ( "",  None ) ),
-    ( "1",  ( "b", True ) ),
-    ( "3",  ( "i", True ) ),
-    ( "4",  ( "u", True ) ),
-    ( "22", ( "b", False ) ),
-    ( "23", ( "i", False ) ),
-    ( "24", ( "u", False ) ),
-    ( "30", ( "c", "BLACK" ) ),
-    ( "31", ( "c", "RED" ) ),
-    ( "32", ( "c", "GREEN" ) ),
-    ( "33", ( "c", "YELLOW" ) ),
-    ( "34", ( "c", "BLUE" ) ),
-    ( "35", ( "c", "MAGENTA" ) ),
-    ( "36", ( "c", "CYAN" ) ),
-    ( "37", ( "c", "WHITE" ) ),
-    ( "39", ( "c", None ) ),
-    ( "40", ( "BG",       "BLACK" ) ),
-    ( "41", ( "BG",       "RED" ) ),
-    ( "42", ( "BG",       "GREEN" ) ),
-    ( "43", ( "BG",       "YELLOW" ) ),
-    ( "44", ( "BG",       "BLUE" ) ),
-    ( "45", ( "BG",       "MAGENTA" ) ),
-    ( "46", ( "BG",       "CYAN" ) ),
-    ( "47", ( "BG",       "WHITE" ) ),
-    ( "49", ( "BG",       "DEFAULT" ) ),
+    ( "0",  ( 0, None ) ),  ## reset
+    ( "1",  ( FORMAT.BOLD,      True ) ),
+    ( "3",  ( FORMAT.ITALIC,    True ) ),
+    ( "4",  ( FORMAT.UNDERLINE, True ) ),
+    ( "22", ( FORMAT.BOLD,      False ) ),
+    ( "23", ( FORMAT.ITALIC,    False ) ),
+    ( "24", ( FORMAT.UNDERLINE, False ) ),
+    ( "30", ( FORMAT.COLOR,    "BLACK" ) ),
+    ( "31", ( FORMAT.COLOR,    "RED" ) ),
+    ( "32", ( FORMAT.COLOR,    "GREEN" ) ),
+    ( "33", ( FORMAT.COLOR,    "YELLOW" ) ),
+    ( "34", ( FORMAT.COLOR,    "BLUE" ) ),
+    ( "35", ( FORMAT.COLOR,    "MAGENTA" ) ),
+    ( "36", ( FORMAT.COLOR,    "CYAN" ) ),
+    ( "37", ( FORMAT.COLOR,    "WHITE" ) ),
+    ( "39", ( FORMAT.COLOR,     None ) ),
+#    ( "40", ( "BG",       "BLACK" ) ),
+#    ( "41", ( "BG",       "RED" ) ),
+#    ( "42", ( "BG",       "GREEN" ) ),
+#    ( "43", ( "BG",       "YELLOW" ) ),
+#    ( "44", ( "BG",       "BLUE" ) ),
+#    ( "45", ( "BG",       "MAGENTA" ) ),
+#    ( "46", ( "BG",       "CYAN" ) ),
+#    ( "47", ( "BG",       "WHITE" ) ),
+#    ( "49", ( "BG",       "DEFAULT" ) ),
   )
 
   ANSI_TO_FORMAT = dict( ANSI_MAPPING )

@@ -27,6 +27,7 @@ from PipelineChunks import *
 from Utilities      import check_alert_is_available
 from SearchManager  import SearchManager
 from ConfigObserver import ConfigObserver
+from ConfigTypes    import FORMAT
 
 from PlatformSpecific import platformSpecific
 
@@ -218,9 +219,9 @@ class FormatManager:
     s.ansiformat = {}
 
 
-  def refreshAllProperties( s ):
+  def refreshProperties( s, *props ):
 
-    for property in ( "c", "b", "i", "u" ):
+    for property in props:
       s.refreshProperty( property )
 
 
@@ -241,38 +242,33 @@ class FormatManager:
 
   def setBaseFormat( s, format ):
 
+    props = set( s.baseformat.keys() )
+    props.update( format.keys() )
+
     s.baseformat = format
-    s.refreshAllProperties()
+
+    s.refreshProperties( *props )
 
 
   def clearProperty( s, property ):
 
-    if   property == "c":
-      s.textformat.clearProperty( s.textformat.ForegroundBrush )
-
-    elif property == "b":
-      s.textformat.clearProperty( s.textformat.FontWeight )
-
-    elif property == "i":
-      s.textformat.clearProperty( s.textformat.FontItalic )
-
-    elif property == "u":
-      s.textformat.clearProperty( s.textformat.TextUnderlineStyle )
+    s.textformat.clearProperty( property )
 
 
   def setProperty( s, property, value ):
 
-    if   property == "c":  ## color
+    if   property == FORMAT.COLOR:
+
       brush = QtGui.QBrush( QtGui.QColor( value ) )
       s.textformat.setForeground( brush )
 
-    elif property == "b":  ## bold
+    elif property == FORMAT.BOLD:
       s.textformat.setFontWeight( QtGui.QFont.Bold )
 
-    elif property == "i":  ## italic
+    elif property == FORMAT.ITALIC:
       s.textformat.setFontItalic( True )
 
-    elif property == "u":  ## underline
+    elif property == FORMAT.UNDERLINE:
       s.textformat.setFontUnderline( True )
 
 
@@ -286,22 +282,24 @@ class FormatManager:
 
   def applyAnsiFormat( s, format ):
 
+    props = set( s.ansiformat.keys() )
+    props.update( format.keys() )
+
     if not format:  ## reset all
 
       s.ansiformat.clear()
-      s.refreshAllProperties()
-
-      return
 
     for k, v in format.iteritems():
 
       if not v:  ## reset property
-        del s.ansiformat[k]
+
+        if k in s.ansiformat:
+          del s.ansiformat[k]
 
       else:      ## apply property
         s.ansiformat[ k ] = v
 
-      s.refreshProperty( k )
+    s.refreshProperties( *props )
 
 
 class OutputManager:

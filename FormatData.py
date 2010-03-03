@@ -29,3 +29,28 @@ class FORMAT_PROPERTIES:
   BOLD      = QtGui.QTextFormat.FontWeight
   ITALIC    = QtGui.QTextFormat.FontItalic
   UNDERLINE = QtGui.QTextFormat.TextUnderlineStyle
+
+
+class ANSI_COLORS:
+
+  ## Dark colors:
+
+  black     = "#000000"
+  red       = "#800000"
+  green     = "#008000"
+  yellow    = "#808000"
+  blue      = "#000080"
+  magenta   = "#800080"
+  cyan      = "#008080"
+  lightgray = "#c0c0c0"
+
+  ## Light colors:
+
+  darkgray  = "#808080"
+  red_h     = "#ff0000"
+  green_h   = "#00ff00"
+  yellow_h  = "#ffff00"
+  blue_h    = "#0000ff"
+  magenta_h = "#ff00ff"
+  cyan_h    = "#00ffff"
+  white     = "#ffffff"

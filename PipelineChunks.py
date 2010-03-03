@@ -136,6 +136,7 @@ class ByteChunk( BaseChunk ):
 ## ---[ Class FormatChunk ]--------------------------------------------
 
 from FormatData import FORMAT_PROPERTIES
+from FormatData import ANSI_COLORS as COL
 
 class FormatChunk( BaseChunk ):
   """
@@ -147,23 +148,21 @@ class FormatChunk( BaseChunk ):
   chunktype = chunktypes.ANSI
 
   ANSI_MAPPING = (
-#    ( "0",  ( None, None ) ),  ## reset
     ( "1",  ( FORMAT_PROPERTIES.BOLD,      True ) ),
     ( "3",  ( FORMAT_PROPERTIES.ITALIC,    True ) ),
     ( "4",  ( FORMAT_PROPERTIES.UNDERLINE, True ) ),
     ( "22", ( FORMAT_PROPERTIES.BOLD,      False ) ),
     ( "23", ( FORMAT_PROPERTIES.ITALIC,    False ) ),
     ( "24", ( FORMAT_PROPERTIES.UNDERLINE, False ) ),
-    ( "30", ( FORMAT_PROPERTIES.COLOR, ( "black",       "darkGray" ) ) ),
-    ( "31", ( FORMAT_PROPERTIES.COLOR, ( "darkRed",     "red" ) ) ),
-    ( "32", ( FORMAT_PROPERTIES.COLOR, ( "darkGreen",   "green" ) ) ),
-    ## Qt bug? 'darkYellow' is not a recognized name!
-    ( "33", ( FORMAT_PROPERTIES.COLOR, ( "#808000",  "yellow" ) ) ),
-    ( "34", ( FORMAT_PROPERTIES.COLOR, ( "darkBlue",    "blue" ) ) ),
-    ( "35", ( FORMAT_PROPERTIES.COLOR, ( "darkMagenta", "magenta" ) ) ),
-    ( "36", ( FORMAT_PROPERTIES.COLOR, ( "darkCyan",    "cyan" ) ) ),
-    ( "37", ( FORMAT_PROPERTIES.COLOR, ( "lightGray",   "white" ) ) ),
-    ( "39", ( FORMAT_PROPERTIES.COLOR, ( None,          "white" ) ) ),
+    ( "30", ( FORMAT_PROPERTIES.COLOR, ( COL.black,     COL.darkgray ) ) ),
+    ( "31", ( FORMAT_PROPERTIES.COLOR, ( COL.red,       COL.red_h ) ) ),
+    ( "32", ( FORMAT_PROPERTIES.COLOR, ( COL.green,     COL.green_h ) ) ),
+    ( "33", ( FORMAT_PROPERTIES.COLOR, ( COL.yellow,    COL.yellow_h ) ) ),
+    ( "34", ( FORMAT_PROPERTIES.COLOR, ( COL.blue,      COL.blue_h ) ) ),
+    ( "35", ( FORMAT_PROPERTIES.COLOR, ( COL.magenta,   COL.magenta_h ) ) ),
+    ( "36", ( FORMAT_PROPERTIES.COLOR, ( COL.cyan,      COL.cyan_h ) ) ),
+    ( "37", ( FORMAT_PROPERTIES.COLOR, ( COL.lightgray, COL.white ) ) ),
+    ( "39", ( FORMAT_PROPERTIES.COLOR, ( None,          COL.white ) ) ),
 #    ( "40", ( "BG",       "BLACK" ) ),
 #    ( "41", ( "BG",       "RED" ) ),
 #    ( "42", ( "BG",       "GREEN" ) ),

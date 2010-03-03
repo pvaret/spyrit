@@ -135,7 +135,7 @@ class ByteChunk( BaseChunk ):
 
 ## ---[ Class FormatChunk ]--------------------------------------------
 
-from ConfigTypes import FORMAT
+from FormatData import FORMAT_PROPERTIES
 
 class FormatChunk( BaseChunk ):
   """
@@ -148,22 +148,22 @@ class FormatChunk( BaseChunk ):
 
   ANSI_MAPPING = (
 #    ( "0",  ( None, None ) ),  ## reset
-    ( "1",  ( FORMAT.BOLD,      True ) ),
-    ( "3",  ( FORMAT.ITALIC,    True ) ),
-    ( "4",  ( FORMAT.UNDERLINE, True ) ),
-    ( "22", ( FORMAT.BOLD,      False ) ),
-    ( "23", ( FORMAT.ITALIC,    False ) ),
-    ( "24", ( FORMAT.UNDERLINE, False ) ),
-    ( "30", ( FORMAT.COLOR, ( "black",       "darkGray" ) ) ),
-    ( "31", ( FORMAT.COLOR, ( "darkRed",     "red" ) ) ),
-    ( "32", ( FORMAT.COLOR, ( "darkGreen",   "green" ) ) ),
+    ( "1",  ( FORMAT_PROPERTIES.BOLD,      True ) ),
+    ( "3",  ( FORMAT_PROPERTIES.ITALIC,    True ) ),
+    ( "4",  ( FORMAT_PROPERTIES.UNDERLINE, True ) ),
+    ( "22", ( FORMAT_PROPERTIES.BOLD,      False ) ),
+    ( "23", ( FORMAT_PROPERTIES.ITALIC,    False ) ),
+    ( "24", ( FORMAT_PROPERTIES.UNDERLINE, False ) ),
+    ( "30", ( FORMAT_PROPERTIES.COLOR, ( "black",       "darkGray" ) ) ),
+    ( "31", ( FORMAT_PROPERTIES.COLOR, ( "darkRed",     "red" ) ) ),
+    ( "32", ( FORMAT_PROPERTIES.COLOR, ( "darkGreen",   "green" ) ) ),
     ## Qt bug? 'darkYellow' is not a recognized name!
-    ( "33", ( FORMAT.COLOR, ( "#808000",  "yellow" ) ) ),
-    ( "34", ( FORMAT.COLOR, ( "darkBlue",    "blue" ) ) ),
-    ( "35", ( FORMAT.COLOR, ( "darkMagenta", "magenta" ) ) ),
-    ( "36", ( FORMAT.COLOR, ( "darkCyan",    "cyan" ) ) ),
-    ( "37", ( FORMAT.COLOR, ( "lightGray",   "white" ) ) ),
-    ( "39", ( FORMAT.COLOR, ( None,          "white" ) ) ),
+    ( "33", ( FORMAT_PROPERTIES.COLOR, ( "#808000",  "yellow" ) ) ),
+    ( "34", ( FORMAT_PROPERTIES.COLOR, ( "darkBlue",    "blue" ) ) ),
+    ( "35", ( FORMAT_PROPERTIES.COLOR, ( "darkMagenta", "magenta" ) ) ),
+    ( "36", ( FORMAT_PROPERTIES.COLOR, ( "darkCyan",    "cyan" ) ) ),
+    ( "37", ( FORMAT_PROPERTIES.COLOR, ( "lightGray",   "white" ) ) ),
+    ( "39", ( FORMAT_PROPERTIES.COLOR, ( None,          "white" ) ) ),
 #    ( "40", ( "BG",       "BLACK" ) ),
 #    ( "41", ( "BG",       "RED" ) ),
 #    ( "42", ( "BG",       "GREEN" ) ),

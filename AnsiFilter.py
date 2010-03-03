@@ -25,7 +25,7 @@ import re
 
 from BaseFilter     import BaseFilter
 from PipelineChunks import chunktypes, ByteChunk, FormatChunk
-from ConfigTypes    import FORMAT
+from FormatData     import FORMAT_PROPERTIES
 
 
 class AnsiFilter( BaseFilter ):
@@ -110,7 +110,7 @@ class AnsiFilter( BaseFilter ):
         if not prop:  ## Unknown ANSI code. Ignore.
           continue
 
-        if prop == FORMAT.BOLD:
+        if prop == FORMAT_PROPERTIES.BOLD:
 
           ## According to spec, this actually means highlighted colors.
 
@@ -119,22 +119,22 @@ class AnsiFilter( BaseFilter ):
           c_unhighlighted, c_highlighted = s.current_colors
 
           if value:  ## Colors are now highlighted.
-            format[ FORMAT.COLOR ] = c_highlighted
+            format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
 
           else:
-            format[ FORMAT.COLOR ] = c_unhighlighted
+            format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
 
           continue
 
-        if prop == FORMAT.COLOR:
+        if prop == FORMAT_PROPERTIES.COLOR:
 
           ( c_unhighlighted, c_highlighted ) = s.current_colors = value
 
           if s.highlighted:
-            format[ FORMAT.COLOR ] = c_highlighted
+            format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
 
           else:
-            format[ FORMAT.COLOR ] = c_unhighlighted
+            format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
 
           continue
 

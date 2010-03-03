@@ -22,7 +22,7 @@
 ##
 
 
-from localqt import *
+from FormatData import FORMAT_PROPERTIES
 
 
 class INT:
@@ -176,27 +176,22 @@ class FORMAT:
   ## Its deserialized form is a dictionary.
   ## We also store format-related constants on it.
 
-  COLOR     = QtGui.QTextFormat.ForegroundBrush
-  BOLD      = QtGui.QTextFormat.FontWeight
-  ITALIC    = QtGui.QTextFormat.FontItalic
-  UNDERLINE = QtGui.QTextFormat.TextUnderlineStyle
-
   def to_string( s, d ):
 
     l = []
 
     for k, v in d.iteritems():
 
-      if   k == s.COLOR:
+      if   k == FORMAT_PROPERTIES.COLOR:
         l.insert( 0, "color: %s" % v )
 
-      elif k == s.ITALIC:
+      elif k == FORMAT_PROPERTIES.ITALIC:
         l.append( "italic" )
 
-      elif k == s.BOLD:
+      elif k == FORMAT_PROPERTIES.BOLD:
         l.append( "bold" )
 
-      elif k == UNDERLINE:
+      elif k == FORMAT_PROPERTIES.UNDERLINE:
         l.append( "underlined" )
 
     return " ; ".join( l )
@@ -218,17 +213,17 @@ class FORMAT:
         value = value.strip()
 
       if   item.startswith( "i" ):
-        d[ s.ITALIC ] = True
+        d[ FORMAT_PROPERTIES.ITALIC ] = True
 
       elif item.startswith( "b" ):
-        d[ s.BOLD ] = True
+        d[ FORMAT_PROPERTIES.BOLD ] = True
 
       elif item.startswith( "u" ):
-        d[ s.UNDERLINE ] = True
+        d[ FORMAT_PROPERTIES.UNDERLINE ] = True
 
       elif item.startswith( "c" ):
 
         if value:
-          d[ s.COLOR ] = value
+          d[ FORMAT_PROPERTIES.COLOR ] = value
 
     return d

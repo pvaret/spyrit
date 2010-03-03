@@ -20,7 +20,7 @@
 ##
 
 from ConfigTypes import *
-
+from FormatData  import FORMAT_PROPERTIES
 from ConfigPaths import LOG_DIR
 
 
@@ -52,15 +52,15 @@ DEFAULTS = (
   ( 'output_font_size',        0,          INT ),  ## 0 = Use system default.
   ( 'output_background_color', u"black", STR ),
 
-  ( 'output_format',  { FORMAT.COLOR: u"lightGrey" }, FORMAT ),
+  ( 'output_format',  { FORMAT_PROPERTIES.COLOR: u"lightGrey" }, FORMAT ),
 
   ( 'world_encoding', u'latin1', STR ),
 
   ( 'split_scrollback', True, BOOL ),
   ( 'paging',           True, BOOL ),
 
-  ( 'info_format',
-      { FORMAT.COLOR: u"darkGray", FORMAT.ITALIC: True }, FORMAT ),
+  ( 'info_format', { FORMAT_PROPERTIES.COLOR: u"darkGray",
+                     FORMAT_PROPERTIES.ITALIC: True }, FORMAT ),
 
   ( 'input_font_name',        u"", STR ),  ## "" = Use system default.
   ( 'input_font_size',        0,   INT ),  ## 0 = Use system default.

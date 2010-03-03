@@ -25,6 +25,7 @@ import re
 
 from BaseFilter     import BaseFilter
 from PipelineChunks import chunktypes, ByteChunk, FormatChunk
+from ConfigTypes    import FORMAT
 
 
 class AnsiFilter( BaseFilter ):
@@ -47,16 +48,33 @@ class AnsiFilter( BaseFilter ):
                          ] ) )
 
 
+  def resetInternalState( s ):
+
+    ## Note: this method is called by the base class's __init__, so we're
+    ## sure that s.highlighted and s.current_colors are defined.
+
+    s.colorReset()
+    BaseFilter.resetInternalState( s )
+
+
+  def colorReset( s ):
+
+    s.highlighted    = False
+    s.current_colors = FormatChunk.ANSI_TO_FORMAT.get( "39" )[1]
+
+
   def processChunk( s, chunk ):
-   
+
     text       = chunk.data
     currentpos = 0
 
     while True:
 
       ansi = s.match.search( text, currentpos )
-      
+
       if not ansi:
+
+        ## Done with the ANSI parsing in this chunk! Bail out.
         break
 
       startmatch = ansi.start()
@@ -65,26 +83,70 @@ class AnsiFilter( BaseFilter ):
         yield ByteChunk( text[ currentpos:startmatch ] )
 
       currentpos = ansi.end()
-
       parameters = ansi.groups() [0]
 
-      formats = {}
+      if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
+
+        yield FormatChunk( {} )
+
+        s.colorReset()
+        continue
+
+      format = {}
 
       for param in parameters.split( ';' ):
 
+        if param == "0":  ## ESC [ 0 m -- reset the format!
+
+          yield FormatChunk( {} )
+
+          s.colorReset()
+          format = {}
+
+          continue
+
         prop, value = FormatChunk.ANSI_TO_FORMAT.get( param, ( None, None ) )
 
-        if not prop:  ## reset
-          yield( FormatChunk( {} ) )
+        if not prop:  ## Unknown ANSI code. Ignore.
+          continue
 
-        else:
-          formats[ prop ] = value
+        if prop == FORMAT.BOLD:
 
-      if formats:
-        yield( FormatChunk( formats ) )
+          ## According to spec, this actually means highlighted colors.
 
-      ## Done searching for complete ANSI sequences.
+          s.highlighted = value
 
+          c_unhighlighted, c_highlighted = s.current_colors
+
+          if value:  ## Colors are now highlighted.
+            format[ FORMAT.COLOR ] = c_highlighted
+
+          else:
+            format[ FORMAT.COLOR ] = c_unhighlighted
+
+          continue
+
+        if prop == FORMAT.COLOR:
+
+          ( c_unhighlighted, c_highlighted ) = s.current_colors = value
+
+          if s.highlighted:
+            format[ FORMAT.COLOR ] = c_highlighted
+
+          else:
+            format[ FORMAT.COLOR ] = c_unhighlighted
+
+          continue
+
+        ## Other cases: italic, underline and such. Just pass the value along.
+
+        format[ prop ] = value
+
+      if format:
+        yield FormatChunk( format )
+
+
+    ## Done searching for complete ANSI sequences.
 
     if currentpos < len( text ):
 
@@ -99,9 +161,9 @@ class AnsiFilter( BaseFilter ):
         startmatch = possible_unfinished.start()
 
         if startmatch > currentpos:
-          yield( ByteChunk( text[ currentpos:startmatch ] ) )
+          yield ByteChunk( text[ currentpos:startmatch ] )
 
         s.postpone( ByteChunk( text[ startmatch: ] ) )
-        
+
       else:
-        yield( ByteChunk( text[ currentpos: ] ) )
+        yield ByteChunk( text[ currentpos: ] )

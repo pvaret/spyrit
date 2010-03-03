@@ -44,7 +44,7 @@ class ChunkTypes:
   PROMPTSWEEP = 1 << 2
   BYTES       = 1 << 3
   TELNET      = 1 << 4
-  FORMAT      = 1 << 5
+  ANSI        = 1 << 5
   FLOWCONTROL = 1 << 6
   TEXT        = 1 << 7
 
@@ -144,25 +144,26 @@ class FormatChunk( BaseChunk ):
   other sources such as MXP codes.
   """
 
-  chunktype = chunktypes.FORMAT
+  chunktype = chunktypes.ANSI
 
   ANSI_MAPPING = (
-    ( "0",  ( 0, None ) ),  ## reset
+#    ( "0",  ( None, None ) ),  ## reset
     ( "1",  ( FORMAT.BOLD,      True ) ),
     ( "3",  ( FORMAT.ITALIC,    True ) ),
     ( "4",  ( FORMAT.UNDERLINE, True ) ),
     ( "22", ( FORMAT.BOLD,      False ) ),
     ( "23", ( FORMAT.ITALIC,    False ) ),
     ( "24", ( FORMAT.UNDERLINE, False ) ),
-    ( "30", ( FORMAT.COLOR,    "BLACK" ) ),
-    ( "31", ( FORMAT.COLOR,    "RED" ) ),
-    ( "32", ( FORMAT.COLOR,    "GREEN" ) ),
-    ( "33", ( FORMAT.COLOR,    "YELLOW" ) ),
-    ( "34", ( FORMAT.COLOR,    "BLUE" ) ),
-    ( "35", ( FORMAT.COLOR,    "MAGENTA" ) ),
-    ( "36", ( FORMAT.COLOR,    "CYAN" ) ),
-    ( "37", ( FORMAT.COLOR,    "WHITE" ) ),
-    ( "39", ( FORMAT.COLOR,     None ) ),
+    ( "30", ( FORMAT.COLOR, ( "black",       "darkGray" ) ) ),
+    ( "31", ( FORMAT.COLOR, ( "darkRed",     "red" ) ) ),
+    ( "32", ( FORMAT.COLOR, ( "darkGreen",   "green" ) ) ),
+    ## Qt bug? 'darkYellow' is not a recognized name!
+    ( "33", ( FORMAT.COLOR, ( "#808000",  "yellow" ) ) ),
+    ( "34", ( FORMAT.COLOR, ( "darkBlue",    "blue" ) ) ),
+    ( "35", ( FORMAT.COLOR, ( "darkMagenta", "magenta" ) ) ),
+    ( "36", ( FORMAT.COLOR, ( "darkCyan",    "cyan" ) ) ),
+    ( "37", ( FORMAT.COLOR, ( "lightGray",   "white" ) ) ),
+    ( "39", ( FORMAT.COLOR, ( None,          "white" ) ) ),
 #    ( "40", ( "BG",       "BLACK" ) ),
 #    ( "41", ( "BG",       "RED" ) ),
 #    ( "42", ( "BG",       "GREEN" ) ),

@@ -49,6 +49,9 @@ def slotify( fn ):
       ## Account for 'self' implicit argument.
       n_args -= 1
 
+    if not n_args:
+      return fn()
+
     ## We use the LAST n arguments. The reason for this is, our most common
     ## use case for this decorator is to bind configuration changes to
     ## the appropriate callbacks. Configuration change notifications emit

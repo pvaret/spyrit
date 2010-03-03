@@ -50,25 +50,22 @@ DEFAULTS = (
 
   ( 'output_font_name',        u"Courier", STR ),
   ( 'output_font_size',        0,          INT ),  ## 0 = Use system default.
-  ( 'output_background_color', u"#000000", STR ),  ## black
+  ( 'output_background_color', u"black", STR ),
 
-  ( 'output_format',  { FORMAT.COLOR: u"#c0c0c0" }, FORMAT ),  ## light grey
+  ( 'output_format',  { FORMAT.COLOR: u"lightGrey" }, FORMAT ),
 
   ( 'world_encoding', u'latin1', STR ),
 
   ( 'split_scrollback', True, BOOL ),
   ( 'paging',           True, BOOL ),
 
-  ( 'bold_as_highlight', True, BOOL ),
-
-  ## Dark grey, italic:
   ( 'info_format',
-      { FORMAT.COLOR: u"#606060", FORMAT.ITALIC: True }, FORMAT ),
+      { FORMAT.COLOR: u"darkGray", FORMAT.ITALIC: True }, FORMAT ),
 
   ( 'input_font_name',        u"", STR ),  ## "" = Use system default.
   ( 'input_font_size',        0,   INT ),  ## 0 = Use system default.
   ( 'input_font_color',       u"", STR ),  ## "" = Use system default.
-  ( 'input_background_color', u"#ffffff", STR ),  ## white
+  ( 'input_background_color', u"white", STR ),  ## white
 
   ( 'splitter_sizes', [ 1000, 100, 100 ], INTLIST ),
 

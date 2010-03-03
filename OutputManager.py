@@ -276,7 +276,7 @@ class FormatManager:
 
     for c in chunks:
 
-      if c.chunktype == chunktypes.FORMAT:
+      if c.chunktype == chunktypes.ANSI:
         s.applyAnsiFormat( c.data )
 
 
@@ -372,7 +372,7 @@ class OutputManager:
       elif chunk.chunktype == chunktypes.FLOWCONTROL:
         s.processFlowControlChunk( chunk.data )
 
-      elif chunk.chunktype == chunktypes.FORMAT:
+      elif chunk.chunktype == chunktypes.ANSI:
         s.textformatmanager.formatSink( [ chunk ] )
 
       elif chunk.chunktype == chunktypes.NETWORK:

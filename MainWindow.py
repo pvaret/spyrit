@@ -295,8 +295,9 @@ class MainWindow( QtGui.QMainWindow ):
 
     for w in s.iterateOnOpenWorlds():
 
-      w.world.ensureWorldDisconnected()
-      w.doClose()
+      if w:
+        w.world.ensureWorldDisconnected()
+        w.doClose()
 
     ## Save the main window's geometry when it's about to be closed.
 

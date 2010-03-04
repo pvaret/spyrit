@@ -36,6 +36,8 @@ class FormatManager:
     s.baseformat = {}
     s.ansiformat = {}
 
+    s.brush_cache = {}
+
 
   def refreshProperties( s, *props ):
 
@@ -75,9 +77,10 @@ class FormatManager:
 
   def setProperty( s, property, value ):
 
-    if   property == FORMAT_PROPERTIES.COLOR:
+    if property == FORMAT_PROPERTIES.COLOR:
 
-      brush = QtGui.QBrush( QtGui.QColor( value ) )
+      brush = s.brush_cache.setdefault(
+              value.lower(), QtGui.QBrush( QtGui.QColor( value ) ) )
       s.textformat.setForeground( brush )
 
     elif property == FORMAT_PROPERTIES.BOLD:

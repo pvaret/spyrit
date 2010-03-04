@@ -53,17 +53,20 @@ class AnsiFilter( BaseFilter ):
     ## Note: this method is called by the base class's __init__, so we're
     ## sure that s.highlighted and s.current_colors are defined.
 
-    s.colorReset()
+    s.highlighted, s.current_colors = s.defaultColors()
     BaseFilter.resetInternalState( s )
 
 
-  def colorReset( s ):
+  def defaultColors( s ):
 
-    s.highlighted    = False
-    s.current_colors = FormatChunk.ANSI_TO_FORMAT.get( "39" )[1]
+    return ( False,  ## highlight
+             FormatChunk.ANSI_TO_FORMAT.get( "39" )[1] ) ## default colors
 
 
   def processChunk( s, chunk ):
+
+    current_colors = s.current_colors
+    highlighted    = s.highlighted
 
     text       = chunk.data
     currentpos = 0
@@ -89,7 +92,7 @@ class AnsiFilter( BaseFilter ):
 
         yield FormatChunk( {} )
 
-        s.colorReset()
+        highlighted, current_colors = s.defaultColors()
         continue
 
       format = {}
@@ -100,7 +103,7 @@ class AnsiFilter( BaseFilter ):
 
           yield FormatChunk( {} )
 
-          s.colorReset()
+          highlighted, current_colors = s.defaultColors()
           format = {}
 
           continue
@@ -114,9 +117,9 @@ class AnsiFilter( BaseFilter ):
 
           ## According to spec, this actually means highlighted colors.
 
-          s.highlighted = value
+          highlighted = value
 
-          c_unhighlighted, c_highlighted = s.current_colors
+          c_unhighlighted, c_highlighted = current_colors
 
           if value:  ## Colors are now highlighted.
             format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
@@ -128,9 +131,9 @@ class AnsiFilter( BaseFilter ):
 
         if prop == FORMAT_PROPERTIES.COLOR:
 
-          ( c_unhighlighted, c_highlighted ) = s.current_colors = value
+          ( c_unhighlighted, c_highlighted ) = current_colors = value
 
-          if s.highlighted:
+          if highlighted:
             format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
 
           else:
@@ -147,6 +150,9 @@ class AnsiFilter( BaseFilter ):
 
 
     ## Done searching for complete ANSI sequences.
+
+    s.current_colors = current_colors
+    s.highlighted    = highlighted
 
     if currentpos < len( text ):
 

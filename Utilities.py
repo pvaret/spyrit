@@ -64,7 +64,7 @@ def test_sip_version():
 def test_qt_version():
 
   REQUIRED_MAJOR = 4
-  REQUIRED_MINOR = 2
+  REQUIRED_MINOR = 3
 
   from PyQt4 import QtCore
 
@@ -80,23 +80,11 @@ def test_qt_version():
 
 
 
-
-
 def check_ssl_is_available():
 
   from PyQt4 import QtNetwork
   return hasattr( QtNetwork, "QSslSocket" ) \
          and QtNetwork.QSslSocket.supportsSsl()
-
-
-def check_alert_is_available():
-
-  ## The alert() method is only available on Qt 4.3, but we need to support
-  ## 4.2 as well.
-
-  from PyQt4 import QtGui
-  return hasattr( QtGui.QApplication, "alert" )
-
 
 
 

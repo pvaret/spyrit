@@ -24,7 +24,6 @@
 from localqt import *
 
 from PipelineChunks import *
-from Utilities      import check_alert_is_available
 from SearchManager  import SearchManager
 from FormatManager  import FormatManager
 from ConfigObserver import ConfigObserver
@@ -120,7 +119,7 @@ class OutputManager:
 
     s.textcursor.endEditBlock()
 
-    if check_alert_is_available() and s.conf._alert_on_activity: 
+    if s.conf._alert_on_activity: 
       qApp().alert( s.textview.window() )
 
 

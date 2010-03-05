@@ -3,7 +3,7 @@ This is a list of features that need implementing sooner or later.
 * GUI for search.
 * Bookmarking of lines in output.
 * Option parsing for commands.
-* Pattern matching, highlights, gags. Triggers.
+* Improve pattern matching and highlights. Implement gags, triggers.
 * Scripting.
 * Configuration screens for everything.
 * Switch between on/off icons rather than having two of them side by side.
@@ -13,3 +13,4 @@ This is a list of features that need implementing sooner or later.
 * Ensure split scrollback doesn't cover search terms during a find.
 * Fix focus on secondary input box when the output is mouse-scrolled.
 * Investigate why display is slower when window has focus.
+* Implement ANSI background color setting.

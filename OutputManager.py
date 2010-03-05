@@ -114,6 +114,9 @@ class OutputManager:
       elif chunk.chunktype == chunktypes.ANSI:
         s.textformatmanager.applyAnsiFormat( chunk.data )
 
+      elif chunk.chunktype == chunktypes.HIGHLIGHT:
+        s.textformatmanager.applyHighlightFormat( chunk.data )
+
       elif chunk.chunktype == chunktypes.NETWORK:
         s.processNetworkChunk( chunk.data )
 
@@ -127,29 +130,6 @@ class OutputManager:
 
     if event == FlowControlChunk.LINEFEED:
       s.insertNewLine()
-
-
-#  def processFormatChunk( s, format ):
-#
-#    for param, value in format:
-#
-#      if   param == "RESET":
-#        s.charformat.reset()
-#
-#      elif param == "BOLD":
-#        s.charformat.setHighlighted( value )
-#
-#      elif param == "ITALIC":
-#        s.charformat.setFontItalic( value )
-#
-#      elif param == "UNDERLINE":
-#        s.charformat.setFontUnderline( value )
-#
-#      elif param == "FG":
-#        s.charformat.setFgColor( value != "DEFAULT" and value or None )
-#
-#      elif param == "BG":
-#        s.charformat.setBgColor( value != "DEFAULT" and value or None )
 
 
   def processNetworkChunk( s, event ):

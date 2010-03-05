@@ -33,8 +33,9 @@ class FormatManager:
 
     s.textformat = textformat
 
-    s.baseformat = {}
-    s.ansiformat = {}
+    s.baseformat      = {}
+    s.ansiformat      = {}
+    s.highlightformat = {}
 
     s.brush_cache = {}
 
@@ -48,7 +49,7 @@ class FormatManager:
   def refreshProperty( s, property ):
 
     values = [ format.get( property )
-               for format in ( s.ansiformat, s.baseformat )
+               for format in ( s.highlightformat, s.ansiformat, s.baseformat )
                if property in format ] or [ None ]
 
     value = values[0]
@@ -111,5 +112,27 @@ class FormatManager:
 
       else:      ## apply property
         s.ansiformat[ k ] = v
+
+    s.refreshProperties( *props )
+
+
+  def applyHighlightFormat( s, format ):
+
+    props = set( s.highlightformat.keys() )
+    props.update( format.keys() )
+
+    if not format:  ## reset all
+
+      s.highlightformat.clear()
+
+    for k, v in format.iteritems():
+
+      if not v:  ## reset property
+
+        if k in s.highlightformat:
+          del s.highlightformat[k]
+
+      else:      ## apply property
+        s.highlightformat[ k ] = v
 
     s.refreshProperties( *props )

@@ -23,7 +23,7 @@
 
 from SmartMatch import SmartMatch
 
-from Defaults   import MATCHES_SECTION
+from Defaults   import MATCHES_SECTION, HIGHLIGHTS_SECTION
 
 
 class TriggersManager:
@@ -43,12 +43,23 @@ class TriggersManager:
     except KeyError:
       matches = s.conf.createSection( MATCHES_SECTION )
 
+    try:
+      highlights = s.conf.getSection( HIGHLIGHTS_SECTION )
+
+    except KeyError:
+      highlights = s.conf.createSection( HIGHLIGHTS_SECTION )
+
+
     s.matches = []
 
-    for match in matches.getOwnDict().itervalues():
+    for name, match in matches.getOwnDict().iteritems():
 
       m = SmartMatch()
       m.setPattern( match )
+
+      if name in highlights.getOwnDict():
+        m.setHighlight( highlights[ name ] )
+
       s.matches.append( m )
 
   

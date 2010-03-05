@@ -47,8 +47,9 @@ class ChunkTypes:
   ANSI        = 1 << 5
   FLOWCONTROL = 1 << 6
   TEXT        = 1 << 7
+  HIGHLIGHT   = 1 << 8
 
-  ALL_TYPES   = ( 1 << 8 ) - 1
+  ALL_TYPES   = ( 1 << 9 ) - 1
 
 
   def __init__( s ):
@@ -114,7 +115,7 @@ class BaseChunk:
 
     chunktype = chunktypes.name[ s.chunktype ]
 
-    if s.data:
+    if s.data is not None:
       return '<Chunk Type: %s; Data: "%s">' % ( chunktype, s.data )
       
     else:
@@ -281,3 +282,15 @@ class FlowControlChunk( BaseChunk ):
 
     chunktype = chunktypes.name[ s.chunktype ]
     return '<Chunk Type: %s; Type: %s>' % ( chunktype, s.types[ s.data ] )
+
+
+## ---[ Class HighlightChunk ]-------------------------------------------
+
+
+class HighlightChunk( BaseChunk ):
+  """
+  This chunk type represents a highlighting parameter, to be inserted by
+  TriggersFilter when a line matches one of the user's triggers.
+  """
+
+  chunktype = chunktypes.HIGHLIGHT

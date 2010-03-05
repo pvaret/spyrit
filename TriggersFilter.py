@@ -26,7 +26,7 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, FlowControlChunk
+from PipelineChunks import chunktypes, FlowControlChunk, HighlightChunk
 
 
 
@@ -64,8 +64,6 @@ class TriggersFilter( BaseFilter ):
 
   def activatedProcessChunk( s, chunk ):
 
-    #assert s.manager is not None
-
     s.buffer.append( chunk )
 
     type = chunk.chunktype
@@ -83,8 +81,9 @@ class TriggersFilter( BaseFilter ):
 
         m = s.manager.lookupMatch( line )
 
-        if m:
-          print m.results
+        if m and m.highlight:
+          s.buffer.insert( 0, HighlightChunk( m.highlight ) )
+          s.buffer.append( HighlightChunk( {} ) )
 
       for chunk in s.buffer:
         

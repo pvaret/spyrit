@@ -13,4 +13,5 @@ syntax:glob
 *.e3p
 *.e3s
 *.e3t
+TAGS
 resources.py

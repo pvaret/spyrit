@@ -67,7 +67,13 @@ class SmartMatch:
     s.results   = None
     s.positions = None
     s.error     = None
+    s.highlight = None
     
+
+  def setHighlight( s, highlight ):
+
+    s.highlight = highlight
+
 
   def setRegex( s, regex ):
 

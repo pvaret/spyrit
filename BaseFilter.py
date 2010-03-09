@@ -105,19 +105,21 @@ class BaseFilter:
 
   def feedChunk( s, chunk ):
     
-    chunk = s.concatPostponed( chunk )
-    
-    ## At this point, the postponed chunk has either been merged with
-    ## the new one, or been sent downstream. At any rate, it's been dealt
-    ## with, and s.postponedChunk is empty.
-    ## This mean that the postponed chunk should ALWAYS have been cleared
-    ## when processChunk() is called. If not, there's something shifty
-    ## going on...
-    
     if chunk.chunktype & s.relevant_types:
 
+      chunk = s.concatPostponed( chunk )
+
+      ## At this point, the postponed chunk has either been merged with
+      ## the new one, or been sent downstream. At any rate, it's been dealt
+      ## with, and s.postponedChunk is empty.
+      ## This mean that the postponed chunk should ALWAYS have been cleared
+      ## when processChunk() is called. If not, there's something shifty
+      ## going on...
+
       chunks = s.processChunk( chunk )
-      for chunk in chunks: s.sink( chunk )
+
+      for chunk in chunks:
+        s.sink( chunk )
       
     else:
       s.sink( chunk )

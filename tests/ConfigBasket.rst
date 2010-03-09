@@ -1,4 +1,4 @@
-:doctest:
+.. :doctest:
 
 This module provides the ``ConfigBasket`` class for easy storage and retrieval
 of hierarchal configuration keys.

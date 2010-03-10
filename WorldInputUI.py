@@ -166,6 +166,14 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.world.worldui.autocompleter.complete( s )
 
 
+  def focusInEvent( s, e ):
+
+    ## Notify other possible interested parties that this widget now has the
+    ## focus.
+
+    emit( s, SIGNAL( "focusChanged( QWidget )" ), s )
+
+
   def __del__( s ):
 
     s.world     = None

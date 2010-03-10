@@ -102,6 +102,12 @@ class WorldUI( QtGui.QSplitter ):
 
     s.setFocusProxy( s.inputui )
 
+    connect( s.inputui,          SIGNAL( "focusChanged( QWidget )" ),
+             s.setFocusProxy )
+
+    connect( s.secondaryinputui, SIGNAL( "focusChanged( QWidget )" ),
+             s.setFocusProxy )
+
     ## Setup autocompleter.
 
     s.autocompleter = Autocompleter()

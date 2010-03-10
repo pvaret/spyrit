@@ -22,7 +22,7 @@ def is_probably_test( fname ):
   data = file( fname ).read( 1024 )
 
   for line in data.split( "\n" ):
-    if line.strip() == ":doctest:":
+    if line.lstrip(".").strip() == ":doctest:":
       return True
 
   return False
@@ -37,7 +37,7 @@ def find_all_tests():
       fname = os.path.join( current, f )
 
       if is_probably_test( fname ):
-        yield f  ## And not fname: doctest is module-relative.
+        yield fname.split(os.path.sep, 1)[-1]
 
 
 

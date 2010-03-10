@@ -70,10 +70,18 @@ def qCleanupResources():
 qInitResources()
 """
 
+INIT_FUNCTIONS_LEGACY = """def qInitResources():
+    QtCore.qRegisterResourceData( 0x01, qt_resource_struct, qt_resource_name, qt_resource_data )
+
+def qCleanupResources():
+    QtCore.qUnregisterResourceData( 0x01, qt_resource_struct, qt_resource_name, qt_resource_data )
+
+qInitResources()
+"""
 
 class RCCFileInfo:
 
-  def __init__( s, name, fDesc, locale, flags ):
+  def __init__( s, name, fDesc, locale, flags, opts={} ):
 
     ## Store resource data.
 
@@ -81,6 +89,8 @@ class RCCFileInfo:
     s.name   = name
     s.fDesc  = fDesc
     s.locale = locale
+
+    s.opts   = opts
 
     s.parent      = None
     s.children    = {}
@@ -93,7 +103,7 @@ class RCCFileInfo:
 
     ## Return a deep copy of the object.
 
-    c = RCCFileInfo( s.name, s.fDesc, s.locale, s.flags )
+    c = RCCFileInfo( s.name, s.fDesc, s.locale, s.flags, s.opts )
 
     c.parent      = s.parent
     c.children    = s.children.copy()
@@ -111,10 +121,16 @@ class RCCFileInfo:
     stg = ""
     div = 2 ** ( 8 * ( width - 1 ) )
 
+    if s.opts.get( "legacy" ):
+      fmt = "\\x%02x"
+
+    else:
+      fmt = "%c"
+
     while div >= 1:
 
       tmp  = num / div
-      stg += "%c" % tmp
+      stg += fmt % tmp
       num -= tmp * div
       div /= 256
 
@@ -141,10 +157,26 @@ class RCCFileInfo:
     blob    = [ s.numberToStr( len( data ), 4 ) ]
     offset += 4
 
+    if s.opts.get( "legacy" ):
+      blob.append( "\\\n" )
+
     ## Binary data
 
-    for byte in data:
-      blob.append( "%c" % byte )
+    if s.opts.get( "legacy" ):
+      for idx in range( len( data ) ):
+        blob.append( s.numberToStr( ord( data[idx] ), 1 ) )
+
+        ## This test should be done earlier as it produces an inelegant single
+        ## first byte, but I want the exact same behavior as pyrcc.
+
+        if not (idx % 16):
+          blob.append( "\\\n" )
+
+      blob.append( "\\\n" )
+
+    else:
+      for byte in data:
+        blob.append( s.numberToStr( ord( byte ), 1 ) )
 
     offset += len( data )
     blob    = "".join( blob )
@@ -161,14 +193,37 @@ class RCCFileInfo:
     outName = [ s.numberToStr( len( s.name ), 2 ) ]
     offset += 2
 
+    if s.opts.get( "legacy" ):
+      outName.append( "\\\n" )
+
     ## Hash, we have no choice but to use a QString here
 
     outName.append( s.numberToStr( hash( QtCore.QString( s.name ) ), 4 ) )
     offset += 4
 
+    if s.opts.get( "legacy" ):
+      outName.append( "\\\n" )
+
     ## Name unicode string
 
-    outName += [ s.numberToStr( ord( c ), 2 ) for c in unicode( s.name ) ]
+    if s.opts.get( "legacy" ):
+      uname = unicode( s.name )
+
+      for idx in range( len( uname ) ):
+        outName.append( s.numberToStr( ord( uname[idx] ), 2 ) )
+
+        ## This test should be done earlier and use modulo 8 to avoid an
+        ## inelegant single first word and unclean wrapping,
+        ## but I want the exact same behavior as pyrcc.
+
+        if not (idx % 16):
+          outName.append( "\\\n" )
+
+      outName.append( "\\\n" )
+
+    else:
+      outName += [ s.numberToStr( ord( c ), 2 ) for c in unicode( s.name ) ]
+
     offset  += len( s.name ) * 2
 
     outName  = "".join( outName )
@@ -208,6 +263,9 @@ class RCCFileInfo:
 
       info.append( s.numberToStr( s.dataOffset, 4 ) )
 
+    if s.opts.get( "legacy" ):
+      info.append( "\\\n" )
+
     return "".join( info )
 
 
@@ -215,10 +273,10 @@ class RCCResourceLibrary:
 
   ## Python version of PyRCC resource library object
 
-  def __init__( s, qrcFiles = [] ):
+  def __init__( s, qrcFiles, opts ):
 
     s.qrcFiles  = qrcFiles
-    s.verbose   = False
+    s.opts      = opts
 
     s.root      = None
 
@@ -245,7 +303,7 @@ class RCCResourceLibrary:
           pwd = os.path.join( os.getcwdu(), os.path.dirname( qrc ) )
 
         except:
-          print "Unable to open file %s" % qrc
+          print >> sys.stderr, "Unable to open file %s" % qrc
           continue
 
       qrcDom = parse( f ).firstChild
@@ -286,7 +344,7 @@ class RCCResourceLibrary:
 
             filename = res.firstChild.data
             if not filename:
-              print "Warning: Null node in XML"
+              print >> sys.stderr, "Warning: Null node in XML"
 
             alias = res.getAttribute( "alias" ) or filename
 
@@ -304,7 +362,7 @@ class RCCResourceLibrary:
               f = file( filename, "rb" )
 
             except:
-              print "Cannot find file: %s" %  filename
+              print >> sys.stderr, "Cannot find file: %s" %  filename
               res = res.nextSibling
               continue
 
@@ -312,8 +370,7 @@ class RCCResourceLibrary:
             ## TODO: handle directories
 
             s.addFile( alias, RCCFileInfo( alias.split( '/' )[-1], f,
-                       QtCore.QLocale( lang ), F_NOFLAGS ) )
-
+                       QtCore.QLocale( lang ), F_NOFLAGS, s.opts ) )
             res = res.nextSibling
 
         child = child.nextSibling
@@ -328,11 +385,11 @@ class RCCResourceLibrary:
     ## Check file size beforehand
 
     if os.fstat( rccFile.fDesc.fileno() ).st_size > 0xFFFFFFFFL:
-      print "File too big: %s" % rccFile.fDesc.name
+      print >> sys.stderr, "File too big: %s" % rccFile.fDesc.name
       return False
 
     if not s.root:
-      s.root = RCCFileInfo( "", None, None, F_DIRECTORY )
+      s.root = RCCFileInfo( "", None, None, F_DIRECTORY, s.opts )
 
     parent = s.root
     nodes  = alias.split( "/" )
@@ -344,7 +401,7 @@ class RCCResourceLibrary:
 
       if node not in parent.children:
 
-        nodeInfo = RCCFileInfo( node, None, None, F_DIRECTORY )
+        nodeInfo = RCCFileInfo( node, None, None, F_DIRECTORY, s.opts )
         nodeInfo.parent = parent
         parent.children[node] = nodeInfo
         parent = nodeInfo
@@ -402,8 +459,14 @@ class RCCResourceLibrary:
     ## than the original PyRCC
 
     blobs = "".join( blobs )
-    blobs = zlib.compress( blobs, 9 ).encode( "base64" )
-    print >> out, 'qt_resource_data = """\n%s"""\n' % blobs
+
+    if s.opts.get( "legacy" ):
+      print >> out, 'qt_resource_data = "\\\n%s"\n' % blobs
+
+    else:
+      blobs = zlib.compress( blobs, 9 ).encode( "base64" )
+      print >> out, 'qt_resource_data = """\n%s"""\n' % blobs
+
 
     return True
 
@@ -433,16 +496,21 @@ class RCCResourceLibrary:
           child.nameOffset = names[child.name]
 
         else:
+          names[child.name] = offset
           offset, outNames = child.writeDataName( offset )
           strNames.append( outNames )
-          names[child.name] = offset
 
     ## Reduce our data size before printing it to be a bit more efficient
     ## than the original PyRCC
 
     strNames = "".join( strNames )
-    strNames = zlib.compress( strNames, 9 ).encode( "base64" )
-    print >> out, 'qt_resource_name = """\n%s"""\n' % strNames
+
+    if s.opts.get( "legacy" ):
+      print >> out, 'qt_resource_name = "\\\n%s"\n' % strNames
+
+    else:
+      strNames = zlib.compress( strNames, 9 ).encode( "base64" )
+      print >> out, 'qt_resource_name = """\n%s"""\n' % strNames
 
     return True
 
@@ -513,9 +581,13 @@ class RCCResourceLibrary:
           pending.append( child )
 
     structs = "".join( structs )
-    structs = zlib.compress( structs, 9 ).encode( "base64" )
 
-    print >> out, 'qt_resource_struct = """\n%s"""\n' % structs
+    if s.opts.get( "legacy" ):
+      print >> out, 'qt_resource_struct = "\\\n%s"\n' % structs
+
+    else:
+      structs = zlib.compress( structs, 9 ).encode( "base64" )
+      print >> out, 'qt_resource_struct = """\n%s"""\n' % structs
 
     return True
 
@@ -525,7 +597,11 @@ class RCCResourceLibrary:
     ## Print python header
 
     try:
-      print >> out, INIT_FUNCTIONS
+      if s.opts.get( "legacy" ):
+        print >> out, INIT_FUNCTIONS_LEGACY
+
+      else:
+        print >> out, INIT_FUNCTIONS
 
     except:
       return False
@@ -537,27 +613,27 @@ class RCCResourceLibrary:
 
     ## Print out compiled resource file
 
-    if s.verbose:
-        print "Outputting code."
+    if s.opts.get( "verbose" ):
+        print >> sys.stderr, "Outputting code."
 
     if not s.writeHeader( out ):
-        print "Couldn't write header!"
+        print >> sys.stderr, "Couldn't write header!"
         return False
 
     if not s.writeDataBlobs( out ):
-        print "Couldn't write data blob!"
+        print >> sys.stderr, "Couldn't write data blob!"
         return False
 
     if not s.writeDataNames( out ):
-        print "Couldn't write file names!"
+        print >> sys.stderr, "Couldn't write file names!"
         return False
 
     if not s.writeDataStructure( out ):
-        print "Couldn't write data tree!"
+        print >> sys.stderr, "Couldn't write data tree!"
         return False
 
     if not s.writeInitializer( out ):
-        print "Couldn't write footer!"
+        print >> sys.stderr, "Couldn't write footer!"
         return False
 
     return True
@@ -569,12 +645,13 @@ def main():
   ## Check command-line arguments and get things started
   ## TODO: parse options
 
-  outFile  = None
-  debug    = False
-  compress = False
-  cmpThres = 70
-  encode   = True
-  qrcFiles = []
+  outFile   = None
+  debug     = False
+  compress  = False
+  cmpThres  = 70
+  encode    = True
+  qrcFiles  = []
+  extraOpts = {}
 
   ## Handle command-line options here
 
@@ -584,16 +661,24 @@ def main():
                          version="Spyrit Qt Resource Compiler v%d.%d" \
                                  % ( SPYRCC_MAJ, SPYRCC_MIN ) )
 
-  parser.add_option( "-o", "--output", dest="outFileName",
+  parser.add_option( "-o", "--out", dest="outFileName",
                      help="output to FILE rather than stdout",
                      metavar="FILE" )
+
+  parser.add_option( "-l", "--legacy", action="store_true", dest="legacyMode",
+                     default=False, help="generate legacy pyrcc4 code" )
+
+  parser.add_option( "-v", "--verbose", action="store_true", dest="verbose",
+                     default=False, help="extra output to stderr" )
 
   options, args = parser.parse_args()
 
   if not args:
     parser.error( "No QRC file provided!" )
 
-  outFileName = options.outFileName
+  outFileName          = options.outFileName
+  extraOpts['legacy']  = options.legacyMode
+  extraOpts['verbose'] = options.verbose
 
   for arg in args:
 
@@ -602,8 +687,8 @@ def main():
 
     else:
       parser.error( "File %s doesn't exist!" % arg )
-  
-  rcl = RCCResourceLibrary( args )
+
+  rcl = RCCResourceLibrary( args, extraOpts )
 
   if not outFileName:
     outFile = sys.stdout

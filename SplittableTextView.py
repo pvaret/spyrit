@@ -131,6 +131,12 @@ class SplittableTextView( QtGui.QTextEdit ):
     connect( s, SIGNAL( "textChanged()" ),      s.perhapsRepaintText )
     connect( s, SIGNAL( "selectionChanged()" ), s.perhapsRepaintSelection )
 
+    ## We call this once *after* the event loop has started; otherwise it
+    ## occurs before the widget is done constructing, and the font metrics
+    ## it uses are thus erroneous:
+
+    QtCore.QTimer.singleShot( 0, s.computeLineStep )
+
     s.more = LineCount( s )
     s.setMoreAnchor()
 
@@ -192,9 +198,24 @@ class SplittableTextView( QtGui.QTextEdit ):
     stylesheet += "}"
 
     s.setStyleSheet( stylesheet )
+    s.computeLineStep()
+
+
+  def computeLineStep( s ):
 
     s.scrollbar.setSingleStep( s.lineHeight() )
-    s.setPageStep()
+    s.computePageStep()
+
+
+  def computePageStep( s ):
+
+    if s.split_scrollback:
+      pagestep = s.splitY()            - s.scrollbar.singleStep()
+
+    else:
+      pagestep = s.viewport().height() - s.scrollbar.singleStep()
+
+    s.scrollbar.setPageStep( pagestep )
 
 
   def lineHeight( s ):
@@ -221,7 +242,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     s.split_scrollback = split_scrollback
 
-    s.setPageStep()
+    s.computePageStep()
     s.setMoreAnchor()
 
     if not s.atbottom:
@@ -494,17 +515,6 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.more.setLineCount( s.linesRemaining() )
 
 
-  def setPageStep( s ):
-
-    if s.split_scrollback:
-      pagestep = s.splitY()            - s.scrollbar.singleStep()
-
-    else:
-      pagestep = s.viewport().height() - s.scrollbar.singleStep()
-
-    s.scrollbar.setPageStep( pagestep )
-
-
   def contextMenuEvent( s, e ):
 
     menu = s.createStandardContextMenu()
@@ -524,13 +534,13 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def pageUp( s ):
   
-    s.setPageStep()
+    s.computePageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )
    
    
   def pageDown( s ):
     
-    s.setPageStep()
+    s.computePageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepAdd )
    
 

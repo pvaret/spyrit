@@ -84,6 +84,12 @@ class FormatManager:
               value.lower(), QtGui.QBrush( QtGui.QColor( value ) ) )
       s.textformat.setForeground( brush )
 
+    elif property == FORMAT_PROPERTIES.BACKGROUND:
+
+      brush = s.brush_cache.setdefault(
+              value.lower(), QtGui.QBrush( QtGui.QColor( value ) ) )
+      s.textformat.setBackground( brush )
+
     elif property == FORMAT_PROPERTIES.BOLD:
       s.textformat.setFontWeight( QtGui.QFont.Bold )
 

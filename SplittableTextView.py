@@ -555,6 +555,32 @@ class SplittableTextView( QtGui.QTextEdit ):
     return res
 
 
+  def ensureCursorVisible( s ):
+
+    ## Note: this method is never called from inside Qt, for instance during
+    ## the mousePressEvent above, because in the underlying QTextEdit this
+    ## method isn't declared as virtual. Bummer.
+    ## It is only used in our own code to ensure cursor visibility in case of
+    ## split scrollback.
+
+    QtGui.QTextEdit.ensureCursorVisible( s )
+
+    if s.split_scrollback and not s.atbottom:
+
+      rect  = s.cursorRect()
+      cur_y = s.viewport().mapToParent( rect.bottomLeft() ).y()
+
+      split_y = s.splitY()
+
+      if cur_y > split_y:
+
+        ## Okay, the cursor is hidden by our scrollback overlay. Let us scroll
+        ## some more so it is visible.
+
+        y = s.scrollbar.value()
+        s.scrollbar.setValue( y + cur_y - split_y - 1 )
+
+
   def setMoreAnchor( s ):
 
     x = s.viewport().width()

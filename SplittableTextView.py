@@ -36,6 +36,7 @@ class LineCount( QtGui.QLabel ):
 
     s.setAutoFillBackground( True )
     s.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
+    s.setMargin( 1 )
     s.hide()
 
     s.anchor_x   = 0
@@ -75,7 +76,7 @@ class LineCount( QtGui.QLabel ):
       s.show()
 
     count = s.line_count
-    txt = ( count < 2 ) and " (%d more line) " or " (%d more lines) "
+    txt = ( count < 2 ) and " %d more line " or " %d more lines "
     s.setText( txt % count )
 
     new_size = s.sizeHint()

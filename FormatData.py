@@ -25,10 +25,14 @@ from localqt import *
 
 class FORMAT_PROPERTIES:
 
-  COLOR     = QtGui.QTextFormat.ForegroundBrush
-  BOLD      = QtGui.QTextFormat.FontWeight
-  ITALIC    = QtGui.QTextFormat.FontItalic
-  UNDERLINE = QtGui.QTextFormat.TextUnderlineStyle
+  ## Format property identifiers are defined on the basis of Qt properties.
+  ## This saves us time when we apply them during the rendering process.
+
+  BOLD       = QtGui.QTextFormat.FontWeight
+  ITALIC     = QtGui.QTextFormat.FontItalic
+  UNDERLINE  = QtGui.QTextFormat.TextUnderlineStyle
+  COLOR      = QtGui.QTextFormat.ForegroundBrush
+  BACKGROUND = QtGui.QTextFormat.BackgroundBrush
 
 
 class ANSI_COLORS:

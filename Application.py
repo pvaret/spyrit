@@ -63,36 +63,24 @@ class Application( QtGui.QApplication ):
     ## Load up the dingbat symbols font.
     QtGui.QFontDatabase.addApplicationFont( ":/app/symbols" )
 
-    ## Load and register the Congig singleton instance.
-
-    from Config import Config
-    singletons.addInstance( "config", Config() )
-
-    if False: #singletons.config._show_splashscreen:
-
-      splash = QtGui.QSplashScreen( QtGui.QPixmap( ":/app/splash" ) )
-      splash.show()
-      s.processEvents()
-
-    else: splash = None
-
+    ## Setup icon.
     s.setWindowIcon( QtGui.QIcon( ":/app/icon" ) )
 
+    ## Load and register the singleton instances that are used throughout
+    ## the software. Note that they are created in the order they depend
+    ## on each other.
 
-    ## Load and register the rest of the singleton instances that are used
-    ## throughout the software. Note that they are created in the order they
-    ## depend on each other.
-
+    from Config        import Config
     from WorldsManager import WorldsManager
     from MainWindow    import MainWindow
+    from TempResources import TempResources
     
+    singletons.addInstance( "config",        Config() )
     singletons.addInstance( "worldsmanager", WorldsManager() )
     singletons.addInstance( "mw",            MainWindow() )
+    singletons.addInstance( "tmprc",         TempResources() )
 
     singletons.mw.show()
-
-    if splash:
-      splash.finish( singletons.mw )
 
     s.bootstrapped = True
 

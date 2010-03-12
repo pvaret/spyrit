@@ -24,4 +24,7 @@
   <file alias="logo">spyrit-logo.png</file>
   <file alias="symbols">symbols.ttf</file>
 </qresource>
+<qresource prefix="/sound">
+  <file alias="pop">pop.wav</file>
+</qresource>
 </RCC>

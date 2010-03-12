@@ -21,27 +21,66 @@
 ##
 
 
+import os
+
 from localqt import *
+
 
 class TempResources:
 
   def __init__( s ):
 
-    s.tempfiles = {}
+    s.map = {}
+
+    app = qApp()
+
+    if app:
+      connect( app, SIGNAL( "aboutToQuit()" ), s.cleanup )
 
 
   def get( s, fname ):
 
-    tmpfname = s.tempfiles.setdefault( fname, s.new_temp_resource( fname ) )
+    if fname in s.map:
+      return s.map[ fname ]
 
-    return tmpfname or fname
+    tmpfname = s.new_temp_resource( fname ) or fname
+
+    return s.map.setdefault( fname, tmpfname )
 
 
   def new_temp_resource( s, fname ):
 
-    data = QtCore.QFile( fname )
+    ## This creates the temp file if fname is a resource, but not if it
+    ## doesn't exist or is a real file.
 
-    if not data.exists():
+    if not QtCore.QFile.exists( fname ):
       return None
 
-    ## XXX Implement tmpfile generation and cleanup.
+    tmp = QtCore.QTemporaryFile.createLocalFile( fname )
+
+    if not tmp:
+      return None
+
+    ## Close the temporary file for now. We only want it filled with the
+    ## appropriate data for later use.
+
+    tmp.close()
+
+    return tmp.fileName()
+
+
+  def cleanup( s ):
+
+    for fname in s.map.itervalues():
+
+      try:
+        os.unlink( fname )
+      except OSError:
+        pass
+
+    s.map.clear()
+
+
+  def __del__( s ):
+
+    s.cleanup()

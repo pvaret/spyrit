@@ -44,7 +44,6 @@ DEFAULTS = (
   ( 'logfile_dir',         LOG_DIR,                     STR ),
   ( 'autolog',             False,                       BOOL ),
 
-  ( 'show_splashscreen', False,        BOOL ),
   ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
 
   ( 'toolbar_icon_size', 24, INT ),

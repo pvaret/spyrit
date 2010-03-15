@@ -74,11 +74,13 @@ class Application( QtGui.QApplication ):
     from WorldsManager import WorldsManager
     from MainWindow    import MainWindow
     from TempResources import TempResources
+    from SoundEngine   import SoundEngine
     
     singletons.addInstance( "config",        Config() )
     singletons.addInstance( "worldsmanager", WorldsManager() )
     singletons.addInstance( "mw",            MainWindow() )
     singletons.addInstance( "tmprc",         TempResources() )
+    singletons.addInstance( "sound",         SoundEngine() )
 
     singletons.mw.show()
 

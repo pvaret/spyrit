@@ -28,7 +28,7 @@ from SearchManager  import SearchManager
 from FormatManager  import FormatManager
 from ConfigObserver import ConfigObserver
 
-from PlatformSpecific import platformSpecific
+from Singletons import singletons
 
 
 ## This is used a lot, so define it right away.
@@ -122,7 +122,7 @@ class OutputManager:
 
     s.textcursor.endEditBlock()
 
-    if s.conf._alert_on_activity: 
+    if s.conf._alert_on_activity:
       qApp().alert( s.textview.window() )
 
 

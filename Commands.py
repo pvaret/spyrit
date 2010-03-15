@@ -21,11 +21,35 @@
 ##
 
 import re
+import inspect
 
 from localqt    import *
 
 from Messages   import messages
 from Singletons import singletons
+
+
+
+def args_match_function( func, args ):
+
+  f_args, varargs, varkw, defaults = inspect.getargspec( func )
+
+  n_args  = len( args )
+  n_fargs = len( f_args )
+
+  if inspect.ismethod( func ):
+    n_fargs -= 1  ## Account for implicit self argument.
+
+  if n_args < n_fargs:
+    ## Not enough arguments were given to the function.
+    return False
+
+  if varargs is not None:
+    ## Function declaration bears a *args clause, so any number of arguments
+    ## will do.
+    return True
+
+  return ( n_args == n_fargs )
 
 
 class Commands:
@@ -51,7 +75,7 @@ class Commands:
 
   def lookupCommand( s, command ):
 
-    return s.commands[ command.strip().lower() ]
+    return s.commands.get( command.strip().lower() )
 
 
   def tokenize( s, line ):
@@ -91,22 +115,21 @@ class Commands:
     if not tokens:
       return
 
-    try:
+    commandname = tokens.pop( 0 )
+    command     = s.lookupCommand( commandname )
 
-      commandname = tokens.pop( 0 )
-      command     = s.lookupCommand( commandname )
-
-    except KeyError:
+    if not command:
 
       s.world.info( u"%s: no such command." % commandname )
       return
 
-    try:
-      command( *tokens )
+    if not args_match_function( command, tokens ):
 
-    except TypeError:
       s.world.info( u"Invalid number of parameters for command %s." \
                      % commandname )
+      return
+
+    command( *tokens )
 
 
   def command_Help( s, *args ):

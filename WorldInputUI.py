@@ -168,6 +168,8 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def focusInEvent( s, e ):
 
+    QtGui.QTextEdit.focusInEvent( s, e )
+
     ## Notify other possible interested parties that this widget now has the
     ## focus.
 

@@ -42,3 +42,7 @@ class PosixSpecific:
 
   def get_configuration_file( s ):
     return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )
+
+
+  def get_sound_backends( s ):
+    return []

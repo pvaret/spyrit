@@ -14,11 +14,11 @@
 ##
 
 ##
-## DefaultSoundBackend.py
+## QSoundBackend.py
 ##
-## Implements the default, QSound-based sound backend. It should work on
-## Windows and Mac OS X by default, but probably not on Linux, as it relies
-## on a particular sound server that isn't commonly installed.
+## Implements the QSound-based sound backend. It should work on Windows and
+## Mac OS X by default, but probably not on Linux, as it relies on a
+## particular sound server that isn't commonly installed.
 ##
 
 
@@ -26,7 +26,7 @@ from localqt import *
 
 
 
-class DefaultSoundBackend:
+class QSoundBackend:
 
   def isAvailable( s ):
 

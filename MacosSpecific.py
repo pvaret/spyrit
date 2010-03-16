@@ -28,3 +28,7 @@ from PosixSpecific import PosixSpecific
 class MacosSpecific( PosixSpecific ):
 
   should_repaint_on_scroll = True
+
+  def get_sound_backends( s ):
+
+    return [ "qsound" ]

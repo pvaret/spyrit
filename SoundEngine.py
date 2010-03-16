@@ -23,46 +23,34 @@
 
 from localqt import *
 
-from Singletons          import singletons
-from DefaultSoundBackend import DefaultSoundBackend
+from Singletons       import singletons
+from QSoundBackend    import QSoundBackend
+from PlatformSpecific import platformSpecific
+
+SOUNDBACKENDS = {
+  "qsound": QSoundBackend,
+}
 
 
 class SoundEngine:
 
-
   def __init__( s ):
 
     s.backend      = None
-    s.pollerthread = None
 
     s.pollForBackend()
 
 
   def pollForBackend( s ):
 
-    ## We need a thread to poll backends, because in some cases, like with
-    ## the QSound-based engine on Linux, the engine takes several seconds
-    ## before returning a failure, thus blocking the UI in the meanwhile.
-    ## Bummer.
+    for backend in platformSpecific.get_sound_backends():
 
-    class EnginePollerThread( QtCore.QThread ):
+      b = SOUNDBACKENDS[backend]()
 
-      def run( thread ):
+      if b.isAvailable():
 
-        for Backend in [ DefaultSoundBackend ]:
-
-          b = Backend()
-
-          if b.isAvailable():
-
-            ## Variable assignment in Python is atomic, so it's okay to do
-            ## this in a thread.
-
-            s.backend = b
-            break
-
-    s.pollerthread = EnginePollerThread()
-    s.pollerthread.start()
+        s.backend = b
+        break
 
 
   def play( s, soundfile ):
@@ -71,17 +59,3 @@ class SoundEngine:
       return
 
     s.backend.play( singletons.tmprc.get( soundfile ) )
-
-
-  def __del__( s ):
-
-    if s.pollerthread:
-
-      ## terminate() is rather rough, but if the thread still isn't done
-      ## running by the time the engine gets destroyed, then there's a problem
-      ## and aborting it is all we can do.
-
-      s.pollerthread.terminate()
-      s.pollerthread = None
-
-    s.backend = None

@@ -37,6 +37,8 @@ class Win32Specific:
   def get_configuration_dir( s ):
     return os.path.join( winpaths.get_appdata(), s.CONFIG_DIR )
 
-
   def get_configuration_file( s ):
     return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )
+
+  def get_sound_backends( s ):
+    return [ "qsound" ]

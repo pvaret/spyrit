@@ -83,6 +83,11 @@ class InputHistory:
     s.currenttext = ""
     s.cursor      = -1
 
+    ## Don't update if text hasn't changed:
+
+    if s.history and s.history[0] == text:
+      return
+
     s.history.insert( 0, text )
 
     conf = s.inputwidget.world.conf

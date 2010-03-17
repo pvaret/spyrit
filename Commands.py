@@ -52,85 +52,9 @@ def args_match_function( func, args ):
   return ( n_args == n_fargs )
 
 
-class Commands:
-
-  QUOTED  = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
-  COMMAND = "command_"
 
 
-  def __init__( s, world ):
-
-    s.world    = world
-    s.commands = {}
-
-    ## Index the COMMAND methods for later lookup.
-
-    for method in dir( s ):
-
-      if not method.startswith( s.COMMAND ):
-        continue
-
-      s.commands[ method[ len( s.COMMAND ): ].lower() ] = getattr( s, method )
-
-
-  def lookupCommand( s, command ):
-
-    return s.commands.get( command.strip().lower() )
-
-
-  def tokenize( s, line ):
-
-    ## Turns a line such as 'A B C "D E" F' into [ 'A', 'B', 'C', 'D E', 'F' ]
-
-    line   = line.strip()
-    tokens = []
-
-    while True:
-
-      m = s.QUOTED.search( line )
-
-      if m:
-
-        for token in line[ 0:m.start() ].split():
-          tokens.append( token.strip() )
-
-        tokens.append( m.group( 1 ) or m.group( 2 ) )
-
-        line = line[ m.end(): ]
-
-      else:
-
-        for token in line.split():
-          tokens.append( token.strip() )
-
-        break
-
-    return tokens
-
-
-  def execute( s, commandline ):
-
-    tokens = s.tokenize( commandline )
-
-    if not tokens:
-      return
-
-    commandname = tokens.pop( 0 )
-    command     = s.lookupCommand( commandname )
-
-    if not command:
-
-      s.world.info( u"%s: no such command." % commandname )
-      return
-
-    if not args_match_function( command, tokens ):
-
-      s.world.info( u"Invalid number of parameters for command %s." \
-                     % commandname )
-      return
-
-    command( *tokens )
-
+class OldCommands:
 
   def command_Help( s, *args ):
 
@@ -279,6 +203,133 @@ class Commands:
   def command_Load( s, *args ):
 
     s.world.loadFile( args and " ".join( args ) or None )
+
+
+
+
+class BaseCommand( object ):
+
+  ## Abstract base class for commands.
+
+  cmd = None
+
+  def __init__( s, world ):
+
+    s.world = world
+
+
+  def __del__( s ):
+
+    s.world = None
+
+
+  def execute( s, *args ):
+
+    pass
+
+
+
+class LoadCommand( BaseCommand ):
+
+  cmd = "load"
+
+  def execute( s, *args ):
+
+    s.world.loadFile( args and " ".join( args ) or None )
+
+
+
+class Commands:
+
+  QUOTED  = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
+
+  def __init__( s, world ):
+
+    s.world    = world
+    s.commands = {}
+
+    ## Explore module namespace for commands to register:
+
+    for name, klass in globals().iteritems():
+
+      ## Check that klass is a class. It is the case if it is an instance of
+      ## type.
+
+      if not isinstance( klass, type ):
+        continue
+
+      if issubclass( klass, BaseCommand ) and klass is not BaseCommand:
+        s.registerCommand( klass )
+
+
+  def registerCommand( s, command_class ):
+
+    cmdname = command_class.cmd
+
+    if not cmdname:
+      return
+
+    s.commands[ cmdname ] = command_class( s.world )
+    #s.addHelp( cmdname, command_class.__doc__ )
+
+
+  def lookupCommand( s, command ):
+
+    return s.commands.get( command.strip().lower() )
+
+
+  def tokenize( s, line ):
+
+    ## Turns a line such as 'A B C "D E" F' into [ 'A', 'B', 'C', 'D E', 'F' ]
+
+    line   = line.strip()
+    tokens = []
+
+    while True:
+
+      m = s.QUOTED.search( line )
+
+      if m:
+
+        for token in line[ 0:m.start() ].split():
+          tokens.append( token.strip() )
+
+        tokens.append( m.group( 1 ) or m.group( 2 ) )
+
+        line = line[ m.end(): ]
+
+      else:
+
+        for token in line.split():
+          tokens.append( token.strip() )
+
+        break
+
+    return tokens
+
+
+  def execute( s, commandline ):
+
+    tokens = s.tokenize( commandline )
+
+    if not tokens:
+      return
+
+    commandname = tokens.pop( 0 )
+    command     = s.lookupCommand( commandname )
+
+    if not command:
+
+      s.world.info( u"%s: no such command." % commandname )
+      return
+
+    if not args_match_function( command.execute, tokens ):
+
+      s.world.info( u"Invalid number of parameters for command %s." \
+                     % commandname )
+      return
+
+    command.execute( *tokens )
 
 
   def __del__( s ):

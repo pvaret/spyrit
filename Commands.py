@@ -64,19 +64,19 @@ class OldCommands:
 
     if not args:
 
-      for commandname, cmd in sorted( s.commands.iteritems() ):
+      for cmdname, cmd in sorted( s.commands.iteritems() ):
         doc = cmd.__doc__
-        s.world.info( doc and c + doc or c + commandname )
+        s.world.info( doc and c + doc or c + cmdname )
 
     else:
 
-      commandname = " ".join( args )
+      cmdname = " ".join( args )
 
       try:
-        cmd = s.lookupCommand( commandname )
+        cmd = s.lookupCommand( cmdname )
 
       except KeyError:
-        s.world.info( u"%s: no such command." % commandname )
+        s.world.info( u"%s: no such command." % cmdname )
         return
 
       doc = cmd.__doc__
@@ -85,7 +85,7 @@ class OldCommands:
         s.world.info( c + doc )
 
       else:
-        s.world.info( u"No help for command %s." % commandname )
+        s.world.info( u"No help for command %s." % cmdname )
 
 
   def command_Find( s, *args ):
@@ -200,42 +200,39 @@ class OldCommands:
     except KeyError: pass
 
 
-  def command_Load( s, *args ):
-
-    s.world.loadFile( args and " ".join( args ) or None )
-
-
 
 
 class BaseCommand( object ):
 
   ## Abstract base class for commands.
 
-  cmd = None
+  def __init__( s, cmdname ):
 
-  def __init__( s, world ):
-
-    s.world = world
+    s.cmdname = cmdname
 
 
-  def __del__( s ):
+  def execute( s, world, *args ):
 
-    s.world = None
+    if not args_match_function( s.default, [world] + list( args ) ):
+
+      world.info( u"Invalid number of parameters for command %s." % cmdname )
+      return
+
+    s.default( world, *args )
 
 
-  def execute( s, *args ):
+  def default( s, world, *args ):
 
+    ## Default implementation that does nothing. Overload this in subclasses.
     pass
 
 
 
 class LoadCommand( BaseCommand ):
 
-  cmd = "load"
+  def default( s, world, *args ):
 
-  def execute( s, *args ):
-
-    s.world.loadFile( args and " ".join( args ) or None )
+    world.loadFile( args and " ".join( args ) or None )
 
 
 
@@ -243,33 +240,15 @@ class Commands:
 
   QUOTED  = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
 
-  def __init__( s, world ):
+  def __init__( s ):
 
-    s.world    = world
     s.commands = {}
 
-    ## Explore module namespace for commands to register:
 
-    for name, klass in globals().iteritems():
+  def registerCommand( s, cmdname, command_class ):
 
-      ## Check that klass is a class. It is the case if it is an instance of
-      ## type.
-
-      if not isinstance( klass, type ):
-        continue
-
-      if issubclass( klass, BaseCommand ) and klass is not BaseCommand:
-        s.registerCommand( klass )
-
-
-  def registerCommand( s, command_class ):
-
-    cmdname = command_class.cmd
-
-    if not cmdname:
-      return
-
-    s.commands[ cmdname ] = command_class( s.world )
+    cmdname = cmdname.strip().lower()
+    s.commands[ cmdname ] = command_class( cmdname )
     #s.addHelp( cmdname, command_class.__doc__ )
 
 
@@ -308,31 +287,36 @@ class Commands:
     return tokens
 
 
-  def execute( s, commandline ):
+  def execute( s, world, cmdline ):
 
-    tokens = s.tokenize( commandline )
+    tokens = s.tokenize( cmdline )
 
     if not tokens:
       return
 
-    commandname = tokens.pop( 0 )
-    command     = s.lookupCommand( commandname )
+    cmdname = tokens.pop( 0 )
+    command = s.lookupCommand( cmdname )
 
     if not command:
 
-      s.world.info( u"%s: no such command." % commandname )
+      world.info( u"%s: no such command." % cmdname )
       return
 
-    if not args_match_function( command.execute, tokens ):
-
-      s.world.info( u"Invalid number of parameters for command %s." \
-                     % commandname )
-      return
-
-    command.execute( *tokens )
+    command.execute( world, *tokens )
 
 
   def __del__( s ):
 
     s.commands = None
-    s.world    = None
+
+
+
+## Instantiate a Commands object for other subsystems to use.
+## We do it here, as opposed to in our singleton registry, so we can add the
+## existing commands from this module's namespace.
+
+commands = Commands()
+
+## And now populate it.
+
+commands.registerCommand( "load", LoadCommand )

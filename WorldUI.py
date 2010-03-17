@@ -302,9 +302,6 @@ class WorldUI( QtGui.QSplitter ):
 
     s.world.worldui               = None
     s.world.logger.world          = None
-    s.inputui.commands.commands   = None
-    s.inputui.commands.world      = None
-    s.inputui.commands            = None
     s.tab.widget                  = None
     s.output_manager.world        = None
     s.inputui.world               = None

@@ -23,7 +23,7 @@
 
 from localqt import *
 
-from Commands         import Commands
+from Commands         import commands
 from ActionSet        import ActionSet
 from InputHistory     import InputHistory
 from ConfigObserver   import ConfigObserver
@@ -41,7 +41,6 @@ class WorldInputUI( QtGui.QTextEdit ):
     s.world    = world
     s.conf     = world.conf
     s.history  = InputHistory( s, shouldsavehistory )
-    s.commands = Commands( world )
 
     s.actionset = ActionSet( s )
 
@@ -144,7 +143,7 @@ class WorldInputUI( QtGui.QTextEdit ):
       s.history.update( text )
 
     if text.startswith( s.conf._input_command_char ):
-      s.commands.execute( text[ len( s.conf._input_command_char ): ] )
+      commands.execute( s.world, text[ len( s.conf._input_command_char ): ] )
 
     else:
       s.world.socketpipeline.send( text + u"\r\n" )

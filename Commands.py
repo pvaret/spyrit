@@ -16,8 +16,9 @@
 ##
 ## Commands.py
 ##
-## This holds the Commands class, which parses and executes command lines
-## entered by the user.
+## This holds the command-related classes, in particular CommandRegistry and
+## BaseCommand, and the subclasses of the latter. Together they provide the
+## use with a way to perform operations from the input box.
 ##
 
 import re
@@ -88,64 +89,6 @@ class OldCommands:
         s.world.info( u"No help for command %s." % cmdname )
 
 
-  def command_Find( s, *args ):
-
-    u"find [<string>]: Searches for <string> in the output window." \
-    u"If <string> is omitted, repeat the last search."
-
-    s.world.worldui.output_manager.findInHistory( u" ".join( args ) )
-
-
-  def command_Raise( s, *args ):
-
-    u"raise <exception> [parameters]: Raises <exception>. " \
-    u"For debugging purposes."
-
-    if args:
-
-      parent_exception = __builtins__.get( "BaseException", Exception )
-
-      exc = __builtins__.get( args[0], None )
-
-      try:
-        is_an_exception = issubclass( exc, parent_exception )
-
-      except TypeError:
-        is_an_exception = False
-
-      if is_an_exception:
-
-        raise exc( *args[1:] )
-        return
-
-    raise Exception( args and " ".join( args ) or None )
-
-
-  def command_Connect( s ):
-
-    u"connect: Opens connection to the current world if it is currently closed."
-
-    s.world.connectToWorld()
-
-
-  def command_Disconnect( s ):
-
-    u"disconnect: Closes connection to the current world."
-
-    s.world.disconnectFromWorld()
-
-
-  def command_Quit( s ):
-
-    u"quit: Quits the application."
-    singletons.mw.close()
-
-
-  def command_Close( s ):
-
-    u"close: Closes the current world."
-
-    s.world.worldui.close()
 
 
   def command_World_Conf_Set( s, key, *args ):
@@ -202,6 +145,9 @@ class OldCommands:
 
 
 
+## Actual command implementation.
+
+
 class BaseCommand( object ):
 
   ## Abstract base class for commands.
@@ -215,7 +161,7 @@ class BaseCommand( object ):
 
     if not args_match_function( s.default, [world] + list( args ) ):
 
-      world.info( u"Invalid number of parameters for command %s." % cmdname )
+      world.info( u"Invalid number of parameters for command %s." % s.cmdname )
       return
 
     s.default( world, *args )
@@ -228,15 +174,97 @@ class BaseCommand( object ):
 
 
 
+
+
+
+
 class LoadCommand( BaseCommand ):
+
+  ## No docstring. This is not a user-visible command.
 
   def default( s, world, *args ):
 
-    world.loadFile( args and " ".join( args ) or None )
+    world.loadFile( args and u" ".join( args ) or None )
+
+
+class FindCommand( BaseCommand ):
+
+  u"""find [<string>]: Finds <string> in the output window.
+  If <string> is omitted, repeat the last search."""
+
+  def default( s, world, *args ):
+
+    world.worldui.output_manager.findInHistory( u" ".join( args ) )
+
+
+class RaiseCommand( BaseCommand ):
+
+  ## No docstring. This is not a user-visible command.
+
+  def default( s, world, *args ):
+
+    if args:
+
+      parent_exception = __builtins__.get( "BaseException", Exception )
+
+      exc = __builtins__.get( args[0], None )
+
+      try:
+        is_an_exception = issubclass( exc, parent_exception )
+
+      except TypeError:
+        is_an_exception = False
+
+      if is_an_exception:
+
+        raise exc( *args[1:] )
+        return
+
+    raise Exception( args and " ".join( args ) or None )
+
+
+class ConnectCommand( BaseCommand ):
+
+  u"connect: Opens connection to the current world if it is currently closed."
+
+  def default( s, world ):
+
+    world.connectToWorld()
+
+
+class DisconnectCommand( BaseCommand ):
+
+  u"disconnect: Closes connection to the current world."
+
+  def default( s, world ):
+
+    world.disconnectFromWorld()
+
+
+class QuitCommand( BaseCommand ):
+
+  u"quit: Quits the application."
+
+  def default( s, world ):
+
+    singletons.mw.close()
+
+
+class CloseCommand( BaseCommand ):
+
+  u"close: Closes the current world."
+
+  def default( s, world ):
+
+    world.worldui.close()
 
 
 
-class Commands:
+
+## Implementation of command registry.
+
+
+class CommandRegistry:
 
   QUOTED  = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
 
@@ -311,12 +339,14 @@ class Commands:
 
 
 
-## Instantiate a Commands object for other subsystems to use.
-## We do it here, as opposed to in our singleton registry, so we can add the
-## existing commands from this module's namespace.
+## Offer a function to register our local commands:
 
-commands = Commands()
+def register_local_commands( commands ):
 
-## And now populate it.
-
-commands.registerCommand( "load", LoadCommand )
+  commands.registerCommand( "load", LoadCommand )
+  commands.registerCommand( "find", FindCommand )
+  commands.registerCommand( "raise", RaiseCommand )
+  commands.registerCommand( "close", CloseCommand )
+  commands.registerCommand( "quit", QuitCommand )
+  commands.registerCommand( "connect", ConnectCommand )
+  commands.registerCommand( "disconnect", DisconnectCommand )

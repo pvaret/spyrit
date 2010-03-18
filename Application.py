@@ -73,16 +73,28 @@ class Application( QtGui.QApplication ):
     from Config        import Config
     from WorldsManager import WorldsManager
     from MainWindow    import MainWindow
-    from TempResources import TempResources
-    from SoundEngine   import SoundEngine
     
     singletons.addInstance( "config",        Config() )
     singletons.addInstance( "worldsmanager", WorldsManager() )
     singletons.addInstance( "mw",            MainWindow() )
-    singletons.addInstance( "tmprc",         TempResources() )
-    singletons.addInstance( "sound",         SoundEngine() )
 
     singletons.mw.show()
+
+    ## Load up additional global resources.
+
+    from TempResources import TempResources
+    from SoundEngine   import SoundEngine
+    from Commands      import CommandRegistry, register_local_commands
+
+    singletons.addInstance( "tmprc",    TempResources() )
+    singletons.addInstance( "sound",    SoundEngine() )
+    singletons.addInstance( "commands", CommandRegistry() )
+
+    ## The command registry has to be populated with what commands have
+    ## been implemented at this point. The register_local_commands function
+    ## holds a list of those.
+
+    register_local_commands( singletons.commands )
 
     s.bootstrapped = True
 

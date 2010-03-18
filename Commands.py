@@ -57,40 +57,6 @@ def args_match_function( func, args ):
 
 class OldCommands:
 
-  def command_Help( s, *args ):
-
-    u"help <command>: Provides help on <command>."
-
-    c = s.world.conf._input_command_char
-
-    if not args:
-
-      for cmdname, cmd in sorted( s.commands.iteritems() ):
-        doc = cmd.__doc__
-        s.world.info( doc and c + doc or c + cmdname )
-
-    else:
-
-      cmdname = " ".join( args )
-
-      try:
-        cmd = s.lookupCommand( cmdname )
-
-      except KeyError:
-        s.world.info( u"%s: no such command." % cmdname )
-        return
-
-      doc = cmd.__doc__
-
-      if doc:
-        s.world.info( c + doc )
-
-      else:
-        s.world.info( u"No help for command %s." % cmdname )
-
-
-
-
   def command_World_Conf_Set( s, key, *args ):
 
     u"world_conf_set <key> <value>: " \
@@ -157,6 +123,19 @@ class BaseCommand( object ):
     s.cmdname = cmdname
 
 
+  def get_short_help( s ):
+
+    if s.__doc__:
+      return s.__doc__.split( u"\n" )[0]
+
+    return None
+
+
+  def get_help( s ):
+
+    return s.__doc__
+
+
   def execute( s, world, *args ):
 
     if not args_match_function( s.default, [world] + list( args ) ):
@@ -189,7 +168,7 @@ class LoadCommand( BaseCommand ):
 
 class FindCommand( BaseCommand ):
 
-  u"""find [<string>]: Finds <string> in the output window.
+  u"""Finds text in the output window.
   If <string> is omitted, repeat the last search."""
 
   def default( s, world, *args ):
@@ -225,7 +204,7 @@ class RaiseCommand( BaseCommand ):
 
 class ConnectCommand( BaseCommand ):
 
-  u"connect: Opens connection to the current world if it is currently closed."
+  u"Opens connection to the current world if it is currently closed."
 
   def default( s, world ):
 
@@ -234,7 +213,7 @@ class ConnectCommand( BaseCommand ):
 
 class DisconnectCommand( BaseCommand ):
 
-  u"disconnect: Closes connection to the current world."
+  u"Closes connection to the current world."
 
   def default( s, world ):
 
@@ -243,7 +222,7 @@ class DisconnectCommand( BaseCommand ):
 
 class QuitCommand( BaseCommand ):
 
-  u"quit: Quits the application."
+  u"Quits the application."
 
   def default( s, world ):
 
@@ -252,7 +231,7 @@ class QuitCommand( BaseCommand ):
 
 class CloseCommand( BaseCommand ):
 
-  u"close: Closes the current world."
+  u"Closes the current world."
 
   def default( s, world ):
 
@@ -266,7 +245,8 @@ class CloseCommand( BaseCommand ):
 
 class CommandRegistry:
 
-  QUOTED  = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
+  QUOTED = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
+  HELP   = "help"
 
   def __init__( s ):
 
@@ -277,7 +257,6 @@ class CommandRegistry:
 
     cmdname = cmdname.strip().lower()
     s.commands[ cmdname ] = command_class( cmdname )
-    #s.addHelp( cmdname, command_class.__doc__ )
 
 
   def lookupCommand( s, command ):
@@ -323,6 +302,12 @@ class CommandRegistry:
       return
 
     cmdname = tokens.pop( 0 )
+
+    if cmdname == s.HELP:
+
+      s.doHelp( world, *tokens )
+      return
+
     command = s.lookupCommand( cmdname )
 
     if not command:
@@ -332,6 +317,38 @@ class CommandRegistry:
 
     command.execute( world, *tokens )
 
+
+  def doHelp( s, world, *tokens ):
+
+    cmdchar = world.conf._input_command_char
+
+    if not tokens:  ## Default help text.
+
+      for cmdname in sorted( s.commands.keys() ):
+
+        cmd  = s.lookupCommand( cmdname )
+        help = cmd.get_short_help()
+
+        if help:
+          world.info( cmdchar + u"%s" % cmdname.ljust( 12 ) + help )
+
+    else:
+
+      cmdname = tokens[0]
+      cmd = s.lookupCommand( cmdname )
+
+      if not cmd:
+        world.info( "No such command: %s" % cmdname )
+
+      else:
+
+        help = cmd.get_help()
+
+        if not help:
+          world.info( "No help for command %s. " \
+                      "(It is reserved for internal use.)" % cmdname )
+        else:
+          world.info( cmdchar + u"%s " % cmdname + "\n  " + help )
 
   def __del__( s ):
 

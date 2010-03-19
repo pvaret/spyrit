@@ -223,15 +223,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     metrics = s.viewport().fontMetrics()
 
-    height = metrics.ascent() + metrics.descent() + 1
-
-    ## Leading is ignored if negative, which can happen on certain platforms,
-    ## such as X11.
-
-    if metrics.leading() > 0:
-      height += metrics.leading()
-
-    return height
+    return metrics.height()
 
 
   def setPaging( s, is_paging ):

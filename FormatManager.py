@@ -23,21 +23,24 @@
 
 from localqt import *
 
-from FormatData import FORMAT_PROPERTIES
+from FormatData  import FORMAT_PROPERTIES
+from OrderedDict import OrderedDict
 
 
 
 class FormatManager:
 
+  BASE = "base"
+  ANSI = "ansi"
+
   def __init__( s, textformat ):
 
-    s.textformat = textformat
-
-    s.baseformat      = {}
-    s.ansiformat      = {}
-    s.highlightformat = {}
-
+    s.textformat  = textformat
     s.brush_cache = {}
+
+    s.formatstack = OrderedDict()
+    s.formatstack[ s.BASE ] = {}
+    s.formatstack[ s.ANSI ] = {}
 
 
   def refreshProperties( s, *props ):
@@ -49,7 +52,7 @@ class FormatManager:
   def refreshProperty( s, property ):
 
     values = [ format.get( property )
-               for format in ( s.highlightformat, s.ansiformat, s.baseformat )
+               for format in reversed( s.formatstack.values() )
                if property in format ] or [ None ]
 
     value = values[0]
@@ -59,16 +62,6 @@ class FormatManager:
 
     else:
       s.setProperty( property, value )
-
-
-  def setBaseFormat( s, format ):
-
-    props = set( s.baseformat.keys() )
-    props.update( format.keys() )
-
-    s.baseformat = format
-
-    s.refreshProperties( *props )
 
 
   def clearProperty( s, property ):
@@ -100,45 +93,67 @@ class FormatManager:
       s.textformat.setFontUnderline( True )
 
 
-  def applyAnsiFormat( s, format ):
+  def applyFormat( s, format, level ):
 
-    props = set( s.ansiformat.keys() )
+    ## TODO: Find better names than level and formatlevel.
+    formatlevel = s.formatstack.setdefault( level, {} )
+
+    props = set( formatlevel.keys() )
     props.update( format.keys() )
 
     if not format:  ## reset all
 
-      s.ansiformat.clear()
+      if level in ( s.BASE, s.ANSI ):
+        ## This is one of the static formatters.
+        formatlevel.clear()
+
+      else:
+        ## This was one of the temporary formatters. Delete it.
+        if level in s.formatstack:
+          del s.formatstack[ level ]
+
+      if props:
+        s.refreshProperties( *props )
+
+      return
+
+    ## Apply new format definition.
 
     for k, v in format.iteritems():
 
       if not v:  ## reset property
 
-        if k in s.ansiformat:
-          del s.ansiformat[k]
+        if k in formatlevel:
+          del formatlevel[k]
 
       else:      ## apply property
-        s.ansiformat[ k ] = v
+        formatlevel[ k ] = v
 
     s.refreshProperties( *props )
+
+
+  def setBaseFormat( s, format ):
+
+    ## Unlike apply*Format methods, this one doesn't update, but replaces
+    ## the existing format outright. We implement this by explicitly
+    ## setting all the existing keys in the format to None in the new
+    ## format definition.
+
+    newformat = dict( ( k, None ) \
+                      for k in s.formatstack[ s.BASE ].keys() )
+
+    ## Then we apply the requested format modifier.
+    newformat.update( format )
+
+    s.applyFormat( newformat, s.BASE )
+
+
+  def applyAnsiFormat( s, format ):
+
+    s.applyFormat( format, s.ANSI )
 
 
   def applyHighlightFormat( s, format ):
 
-    props = set( s.highlightformat.keys() )
-    props.update( format.keys() )
-
-    if not format:  ## reset all
-
-      s.highlightformat.clear()
-
-    for k, v in format.iteritems():
-
-      if not v:  ## reset property
-
-        if k in s.highlightformat:
-          del s.highlightformat[k]
-
-      else:      ## apply property
-        s.highlightformat[ k ] = v
-
-    s.refreshProperties( *props )
+    ## TODO: Have highlighter return named formats.
+    s.applyFormat( format, "highlight" )

@@ -31,6 +31,8 @@ from Singletons import singletons
 
 
 
+
+
 def args_match_function( func, args ):
 
   f_args, varargs, varkw, defaults = inspect.getargspec( func )
@@ -55,58 +57,7 @@ def args_match_function( func, args ):
 
 
 
-class OldCommands:
 
-  def command_World_Conf_Set( s, key, *args ):
-
-    u"world_conf_set <key> <value>: " \
-    u"Sets this world's given configuration key to the given value."
-
-    args = " ".join( args )
-
-    t = s.world.conf.getType( key )
-
-    if not t:
-      messages.warn( u"Unknown configuration variable: %s" % key )
-
-    else:
-      args = t().from_string( args )
-      s.world.conf[ key ] = args
-
-
-  def command_Conf_Set( s, key, *args ):
-
-    u"conf_set <key> <value>: " \
-    u"Sets the given configuration key to the given value."
-
-    args = " ".join( args )
-
-    t = s.world.conf.getType( key )
-
-    if not t:
-      messages.warn( u"Unknown configuration variable: %s" % key )
-
-    else:
-      args = t().from_string( args )
-      singletons.config[ key ] = args
-
-
-  def command_Conf_Reset( s, key ):
-
-    u"conf_reset <key>: " \
-    u"Resets the given configuration key to its default value."
-
-    try: del singletons.config[ key ]
-    except KeyError: pass
-
-
-  def command_World_Conf_Reset( s, key ):
-
-    u"world_conf_reset <key>: " \
-    u"Resets this world's given configuration key to its global value."
-
-    try: del s.world.conf[ key ]
-    except KeyError: pass
 
 
 
@@ -238,6 +189,66 @@ class CloseCommand( BaseCommand ):
     world.worldui.close()
 
 
+class WorldConfSetCommand( BaseCommand ):
+
+  u"Sets this world's given configuration key to the given value."
+
+  def default( s, world, key, *args ):
+
+    args = " ".join( args )
+
+    t = world.conf.getType( key )
+
+    if not t:
+      world.info( u"Unknown configuration variable: %s" % key )
+
+    else:
+      args = t().from_string( args )
+      world.conf[ key ] = args
+
+
+class ConfSetCommand( BaseCommand ):
+
+  u"Sets the given configuration key to the given value."
+
+  def default( s, world, key, *args ):
+
+    args = " ".join( args )
+
+    t = world.conf.getType( key )
+
+    if not t:
+      world.info( u"Unknown configuration variable: %s" % key )
+
+    else:
+      args = t().from_string( args )
+      singletons.config[ key ] = args
+
+
+class ConfResetCommand( BaseCommand ):
+
+  u"Resets the given configuration key to its default value."
+
+  def default( s, world, key ):
+
+    try:
+      del singletons.config[ key ]
+
+    except KeyError:
+      pass
+
+
+class WorldConfResetCommand( BaseCommand ):
+
+  u"Resets this world's given configuration key to its global value."
+
+  def default( s, world, key ):
+
+    try:
+      del world.conf[ key ]
+
+    except KeyError:
+      pass
 
 
 ## Implementation of command registry.
@@ -324,13 +335,17 @@ class CommandRegistry:
 
     if not tokens:  ## Default help text.
 
+      helptxt = ""
+
       for cmdname in sorted( s.commands.keys() ):
 
         cmd  = s.lookupCommand( cmdname )
         help = cmd.get_short_help()
 
         if help:
-          world.info( cmdchar + u"%s" % cmdname.ljust( 12 ) + help )
+          helptxt += cmdchar + u"%s" % cmdname.ljust( 18 ) + help + "\n"
+
+      world.info( helptxt )
 
     else:
 
@@ -346,7 +361,7 @@ class CommandRegistry:
 
         if not help:
           world.info( "No help for command %s. " \
-                      "(It is reserved for internal use.)" % cmdname )
+                      "(Command reserved for internal use.)" % cmdname )
         else:
           world.info( cmdchar + u"%s " % cmdname + "\n  " + help )
 
@@ -367,3 +382,7 @@ def register_local_commands( commands ):
   commands.registerCommand( "quit", QuitCommand )
   commands.registerCommand( "connect", ConnectCommand )
   commands.registerCommand( "disconnect", DisconnectCommand )
+  commands.registerCommand( "conf_set", ConfSetCommand )
+  commands.registerCommand( "conf_reset", ConfResetCommand )
+  commands.registerCommand( "world_conf_set", WorldConfSetCommand )
+  commands.registerCommand( "world_conf_reset", WorldConfResetCommand )

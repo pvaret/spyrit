@@ -30,12 +30,16 @@ class TriggersManager:
 
   def __init__( s, conf ):
 
-    s.conf = conf
+    s.conf    = conf
+    s.matches = []
 
     s.loadConfiguration()
 
 
   def loadConfiguration( s ):
+
+    ## TODO: Ugly. The TriggersManager shouldn't have to deal with
+    ## configuration setup details.
 
     try:
       matches = s.conf.getSection( MATCHES_SECTION )
@@ -63,13 +67,11 @@ class TriggersManager:
       s.matches.append( m )
 
   
-  def lookupMatch( s, line ):
+  def lookupMatches( s, line ):
 
     for m in s.matches:
       if m.matches( line ):
-        return m
-
-    return None
+        yield m
 
 
   def isEmpty( s ):

@@ -33,6 +33,9 @@ class FormatManager:
   BASE = "base"
   ANSI = "ansi"
 
+  STATIC = ( BASE, ANSI )
+
+
   def __init__( s, textformat ):
 
     s.textformat  = textformat
@@ -51,11 +54,15 @@ class FormatManager:
 
   def refreshProperty( s, property ):
 
+    ## Explore the format stack for the topmost available value for property.
+
     values = [ format.get( property )
                for format in reversed( s.formatstack.values() )
                if property in format ] or [ None ]
 
     value = values[0]
+
+    ## And then apply it!
 
     if not value:
       s.clearProperty( property )
@@ -93,41 +100,51 @@ class FormatManager:
       s.textformat.setFontUnderline( True )
 
 
-  def applyFormat( s, format, level ):
+  def applyFormat( s, format_id, newformat ):
 
-    ## TODO: Find better names than level and formatlevel.
-    formatlevel = s.formatstack.setdefault( level, {} )
+    if not newformat:  ## newformat is any value that evaluates to False.
+      newformat = {}   ## Replace it with an empty dict, since we'll call
+                       ## .keys() on it underneath.
 
-    props = set( formatlevel.keys() )
-    props.update( format.keys() )
+    ## Create or retrieve the format dict in the stack.
 
-    if not format:  ## reset all
+    oldformat = s.formatstack.setdefault( format_id, {} )
 
-      if level in ( s.BASE, s.ANSI ):
-        ## This is one of the static formatters.
-        formatlevel.clear()
+    ## And compute the list of properties being modified here.
+
+    props = set( oldformat.keys() )
+    props.update( newformat.keys() )
+
+    ## Case 1: This is a reset of the format.
+
+    if not newformat:  ## reset all
+
+      if format_id in s.STATIC:
+        ## This is one of the static formatters. Clear it, but leave it in
+        ## its place in the stack.
+        oldformat.clear()
 
       else:
         ## This was one of the temporary formatters. Delete it.
-        if level in s.formatstack:
-          del s.formatstack[ level ]
+        if format_id in s.formatstack:
+          del s.formatstack[ format_id ]
 
       if props:
         s.refreshProperties( *props )
 
       return
 
-    ## Apply new format definition.
+    ## Case 2: Apply new format definition.
 
-    for k, v in format.iteritems():
+    for k, v in newformat.iteritems():
 
       if not v:  ## reset property
 
-        if k in formatlevel:
-          del formatlevel[k]
+        if k in oldformat:
+          del oldformat[k]
 
       else:      ## apply property
-        formatlevel[ k ] = v
+        oldformat[ k ] = v
 
     s.refreshProperties( *props )
 
@@ -145,15 +162,9 @@ class FormatManager:
     ## Then we apply the requested format modifier.
     newformat.update( format )
 
-    s.applyFormat( newformat, s.BASE )
+    s.applyFormat( s.BASE, newformat )
 
 
   def applyAnsiFormat( s, format ):
 
-    s.applyFormat( format, s.ANSI )
-
-
-  def applyHighlightFormat( s, format ):
-
-    ## TODO: Have highlighter return named formats.
-    s.applyFormat( format, "highlight" )
+    s.applyFormat( s.ANSI, format )

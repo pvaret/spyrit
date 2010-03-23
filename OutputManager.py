@@ -115,7 +115,9 @@ class OutputManager:
         s.textformatmanager.applyAnsiFormat( chunk.data )
 
       elif chunk.chunktype == chunktypes.HIGHLIGHT:
-        s.textformatmanager.applyHighlightFormat( chunk.data )
+
+        id, format = chunk.data
+        s.textformatmanager.applyFormat( id, format )
 
       elif chunk.chunktype == chunktypes.NETWORK:
         s.processNetworkChunk( chunk.data )

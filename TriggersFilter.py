@@ -79,11 +79,13 @@ class TriggersFilter( BaseFilter ):
 
       if line:
 
-        m = s.manager.lookupMatch( line )
+        for match in s.manager.lookupMatches( line ):
 
-        if m and m.highlight:
-          s.buffer.insert( 0, HighlightChunk( m.highlight ) )
-          s.buffer.append( HighlightChunk( {} ) )
+          h = match.highlight
+
+          if h:
+            s.buffer.insert( 0, HighlightChunk( ( id( h ), h ) ) )
+            s.buffer.append( HighlightChunk( ( id( h ), None ) ) )
 
       for chunk in s.buffer:
         

@@ -67,12 +67,12 @@ class SmartMatch:
     s.results   = None
     s.positions = None
     s.error     = None
-    s.highlight = None
-    
+    s.name      = None
 
-  def setHighlight( s, highlight ):
 
-    s.highlight = highlight
+  def setName( s, name ):
+
+    s.name = name
 
 
   def setRegex( s, regex ):
@@ -92,7 +92,7 @@ class SmartMatch:
     except re.error, e:
       s.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
       s.error = e.message
-    
+
 
   def setPattern( s, pattern ):
 
@@ -102,6 +102,9 @@ class SmartMatch:
 
 
   def unescape_then_escape( s, string ):
+
+    ## Unescape string according to the SmartMatch parser's rules, then
+    ## re-escape according to the rules of Python's re module.
 
     replacements = (
       ( "\[",   "[" ),
@@ -120,7 +123,7 @@ class SmartMatch:
 
     pattern = s.pattern
     regex   = []
-    tokens  = []
+    tokens  = set()
 
     while pattern:
 
@@ -135,7 +138,7 @@ class SmartMatch:
       before, pattern = pattern[ :start ], pattern[ end: ]
 
       if before:
-        
+
         regex.append( s.unescape_then_escape( before ) )
 
       token = m.group( 1 ).lstrip( u'[ ' ).rstrip( u' ]' )
@@ -149,9 +152,10 @@ class SmartMatch:
 
       else:
 
-        tokens.append( token )
-        #regex.append( ur"(?P<%s>\b.+\b)" % token )
-        regex.append( u"(?P<%s>.+)" % token )
+        tokens.add( token )
+
+        ## Named match for any non-null string, non-greedy.
+        regex.append( u"(?P<%s>.+?)" % token )
 
     s.compileRegex( u''.join( regex ) )
 

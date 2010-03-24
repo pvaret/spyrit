@@ -80,12 +80,8 @@ class TriggersFilter( BaseFilter ):
       if line:
 
         for match in s.manager.lookupMatches( line ):
-
-          h = match.highlight
-
-          if h:
-            s.buffer.insert( 0, HighlightChunk( ( id( h ), h ) ) )
-            s.buffer.append( HighlightChunk( ( id( h ), None ) ) )
+          for action in s.manager.matchActions( match ):
+            action( s.buffer )
 
       for chunk in s.buffer:
         

@@ -21,9 +21,27 @@
 ##
 
 
-from SmartMatch import SmartMatch
+from SmartMatch     import SmartMatch
+from PipelineChunks import HighlightChunk
 
-from Defaults   import MATCHES_SECTION, HIGHLIGHTS_SECTION
+from Defaults import MATCHES_SECTION, HIGHLIGHTS_SECTION
+
+
+class HighlightAction:
+
+  def __init__( s, highlight ):
+
+    s.highlight = highlight
+
+
+  def __call__( s, chunkbuffer ):
+
+    hl = s.highlight
+
+    chunkbuffer.insert( 0, HighlightChunk( ( id( hl ), hl ) ) )
+    chunkbuffer.append(    HighlightChunk( ( id( hl ), {} ) ) )
+
+
 
 
 class TriggersManager:
@@ -32,6 +50,7 @@ class TriggersManager:
 
     s.conf    = conf
     s.matches = []
+    s.actions = {}
 
     s.loadConfiguration()
 
@@ -59,10 +78,11 @@ class TriggersManager:
     for name, match in matches.getOwnDict().iteritems():
 
       m = SmartMatch()
+      m.setName( name )
       m.setPattern( match )
 
       if name in highlights.getOwnDict():
-        m.setHighlight( highlights[ name ] )
+        s.actions.setdefault( name, [] ).append( HighlightAction( highlights[ name ] ) )
 
       s.matches.append( m )
 
@@ -72,6 +92,11 @@ class TriggersManager:
     for m in s.matches:
       if m.matches( line ):
         yield m
+
+
+  def matchActions( s, match ):
+
+    return ( action for action in s.actions.get( match.name, [] ) )
 
 
   def isEmpty( s ):

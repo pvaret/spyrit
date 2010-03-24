@@ -137,20 +137,6 @@ class WeakList( WeakValueDictionary ):
     s[ id( val ) ] = val
 
 
-## ---[ Class AutoType ]-------------------------------------------
-
-class AutoType:
-
-  def __init__( s, type_ ):
-
-    s.type = type_
-
-
-  def get( s, *args ):
-
-    return s.type
-
-
 ## ---[ Class ConfigBasket ]---------------------------------------
 
 class ConfigBasket( object ):
@@ -165,20 +151,16 @@ class ConfigBasket( object ):
   SECTION_CHAR = "@"
 
 
-  def __init__( s, parent=None, schema=None, autotypes=None ):
+  def __init__( s, parent=None ):
 
-    s.name      = None
-    s.basket    = {}
-    s.sections  = {}
-    s.types     = {}
-    s.children  = WeakList()
-    s.notifiers = CallbackRegistry()
-
-    s.autotypes = autotypes and dict( autotypes ) or None
+    s.name        = None
+    s.basket      = {}
+    s.sections    = {}
+    s.children    = WeakList()
+    s.notifiers   = CallbackRegistry()
+    s.type_getter = None
 
     s.setParent( parent )
-
-    if schema: s.setSchema( schema )
 
 
   def isValidKeyName( s, key ):
@@ -248,21 +230,6 @@ class ConfigBasket( object ):
         s.notifyKeyChanged( key, value )
 
 
-  def setSchema( s, schema ):
-
-    ## schema is to be a list of triplets (name of key, default value, type).
-
-    d = ConfigBasket()
-
-    types  = dict( ( k, t ) for k, v, t in schema )
-    values = dict( ( k, v ) for k, v, t in schema )
-
-    d.setTypes( types )
-    d.updateFromDict( values )
-
-    s.setParent( d )
-
-
   def setParent( s, parent ):
 
     s.parent = parent
@@ -271,30 +238,22 @@ class ConfigBasket( object ):
       parent.children.append( s )
 
 
-  def setTypes( s, types ):
+  def setTypeGetter( s, type_getter ):
 
-    s.types = types
+    s.type_getter = type_getter
 
 
   def getType( s, key ):
 
-    if s.types:
-      return s.types.get( key )
+    if s.type_getter:
+
+      t = s.type_getter( key )
+
+      if t:
+        return t
 
     if s.parent:
       return s.parent.getType( key )
-
-    else:
-      return None
-
-
-  def getAutoTypes( s ):
-
-    if s.autotypes:
-      return s.autotypes
-
-    if s.parent:
-      return s.parent.getAutoTypes()
 
     else:
       return None
@@ -368,15 +327,6 @@ class ConfigBasket( object ):
 
     section.name = name
     section.setParent( s )
-
-    autotypes = s.getAutoTypes()
-
-    if autotypes:
-
-      type_ = autotypes.get( name )
-
-      if type_:
-        section.setTypes( AutoType( type_ ) )
 
     s.sections[ name ] = section
 

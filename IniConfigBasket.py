@@ -20,12 +20,15 @@
 ##
 
 
-from Messages import messages
+import re
+import codecs
+
+from Messages     import messages
+from ConfigBasket import ConfigBasket
 
 
 ## ---[ function parseIniLine ]----------------------------------------
 
-import re
 
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
 RE_KEYVALUE = re.compile( r"^(\w(?:-*\w+)*)\s*=\s*(.*)", re.UNICODE )
@@ -55,9 +58,6 @@ def parseIniLine( line ):
 
 ## ---[ Class IniConfigBasket ]----------------------------------------
 
-import codecs
-
-from ConfigBasket import ConfigBasket
 
 
 class IniConfigBasket( ConfigBasket ):
@@ -66,11 +66,17 @@ class IniConfigBasket( ConfigBasket ):
   INDENT   = u"  "
 
 
-  def __init__( s, filename, schema, autotypes=None ):
+  def __init__( s, filename, defaults, types ):
+
+
+    ConfigBasket.__init__( s )
 
     s.filename = filename
 
-    ConfigBasket.__init__( s, schema=schema, autotypes=autotypes )
+    d = ConfigBasket.buildFromDict( defaults )
+    d.setTypeGetter( types.get )
+
+    s.setParent( d )
 
     s.load()
 

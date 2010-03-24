@@ -16,18 +16,23 @@
 ##
 ## Config.py
 ##
-## Instanciates the configuration singleton.
+## Instantiates the configuration singleton.
 ##
 
 
-from Defaults        import DEFAULTS, AUTOTYPES
+from Defaults        import ALL_DEFAULTS, ALL_TYPES
 from ConfigPaths     import CONFIG_FILE
 
 from IniConfigBasket import IniConfigBasket
 
-config = IniConfigBasket( CONFIG_FILE, DEFAULTS, AUTOTYPES )
+config = None
+
 
 def Config():
 
   global config
+
+  if not config:
+    config = IniConfigBasket( CONFIG_FILE, ALL_DEFAULTS, ALL_TYPES )
+
   return config

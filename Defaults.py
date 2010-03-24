@@ -104,10 +104,8 @@ DEFAULTS = (
 )
 
 
-MATCHES_SECTION     = "matches"
-HIGHLIGHTS_SECTION  = "highlights"
+ALL_DEFAULTS = dict( ( k, v ) for ( k, v, t ) in DEFAULTS )
+ALL_TYPES    = dict( ( k, t ) for ( k, v, t ) in DEFAULTS )
 
-AUTOTYPES = (
-  ( MATCHES_SECTION,    STR ),
-  ( HIGHLIGHTS_SECTION, FORMAT ),
-)
+
+MATCHES_SECTION = "matches"

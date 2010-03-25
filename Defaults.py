@@ -32,6 +32,7 @@ DEFAULTS = (
   ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
   ( 'mainwindow_pos',      None,         INTLIST ),
   ( 'worlds_section',      u"Worlds",    STR ),
+  ( 'matches_section',     u"Matches",   STR ),
 
   ( 'widget_style',        None, STR ),
 
@@ -106,6 +107,3 @@ DEFAULTS = (
 
 ALL_DEFAULTS = dict( ( k, v ) for ( k, v, t ) in DEFAULTS )
 ALL_TYPES    = dict( ( k, t ) for ( k, v, t ) in DEFAULTS )
-
-
-MATCHES_SECTION = "matches"

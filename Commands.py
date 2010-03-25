@@ -203,7 +203,7 @@ class WorldConfSetCommand( BaseCommand ):
       world.info( u"Unknown configuration variable: %s" % key )
 
     else:
-      args = t().from_string( args )
+      args = t.from_string( args )
       world.conf[ key ] = args
 
 
@@ -221,7 +221,7 @@ class ConfSetCommand( BaseCommand ):
       world.info( u"Unknown configuration variable: %s" % key )
 
     else:
-      args = t().from_string( args )
+      args = t.from_string( args )
       singletons.config[ key ] = args
 
 

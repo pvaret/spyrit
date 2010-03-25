@@ -26,6 +26,8 @@ import codecs
 from Messages     import messages
 from ConfigBasket import ConfigBasket
 
+from TriggersManager import trigger_type_getter
+
 
 ## ---[ function parseIniLine ]----------------------------------------
 
@@ -78,6 +80,11 @@ class IniConfigBasket( ConfigBasket ):
 
     s.setParent( d )
 
+    ## Ensure that the subsection for matches gets created with the
+    ## appropriate type getter.
+    ## TODO: Factor this out!
+    s.type_getter_for_subsection[ d._matches_section ] = trigger_type_getter
+
     s.load()
 
 
@@ -114,7 +121,7 @@ class IniConfigBasket( ConfigBasket ):
           messages.warn( u"Unknown configuration variable: %s" % key )
           continue
 
-        value = t().from_string( result[ "value" ] )
+        value = t.from_string( result[ "value" ] )
 
         currentconf[ key ] = value
 
@@ -157,7 +164,7 @@ class IniConfigBasket( ConfigBasket ):
         if not t:  ## Unknown key!
           continue
 
-        v = t().to_string( v )
+        v = t.to_string( v )
 
         config_txt.append( s.INDENT * indent_level )
         config_txt.append( u"%s = %s\n" % ( k, v ) )

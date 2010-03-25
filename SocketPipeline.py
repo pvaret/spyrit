@@ -43,7 +43,7 @@ class SocketPipeline:
 
   def __init__( s, conf ):
 
-    s.triggersmanager = TriggersManager( conf )
+    s.triggersmanager = TriggersManager()
 
     s.pipeline = Pipeline( s )
 

@@ -155,7 +155,7 @@ class SmartMatch:
         tokens.add( token )
 
         ## Named match for any non-null string, non-greedy.
-        regex.append( u"(?P<%s>.+?)" % token )
+        regex.append( ur"\b(?P<%s>.+?)\b" % token )
 
     s.compileRegex( u''.join( regex ) )
 

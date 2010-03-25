@@ -20,11 +20,11 @@
 ## given world's configuration.
 ##
 
+import ConfigTypes
 
 from SmartMatch     import SmartMatch
 from PipelineChunks import HighlightChunk
-
-from Defaults import MATCHES_SECTION, HIGHLIGHTS_SECTION
+from Singletons     import singletons
 
 
 class HighlightAction:
@@ -43,50 +43,58 @@ class HighlightAction:
 
 
 
+def trigger_configuration_setup( conf ):
+
+  section = conf._matches_section
+
+  if not conf.hasSection( section ):
+    match_conf = conf.createSection( section )
+
+  else:
+    match_conf = conf.getSection( section )
+
+  match_groups = match_conf.getSectionList()
+
+  matches = []
+  actions = {}
+
+  for group in match_groups:
+
+    group_conf = match_conf.getSection( group )
+
+    for k, v in group_conf.getOwnDict().iteritems():
+
+      if k.startswith( "match" ):
+
+        match = SmartMatch()
+        match.setPattern( v )
+        match.setName( group )
+        matches.append( match )
+
+      elif k.startswith( "highlight" ):
+
+        action = HighlightAction( v )
+        actions.setdefault( group, [] ).append( action )
+
+  return matches, actions
+
+
+def trigger_type_getter( key ):
+
+  if key.startswith( "highlight" ):
+    return ConfigTypes.FORMAT
+
+  return ConfigTypes.STR
+
 
 class TriggersManager:
 
-  def __init__( s, conf ):
+  def __init__( s ):
 
-    s.conf    = conf
-    s.matches = []
-    s.actions = {}
-
-    s.loadConfiguration()
+    conf = singletons.config
+    s.matches, s.actions = trigger_configuration_setup( conf )
 
 
-  def loadConfiguration( s ):
-
-    ## TODO: Ugly. The TriggersManager shouldn't have to deal with
-    ## configuration setup details.
-
-    try:
-      matches = s.conf.getSection( MATCHES_SECTION )
-
-    except KeyError:
-      matches = s.conf.createSection( MATCHES_SECTION )
-
-    try:
-      highlights = s.conf.getSection( HIGHLIGHTS_SECTION )
-
-    except KeyError:
-      highlights = s.conf.createSection( HIGHLIGHTS_SECTION )
-
-
-    s.matches = []
-
-    for name, match in matches.getOwnDict().iteritems():
-
-      m = SmartMatch()
-      m.setName( name )
-      m.setPattern( match )
-
-      if name in highlights.getOwnDict():
-        s.actions.setdefault( name, [] ).append( HighlightAction( highlights[ name ] ) )
-
-      s.matches.append( m )
-
-  
   def lookupMatches( s, line ):
 
     for m in s.matches:

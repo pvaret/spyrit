@@ -160,6 +160,8 @@ class ConfigBasket( object ):
     s.notifiers   = CallbackRegistry()
     s.type_getter = None
 
+    s.type_getter_for_subsection = {}
+
     s.setParent( parent )
 
 
@@ -371,6 +373,12 @@ class ConfigBasket( object ):
 
     c = s.createAnonymousSection()
     c.saveAsSection( name )
+
+    type_getter = s.type_getter_for_subsection.get( name )
+
+    if type_getter:
+      c.setTypeGetter( type_getter )
+
     return c
 
 

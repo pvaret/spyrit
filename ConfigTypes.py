@@ -27,40 +27,47 @@ from FormatData import FORMAT_PROPERTIES
 
 class INT:
 
-  def from_string( s, i ):
+  @staticmethod
+  def from_string( i ):
 
     try:               return int( i )
     except ValueError: return 0
 
 
-  def to_string( s, i ):
+  @staticmethod
+  def to_string( i ):
 
     return unicode( i )
 
 
 class STR:
 
-  def from_string( s, string ): return string
+  @staticmethod
+  def from_string( string ): return string
 
-  def to_string( s, string ): return string
+  @staticmethod
+  def to_string( string ): return string
 
 
 
 class BOOL:
 
-  def from_string( s, b ):
+  @staticmethod
+  def from_string( b ):
 
     return b.lower() in ( u"1", u"y", u"yes", u"on", u"true" )
  
 
-  def to_string( s, b ):
+  @staticmethod
+  def to_string( b ):
 
     return b and u"True" or u"False"
 
 
 class INTLIST:
 
-  def from_string( s, l ):
+  @staticmethod
+  def from_string( l ):
 
     result = []
 
@@ -72,7 +79,8 @@ class INTLIST:
     return result
 
 
-  def to_string( s, l ):
+  @staticmethod
+  def to_string( l ):
 
     return u",".join ( unicode( i ) for i in l )
 
@@ -140,12 +148,14 @@ def split_on_unescaped_commas( s ):
 
 class STRLIST:
 
-  def to_string( s, l ):
+  @staticmethod
+  def to_string( l ):
 
     return u','.join( u'"' + str_escape( token ) + u'"' for token in l )
 
 
-  def from_string( s, l ):
+  @staticmethod
+  def from_string( l ):
 
     QUOTES = u'"' + u"'"
 
@@ -176,7 +186,8 @@ class FORMAT:
   ## Its deserialized form is a dictionary.
   ## We also store format-related constants on it.
 
-  def to_string( s, d ):
+  @staticmethod
+  def to_string( d ):
 
     l = []
 
@@ -197,7 +208,8 @@ class FORMAT:
     return " ; ".join( l )
 
 
-  def from_string( s, l ):
+  @staticmethod
+  def from_string( l ):
 
     d = {}
 

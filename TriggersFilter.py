@@ -81,7 +81,7 @@ class TriggersFilter( BaseFilter ):
 
         for match in s.manager.lookupMatches( line ):
           for action in s.manager.matchActions( match ):
-            action( s.buffer )
+            action( match, s.buffer )
 
       for chunk in s.buffer:
         

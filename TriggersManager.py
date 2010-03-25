@@ -23,24 +23,70 @@
 import ConfigTypes
 
 from SmartMatch     import SmartMatch
-from PipelineChunks import HighlightChunk
+from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
 from Singletons     import singletons
 
 
 class HighlightAction:
 
-  def __init__( s, highlight ):
+  def __init__( s, highlight, token ):
 
     s.highlight = highlight
+    s.token     = token
 
 
-  def __call__( s, chunkbuffer ):
+  def __call__( s, match, chunkbuffer ):
 
     hl = s.highlight
 
-    chunkbuffer.insert( 0, HighlightChunk( ( id( hl ), hl ) ) )
-    chunkbuffer.append(    HighlightChunk( ( id( hl ), {} ) ) )
+    if not s.token:
 
+      chunkbuffer.insert( 0, HighlightChunk( ( id( hl ), hl ) ) )
+      chunkbuffer.append(    HighlightChunk( ( id( hl ), {} ) ) )
+
+    else:
+
+      if not s.token in match.positions:
+        return
+
+      start, end = match.positions[ s.token ]
+      target_pos = start
+      pos = 0
+
+      for i, chunk in enumerate( chunkbuffer ):
+
+        if chunk.chunktype != chunktypes.TEXT:
+          continue
+
+        if pos == target_pos:
+
+          if target_pos == start:
+            chunkbuffer.insert( i, HighlightChunk( ( id( hl ), hl ) ) )
+            target_pos = end
+
+          else:
+            chunkbuffer.insert( i, HighlightChunk( ( id( hl ), {} ) ) )
+
+        elif target_pos - pos < len( chunk.data ):
+
+          split_pos = target_pos - pos
+
+          chunkbuffer.pop( i )
+          chunkbuffer.insert( i, UnicodeTextChunk( chunk.data[ :split_pos ] ) )
+
+          if target_pos == start:
+            chunkbuffer.insert( i+1, HighlightChunk( ( id( hl ), hl ) ) )
+            target_pos = end
+
+          else:
+            chunkbuffer.insert( i+1, HighlightChunk( ( id( hl ), {} ) ) )
+
+          chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
+
+        pos += len( chunk.data )  ## XXX not good after splitting the text chunk!
+
+      if pos == end:
+        chunkbuffer.append( HighlightChunk( ( id( hl ), {} ) ) )
 
 
 def trigger_configuration_setup( conf ):
@@ -73,7 +119,12 @@ def trigger_configuration_setup( conf ):
 
       elif k.startswith( "highlight" ):
 
-        action = HighlightAction( v )
+        token = None
+
+        if "_" in k:
+          token = k.split( "_", 1 )[-1]
+
+        action = HighlightAction( v, token )
         actions.setdefault( group, [] ).append( action )
 
   return matches, actions

@@ -91,7 +91,7 @@ class FormatManager:
       s.textformat.setBackground( brush )
 
     elif property == FORMAT_PROPERTIES.BOLD:
-      s.textformat.setFontWeight( QtGui.QFont.Bold )
+      s.textformat.setFontWeight( QtGui.QFont.Black )
 
     elif property == FORMAT_PROPERTIES.ITALIC:
       s.textformat.setFontItalic( True )

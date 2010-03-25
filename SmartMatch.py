@@ -173,8 +173,8 @@ class SmartMatch:
 
     s.results = m.groupdict()
 
-    s.positions = [ ( m.start( token ), m.end( token ), token )
-                    for token in s.matchnames() ]
+    s.positions = dict( ( token, ( m.start( token ), m.end( token ) ) )
+                    for token in s.matchnames() )
 
     return True
 

@@ -27,6 +27,50 @@ from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
 from Singletons     import singletons
 
 
+
+def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
+
+  pos       = 0
+  new_chunk = None
+
+  for i, chunk in enumerate( chunkbuffer ):
+
+    if not new_chunk:  ## Pop the next chunk to insert.
+
+      if not new_chunks:  ## Assuming there is one, of course.
+        return
+
+      target_pos, new_chunk = new_chunks.pop( 0 )
+
+    if chunk.chunktype != chunktypes.TEXT:
+      continue
+
+    if pos == target_pos:
+
+      chunkbuffer.insert( i, new_chunk )
+      new_chunk = None
+      continue
+
+    elif target_pos - pos < len( chunk.data ):
+
+      split_pos = target_pos - pos
+
+      chunkbuffer.pop( i )
+      chunkbuffer.insert( i,   UnicodeTextChunk( chunk.data[ :split_pos ] ) )
+      chunkbuffer.insert( i+1, new_chunk )
+      chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
+
+      pos += split_pos
+      new_chunk = None
+      continue
+
+    else:
+      pos += len( chunk.data )
+
+  if pos == end:
+    chunkbuffer.append( new_chunk )
+
+
 class HighlightAction:
 
   def __init__( s, highlight, token ):
@@ -54,48 +98,15 @@ class HighlightAction:
       if start == end:
         return
 
-      target_pos = start
-      pos = 0
+      new_chunks = [
+        ( start, HighlightChunk( ( id( hl ), hl ) ) ),
+        ( end,   HighlightChunk( ( id( hl ), {} ) ) ),
+      ]
 
-      for i, chunk in enumerate( chunkbuffer ):
+      insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
-        if chunk.chunktype != chunktypes.TEXT:
-          continue
 
-        if pos == target_pos:
 
-          if target_pos == start:
-            chunkbuffer.insert( i, HighlightChunk( ( id( hl ), hl ) ) )
-            target_pos = end
-            continue
-
-          else:
-            chunkbuffer.insert( i, HighlightChunk( ( id( hl ), {} ) ) )
-            return
-
-        elif target_pos - pos < len( chunk.data ):
-
-          split_pos = target_pos - pos
-
-          chunkbuffer.pop( i )
-          chunkbuffer.insert( i, UnicodeTextChunk( chunk.data[ :split_pos ] ) )
-          pos += split_pos
-
-          if target_pos == start:
-            chunkbuffer.insert( i+1, HighlightChunk( ( id( hl ), hl ) ) )
-            chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
-            target_pos = end
-            continue
-
-          else:
-            chunkbuffer.insert( i+1, HighlightChunk( ( id( hl ), {} ) ) )
-            chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
-            return
-
-        pos += len( chunk.data )
-
-      if pos == end:
-        chunkbuffer.append( HighlightChunk( ( id( hl ), {} ) ) )
 
 
 def trigger_configuration_setup( conf ):

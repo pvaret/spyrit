@@ -50,6 +50,10 @@ class HighlightAction:
         return
 
       start, end = match.positions[ s.token ]
+
+      if start == end:
+        return
+
       target_pos = start
       pos = 0
 
@@ -63,9 +67,11 @@ class HighlightAction:
           if target_pos == start:
             chunkbuffer.insert( i, HighlightChunk( ( id( hl ), hl ) ) )
             target_pos = end
+            continue
 
           else:
             chunkbuffer.insert( i, HighlightChunk( ( id( hl ), {} ) ) )
+            return
 
         elif target_pos - pos < len( chunk.data ):
 
@@ -73,17 +79,20 @@ class HighlightAction:
 
           chunkbuffer.pop( i )
           chunkbuffer.insert( i, UnicodeTextChunk( chunk.data[ :split_pos ] ) )
+          pos += split_pos
 
           if target_pos == start:
             chunkbuffer.insert( i+1, HighlightChunk( ( id( hl ), hl ) ) )
+            chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
             target_pos = end
+            continue
 
           else:
             chunkbuffer.insert( i+1, HighlightChunk( ( id( hl ), {} ) ) )
+            chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
+            return
 
-          chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
-
-        pos += len( chunk.data )  ## XXX not good after splitting the text chunk!
+        pos += len( chunk.data )
 
       if pos == end:
         chunkbuffer.append( HighlightChunk( ( id( hl ), {} ) ) )

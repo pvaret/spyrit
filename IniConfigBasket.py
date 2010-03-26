@@ -26,7 +26,6 @@ import codecs
 from Messages     import messages
 from ConfigBasket import ConfigBasket
 
-from TriggersManager import trigger_type_getter
 
 
 ## ---[ function parseIniLine ]----------------------------------------
@@ -68,34 +67,25 @@ class IniConfigBasket( ConfigBasket ):
   INDENT   = u"  "
 
 
-  def __init__( s, filename, defaults, types ):
+  def __init__( s, defaults, types ):
 
 
     ConfigBasket.__init__( s )
-
-    s.filename = filename
 
     d = ConfigBasket.buildFromDict( defaults )
     d.setTypeGetter( types.get )
 
     s.setParent( d )
 
-    ## Ensure that the subsection for matches gets created with the
-    ## appropriate type getter.
-    ## TODO: Factor this out!
-    s.type_getter_for_subsection[ d._matches_section ] = trigger_type_getter
 
-    s.load()
-
-
-  def load( s ):
+  def load( s, filename ):
 
     try:
-      f = codecs.getreader( s.ENCODING ) ( open( s.filename ), "ignore" )
+      f = codecs.getreader( s.ENCODING ) ( open( filename ), "ignore" )
 
     except IOError:
       ## Unable to load configuration. Aborting.
-      #messages.debug( u"Unable to load configuration file %s!" % s.filename )
+      #messages.debug( u"Unable to load configuration file %s!" % filename )
       return
 
     s.reset()
@@ -151,7 +141,7 @@ class IniConfigBasket( ConfigBasket ):
     f.close()
 
 
-  def save( s ):
+  def save( s, filename ):
 
     config_txt = []
   
@@ -186,11 +176,11 @@ class IniConfigBasket( ConfigBasket ):
     save_section( s )
 
     try:
-      f = codecs.getwriter( s.ENCODING ) ( open( s.filename, "w" ), "ignore" )
+      f = codecs.getwriter( s.ENCODING ) ( open( filename, "w" ), "ignore" )
 
     except IOError:
       ## Unable to save configuration. Aborting.
-      messages.error( u"Unable to save configuration to file %s!" % s.filename )
+      messages.error( u"Unable to save configuration to file %s!" % filename )
       return
 
     f.write( ''.join(  config_txt ) )

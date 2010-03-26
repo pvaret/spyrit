@@ -24,6 +24,7 @@ from Defaults        import ALL_DEFAULTS, ALL_TYPES
 from ConfigPaths     import CONFIG_FILE
 
 from IniConfigBasket import IniConfigBasket
+from TriggersManager import trigger_type_getter
 
 config = None
 
@@ -33,6 +34,11 @@ def Config():
   global config
 
   if not config:
-    config = IniConfigBasket( CONFIG_FILE, ALL_DEFAULTS, ALL_TYPES )
+
+    type_getter_map = { ALL_DEFAULTS[ "matches_section" ]: trigger_type_getter }
+
+    config = IniConfigBasket( ALL_DEFAULTS, ALL_TYPES )
+    config.setTypeGetterForFutureSections( type_getter_map )
+    config.load( CONFIG_FILE )
 
   return config

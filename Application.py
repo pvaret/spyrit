@@ -24,11 +24,12 @@
 import sys
 import locale
 
-from localqt    import *
+from localqt     import *
 
-from Messages   import messages
-from Utilities  import handle_exception
-from Singletons import singletons
+from Messages    import messages
+from Utilities   import handle_exception
+from Singletons  import singletons
+from ConfigPaths import CONFIG_FILE
 
 
 class Application( QtGui.QApplication ):
@@ -112,7 +113,7 @@ class Application( QtGui.QApplication ):
   def saveConfig( s ):
     
     if singletons.config:
-      singletons.config.save()
+      singletons.config.save( CONFIG_FILE )
 
 
   def afterStart( s ):

@@ -245,6 +245,15 @@ class ConfigBasket( object ):
     s.type_getter = type_getter
 
 
+  def setTypeGetterForFutureSections( s, type_getter_map ):
+
+    ## Sometimes, you need to tell a ConfigBasket ahead of time that it will
+    ## need a specific type getter for some future subsection or other.
+    ## If so, you can set it with this method.
+
+    s.type_getter_for_subsection = type_getter_map
+
+
   def getType( s, key ):
 
     if s.type_getter:

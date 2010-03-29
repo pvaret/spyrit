@@ -25,10 +25,12 @@ from localqt import *
 
 from Singletons       import singletons
 from QSoundBackend    import QSoundBackend
+from PygameBackend    import PygameBackend
 from PlatformSpecific import platformSpecific
 
 SOUNDBACKENDS = {
   "qsound": QSoundBackend,
+  "pygame": PygameBackend,
 }
 
 
@@ -36,7 +38,7 @@ class SoundEngine:
 
   def __init__( s ):
 
-    s.backend      = None
+    s.backend = None
 
     s.pollForBackend()
 

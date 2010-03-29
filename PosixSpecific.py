@@ -45,4 +45,4 @@ class PosixSpecific:
 
 
   def get_sound_backends( s ):
-    return []
+    return [ "pygame" ]

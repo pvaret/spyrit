@@ -251,8 +251,17 @@ class WorldConfResetCommand( BaseCommand ):
       pass
 
 
-## Implementation of command registry.
+class PlayCommand( BaseCommand ):
 
+  u"Plays a sound."
+
+  def default( s, world, filename ):
+
+    singletons.sound.play( filename )
+
+
+
+## Implementation of command registry.
 
 class CommandRegistry:
 
@@ -386,3 +395,4 @@ def register_local_commands( commands ):
   commands.registerCommand( "conf_reset", ConfResetCommand )
   commands.registerCommand( "world_conf_set", WorldConfSetCommand )
   commands.registerCommand( "world_conf_reset", WorldConfResetCommand )
+  commands.registerCommand( "play", PlayCommand )

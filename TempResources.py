@@ -66,7 +66,7 @@ class TempResources:
 
     tmp.close()
 
-    return tmp.fileName()
+    return str( tmp.fileName() )
 
 
   def cleanup( s ):

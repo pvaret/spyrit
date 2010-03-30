@@ -32,6 +32,12 @@ except ImportError:
   pass
 
 
+FREQUENCY = 44100  ## hz
+SIZE      = -16    ## 16 bits, signed
+CHANNELS  = 1      ## mono
+BUFFER    = 1024   ## bytes
+
+
 class PygameBackend:
 
   def __init__( s ):
@@ -45,7 +51,7 @@ class PygameBackend:
       return False
 
     s.mixer = pygame.mixer
-    s.mixer.init()
+    s.mixer.init( FREQUENCY, SIZE, CHANNELS, BUFFER )
 
     return True
 

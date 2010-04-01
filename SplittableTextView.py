@@ -221,9 +221,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def lineHeight( s ):
 
-    metrics = s.viewport().fontMetrics()
-
-    return metrics.height()
+    return s.viewport().fontMetrics().height()
 
 
   def setPaging( s, is_paging ):

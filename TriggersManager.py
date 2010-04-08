@@ -28,6 +28,18 @@ from Singletons     import singletons
 
 
 
+def trigger_type_getter( key ):
+
+  ## This function is used by the module where the global configuration object
+  ## is instantiated.
+
+  if key.startswith( "highlight" ):
+    return ConfigTypes.FORMAT
+
+  return ConfigTypes.STR
+
+
+
 def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
   pos       = 0
@@ -35,9 +47,9 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
   for i, chunk in enumerate( chunkbuffer ):
 
-    if not new_chunk:  ## Pop the next chunk to insert.
+    if not new_chunk:  ## Pop the next chunk to insert...
 
-      if not new_chunks:  ## Assuming there is one, of course.
+      if not new_chunks:  ## ... Assuming there is one, of course.
         return
 
       target_pos, new_chunk = new_chunks.pop( 0 )
@@ -69,6 +81,7 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
   if pos == end:
     chunkbuffer.append( new_chunk )
+
 
 
 class HighlightAction:
@@ -109,32 +122,39 @@ class HighlightAction:
 
 
 
-def trigger_configuration_setup( conf ):
+def get_matches_configuration( conf ):
 
   section = conf._matches_section
 
   if not conf.hasSection( section ):
-    match_conf = conf.createSection( section )
+    matches = conf.createSection( section )
 
   else:
-    match_conf = conf.getSection( section )
+    matches = conf.getSection( section )
 
-  match_groups = match_conf.getSectionList()
+  return dict( ( group, matches.getSection( group ) )
+               for group in matches.getSectionList() )
+
+
+
+def load_matches( groups ):
 
   matches = []
-  actions = {}
 
-  for group in match_groups:
+  for group, group_conf in groups.iteritems():
 
-    group_conf = match_conf.getSection( group )
+    actiongroup = []
 
     for k, v in group_conf.getOwnDict().iteritems():
 
       if k.startswith( "match" ):
 
         match = SmartMatch()
+
         match.setPattern( v )
         match.setName( group )
+        match.setActionGroup( actiongroup )
+
         matches.append( match )
 
       elif k.startswith( "highlight" ):
@@ -145,17 +165,11 @@ def trigger_configuration_setup( conf ):
           token = k.split( "_", 1 )[-1]
 
         action = HighlightAction( v, token )
-        actions.setdefault( group, [] ).append( action )
+        actiongroup.append( action )
 
-  return matches, actions
+  return matches
 
 
-def trigger_type_getter( key ):
-
-  if key.startswith( "highlight" ):
-    return ConfigTypes.FORMAT
-
-  return ConfigTypes.STR
 
 
 class TriggersManager:
@@ -163,7 +177,9 @@ class TriggersManager:
   def __init__( s ):
 
     conf = singletons.config
-    s.matches, s.actions = trigger_configuration_setup( conf )
+
+    all_groups = get_matches_configuration( conf )
+    s.matches = load_matches( all_groups )
 
 
   def lookupMatches( s, line ):
@@ -171,11 +187,6 @@ class TriggersManager:
     for m in s.matches:
       if m.matches( line ):
         yield m
-
-
-  def matchActions( s, match ):
-
-    return ( action for action in s.actions.get( match.name, [] ) )
 
 
   def isEmpty( s ):

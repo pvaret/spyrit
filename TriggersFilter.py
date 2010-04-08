@@ -80,7 +80,7 @@ class TriggersFilter( BaseFilter ):
       if line:
 
         for match in s.manager.lookupMatches( line ):
-          for action in s.manager.matchActions( match ):
+          for action in match.actions:
             action( match, s.buffer )
 
       for chunk in s.buffer:

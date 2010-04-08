@@ -68,11 +68,17 @@ class SmartMatch:
     s.positions = None
     s.error     = None
     s.name      = None
+    s.actions   = []
 
 
   def setName( s, name ):
 
     s.name = name
+
+
+  def setActionGroup( s, actions ):
+
+    s.actions = actions
 
 
   def setRegex( s, regex ):

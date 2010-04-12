@@ -20,6 +20,7 @@
 ## given world's configuration.
 ##
 
+import re
 import ConfigTypes
 
 from SmartMatch     import SmartMatch
@@ -119,6 +120,16 @@ class HighlightAction:
       insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
+class PlayAction:
+
+  def __init__( s, soundfile=None ):
+
+    s.soundfile = soundfile or ":/sound/pop"
+
+
+  def __call__( s, match, chunkbuffer ):
+
+    singletons.sound.play( s.soundfile )
 
 
 
@@ -127,6 +138,7 @@ def get_matches_configuration( conf ):
   section = conf._matches_section
 
   if not conf.hasSection( section ):
+    ## No Matches section yet. Create it.
     matches = conf.createSection( section )
 
   else:
@@ -136,39 +148,23 @@ def get_matches_configuration( conf ):
                for group in matches.getSectionList() )
 
 
+def get_sorted_items( conf ):
 
-def load_matches( groups ):
+  def split_index( k ):
 
-  matches = []
+    m = re.search( r'\d+$', k )
 
-  for group, group_conf in groups.iteritems():
+    if not m:
+      return 0, k
 
-    actiongroup = []
+    else:
+      index = m.group( 0 )
+      return int( index ), k[ : -len( index ) ]
 
-    for k, v in group_conf.getOwnDict().iteritems():
+  indexed_items = sorted( ( split_index( k ), v )
+                          for k, v in conf.getOwnDict().iteritems() )
 
-      if k.startswith( "match" ):
-
-        match = SmartMatch()
-
-        match.setPattern( v )
-        match.setName( group )
-        match.setActionGroup( actiongroup )
-
-        matches.append( match )
-
-      elif k.startswith( "highlight" ):
-
-        token = None
-
-        if "_" in k:
-          token = k.split( "_", 1 )[-1]
-
-        action = HighlightAction( v, token )
-        actiongroup.append( action )
-
-  return matches
-
+  return [ ( k, v ) for ( i, k ), v in indexed_items ]
 
 
 
@@ -176,17 +172,63 @@ class TriggersManager:
 
   def __init__( s ):
 
-    conf = singletons.config
+    s.loaders = {}
+    s.matches = []
+    s.load( singletons.config )
+
+
+  def load( s, conf ):
 
     all_groups = get_matches_configuration( conf )
-    s.matches = load_matches( all_groups )
+
+    for groupname, conf in all_groups.iteritems():
+
+      actiongroup = []
+
+      items = get_sorted_items( conf )
+
+      for k, v in items:
+
+        if "_" in k:
+          key, subkey = k.split( "_", 1 )
+
+        else:
+          key, subkey = k, ""
+
+        if key == "match":
+
+          if subkey in ( "", "smart" ):
+
+            m = SmartMatch()
+            m.setName( groupname )
+            m.setPattern( v )
+            m.setActionGroup( actiongroup )
+
+            s.matches.append( m )
+
+          elif subkey == "regex":
+
+            m = SmartMatch()
+            m.setName( groupname )
+            m.setRegex( v )
+            m.setActionGroup( actiongroup )
+
+            s.matches.append( m )
+
+        elif key == "highlight":
+
+          action = HighlightAction( v, subkey )
+          actiongroup.append( action )
+
+        elif key == "play":
+
+          action = PlayAction( v )
+          actiongroup.append( action )
 
 
   def lookupMatches( s, line ):
 
-    for m in s.matches:
-      if m.matches( line ):
-        yield m
+    return ( m for m in s.matches if m.matches( line ) )
 
 
   def isEmpty( s ):

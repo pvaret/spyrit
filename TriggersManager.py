@@ -80,9 +80,6 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
     else:
       pos += len( chunk.data )
 
-  if pos == end:
-    chunkbuffer.append( new_chunk )
-
 
 
 class HighlightAction:
@@ -131,6 +128,17 @@ class PlayAction:
 
     singletons.sound.play( s.soundfile )
 
+
+class GagAction:
+
+  def __call__( s, match, chunkbuffer ):
+
+    for i in reversed( range( len( chunkbuffer ) ) ):
+
+      chunk = chunkbuffer[ i ]
+
+      if chunk.chunktype in ( chunktypes.TEXT, chunktypes.FLOWCONTROL ):
+        del chunkbuffer[ i ]
 
 
 def get_matches_configuration( conf ):
@@ -223,6 +231,11 @@ class TriggersManager:
         elif key == "play":
 
           action = PlayAction( v )
+          actiongroup.append( action )
+
+        elif key == "gag":
+
+          action = GagAction()
           actiongroup.append( action )
 
 

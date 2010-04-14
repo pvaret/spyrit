@@ -14,13 +14,15 @@
 ##
 
 ##
-## SmartMatch.py
+## Matches.py
 ##
 ## The SmartMatch class handles pattern matching for triggers, highlighs and
 ## such, with a convenient interface for the user. It provides facilities to
 ## let the user enter their patterns in the following form:
 ##   '[player] pages: [message]'
 ## ... and generates the corresponding regex.
+##
+## The RegexMatch provides the same interface but uses actual regexes.
 ##
 
 
@@ -29,21 +31,18 @@ import re
 
 
 
-class BaseMatch:
+class RegexMatch:
 
-  def __init__( s ):
+  def __init__( s, pattern=None ):
 
-    s.pattern   = None
+    s.pattern   = pattern
     s.regex     = None
     s.result    = None
     s.error     = None
     s.name      = None
-    s.actions   = []
 
-
-  def setActionGroup( s, actions ):
-
-    s.actions = actions
+    if pattern:
+      s.setPattern( pattern )
 
 
   def compileRegex( s, regex ):
@@ -69,7 +68,7 @@ class BaseMatch:
 
   def patternToRegex( s, pattern ):
 
-    raise NotImplemented( "Abstract method! Reimplement in subclasses." )
+    return pattern
 
 
   def matches( s, string ):
@@ -108,8 +107,9 @@ class BaseMatch:
 
 TOKEN = r" *\w+ *" ## Non-null word with optional surrounding space.
 
-BS    = r"\\" ## Backslash
-ASTER = r"\*" ## Asterisk
+BS      = r"\\" ## Backslash
+ASTER   = r"\*" ## Asterisk
+PERCENT = r"\%" ## Percent sign
 
 LSB   = r"\[" ## Left square bracket
 RSB   = r"\]" ## Right square bracket
@@ -123,7 +123,7 @@ PARSER = re.compile(
   + "(?:" + BS * 2 + ")"
   + "*"                        ## An even number of backslashes
   + "("                        ## And then, group-match either...
-  +   ASTER * 2                ## Two asterisks
+  +   PERCENT                  ## A percent sign
   + "|"                        ## Or...
   +   ASTER                    ## An asterisk
   + "|"                        ## Or...
@@ -134,7 +134,7 @@ PARSER = re.compile(
 )
 
 
-class SmartMatch( BaseMatch ):
+class SmartMatch( RegexMatch ):
 
   def patternToRegex( s, pattern ):
 
@@ -158,10 +158,10 @@ class SmartMatch( BaseMatch ):
 
       token = m.group( 1 ).lower().lstrip( u'[ ' ).rstrip( u' ]' )
 
-      if token == u'*':
+      if token == u'%':
         regex.append( u".*?" ) ## Match anything, non-greedy
 
-      elif token == u'**':
+      elif token == u'*':
         regex.append( u".*" )  ## Match anything, greedy
 
       elif token in tokens:  ## Token which is already known
@@ -194,8 +194,15 @@ class SmartMatch( BaseMatch ):
     return re.escape( string )
 
 
-class RegexMatch( BaseMatch ):
 
-  def patternToRegex( s, pattern ):
 
-    return pattern
+
+def load_from_string( string ):
+
+  if string.startswith( "regex:" ):
+    return RegexMatch( string[ 6: ] )
+
+  if string.startswith( "smart:" ):
+    return SmartMatch( string[ 6: ] )
+
+  return SmartMatch( string )

@@ -23,7 +23,7 @@
 import re
 import ConfigTypes
 
-from SmartMatch     import SmartMatch, RegexMatch
+from Matches        import SmartMatch, RegexMatch, load_from_string
 from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
 from Singletons     import singletons
 
@@ -36,6 +36,9 @@ def trigger_type_getter( key ):
 
   if key.startswith( "highlight" ):
     return ConfigTypes.FORMAT
+
+  elif key == "match":
+    return ConfigTypes.STRLIST
 
   return ConfigTypes.STR
 
@@ -86,7 +89,7 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
 class HighlightAction:
 
-  def __init__( s, highlight, token ):
+  def __init__( s, highlight, token=None ):
 
     s.highlight = highlight
     s.token     = token
@@ -117,6 +120,8 @@ class HighlightAction:
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
+
+
 class PlayAction:
 
   def __init__( s, soundfile=None ):
@@ -127,6 +132,8 @@ class PlayAction:
   def __call__( s, match, chunkbuffer ):
 
     singletons.sound.play( s.soundfile )
+
+
 
 
 class GagAction:
@@ -143,6 +150,9 @@ class GagAction:
         del chunkbuffer[ i ]
 
 
+
+
+
 def get_matches_configuration( conf ):
 
   section = conf._matches_section
@@ -154,27 +164,9 @@ def get_matches_configuration( conf ):
   else:
     matches = conf.getSection( section )
 
-  return dict( ( group, matches.getSection( group ) )
+  return dict( ( group, matches.getSection( group ).getOwnDict() )
                for group in matches.getSectionList() )
 
-
-def get_sorted_items( conf ):
-
-  def split_index( k ):
-
-    m = re.search( r'\d+$', k )
-
-    if not m:
-      return 0, k
-
-    else:
-      index = m.group( 0 )
-      return int( index ), k[ : -len( index ) ]
-
-  indexed_items = sorted( ( split_index( k ), v )
-                          for k, v in conf.getOwnDict().iteritems() )
-
-  return [ ( k, v ) for ( i, k ), v in indexed_items ]
 
 
 
@@ -182,8 +174,9 @@ class TriggersManager:
 
   def __init__( s ):
 
-    s.loaders = {}
-    s.matches = []
+    s.matches = {}
+    s.actions = {}
+
     s.load( singletons.config )
 
 
@@ -193,56 +186,61 @@ class TriggersManager:
 
     for groupname, conf in all_groups.iteritems():
 
-      actiongroup = []
+      matches = conf.get( 'match' )
 
-      items = get_sorted_items( conf )
+      if not matches:
+        continue
 
-      for k, v in items:
+      for match in matches:
+        s.addMatch( match, groupname )
 
-        if "_" in k:
-          key, subkey = k.split( "_", 1 )
+      if 'gag' in conf:
+
+        s.addAction( GagAction(), groupname )
+        continue
+
+      if 'play' in conf:
+        s.addAction( PlayAction( conf.get( 'play' ) ), groupname )
+
+      highlight_keys = [ k for k in conf if k.startswith( "highlight" ) ]
+
+      for k in highlight_keys:
+
+        if '_' in k:
+          token = k.split( '_', 1 )[ -1 ]
 
         else:
-          key, subkey = k, ""
+          token = None
 
-        if key == "match":
+        s.addAction( HighlightAction( conf[ k ], token ), groupname )
 
-          if subkey in ( "", "smart" ):
-            m = SmartMatch()
 
-          elif subkey == "regex":
-            m = RegexMatch()
+  def addMatch( s, matchstring, group=None ):
 
-          m.setPattern( v )
-          m.setActionGroup( actiongroup )
+    m = load_from_string( matchstring )
+    ## TODO: Handle errors in match creation.
 
-          s.matches.append( m )
+    if group is None:
+      group = str( len( s.matches ) )
 
-        elif key == "highlight":
+    s.matches.setdefault( group, [] ).append( m )
 
-          action = HighlightAction( v, subkey )
-          actiongroup.append( action )
 
-        elif key == "play":
+  def addAction( s, action, group ):
 
-          action = PlayAction( v )
-          actiongroup.append( action )
-
-        elif key == "gag":
-
-          action = GagAction()
-          actiongroup.append( action )
+    s.actions.setdefault( group, [] ).append( action )
 
 
   def performMatchingActions( s, line, chunkbuffer ):
 
-    for m in s.matches:
+    for group, matches in sorted( s.matches.iteritems() ):
 
-      if not m.matches( line ):
-        continue
+      for match in matches:
 
-      for action in m.actions:
-        action( m.result, chunkbuffer )
+        if match.matches( line ):
+
+          for action in s.actions.get( group, [] ):
+            action( match.result, chunkbuffer )
 
 
   def isEmpty( s ):

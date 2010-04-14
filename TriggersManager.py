@@ -23,7 +23,7 @@
 import re
 import ConfigTypes
 
-from SmartMatch     import SmartMatch
+from SmartMatch     import SmartMatch, RegexMatch
 from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
 from Singletons     import singletons
 
@@ -80,6 +80,8 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
     else:
       pos += len( chunk.data )
 
+    if target_pos == pos:
+      chunkbuffer.append( new_chunk )
 
 
 class HighlightAction:
@@ -92,29 +94,27 @@ class HighlightAction:
 
   def __call__( s, match, chunkbuffer ):
 
-    hl = s.highlight
-
     if not s.token:
-
-      chunkbuffer.insert( 0, HighlightChunk( ( id( hl ), hl ) ) )
-      chunkbuffer.append(    HighlightChunk( ( id( hl ), {} ) ) )
+      start, end = match.span()
 
     else:
 
-      if not s.token in match.positions:
+      if s.token not in match.groupdict():
         return
 
-      start, end = match.positions[ s.token ]
+      start, end = match.span( s.token )
 
-      if start == end:
-        return
+    if start == end:
+      return
 
-      new_chunks = [
-        ( start, HighlightChunk( ( id( hl ), hl ) ) ),
-        ( end,   HighlightChunk( ( id( hl ), {} ) ) ),
-      ]
+    hl = s.highlight
 
-      insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
+    new_chunks = [
+      ( start, HighlightChunk( ( id( hl ), hl ) ) ),
+      ( end,   HighlightChunk( ( id( hl ), {} ) ) ),
+    ]
+
+    insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
 class PlayAction:
@@ -137,7 +137,9 @@ class GagAction:
 
       chunk = chunkbuffer[ i ]
 
-      if chunk.chunktype in ( chunktypes.TEXT, chunktypes.FLOWCONTROL ):
+      if chunk.chunktype in ( chunktypes.TEXT,
+                              chunktypes.FLOWCONTROL,
+                              chunktypes.HIGHLIGHT ):
         del chunkbuffer[ i ]
 
 
@@ -206,22 +208,15 @@ class TriggersManager:
         if key == "match":
 
           if subkey in ( "", "smart" ):
-
             m = SmartMatch()
-            m.setName( groupname )
-            m.setPattern( v )
-            m.setActionGroup( actiongroup )
-
-            s.matches.append( m )
 
           elif subkey == "regex":
+            m = RegexMatch()
 
-            m = SmartMatch()
-            m.setName( groupname )
-            m.setRegex( v )
-            m.setActionGroup( actiongroup )
+          m.setPattern( v )
+          m.setActionGroup( actiongroup )
 
-            s.matches.append( m )
+          s.matches.append( m )
 
         elif key == "highlight":
 
@@ -239,9 +234,15 @@ class TriggersManager:
           actiongroup.append( action )
 
 
-  def lookupMatches( s, line ):
+  def performMatchingActions( s, line, chunkbuffer ):
 
-    return ( m for m in s.matches if m.matches( line ) )
+    for m in s.matches:
+
+      if not m.matches( line ):
+        continue
+
+      for action in m.actions:
+        action( m.result, chunkbuffer )
 
 
   def isEmpty( s ):

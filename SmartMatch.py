@@ -27,6 +27,81 @@
 import re
 
 
+
+
+class BaseMatch:
+
+  def __init__( s ):
+
+    s.pattern   = None
+    s.regex     = None
+    s.result    = None
+    s.error     = None
+    s.name      = None
+    s.actions   = []
+
+
+  def setActionGroup( s, actions ):
+
+    s.actions = actions
+
+
+  def compileRegex( s, regex ):
+
+    s.result = None
+    s.error  = None
+
+    try:
+      s.regex = re.compile( regex )
+
+    except re.error, e:
+      s.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
+      s.error = e.message
+
+
+  def setPattern( s, pattern ):
+
+    s.pattern     = pattern
+    regex_pattern = s.patternToRegex( pattern )
+
+    s.compileRegex( regex_pattern )
+
+
+  def patternToRegex( s, pattern ):
+
+    raise NotImplemented( "Abstract method! Reimplement in subclasses." )
+
+
+  def matches( s, string ):
+
+    s.result = None
+
+    if not s.regex:
+      return False
+
+    m = s.regex.search( string )
+
+    if m is None:  ## Doesn't match.
+      return False
+
+    s.result = m
+
+    return True
+
+
+  def matchtokens( s ):
+
+    if not s.regex:
+      return None
+
+    tokens = sorted( [ ( v, k ) for k, v in s.regex.groupindex.iteritems() ] )
+
+    return [ tok[1] for tok in tokens ]
+
+
+
+
+
 ## This convoluted regex parses out either words (\w+) between square brackets
 ## or asterisks, if they aren't preceded by an odd number of backslashes.
 
@@ -48,6 +123,8 @@ PARSER = re.compile(
   + "(?:" + BS * 2 + ")"
   + "*"                        ## An even number of backslashes
   + "("                        ## And then, group-match either...
+  +   ASTER * 2                ## Two asterisks
+  + "|"                        ## Or...
   +   ASTER                    ## An asterisk
   + "|"                        ## Or...
   +   LSB
@@ -57,54 +134,46 @@ PARSER = re.compile(
 )
 
 
+class SmartMatch( BaseMatch ):
 
-class SmartMatch:
+  def patternToRegex( s, pattern ):
 
-  def __init__( s ):
+    regex  = []
+    tokens = set()
 
-    s.pattern   = None
-    s.regex     = None
-    s.results   = None
-    s.positions = None
-    s.error     = None
-    s.name      = None
-    s.actions   = []
+    while pattern:
 
+      m = PARSER.search( pattern )
 
-  def setName( s, name ):
+      if not m:
 
-    s.name = name
+        regex.append( s.unescape_then_escape( pattern ) )
+        break
 
+      start, end = m.span( 1 )
+      before, pattern = pattern[ :start ], pattern[ end: ]
 
-  def setActionGroup( s, actions ):
+      if before:
+        regex.append( s.unescape_then_escape( before ) )
 
-    s.actions = actions
+      token = m.group( 1 ).lower().lstrip( u'[ ' ).rstrip( u' ]' )
 
+      if token == u'*':
+        regex.append( u".*?" ) ## Match anything, non-greedy
 
-  def setRegex( s, regex ):
+      elif token == u'**':
+        regex.append( u".*" )  ## Match anything, greedy
 
-    s.pattern = None
-    s.compileRegex( regex )
+      elif token in tokens:  ## Token which is already known
+        regex.append( u"(?P=%s)" % token ) ## Insert backreference.
 
+      else:  ## New token
+        tokens.add( token )
 
-  def compileRegex( s, regex ):
+        ## Named match for any non-null string, non-greedy.
+        regex.append( ur"\b(?P<%s>.+?)\b" % token )
 
-    s.clearResults()
-    s.error = None
-
-    try:
-      s.regex = re.compile( regex )
-
-    except re.error, e:
-      s.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
-      s.error = e.message
-
-
-  def setPattern( s, pattern ):
-
-    s.pattern = pattern
-    s.clearResults()
-    s.parsePattern()
+    return u''.join( regex )
 
 
   def unescape_then_escape( s, string ):
@@ -125,77 +194,8 @@ class SmartMatch:
     return re.escape( string )
 
 
-  def parsePattern( s ):
+class RegexMatch( BaseMatch ):
 
-    pattern = s.pattern
-    regex   = []
-    tokens  = set()
+  def patternToRegex( s, pattern ):
 
-    while pattern:
-
-      m = PARSER.search( pattern )
-
-      if not m:
-
-        regex.append( s.unescape_then_escape( pattern ) )
-        break
-
-      start, end = m.start( 1 ), m.end( 1 )
-      before, pattern = pattern[ :start ], pattern[ end: ]
-
-      if before:
-
-        regex.append( s.unescape_then_escape( before ) )
-
-      token = m.group( 1 ).lstrip( u'[ ' ).rstrip( u' ]' )
-
-      if token == u'*':
-        regex.append( u".*?" ) ## Match anything, non-greedy
-
-      elif token in tokens:  ## Token is already known!
-
-        regex.append( u"(?P=%s)" % token ) ## Insert backreference.
-
-      else:
-
-        tokens.add( token )
-
-        ## Named match for any non-null string, non-greedy.
-        regex.append( ur"\b(?P<%s>.+?)\b" % token )
-
-    s.compileRegex( u''.join( regex ) )
-
-
-  def matches( s, string ):
-
-    if not s.regex: return False
-
-    m = s.regex.match( string )
-
-    if m is None:  ## Doesn't match.
-
-      s.clearResults()
-      return False
-
-    s.results = m.groupdict()
-
-    s.positions = dict( ( token, ( m.start( token ), m.end( token ) ) )
-                    for token in s.matchnames() )
-
-    return True
-
-
-  def matchnames( s ):
-
-    if not s.regex: return None
-
-    matchnames = sorted( [ ( v, k )
-                           for k, v in s.regex.groupindex.iteritems() ] )
-
-    return [ m[1] for m in matchnames ]
-
-
-  def clearResults( s ):
-
-    s.results   = None
-    s.positions = None
+    return pattern

@@ -78,13 +78,9 @@ class TriggersFilter( BaseFilter ):
 
 
       if line:
-
-        for match in s.manager.lookupMatches( line ):
-          for action in match.actions:
-            action( match, s.buffer )
+        s.manager.performMatchingActions( line, s.buffer )
 
       for chunk in s.buffer:
-        
         yield chunk
 
       s.buffer = []

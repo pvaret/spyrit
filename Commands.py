@@ -69,35 +69,60 @@ class BaseCommand( object ):
 
   ## Abstract base class for commands.
 
+  CMD = "cmd"
+
   def __init__( s, cmdname ):
 
     s.cmdname = cmdname
+    s.subcmds = {}
+
+    for name in dir( s ):
+
+      attr = getattr( s, name )
+
+      if callable( attr ) and name.startswith( s.CMD + "_" ):
+        s.subcmds[ name[ len( s.CMD + "_" ): ].lower() ] = attr
 
 
   def get_short_help( s ):
 
     if s.__doc__:
-      return s.__doc__.split( u"\n" )[0]
+      return s.__doc__.split( u"\n" )[0].rstrip()
 
     return None
 
 
   def get_help( s ):
 
-    return s.__doc__
+    return s.__doc__.rstrip()
+
+
+  def get_cmd_and_args( s, args ):
+
+    if len( args ) == 0:
+      return ( getattr( s, s.CMD ), args )
+
+    possible_subcmd = args[ 0 ].lower()
+
+    if possible_subcmd in s.subcmds:
+      return ( s.subcmds[ possible_subcmd ], args[ 1: ] )
+
+    return ( getattr( s, s.CMD ), args )
 
 
   def execute( s, world, *args ):
 
-    if not args_match_function( s.default, [world] + list( args ) ):
+    cmd, args = s.get_cmd_and_args( args )
 
-      world.info( u"Invalid number of parameters for command %s." % s.cmdname )
+    if not args_match_function( cmd, [world] + list( args ) ):
+
+      world.info( u"Invalid number of parameters for command %s." % cmdname )
       return
 
-    s.default( world, *args )
+    cmd( world, *args )
 
 
-  def default( s, world, *args ):
+  def cmd( s, world, *args ):
 
     ## Default implementation that does nothing. Overload this in subclasses.
     pass
@@ -112,7 +137,7 @@ class LoadCommand( BaseCommand ):
 
   ## No docstring. This is not a user-visible command.
 
-  def default( s, world, *args ):
+  def cmd( s, world, *args ):
 
     world.loadFile( args and u" ".join( args ) or None )
 
@@ -122,7 +147,7 @@ class FindCommand( BaseCommand ):
   u"""Finds text in the output window.
   If <string> is omitted, repeat the last search."""
 
-  def default( s, world, *args ):
+  def cmd( s, world, *args ):
 
     world.worldui.output_manager.findInHistory( u" ".join( args ) )
 
@@ -131,7 +156,7 @@ class RaiseCommand( BaseCommand ):
 
   ## No docstring. This is not a user-visible command.
 
-  def default( s, world, *args ):
+  def cmd( s, world, *args ):
 
     if args:
 
@@ -157,7 +182,7 @@ class ConnectCommand( BaseCommand ):
 
   u"Opens connection to the current world if it is currently closed."
 
-  def default( s, world ):
+  def cmd( s, world ):
 
     world.connectToWorld()
 
@@ -166,7 +191,7 @@ class DisconnectCommand( BaseCommand ):
 
   u"Closes connection to the current world."
 
-  def default( s, world ):
+  def cmd( s, world ):
 
     world.disconnectFromWorld()
 
@@ -175,7 +200,7 @@ class QuitCommand( BaseCommand ):
 
   u"Quits the application."
 
-  def default( s, world ):
+  def cmd( s, world ):
 
     singletons.mw.close()
 
@@ -184,7 +209,7 @@ class CloseCommand( BaseCommand ):
 
   u"Closes the current world."
 
-  def default( s, world ):
+  def cmd( s, world ):
 
     world.worldui.close()
 
@@ -193,7 +218,7 @@ class WorldConfSetCommand( BaseCommand ):
 
   u"Sets this world's given configuration key to the given value."
 
-  def default( s, world, key, *args ):
+  def cmd( s, world, key, *args ):
 
     args = " ".join( args )
 
@@ -211,7 +236,7 @@ class ConfSetCommand( BaseCommand ):
 
   u"Sets the given configuration key to the given value."
 
-  def default( s, world, key, *args ):
+  def cmd( s, world, key, *args ):
 
     args = " ".join( args )
 
@@ -229,7 +254,7 @@ class ConfResetCommand( BaseCommand ):
 
   u"Resets the given configuration key to its default value."
 
-  def default( s, world, key ):
+  def cmd( s, world, key ):
 
     try:
       del singletons.config[ key ]
@@ -242,7 +267,7 @@ class WorldConfResetCommand( BaseCommand ):
 
   u"Resets this world's given configuration key to its global value."
 
-  def default( s, world, key ):
+  def cmd( s, world, key ):
 
     try:
       del world.conf[ key ]
@@ -255,7 +280,7 @@ class PlayCommand( BaseCommand ):
 
   u"Plays a sound."
 
-  def default( s, world, filename ):
+  def cmd( s, world, filename ):
 
     singletons.sound.play( filename )
 
@@ -344,7 +369,7 @@ class CommandRegistry:
 
     if not tokens:  ## Default help text.
 
-      helptxt = ""
+      helptxt = [ "Help:" ]
 
       for cmdname in sorted( s.commands.keys() ):
 
@@ -352,14 +377,14 @@ class CommandRegistry:
         help = cmd.get_short_help()
 
         if help:
-          helptxt += cmdchar + u"%s" % cmdname.ljust( 18 ) + help + "\n"
+          helptxt.append( cmdchar + u"%s" % cmdname.ljust( 18 ) + help )
 
-      world.info( helptxt )
+      world.info( u'\n'.join( helptxt ) )
 
     else:
 
       cmdname = tokens[0]
-      cmd = s.lookupCommand( cmdname )
+      cmd     = s.lookupCommand( cmdname )
 
       if not cmd:
         world.info( "No such command: %s" % cmdname )
@@ -373,6 +398,7 @@ class CommandRegistry:
                       "(Command reserved for internal use.)" % cmdname )
         else:
           world.info( cmdchar + u"%s " % cmdname + "\n  " + help )
+
 
   def __del__( s ):
 

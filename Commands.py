@@ -87,15 +87,34 @@ class BaseCommand( object ):
   def get_short_help( s ):
 
     if s.__doc__:
-      return s.__doc__.split( u"\n" )[0].rstrip()
+      return s.__doc__.split( u"\n" )[0].strip()
 
     return None
 
 
   def get_help( s ):
 
-    return s.__doc__.rstrip()
+    doc = s.__doc__.strip()
 
+    if not s.subcmds:
+      return doc
+
+    helptxt  = [ doc ]
+    helptxt += [ u"" ]
+    helptxt += [ u"Subcommands:" ]
+
+    ljust = max( len( c ) for c in s.subcmds.keys() ) + 2
+
+    for cmdname, cmd in sorted( s.subcmds.iteritems() ):
+
+      doc = cmd.__doc__
+
+      if doc:
+        line = ( "  %s " % ( cmdname.ljust( ljust ) )
+               + doc.split( u"\n" )[0].strip() )
+        helptxt.append( line )
+
+    return u"\n".join( helptxt )
 
   def get_cmd_and_args( s, args ):
 
@@ -116,7 +135,7 @@ class BaseCommand( object ):
 
     if not args_match_function( cmd, [world] + list( args ) ):
 
-      world.info( u"Invalid number of parameters for command %s." % cmdname )
+      world.info( u"Invalid number of parameters." )
       return
 
     cmd( world, *args )
@@ -130,33 +149,33 @@ class BaseCommand( object ):
 
 
 
+## Implementation of commands.
 
 
+class OutputCommand( BaseCommand ):
 
-class LoadCommand( BaseCommand ):
+  u"""Manage the output window."""
 
-  ## No docstring. This is not a user-visible command.
+  def cmd_load( s, world, *args ):
 
-  def cmd( s, world, *args ):
+    ## No docstring. This is not a user-visible command.
 
     world.loadFile( args and u" ".join( args ) or None )
 
 
-class FindCommand( BaseCommand ):
+  def cmd_find( s, world, *args ):
 
-  u"""Finds text in the output window.
-  If <string> is omitted, repeat the last search."""
-
-  def cmd( s, world, *args ):
+    u"""Finds the given text in the output window.
+    If <string> is omitted, repeat the last search."""
 
     world.worldui.output_manager.findInHistory( u" ".join( args ) )
 
 
-class RaiseCommand( BaseCommand ):
+class DebugCommand( BaseCommand ):
 
   ## No docstring. This is not a user-visible command.
 
-  def cmd( s, world, *args ):
+  def cmd_raise( s, world, *args ):
 
     if args:
 
@@ -178,83 +197,78 @@ class RaiseCommand( BaseCommand ):
     raise Exception( args and " ".join( args ) or None )
 
 
-class ConnectCommand( BaseCommand ):
+class SessionCommand( BaseCommand ):
 
-  u"Opens connection to the current world if it is currently closed."
+  u"""Connect, disconnect, close, quit."""
 
-  def cmd( s, world ):
+  def cmd_connect( s, world ):
+
+    u"Opens connection to the current world if it is currently closed."
 
     world.connectToWorld()
 
 
-class DisconnectCommand( BaseCommand ):
+  def cmd_disconnect( s, world ):
 
-  u"Closes connection to the current world."
-
-  def cmd( s, world ):
+    u"Closes connection to the current world."
 
     world.disconnectFromWorld()
 
 
-class QuitCommand( BaseCommand ):
+  def cmd_quit( s, world ):
 
-  u"Quits the application."
-
-  def cmd( s, world ):
+    u"Quits the application."
 
     singletons.mw.close()
 
 
-class CloseCommand( BaseCommand ):
+  def cmd_close( s, world ):
 
-  u"Closes the current world."
-
-  def cmd( s, world ):
+    u"Closes the current world."
 
     world.worldui.close()
 
 
-class WorldConfSetCommand( BaseCommand ):
 
-  u"Sets this world's given configuration key to the given value."
+class ConfCommand( BaseCommand ):
 
-  def cmd( s, world, key, *args ):
+  u"Configure the application."
 
-    args = " ".join( args )
+  def cmd_set( s, world, key, *args ):
 
-    t = world.conf.getType( key )
-
-    if not t:
-      world.info( u"Unknown configuration variable: %s" % key )
-
-    else:
-      args = t.from_string( args )
-      world.conf[ key ] = args
-
-
-class ConfSetCommand( BaseCommand ):
-
-  u"Sets the given configuration key to the given value."
-
-  def cmd( s, world, key, *args ):
+    u"Sets given configuration key to the given value globally."
 
     args = " ".join( args )
 
     t = world.conf.getType( key )
 
     if not t:
-      world.info( u"Unknown configuration variable: %s" % key )
+      world.info( u"Unknown configuration key: %s" % key )
 
     else:
       args = t.from_string( args )
       singletons.config[ key ] = args
 
 
-class ConfResetCommand( BaseCommand ):
+  def cmd_worldset( s, world, key, *args ):
 
-  u"Resets the given configuration key to its default value."
+    u"Sets given configuration key to the given value for this world."
 
-  def cmd( s, world, key ):
+    args = " ".join( args )
+
+    t = world.conf.getType( key )
+
+    if not t:
+      world.info( u"Unknown configuration key: %s" % key )
+
+    else:
+      args = t.from_string( args )
+      world.conf[ key ] = args
+
+
+  def cmd_reset( s, world, key ):
+
+    u"Resets the given configuration key to its default value."
 
     try:
       del singletons.config[ key ]
@@ -263,17 +277,16 @@ class ConfResetCommand( BaseCommand ):
       pass
 
 
-class WorldConfResetCommand( BaseCommand ):
+  def cmd_worldreset( s, world, key ):
 
-  u"Resets this world's given configuration key to its global value."
-
-  def cmd( s, world, key ):
+    u"Resets the given configuration key for this world to its global value."
 
     try:
       del world.conf[ key ]
 
     except KeyError:
       pass
+
 
 
 class PlayCommand( BaseCommand ):
@@ -369,7 +382,9 @@ class CommandRegistry:
 
     if not tokens:  ## Default help text.
 
-      helptxt = [ "Help:" ]
+      helptxt = [ "Available commands:\n" ]
+
+      ljust = max( len( c ) for c in s.commands.keys() ) + 2
 
       for cmdname in sorted( s.commands.keys() ):
 
@@ -377,11 +392,15 @@ class CommandRegistry:
         help = cmd.get_short_help()
 
         if help:
-          helptxt.append( cmdchar + u"%s" % cmdname.ljust( 18 ) + help )
+          helptxt.append( cmdchar + u"%s" % cmdname.ljust( ljust ) + help )
+
+      helptxt += [ "" ]
+      helptxt += [ "Type '%shelp COMMAND' for more help on a command."
+                   % cmdchar ]
 
       world.info( u'\n'.join( helptxt ) )
 
-    else:
+    else:  ## Help on a specific command.
 
       cmdname = tokens[0]
       cmd     = s.lookupCommand( cmdname )
@@ -410,15 +429,8 @@ class CommandRegistry:
 
 def register_local_commands( commands ):
 
-  commands.registerCommand( "load", LoadCommand )
-  commands.registerCommand( "find", FindCommand )
-  commands.registerCommand( "raise", RaiseCommand )
-  commands.registerCommand( "close", CloseCommand )
-  commands.registerCommand( "quit", QuitCommand )
-  commands.registerCommand( "connect", ConnectCommand )
-  commands.registerCommand( "disconnect", DisconnectCommand )
-  commands.registerCommand( "conf_set", ConfSetCommand )
-  commands.registerCommand( "conf_reset", ConfResetCommand )
-  commands.registerCommand( "world_conf_set", WorldConfSetCommand )
-  commands.registerCommand( "world_conf_reset", WorldConfResetCommand )
-  commands.registerCommand( "play", PlayCommand )
+  commands.registerCommand( "output",  OutputCommand )
+  commands.registerCommand( "debug",   DebugCommand )
+  commands.registerCommand( "session", SessionCommand )
+  commands.registerCommand( "conf",    ConfCommand )
+  commands.registerCommand( "play",    PlayCommand )

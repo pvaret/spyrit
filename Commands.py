@@ -94,6 +94,9 @@ class BaseCommand( object ):
 
   def get_help( s ):
 
+    if not s.__doc__:
+      return None
+
     doc = s.__doc__.strip()
 
     if not s.subcmds:
@@ -158,7 +161,7 @@ class OutputCommand( BaseCommand ):
 
   def cmd_load( s, world, *args ):
 
-    ## No docstring. This is not a user-visible command.
+    ## No docstring. This is not a user-visible subcommand.
 
     world.loadFile( args and u" ".join( args ) or None )
 
@@ -289,11 +292,13 @@ class ConfCommand( BaseCommand ):
 
 
 
-class PlayCommand( BaseCommand ):
+class SoundCommand( BaseCommand ):
 
-  u"Plays a sound."
+  u"Sound-related operations."
 
-  def cmd( s, world, filename ):
+  def cmd_play( s, world, filename ):
+
+    u"Play a sound."
 
     singletons.sound.play( filename )
 
@@ -433,4 +438,4 @@ def register_local_commands( commands ):
   commands.registerCommand( "debug",   DebugCommand )
   commands.registerCommand( "session", SessionCommand )
   commands.registerCommand( "conf",    ConfCommand )
-  commands.registerCommand( "play",    PlayCommand )
+  commands.registerCommand( "sound",   SoundCommand )

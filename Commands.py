@@ -119,6 +119,7 @@ class BaseCommand( object ):
 
     return u"\n".join( helptxt )
 
+
   def get_cmd_and_args( s, args ):
 
     if len( args ) == 0:
@@ -343,7 +344,8 @@ class CommandRegistry:
         for token in line[ 0:m.start() ].split():
           tokens.append( token.strip() )
 
-        tokens.append( m.group( 1 ) or m.group( 2 ) )
+        token = m.group( 1 ) if m.group( 1 ) is not None else m.group( 2 )
+        tokens.append( token )
 
         line = line[ m.end(): ]
 

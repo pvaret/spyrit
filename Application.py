@@ -83,9 +83,9 @@ class Application( QtGui.QApplication ):
 
     ## Load up additional global resources.
 
-    from TempResources import TempResources
-    from SoundEngine   import SoundEngine
-    from Commands      import CommandRegistry, register_local_commands
+    from TempResources   import TempResources
+    from SoundEngine     import SoundEngine
+    from CommandRegistry import CommandRegistry, register_local_commands
 
     singletons.addInstance( "tmprc",    TempResources() )
     singletons.addInstance( "sound",    SoundEngine() )
@@ -93,7 +93,7 @@ class Application( QtGui.QApplication ):
 
     ## The command registry has to be populated with what commands have
     ## been implemented at this point. The register_local_commands function
-    ## holds a list of those.
+    ## knows how to do that.
 
     register_local_commands( singletons.commands )
 

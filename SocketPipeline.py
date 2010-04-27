@@ -49,8 +49,8 @@ class SocketPipeline:
 
     s.pipeline.addFilter( TelnetFilter )
     s.pipeline.addFilter( AnsiFilter )
-    s.pipeline.addFilter( FlowControlFilter )
     s.pipeline.addFilter( UnicodeTextFilter, encoding=conf._world_encoding )
+    s.pipeline.addFilter( FlowControlFilter )
     s.pipeline.addFilter( TriggersFilter, manager=s.triggersmanager )
 
     s.using_ssl = False

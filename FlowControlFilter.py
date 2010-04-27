@@ -26,19 +26,19 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, ByteChunk, FlowControlChunk
+from PipelineChunks import chunktypes, UnicodeTextChunk, FlowControlChunk
 
 
 class FlowControlFilter( BaseFilter ):
-  
-  relevant_types = chunktypes.BYTES
 
-  match          = re.compile( r'(\r|\n)' )
-  unix_like_cr   = re.compile( r'(?<!\r)\n' )
+  relevant_types = chunktypes.TEXT
 
-  typemapping = {
-    '\n': FlowControlChunk.LINEFEED,
-    '\r': FlowControlChunk.CARRIAGERETURN,
+  match          = re.compile( ur'(\r|\n)' )
+  unix_like_cr   = re.compile( ur'(?<!\r)\n' )
+
+  chunkmapping = {
+    u'\n': FlowControlChunk( FlowControlChunk.LINEFEED ),
+    u'\r': FlowControlChunk( FlowControlChunk.CARRIAGERETURN ),
   }
 
 
@@ -46,10 +46,13 @@ class FlowControlFilter( BaseFilter ):
 
     text = chunk.data
 
+    ## Expand tabs to spaces:
+    text = text.replace( u'\t', u' '*8 )
+
     while len( text ) > 0:
 
       fc = s.match.search( text )
-      
+
       if fc:
         head = text[ :fc.start() ]
         tail = text[ fc.end():   ]
@@ -57,9 +60,9 @@ class FlowControlFilter( BaseFilter ):
         text = tail
 
         if head:
-          yield ByteChunk( head )
+          yield UnicodeTextChunk( head )
 
-        yield FlowControlChunk( s.typemapping[ fc.group() ] )
+        yield s.chunkmapping[ fc.group() ]
 
       else:
         ## The remaining text doesn't contain any flow control character that
@@ -67,9 +70,10 @@ class FlowControlFilter( BaseFilter ):
         break
 
     if text:
-      yield( ByteChunk( text ) )
+      yield( UnicodeTextChunk( text ) )
 
 
   def formatForSending( s, data ):
 
-    return s.unix_like_cr.sub( "\r\n", data )
+    ## Transform UNIX-like CR into telnet-like CRLF.
+    return s.unix_like_cr.sub( u"\r\n", data )

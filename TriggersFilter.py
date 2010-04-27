@@ -31,7 +31,7 @@ from PipelineChunks import chunktypes, FlowControlChunk, HighlightChunk
 
 
 class TriggersFilter( BaseFilter ):
-  
+
   def __init__( s, context=None, manager=None ):
 
     s.buffer  = []

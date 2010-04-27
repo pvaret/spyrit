@@ -100,6 +100,9 @@ class WorldInputUI( QtGui.QTextEdit ):
     if style_elements:
       s.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
 
+    font_height = QtGui.QFontMetrics( s.font() ).height()
+    s.setMinimumHeight( font_height*3 )
+
 
   def keyPressEvent( s, e ):
 

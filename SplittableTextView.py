@@ -187,7 +187,7 @@ class SplittableTextView( QtGui.QTextEdit ):
   def setConfiguration( s, font_name, font_size, background_color ):
 
     if background_color:
-      stylesheet = "QTextEdit { background-color: %s }" % background_color
+      stylesheet = u"QTextEdit { background-color: %s }" % background_color
       s.setStyleSheet( stylesheet )
 
     font = QtGui.QFont( font_name )

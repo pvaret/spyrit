@@ -195,7 +195,9 @@ class SplittableTextView( QtGui.QTextEdit ):
     if font_size:
       font.setPointSize( font_size )
 
+    ## Encourage possible character substitutions to favor fixed-pitch fonts:
     font.setFixedPitch( True )
+
     s.setFont( font )
 
     s.computeLineStep()
@@ -220,7 +222,8 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def lineHeight( s ):
 
-    return s.viewport().fontMetrics().height()
+    fm = QtGui.QFontMetrics( s.font() )
+    return max( fm.lineSpacing(), fm.height() )
 
 
   def setPaging( s, is_paging ):
@@ -523,16 +526,16 @@ class SplittableTextView( QtGui.QTextEdit ):
 
 
   def pageUp( s ):
-  
+
     s.computePageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )
-   
-   
+
+
   def pageDown( s ):
-    
+
     s.computePageStep()
     s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepAdd )
-   
+
 
   def resizeEvent( s, e ):
 

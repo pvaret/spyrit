@@ -47,3 +47,13 @@ class DebugCommand( BaseCommand ):
         return
 
     raise Exception( args and " ".join( args ) or None )
+
+
+  def cmd_execute( s, world, filename ):
+
+      f = world.openFileOrErr( filename )
+
+      if not f:
+        return
+
+      exec f.read()

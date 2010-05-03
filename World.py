@@ -215,9 +215,22 @@ class World( QtCore.QObject ):
     return QtGui.QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
 
 
-  def loadFile( s, filename=None ):
+  def openFileOrErr( s, filename ):
 
     local_encoding = qApp().local_encoding
+    basename = os.path.basename( filename )
+
+    try:
+      return file( filename )  ## Note: filename can be unicode. This is OK!
+
+    except IOError, e:
+
+      errormsg = e.strerror.decode( local_encoding, "replace" )
+      s.info( u"Error: %s: %s" % ( basename, errormsg ) )
+      return None
+
+
+  def loadFile( s, filename=None ):
 
     if filename is None:
 
@@ -231,18 +244,11 @@ class World( QtCore.QObject ):
 
     if not filename: return
 
-    basename = os.path.basename( filename )
+    f = s.openFileOrErr( filename )
 
-    try:
-      f = file( filename )  ## Note: filename is of type unicode. This is OK!
+    if not f: return
 
-    except IOError, e:
-
-      errormsg = e.strerror.decode( local_encoding, "replace" )
-      s.info( u"Error: %s: %s" % ( basename, errormsg ) )
-      return
-
-    s.info( u"Loading %s..." % basename )
+    s.info( u"Loading %s..." % os.path.basename( filename ) )
 
     t1 = time.time()
 

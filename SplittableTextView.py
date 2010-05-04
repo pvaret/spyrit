@@ -132,12 +132,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     connect( s, SIGNAL( "textChanged()" ),      s.perhapsRepaintText )
     connect( s, SIGNAL( "selectionChanged()" ), s.perhapsRepaintSelection )
 
-    ## We call this once *after* the event loop has started; otherwise it
-    ## occurs before the widget is done constructing, and the font metrics
-    ## it uses are thus erroneous:
-
-    QtCore.QTimer.singleShot( 0, s.computeLineStep )
-
+    s.computeLineStep()
     s.more = LineCount( s )
     s.setMoreAnchor()
 
@@ -222,8 +217,15 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def lineHeight( s ):
 
-    fm = QtGui.QFontMetrics( s.font() )
-    return max( fm.lineSpacing(), fm.height() )
+    layout = QtGui.QTextLayout( u"---", s.font(), s.viewport() )
+    layout.beginLayout()
+    line = layout.createLine()
+    layout.endLayout()
+
+    fm = QtGui.QFontMetrics( s.font(), s.viewport() )
+    leading = max( fm.leading(), 0 )
+
+    return int( line.height() + leading )
 
 
   def setPaging( s, is_paging ):

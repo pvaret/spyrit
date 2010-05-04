@@ -52,10 +52,10 @@ class TelnetFilter( BaseFilter ):
   IAC  = chr( 255 )
 
   match = re.compile(
-      IAC 
+      IAC
     + "(?:"
     +   "(?P<cmd>" + "|".join( [ NOP, DM, BRK, IP, AO,
-                                 AYT, EC, EL, GA, IAC ] ) + ")" 
+                                 AYT, EC, EL, GA, IAC ] ) + ")"
     +   "|"
     +   "(?:"
     +     "(?P<cmdopt>" + WILL + "|" + WONT + "|" + DO + "|" + DONT + ")"
@@ -64,7 +64,7 @@ class TelnetFilter( BaseFilter ):
     + ")"
   )
 
-  unfinished = re.compile( 
+  unfinished = re.compile(
       IAC
     + "("
     +   WILL + "|" + WONT + "|" + DO + "|" + DONT
@@ -74,13 +74,13 @@ class TelnetFilter( BaseFilter ):
 
 
   def processChunk( s, chunk ):
-    
+
     text = chunk.data
 
     while len( text ) > 0:
 
       telnet = s.match.search( text )
-      
+
       if telnet:
 
         head = text[ :telnet.start() ]
@@ -114,7 +114,7 @@ class TelnetFilter( BaseFilter ):
       if s.unfinished.search( text ): ## Remaining text contains an unfinished
                                       ## Telnet sequence!
         s.postpone( ByteChunk( text ) )
-        
+
       else:
         yield( ByteChunk( text ) )
 

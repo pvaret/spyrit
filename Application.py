@@ -53,7 +53,7 @@ class Application( QtGui.QApplication ):
     ## Check that we aren't already bootstrapped.
     if s.bootstrapped:
       return
-      
+
     ## Attempt to load resources. Log error if resources not found.
     try:
       import resources

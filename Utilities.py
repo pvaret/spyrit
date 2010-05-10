@@ -35,6 +35,7 @@ def test_python_version():
     return False, u"Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
+
 def test_pyqt4():
 
   try:
@@ -43,6 +44,7 @@ def test_pyqt4():
 
   except ImportError:
     return False, u"PyQt4 bindings required!"
+
 
 
 def test_sip_version():
@@ -61,15 +63,24 @@ def test_sip_version():
     return False, u"SIP v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
-def test_qt_version():
 
-  REQUIRED_MAJOR = 4
-  REQUIRED_MINOR = 3
+
+def qt_version():
 
   from PyQt4 import QtCore
 
   ## Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
-  v = tuple( int( c ) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
+  return tuple( int( c ) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
+
+
+
+
+def test_qt_version():
+
+  REQUIRED_MAJOR = 4
+  REQUIRED_MINOR = 4
+
+  v = qt_version()
 
   if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
     return True, None

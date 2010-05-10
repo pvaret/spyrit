@@ -24,6 +24,9 @@ from FormatData  import FORMAT_PROPERTIES
 from FormatData  import ANSI_COLORS as COL
 from ConfigPaths import LOG_DIR
 
+from PlatformSpecific import PlatformSpecific
+
+default_font = PlatformSpecific.default_font
 
 DEFAULTS = (
 
@@ -49,9 +52,9 @@ DEFAULTS = (
 
   ( 'toolbar_icon_size', 24, INT ),
 
-  ( 'output_font_name',        u"Courier", STR ),
-  ( 'output_font_size',        0,          INT ),  ## 0 = Use system default.
-  ( 'output_background_color', COL.black,  STR ),
+  ( 'output_font_name',        default_font, STR ),
+  ( 'output_font_size',        0,            INT ),  ## 0 = Use system default.
+  ( 'output_background_color', COL.black,    STR ),
 
   ( 'output_format',  { FORMAT_PROPERTIES.COLOR: COL.lightgray }, FORMAT ),
 

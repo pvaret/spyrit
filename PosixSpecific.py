@@ -29,6 +29,7 @@ class PosixSpecific:
   CONFIG_FILE = "spyrit.conf"
 
   should_repaint_on_scroll = False
+  default_font             = u"Nimbus Mono L"
 
   def get_homedir( s ):
     return os.path.expanduser( "~" )

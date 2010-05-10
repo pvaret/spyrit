@@ -30,6 +30,7 @@ class Win32Specific:
   CONFIG_FILE = "Spyrit.ini"
 
   should_repaint_on_scroll = False
+  default_font             = u"Courier New"
 
   def get_homedir( s ):
     return winpaths.get_homedir()

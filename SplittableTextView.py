@@ -24,6 +24,7 @@
 
 from localqt import *
 
+from Utilities        import qt_version
 from PlatformSpecific import platformSpecific
 
 
@@ -190,8 +191,11 @@ class SplittableTextView( QtGui.QTextEdit ):
     if font_size:
       font.setPointSize( font_size )
 
-    ## Encourage possible character substitutions to favor fixed-pitch fonts:
+    ## Encourage possible character substitutions to favor vectorial
+    ## fixed-pitch fonts:
     font.setFixedPitch( True )
+    font.setStyleHint( font.TypeWriter )
+    font.setStyleStrategy( font.PreferOutline | font.PreferMatch )
 
     s.setFont( font )
 
@@ -217,14 +221,25 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def lineHeight( s ):
 
-    layout = QtGui.QTextLayout( u"---", s.font(), s.viewport() )
+    font = s.font()
+
+    ## Generate the layout for one line of text using this font:
+    layout = QtGui.QTextLayout( u"---", font )
     layout.beginLayout()
     line = layout.createLine()
     layout.endLayout()
 
-    fm = QtGui.QFontMetrics( s.font(), s.viewport() )
+    ## Obtain the font's leading metric, if positive. (Qt ignores the leading
+    ## if it's negative at this point in time.)
+    fm = QtGui.QFontMetrics( font )
     leading = max( fm.leading(), 0 )
 
+    ## WORKAROUND: Qt versions < 4.6 omitted the leading altogether in line
+    ## height calculations. We account for this here.
+    if qt_version() < ( 4, 6 ):
+      leading = 0
+
+    ## This here is the actual line height for this font. Phew.
     return int( line.height() + leading )
 
 

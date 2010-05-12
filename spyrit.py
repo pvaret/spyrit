@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ## Copyright (c) 2007-2010 Pascal Varet <p.varet@gmail.com>
@@ -42,7 +42,7 @@ for test in ( test_python_version,
 
     from Messages import messages
     messages.error( msg )
-    
+
     import sys
     sys.exit( 1 )
 

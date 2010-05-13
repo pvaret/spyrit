@@ -23,8 +23,9 @@
 import re
 import codecs
 
-from Messages     import messages
-from ConfigBasket import ConfigBasket
+from Messages         import messages
+from ConfigBasket     import ConfigBasket
+from CallbackRegistry import CallbackRegistry
 
 
 
@@ -37,7 +38,7 @@ RE_KEYVALUE = re.compile( r"^(\w(?:-*\w+)*)\s*=\s*(.*)", re.UNICODE )
 def parseIniLine( line ):
 
   result = dict( key=u"", value=u"", section=u"", sectiondepth=0 )
-  
+
   line=line.strip()
 
   m = RE_SECTION.match( line )
@@ -53,13 +54,11 @@ def parseIniLine( line ):
     result[ "key" ]   = m.group( 1 )
     result[ "value" ] = m.group( 2 ).strip()
     return result
-        
+
   return None
-  
+
 
 ## ---[ Class IniConfigBasket ]----------------------------------------
-
-
 
 class IniConfigBasket( ConfigBasket ):
 
@@ -69,13 +68,14 @@ class IniConfigBasket( ConfigBasket ):
 
   def __init__( s, defaults, types ):
 
-
     ConfigBasket.__init__( s )
 
     d = ConfigBasket.buildFromDict( defaults )
     d.setTypeGetter( types.get )
 
     s.setParent( d )
+
+    s.aboutToSave = CallbackRegistry()
 
 
   def load( s, filename ):
@@ -143,8 +143,10 @@ class IniConfigBasket( ConfigBasket ):
 
   def save( s, filename ):
 
+    s.aboutToSave.triggerAll()
+
     config_txt = []
-  
+
     def save_section( configobj, indent_level=0 ):
 
       for k, v in configobj.getOwnDict().iteritems():
@@ -186,3 +188,8 @@ class IniConfigBasket( ConfigBasket ):
     f.write( ''.join(  config_txt ) )
 
     f.close()
+
+
+  def registerSaveCallback( s, callback ):
+
+    s.aboutToSave.add( callback )

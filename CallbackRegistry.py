@@ -37,20 +37,20 @@ from weakref import ref, ReferenceError
 
 
 class WeakCallableRef:
-  
+
   def __init__( s, fn, callback=None ):
-  
+
     assert callable( fn )
-  
+
     s._objref   = None
     s._fnref    = None
     s._class    = None
     s._dead     = False
     s._callback = callback
     s._fnname   = ""
-    
+
     obj = getattr( fn, "im_self", None )
-    
+
     if obj:  ## fn is a bound method
       s._objref = ref( obj,        s.markDead )
       s._fnref  = ref( fn.im_func, s.markDead )
@@ -60,10 +60,10 @@ class WeakCallableRef:
     else:  ## fn is a static method or a plain function
       s._fnref  = ref( fn, s.markDead )
       s._fnname = fn.func_name
-  
+
 
   def markDead( s, fnref ):
-    
+
     if not s._dead:
 
       callback = s._callback
@@ -79,15 +79,15 @@ class WeakCallableRef:
 
 
   def __call__( s ):
-    
+
     if s._objref:  ## bound method
-      
+
       fn  = s._fnref()
       obj = s._objref()
 
       if None not in ( fn, obj ):
         return new.instancemethod( fn, obj, s._class )
-      
+
     elif s._fnref:
       return s._fnref()
 
@@ -102,12 +102,12 @@ class WeakCallableRef:
 
 
   def __del__( s ):
-    
+
     del s._dead
     del s._objref
     del s._fnref
     del s._class
-    del s._callback 
+    del s._callback
 
 
 
@@ -141,29 +141,29 @@ class WeakCallable:
 
 
 class CallbackRegistry:
-  
+
   def __init__( s ):
-    
+
     s.__registry = {}
-  
-  
+
+
   def add( s, callback ):
-    
+
     fnref = WeakCallableRef( callback, s.purgeDeadCallback )
     s.__registry[ id( fnref ) ] = fnref
-  
-  
+
+
   def purgeDeadCallback( s, fnref ):
-  
+
     try:
       del s.__registry[ id( fnref ) ]
 
     except KeyError:
       pass
-  
-  
+
+
   def triggerAll( s, *args, **kwargs ):
-    
+
     for fnref in s.__registry.itervalues():
       fn = fnref()
       if fn: fn( *args, **kwargs )

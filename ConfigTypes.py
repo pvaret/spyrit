@@ -56,7 +56,7 @@ class BOOL:
   def from_string( b ):
 
     return b.lower() in ( u"1", u"y", u"yes", u"on", u"true" )
- 
+
 
   @staticmethod
   def to_string( b ):
@@ -121,7 +121,7 @@ def split_on_unescaped_commas( s ):
 
         in_escaped = True
         continue
-    
+
       if in_quotes:
 
         if c == in_quotes:  ## End of quoted string.
@@ -194,18 +194,18 @@ class FORMAT:
     for k, v in d.iteritems():
 
       if   k == FORMAT_PROPERTIES.COLOR:
-        l.insert( 0, "color: %s" % v )
+        l.insert( 0, u"color: %s" % v )
 
       elif k == FORMAT_PROPERTIES.ITALIC:
-        l.append( "italic" )
+        l.append( u"italic" )
 
       elif k == FORMAT_PROPERTIES.BOLD:
-        l.append( "bold" )
+        l.append( u"bold" )
 
       elif k == FORMAT_PROPERTIES.UNDERLINE:
-        l.append( "underlined" )
+        l.append( u"underlined" )
 
-    return " ; ".join( l )
+    return u" ; ".join( l )
 
 
   @staticmethod
@@ -213,27 +213,27 @@ class FORMAT:
 
     d = {}
 
-    for item in l.split( ";" ):
+    for item in l.split( u";" ):
 
       item  = item.strip().lower()
       value = None
 
-      if ":" in item:
+      if u":" in item:
 
-        item, value = item.split( ":", 1 )
+        item, value = item.split( u":", 1 )
         item  = item.strip()
         value = value.strip()
 
-      if   item.startswith( "i" ):
+      if   item.startswith( u"i" ):
         d[ FORMAT_PROPERTIES.ITALIC ] = True
 
-      elif item.startswith( "b" ):
+      elif item.startswith( u"b" ):
         d[ FORMAT_PROPERTIES.BOLD ] = True
 
-      elif item.startswith( "u" ):
+      elif item.startswith( u"u" ):
         d[ FORMAT_PROPERTIES.UNDERLINE ] = True
 
-      elif item.startswith( "c" ):
+      elif item.startswith( u"c" ):
 
         if value:
           d[ FORMAT_PROPERTIES.COLOR ] = value

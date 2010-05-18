@@ -11,4 +11,5 @@ This is a list of features that need implementing sooner or later.
 * Split state data and configuration.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
 * Improve paging when less than a page of text is displayed initially.
-* Fix line height calculation, already.
+* GUI for completion.
+* Fix unloading of sound engines when quitting.

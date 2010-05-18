@@ -158,9 +158,11 @@ def register_local_commands( commands ):
   from commands.OutputCommand  import OutputCommand
   from commands.SessionCommand import SessionCommand
   from commands.SoundCommand   import SoundCommand
+  from commands.MatchCommand   import MatchCommand
 
   commands.registerCommand( "conf",    ConfCommand )
   commands.registerCommand( "debug",   DebugCommand )
   commands.registerCommand( "output",  OutputCommand )
   commands.registerCommand( "session", SessionCommand )
   commands.registerCommand( "sound",   SoundCommand )
+  commands.registerCommand( "match",   MatchCommand )

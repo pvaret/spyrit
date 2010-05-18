@@ -33,6 +33,8 @@ import re
 
 class RegexMatch:
 
+  matchtype = "regex"
+
   def __init__( s, pattern=None ):
 
     s.pattern   = pattern
@@ -98,6 +100,10 @@ class RegexMatch:
     return [ tok[1] for tok in tokens ]
 
 
+  def __unicode__( s ):
+
+    return u":".join( [ s.matchtype, s.pattern ] )
+
 
 
 
@@ -135,6 +141,8 @@ PARSER = re.compile(
 
 
 class SmartMatch( RegexMatch ):
+
+  matchtype = "smart"
 
   def patternToRegex( s, pattern ):
 

@@ -23,9 +23,10 @@
 import re
 import ConfigTypes
 
+from Singletons     import singletons
+from ConfigBasket   import ConfigBasket
 from Matches        import SmartMatch, RegexMatch, load_from_string
 from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
-from Singletons     import singletons
 
 
 
@@ -91,6 +92,8 @@ class HighlightAction:
 
   def __init__( s, highlight, token=None ):
 
+    s.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
+
     s.highlight = highlight
     s.token     = token
 
@@ -120,9 +123,15 @@ class HighlightAction:
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
+  def __unicode__( s ):
+
+    return ConfigTypes.FORMAT.to_string( s.highlight )
+
 
 
 class PlayAction:
+
+  name = "play"
 
   def __init__( s, soundfile=None ):
 
@@ -134,9 +143,15 @@ class PlayAction:
     singletons.sound.play( s.soundfile )
 
 
+  def __unicode__( s ):
+
+    return s.soundfile
+
 
 
 class GagAction:
+
+  name = "gag"
 
   def __call__( s, match, chunkbuffer ):
 
@@ -149,6 +164,10 @@ class GagAction:
                               chunktypes.HIGHLIGHT ):
         del chunkbuffer[ i ]
 
+
+  def __unicode__( s ):
+
+    return ""
 
 
 
@@ -178,6 +197,7 @@ class TriggersManager:
     s.actions = {}
 
     s.load( singletons.config )
+    singletons.config.registerSaveCallback( s.confSaveCallback )
 
 
   def load( s, conf ):
@@ -197,7 +217,7 @@ class TriggersManager:
       if 'gag' in conf:
 
         s.addAction( GagAction(), groupname )
-        continue
+        continue  ## If there's a gag, ignore all other actions!
 
       if 'play' in conf:
         s.addAction( PlayAction( conf.get( 'play' ) ), groupname )
@@ -213,6 +233,34 @@ class TriggersManager:
           token = None
 
         s.addAction( HighlightAction( conf[ k ], token ), groupname )
+
+
+  def save( s, conf ):
+
+    ## Configuration is about to be saved. Serialize our current setup into the
+    ## configuration.
+
+    conf_dict = {}
+
+    for group in s.matches.iterkeys():
+
+      group_dict = {}
+      group_dict[ 'match' ] = [ unicode( m ) for m in s.matches[ group ] ]
+
+      for action in s.actions.get( group, () ):
+        group_dict[ action.name ] = unicode( action )
+
+      conf_dict[ ConfigBasket.SECTION_CHAR + group ] = group_dict
+
+    new_match_conf = ConfigBasket.buildFromDict( conf_dict )
+
+    try:
+      conf.deleteSection( conf._matches_section )
+    except KeyError:
+      pass
+
+    if conf_dict:
+      conf.saveSection( new_match_conf, conf._matches_section )
 
 
   def addMatch( s, matchstring, group=None ):
@@ -231,6 +279,17 @@ class TriggersManager:
     s.actions.setdefault( group, [] ).append( action )
 
 
+  def delGroup( s, group ):
+
+    for d in ( s.matches, s.actions ):
+
+      try:
+        del d[ group ]
+
+      except KeyError:
+        pass
+
+
   def performMatchingActions( s, line, chunkbuffer ):
 
     for group, matches in sorted( s.matches.iteritems() ):
@@ -246,3 +305,8 @@ class TriggersManager:
   def isEmpty( s ):
 
     return len( s.matches ) == 0
+
+
+  def confSaveCallback( s ):
+
+    s.save( singletons.config )

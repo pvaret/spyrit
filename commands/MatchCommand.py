@@ -39,3 +39,17 @@ class MatchCommand( BaseCommand ):
     u"Delete the given match group."
 
     world.socketpipeline.triggersmanager.delGroup( matchgroup )
+
+
+  def cmd_highlight( s, world, matchgroup, format, token=None ):
+
+    u"Highlight the given match group with the given format."
+
+    pass
+
+
+  def cmd_unhighlight( s, world, matchgroup, token=None ):
+
+    u"Remove highlight the given match group."
+
+    pass

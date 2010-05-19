@@ -30,10 +30,12 @@ def args_match_function( func, args ):
   n_args  = len( args )
   n_fargs = len( f_args )
 
+  n_defaults = len( defaults ) if defaults else 0
+
   if inspect.ismethod( func ):
     n_fargs -= 1  ## Account for implicit self argument.
 
-  if n_args < n_fargs:
+  if n_args < n_fargs - n_defaults:
     ## Not enough arguments were given to the function.
     return False
 
@@ -42,7 +44,7 @@ def args_match_function( func, args ):
     ## will do.
     return True
 
-  return ( n_args == n_fargs )
+  return ( n_fargs - n_defaults <= n_args <= n_fargs )
 
 
 

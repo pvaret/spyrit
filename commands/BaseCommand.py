@@ -23,28 +23,45 @@
 import inspect
 
 
-def args_match_function( func, args ):
 
-  f_args, varargs, varkw, defaults = inspect.getargspec( func )
+def match_args_to_function( func, args, kwargs ):
 
-  n_args  = len( args )
-  n_fargs = len( f_args )
+  f_args, f_varargs, f_varkw, f_defaults = inspect.getargspec( func )
 
-  n_defaults = len( defaults ) if defaults else 0
+  ## 1/ Compute the function's natural args and kwargs:
+
+  if f_defaults:
+    f_kwargs = dict( zip( f_args[ -len( f_defaults ): ], f_defaults ) )
+    f_args   = f_args[ :-len( f_defaults ) ]
+
+  else:
+    f_kwargs = {}
+
+  ## 2/ Match call kwargs to function kwargs:
 
   if inspect.ismethod( func ):
-    n_fargs -= 1  ## Account for implicit self argument.
+    ## Account for implicit self argument in methods.
+    args.insert( 0, 'self' )
 
-  if n_args < n_fargs - n_defaults:
-    ## Not enough arguments were given to the function.
-    return False
+  for kwarg in kwargs:
 
-  if varargs is not None:
-    ## Function declaration bears a *args clause, so any number of arguments
-    ## will do.
-    return True
+    if kwarg in f_kwargs:
+      del f_kwargs[ kwarg ]
 
-  return ( n_fargs - n_defaults <= n_args <= n_fargs )
+    elif not f_varkw:
+      ## Function called with a kwarg that isn't in its definition, and
+      ## function doesn't have a generic **kwargs to fallback to:
+      return False, u"%s: unknown parameter!" % kwarg
+
+  ## 3/ Match remaining call args to remaining function args.
+
+  if len( args ) < len( f_args ):
+    return False, u"Too few parameters!"
+
+  if len( args ) > len( f_args ) + len( f_kwargs ) and not f_varargs:
+    return False, u"Too many parameters!"
+
+  return True, None
 
 
 
@@ -105,32 +122,20 @@ class BaseCommand( object ):
     return u"\n".join( helptxt )
 
 
-  def get_cmd_and_args( s, args ):
+  def execute( s, world, subcmd, args, kwargs ):
 
-    if len( args ) == 0:
-      return ( getattr( s, s.CMD ), args )
+    cmd = s.subcmds.get( subcmd, getattr( s, s.CMD ) )
 
-    possible_subcmd = args[ 0 ].lower()
+    matching, errmsg = match_args_to_function( cmd, [world] + args, kwargs )
 
-    if possible_subcmd in s.subcmds:
-      return ( s.subcmds[ possible_subcmd ], args[ 1: ] )
-
-    return ( getattr( s, s.CMD ), args )
-
-
-  def execute( s, world, *args ):
-
-    cmd, args = s.get_cmd_and_args( args )
-
-    if not args_match_function( cmd, [world] + list( args ) ):
-
-      world.info( u"Invalid number of parameters." )
+    if not matching:
+      world.info( errmsg )
       return
 
-    cmd( world, *args )
+    cmd( world, *args, **kwargs )
 
 
-  def cmd( s, world, *args ):
+  def cmd( s, world, *args, **kwargs ):
 
     ## Default implementation that does nothing. Overload this in subclasses.
     pass

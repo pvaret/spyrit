@@ -26,7 +26,11 @@ import re
 
 class CommandRegistry:
 
-  QUOTED = re.compile( r'"(.*?)"' + '|' + r"'(.*?)'" )
+  QUOTED = re.compile( ur'(\S*)' +
+                       ur'(?:'   +
+                         ur'"(.*?)"' + u'|' + ur"'(.*?)'" +
+                       ur')'     +
+                       ur'(\S*)' )
   HELP   = "help"
 
   def __init__( s ):
@@ -47,7 +51,7 @@ class CommandRegistry:
 
   def tokenize( s, line ):
 
-    ## Turns a line such as 'A B C "D E" F' into [ 'A', 'B', 'C', 'D E', 'F' ]
+    ## Turns a line such as '"A B" C="D E" F' into [ 'A B', 'C=D E', 'F' ]
 
     line   = line.strip()
     tokens = []
@@ -61,7 +65,10 @@ class CommandRegistry:
         for token in line[ 0:m.start() ].split():
           tokens.append( token.strip() )
 
-        token = m.group( 1 ) if m.group( 1 ) is not None else m.group( 2 )
+        token  = m.group( 1 )
+        token += m.group( 2 ) if m.group( 2 ) is not None else m.group( 3 )
+        token += m.group( 4 )
+
         tokens.append( token )
 
         line = line[ m.end(): ]
@@ -76,18 +83,45 @@ class CommandRegistry:
     return tokens
 
 
-  def execute( s, world, cmdline ):
+  def parse_cmdline( s, cmdline ):
+
+    SUBCMD_SEP = u":"
+    KWARG_SEP  = u"="
+
+    cmdline = cmdline.lstrip().split( None, 1 )
+    cmdname = cmdline[0]
+    cmdline = cmdline[1] if len(cmdline) > 1 else ""
+
+    if SUBCMD_SEP in cmdname:
+      cmdname, subcmdname = cmdname.split( SUBCMD_SEP, 1 )
+
+    else:
+      subcmdname = None
 
     tokens = s.tokenize( cmdline )
 
-    if not tokens:
-      return
+    args   = []
+    kwargs = {}
 
-    cmdname = tokens.pop( 0 )
+    for token in tokens:
+
+      if KWARG_SEP in token:
+        key, val = token.split( KWARG_SEP, 1 )
+        kwargs[ key ] = val
+
+      else:
+        args.append( token )
+
+    return cmdname, subcmdname, args, kwargs
+
+
+  def execute( s, world, cmdline ):
+
+    cmdname, subcmdname, args, kwargs = s.parse_cmdline( cmdline )
 
     if cmdname == s.HELP:
 
-      s.doHelp( world, *tokens )
+      s.doHelp( world, s.tokenize( cmdline ) )
       return
 
     command = s.lookupCommand( cmdname )
@@ -97,12 +131,16 @@ class CommandRegistry:
       world.info( u"%s: no such command." % cmdname )
       return
 
-    command.execute( world, *tokens )
+    command.execute( world, subcmdname, args, kwargs )
 
 
-  def doHelp( s, world, *tokens ):
+  def doHelp( s, world, tokens ):
 
     cmdchar = world.conf._input_command_char
+
+    tokens = tokens[ 1: ]
+
+    ##XXX Improve whole help handling!
 
     if not tokens:  ## Default help text.
 

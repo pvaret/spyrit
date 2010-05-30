@@ -35,10 +35,7 @@ def trigger_type_getter( key ):
   ## This function is used by the module where the global configuration object
   ## is instantiated.
 
-  if key.startswith( "highlight" ):
-    return ConfigTypes.FORMAT
-
-  elif key == "match":
+  if key == "match":
     return ConfigTypes.STRLIST
 
   return ConfigTypes.STR
@@ -94,7 +91,7 @@ class HighlightAction:
 
     s.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
 
-    s.highlight = highlight
+    s.highlight = ConfigTypes.FORMAT.from_string( highlight )
     s.token     = token
 
 

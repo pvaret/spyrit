@@ -271,6 +271,23 @@ class TriggersManager:
     s.matches.setdefault( group, [] ).append( m )
 
 
+  def loadAction( s, actionname, args, kwargs ):
+
+    ## TODO: Make this less hardcody. We can do it. We have the technology.
+
+    if actionname == "gag":
+      return GagAction()
+
+    if actionname == "highlight":
+      ## TODO: Validate arguments!
+      return HighlightAction( args[0], kwargs.get( "token", None ) )
+
+    if actionname == "play":
+      return PlayAction( args[0] )
+
+    return None
+
+
   def addAction( s, action, group ):
 
     s.actions.setdefault( group, [] ).append( action )

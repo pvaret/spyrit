@@ -41,15 +41,50 @@ class MatchCommand( BaseCommand ):
     world.socketpipeline.triggersmanager.delGroup( matchgroup )
 
 
-  def cmd_highlight( s, world, matchgroup, format, token=None ):
+  def cmd_ifmatch( s, world, matchgroup, action, *args, **kwargs ):
 
-    u"Highlight the given match group with the given format."
+    u"Add action to be taken when a line matches the given group."
 
-    pass
+    action = world.socketpipeline.triggersmanager.loadAction( action, args, kwargs )
+
+    if action:
+      world.socketpipeline.triggersmanager.addAction( action, matchgroup )
 
 
-  def cmd_unhighlight( s, world, matchgroup, token=None ):
+  def cmd_list( s, world ):
 
-    u"Remove highlight the given match group."
+    u"List all matches and the related actions."
 
-    pass
+    msg = []
+    tm  = world.socketpipeline.triggersmanager
+
+    msg.append( u"Matches:" )
+
+    if tm.isEmpty():
+      msg.append( u"  None." )
+
+    for group in sorted( tm.matches.iterkeys() ):
+
+      groupname = u"[%s] " % group
+      indent    = len( groupname )
+
+      for i, m in enumerate( tm.matches[ group ] ):
+        if i == 0:
+          prefix = groupname
+        else:
+          prefix = u" " * indent
+
+        msg.append( prefix + unicode( m ) )
+
+      actions = tm.actions.get( group, [] )
+
+      for i, a in enumerate( actions ):
+
+        if i == 0:
+          prefix = u" " * indent + unichr( 0x2192 ) + " "
+        else:
+          prefix = u" " * ( indent + 2 )
+
+        msg.append( prefix + unicode( a ) )
+
+    world.info( u"\n".join( msg ) )

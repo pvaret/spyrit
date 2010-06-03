@@ -69,19 +69,19 @@ class MainWindow( QtGui.QMainWindow ):
     connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
                           s.setCurrentWorldToolbar )
 
-    
+
     ## Create all the actions.
-    
+
     s.actionset = ActionSet( s )
 
-    s.action_about        = s.actionset.bindAction( "about",   s.actionAbout ) 
+    s.action_about        = s.actionset.bindAction( "about",   s.actionAbout )
     s.action_aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
     s.action_newworld     = s.actionset.bindAction( "newworld",
                                                      s.actionNewWorld )
     s.action_quickconnect = s.actionset.bindAction( "quickconnect",
                                                      s.actionQuickConnect )
     s.action_quit         = s.actionset.bindAction( "quit", s.close )
-    
+
     s.actionset.bindAction( "nexttab",     s.tabwidget.tabbar.nextTab )
     s.actionset.bindAction( "previoustab", s.tabwidget.tabbar.previousTab )
 
@@ -132,7 +132,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.toolbar_main.addSeparator()
     s.toolbar_main.addAction( s.action_quit )
     s.toolbar_main.addSeparator()
- 
+
     s.toolbar_world = None  ## This will be populated when Worlds are created.
 
 
@@ -316,7 +316,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.newWorldUI( world )
     world.connectToWorld()
-    
+
 
   def openWorldByName( s, worldname ):
 
@@ -337,7 +337,7 @@ class MainWindow( QtGui.QMainWindow ):
       s.openWorld( world )
 
     else:
-      s.openWorld( 
+      s.openWorld(
         singletons.worldsmanager.newAnonymousWorld( host, port, ssl )
       )
 
@@ -345,7 +345,7 @@ class MainWindow( QtGui.QMainWindow ):
   def actionNewWorld( s ):
 
     from NewWorldDialog import NewWorldDialog
-    
+
     world  = singletons.worldsmanager.newAnonymousWorld()
     dialog = NewWorldDialog( world.conf, s )
 
@@ -358,7 +358,7 @@ class MainWindow( QtGui.QMainWindow ):
   def actionQuickConnect( s ):
 
     from QuickConnectDialog import QuickConnectDialog
-    
+
     world  = singletons.worldsmanager.newAnonymousWorld()
     dialog = QuickConnectDialog( world.conf, s )
 
@@ -383,9 +383,9 @@ class MainWindow( QtGui.QMainWindow ):
 
     worldname = unicode( action.data().toString() )
     s.openWorldByName( worldname )
-    
-    
+
+
   def actionAbout( s ):
-    
+
     from AboutDialog import AboutDialog
-    AboutDialog.showDialog()
+    AboutDialog( singletons.config, s ).exec_()

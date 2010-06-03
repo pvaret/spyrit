@@ -21,17 +21,12 @@
 ##
 
 from localqt           import *
-
-from Singletons        import singletons
 from PrettyPanelHeader import PrettyPanelHeader
-
-
-config = singletons.config
 
 
 ABOUT = u"""
   <center><br/>
-  <font size="+2"><b>%(NAME)s v%(VERSION)s</b></font><br/>
+  <font size="+2"><b>%(app_name)s v%(app_version)s</b></font><br/>
   <br/>
   "Still alive!"<br/>
   <br/>
@@ -43,11 +38,11 @@ ABOUT = u"""
   missing, namely matches, highlights and such, and configuration dialogs for
   everything.<br/>
   <br/>
-  %(NAME)s is &#169;2007-2010 P. Varet, and licensed under the
+  %(app_name)s is &#169;2007-2010 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
   <br/>
-  This software uses the 
+  This software uses the
   <i><a href="http://code.activestate.com/recipes/473846/">winpath</a></i>
   module by Chris Arndt.<br/>
   Dingbat symbols imported from the
@@ -57,12 +52,12 @@ ABOUT = u"""
   </center>
   <br/>
   <br/>
-""" % dict( NAME=config._app_name, VERSION=config._app_version )
+"""
 
 
 class AboutDialog( QtGui.QDialog ):
 
-  def __init__( s, parent=None ):
+  def __init__( s, config, parent=None ):
 
     QtGui.QDialog.__init__( s, parent )
 
@@ -78,7 +73,7 @@ class AboutDialog( QtGui.QDialog ):
     header = PrettyPanelHeader( title, QtGui.QPixmap( ":/app/icon" ) )
     s.layout().addWidget( header )
 
-    label = QtGui.QLabel( ABOUT )
+    label = QtGui.QLabel( ABOUT % config )
     label.setWordWrap( True )
     label.setOpenExternalLinks( True )
 
@@ -89,9 +84,3 @@ class AboutDialog( QtGui.QDialog ):
     s.layout().setAlignment( button, Qt.AlignHCenter )
 
     connect( button, SIGNAL( "clicked()" ), s, SLOT( "accept()" ) )
-
-
-  @staticmethod
-  def showDialog( parent=None ):
-
-    return AboutDialog( parent ).exec_()

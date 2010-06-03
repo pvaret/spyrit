@@ -37,31 +37,34 @@ from PipelineChunks     import chunktypes
 
 class LED:
 
-  CONNECTED_UNLIT    = QtGui.QIcon( ":/icon/unlit_green_led" )
-  CONNECTED_LIT      = QtGui.QIcon( ":/icon/lit_green_led" )
-  DISCONNECTED_UNLIT = QtGui.QIcon( ":/icon/unlit_red_led" )
-  DISCONNECTED_LIT   = QtGui.QIcon( ":/icon/lit_red_led" )
+  def __init__( s ):
 
-  @staticmethod
-  def select( connected, lit ):
+    s.CONNECTED_UNLIT    = QtGui.QIcon( ":/icon/unlit_green_led" )
+    s.CONNECTED_LIT      = QtGui.QIcon( ":/icon/lit_green_led" )
+    s.DISCONNECTED_UNLIT = QtGui.QIcon( ":/icon/unlit_red_led" )
+    s.DISCONNECTED_LIT   = QtGui.QIcon( ":/icon/lit_red_led" )
+
+
+  def select( s, connected, lit ):
 
     if connected:
-      return lit and LED.CONNECTED_LIT or LED.CONNECTED_UNLIT
+      return lit and s.CONNECTED_LIT or s.CONNECTED_UNLIT
 
     else:
-      return lit and LED.DISCONNECTED_LIT or LED.DISCONNECTED_UNLIT
+      return lit and s.DISCONNECTED_LIT or s.DISCONNECTED_UNLIT
 
 
 
 class WorldUI( QtGui.QSplitter ):
 
   def __init__( s, tabwidget, world ):
-    
+
     QtGui.QSplitter.__init__( s, Qt.Vertical, tabwidget )
 
     assert isinstance( tabwidget, QtGui.QTabWidget )
 
     s.world = world
+    s.led   = LED()
 
     s.world.setUI( s )
 
@@ -91,7 +94,7 @@ class WorldUI( QtGui.QSplitter ):
     s.secondaryinputui = WorldInputUI( s, world, shouldsavehistory=False )
     s.addWidget( s.secondaryinputui )
     s.secondaryinputui.hide()
-   
+
     connect( s.inputui,          SIGNAL( "textSent( str )" ),
       s.outputui.pingPage )
 
@@ -149,7 +152,7 @@ class WorldUI( QtGui.QSplitter ):
 
     connect_action.setEnabled( False )
     disconnect_action.setEnabled( False )
-    
+
     startlog_action   = s.actionset.bindAction( "startlog",
                                               s.world.startLogging )
 
@@ -243,8 +246,8 @@ class WorldUI( QtGui.QSplitter ):
 
   def iconBlink( s, frame ):
 
-    led = LED.select( connected = s.world.isConnected(),
-                      lit       = ( frame % 2 != 1 ) )
+    led = s.led.select( connected = s.world.isConnected(),
+                        lit       = ( frame % 2 != 1 ) )
     s.tab.setTabIcon( led )
 
 
@@ -253,8 +256,8 @@ class WorldUI( QtGui.QSplitter ):
     if s.blinker.state() == QtCore.QTimeLine.Running:
       return
 
-    led = LED.select( connected = s.world.isConnected(),
-                      lit       = not s.isVisible() )
+    led = s.led.select( connected = s.world.isConnected(),
+                        lit       = not s.isVisible() )
     s.tab.setTabIcon( led )
 
 

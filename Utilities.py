@@ -141,6 +141,12 @@ UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
 
 def remove_accents( s ):
+  """Turns a Unicode string into its non-accented equivalent.
+
+  >>> print remove_accents( u"Touché!" )
+  Touche!
+
+  """
 
   assert type( s ) is type( u'' )  ## Only accept Unicode strings.
 

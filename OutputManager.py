@@ -100,7 +100,7 @@ class OutputManager:
 
 
   def processChunks( s, chunks ):
-    
+
     s.textcursor.beginEditBlock()
 
     for chunk in chunks:
@@ -187,7 +187,7 @@ class OutputManager:
       s.pending_newline = False
 
     s.textcursor.insertText( text, s.textformat )
-    
+
 
   def insertInfoText( s, text ):
 

@@ -21,6 +21,7 @@
 
 
 from BaseCommand import BaseCommand
+from Globals     import LEFTARROW
 
 
 class MatchCommand( BaseCommand ):
@@ -81,7 +82,7 @@ class MatchCommand( BaseCommand ):
       for i, a in enumerate( actions ):
 
         if i == 0:
-          prefix = u" " * indent + unichr( 0x2192 ) + " "
+          prefix = u" " * indent + LEFTARROW + " "
         else:
           prefix = u" " * ( indent + 2 )
 

@@ -27,6 +27,7 @@ from PipelineChunks import *
 from SearchManager  import SearchManager
 from FormatManager  import FormatManager
 from ConfigObserver import ConfigObserver
+from Globals        import LEFTARROW
 
 from Singletons import singletons
 
@@ -35,10 +36,6 @@ from Singletons import singletons
 
 NL = "\n"
 
-
-## Special Unicode characters.
-
-LEFTARROW = unichr( 0x2192 )
 
 
 class OutputManager:

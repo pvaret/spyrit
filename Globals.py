@@ -14,9 +14,9 @@
 ##
 
 ##
-## FormatData.py
+## Globals.py
 ##
-## This file describes various bits of formatting related data.
+## This file describes various bits of global data.
 ##
 
 
@@ -58,3 +58,8 @@ class ANSI_COLORS:
   magenta_h = "#ff00ff"
   cyan_h    = "#00ffff"
   white     = "#ffffff"
+
+
+## Special characters:
+
+LEFTARROW = unichr( 0x2192 )

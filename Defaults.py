@@ -20,9 +20,9 @@
 ##
 
 from ConfigTypes import *
-from FormatData  import FORMAT_PROPERTIES
-from FormatData  import ANSI_COLORS as COL
 from ConfigPaths import LOG_DIR
+from Globals     import FORMAT_PROPERTIES
+from Globals     import ANSI_COLORS as COL
 
 from PlatformSpecific import PlatformSpecific
 

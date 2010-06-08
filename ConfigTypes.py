@@ -22,7 +22,7 @@
 ##
 
 
-from FormatData import FORMAT_PROPERTIES
+from Globals import FORMAT_PROPERTIES
 
 
 class INT:

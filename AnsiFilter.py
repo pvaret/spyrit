@@ -25,7 +25,7 @@ import re
 
 from BaseFilter     import BaseFilter
 from PipelineChunks import chunktypes, ByteChunk, FormatChunk
-from FormatData     import FORMAT_PROPERTIES
+from Globals        import FORMAT_PROPERTIES
 
 
 class AnsiFilter( BaseFilter ):

@@ -25,29 +25,28 @@
 
 
 
-from Utilities import test_python_version, \
-                      test_sip_version, \
-                      test_pyqt4, \
-                      test_qt_version
-
-
-for test in ( test_python_version,
-              test_sip_version,
-              test_pyqt4,
-              test_qt_version ):
-
-  ok, msg = test()
-
-  if not ok:
-
-    from Messages import messages
-    messages.error( msg )
-
-    import sys
-    sys.exit( 1 )
-
-
 def main():
+
+  from Utilities import test_python_version
+  from Utilities import test_sip_version
+  from Utilities import test_pyqt4
+  from Utilities import test_qt_version
+
+
+  for test in ( test_python_version,
+                test_sip_version,
+                test_pyqt4,
+                test_qt_version ):
+
+    ok, msg = test()
+
+    if not ok:
+
+      from Messages import messages
+      messages.error( msg )
+
+      import sys
+      sys.exit( 1 )
 
   from Application import Application
   Application().exec_()

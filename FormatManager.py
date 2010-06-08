@@ -23,7 +23,7 @@
 
 from localqt import *
 
-from FormatData  import FORMAT_PROPERTIES
+from Globals     import FORMAT_PROPERTIES
 from OrderedDict import OrderedDict
 
 

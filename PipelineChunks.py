@@ -27,7 +27,7 @@
 class ChunkTypeMismatch( Exception ):
   """
   Exception ChunkTypeMismatch
-  
+
   Raised when a combining operation is attempted on two chunks of incompatible
   types.
   """
@@ -53,21 +53,19 @@ class ChunkTypes:
 
 
   def __init__( s ):
-    
+
     ## The following is an ugly hack to generate the reverse mapping from value
     ## to chunk type name based on the above information.
     ## It allows you to look up ChunkTypes by value, for instance:
     ## ChunkType.name[0] returns the string "NETWORK"
     ## This is mostly intended for debugging purposes.
-    
-    IntegerType = type( 1 )
-    
+
     chunkTypeList = [ name for name in dir( ChunkTypes )
                       if  name.isalpha()
                       and name.isupper()
-                      and type( getattr( ChunkTypes, name ) ) is IntegerType ]
-    
-    s.name = dict( ( getattr( ChunkTypes, name ), name ) 
+                      and type( getattr( ChunkTypes, name ) ) is int ]
+
+    s.name = dict( ( getattr( ChunkTypes, name ), name )
                              for name in chunkTypeList )
 
 chunktypes = ChunkTypes()
@@ -89,18 +87,18 @@ class BaseChunk:
 
 
   def concat( s, other ):
-  
+
     ## Only chunks of the same type and whose data are strings can be
     ## concatenated.
     if s.chunktype != other.chunktype \
                    or type( other.data ) not in ( type( "" ), type( u"" ) ):
-    
+
       chunktypename      = chunktypes.name[     s.chunktype ]
       otherchunktypename = chunktypes.name[ other.chunktype ]
-      
+
       raise ChunkTypeMismatch( "Trying to concat %s chunk with %s chunk!" % \
                                ( chunktypename, otherchunktypename ) )
-    
+
     ## The chunks are compatible, so we concatenate their data.
     ## We just need to be careful in case one of the two is None,
     ## because None and strings don't add up too well.
@@ -117,7 +115,7 @@ class BaseChunk:
 
     if s.data is not None:
       return '<Chunk Type: %s; Data: "%s">' % ( chunktype, s.data )
-      
+
     else:
       return '<Chunk Type: %s>' % chunktype
 
@@ -136,8 +134,8 @@ class ByteChunk( BaseChunk ):
 
 ## ---[ Class FormatChunk ]--------------------------------------------
 
-from FormatData import FORMAT_PROPERTIES
-from FormatData import ANSI_COLORS as COL
+from Globals import FORMAT_PROPERTIES
+from Globals import ANSI_COLORS as COL
 
 class FormatChunk( BaseChunk ):
   """
@@ -181,14 +179,14 @@ class FormatChunk( BaseChunk ):
 ## ---[ Class UnicodeTextChunk ]---------------------------------------
 
 class UnicodeTextChunk( BaseChunk ):
-  
+
   chunktype = chunktypes.TEXT
 
 
 ## ---[ Class NetworkChunk ]-------------------------------------------
 
 class NetworkChunk( BaseChunk ):
-  
+
   chunktype = chunktypes.NETWORK
 
   DISCONNECTED  = 0
@@ -209,12 +207,10 @@ class NetworkChunk( BaseChunk ):
     ## The following is an ugly hack to generate the reverse mapping from value
     ## to network state, as above.
 
-    IntegerType = type( 1 )
-
     stateList = [ name for name in dir( NetworkChunk )
                     if  name.isalpha()
                     and name.isupper()
-                    and type( getattr( NetworkChunk, name ) ) is IntegerType ]
+                    and type( getattr( NetworkChunk, name ) ) is int ]
 
     s.states = dict( ( getattr( NetworkChunk, name ), name )
                                      for name in stateList )
@@ -265,7 +261,7 @@ thePromptSweepChunk = PromptSweepChunk()
 ## ---[ Class FlowControlChunk ]-----------------------------------------
 
 class FlowControlChunk( BaseChunk ):
-  
+
   chunktype = chunktypes.FLOWCONTROL
 
   LINEFEED       = 0

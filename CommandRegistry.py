@@ -85,23 +85,22 @@ class CommandRegistry:
 
   def parse_cmdline( s, cmdline ):
 
-    SUBCMD_SEP = u":"
-    KWARG_SEP  = u"="
+    KWARG_SEP = u"="
 
-    cmdline = cmdline.lstrip().split( None, 1 )
-    cmdname = cmdline[0]
-    cmdline = cmdline[1] if len(cmdline) > 1 else ""
-
-    if SUBCMD_SEP in cmdname:
-      cmdname, subcmdname = cmdname.split( SUBCMD_SEP, 1 )
-
-    else:
-      subcmdname = None
-
-    tokens = s.tokenize( cmdline )
+    cmdline_toks = cmdline.lstrip().split( None, 2 )
 
     args   = []
     kwargs = {}
+
+    if len( cmdline_toks ) == 1:  ## One command, no subcommand, no args.
+      return cmdline_toks[0], None, args, kwargs
+
+    if len( cmdline_toks ) == 2:  ## One command, one subcommand, no args.
+      return cmdline_toks[0], cmdline_toks[1], args, kwargs
+
+    cmdname, subcmdname, cmdline = cmdline_toks
+
+    tokens = s.tokenize( cmdline )
 
     for token in tokens:
 

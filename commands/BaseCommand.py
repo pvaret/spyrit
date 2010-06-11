@@ -22,6 +22,7 @@
 
 import inspect
 
+from CommandParsing import parse_cmdline
 
 
 def match_args_to_function( func, args, kwargs ):
@@ -73,9 +74,8 @@ class BaseCommand( object ):
 
   CMD = "cmd"
 
-  def __init__( s, cmdname ):
+  def __init__( s ):
 
-    s.cmdname = cmdname
     s.subcmds = {}
 
     for name in dir( s ):
@@ -122,23 +122,45 @@ class BaseCommand( object ):
     return u"\n".join( helptxt )
 
 
-  def execute( s, world, subcmd, args, kwargs ):
+  #def execute( s, world, subcmd, args, kwargs ):
 
-    cmd = s.subcmds.get( subcmd, getattr( s, s.CMD ) )
+  #  cmd = s.subcmds.get( subcmd, getattr( s, s.CMD ) )
 
-    matching, errmsg = match_args_to_function( cmd, [world] + args, kwargs )
+  #  matching, errmsg = match_args_to_function( cmd, [world] + args, kwargs )
 
-    if not matching:
-      world.info( errmsg )
-      return
+  #  if not matching:
+  #    world.info( errmsg )
+  #    return
 
-    cmd( world, *args, **kwargs )
-
-
-  def cmd( s, world, *args, **kwargs ):
-
-    ## Default implementation that does nothing. Overload this in subclasses.
-    pass
+  #  cmd( world, *args, **kwargs )
 
 
+  #def cmd( s, world, *args, **kwargs ):
 
+  #  ## Default implementation that does nothing. Overload this in subclasses.
+  #  pass
+
+
+  def parseSubCommand( s, cmdline ):
+
+    _, subcmd, _, _ = parse_cmdline( cmdline )
+
+    if subcmd in s.subcmds:
+      return subcmd
+
+    return None
+
+
+  def parseArgs( s, cmdline ):
+
+    _, _, args, kwargs = parse_cmdline( cmdline )
+
+    return args, kwargs
+
+
+  def getCallableByName( s, cmd, subcmd=None ):
+
+    if subcmd is None:
+      return getattr( s, s.CMD, None )
+
+    return s.subcmds.get( subcmd.lower() )

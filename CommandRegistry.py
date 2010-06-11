@@ -21,17 +21,12 @@
 ##
 
 
-import re
+from commands.CommandParsing import parse_cmdline
 
 
 class CommandRegistry:
 
-  QUOTED = re.compile( ur'(\S*)' +
-                       ur'(?:'   +
-                         ur'"(.*?)"' + u'|' + ur"'(.*?)'" +
-                       ur')'     +
-                       ur'(\S*)' )
-  HELP   = "help"
+  HELP = "help"
 
   def __init__( s ):
 
@@ -41,7 +36,7 @@ class CommandRegistry:
   def registerCommand( s, cmdname, command_class ):
 
     cmdname = cmdname.strip().lower()
-    s.commands[ cmdname ] = command_class( cmdname )
+    s.commands[ cmdname ] = command_class()
 
 
   def lookupCommand( s, command ):
@@ -49,79 +44,9 @@ class CommandRegistry:
     return s.commands.get( command.strip().lower() )
 
 
-  def tokenize( s, line ):
-
-    ## Turns a line such as '"A B" C="D E" F' into [ 'A B', 'C=D E', 'F' ]
-
-    line   = line.strip()
-    tokens = []
-
-    while True:
-
-      m = s.QUOTED.search( line )
-
-      if m:
-
-        for token in line[ 0:m.start() ].split():
-          tokens.append( token.strip() )
-
-        token  = m.group( 1 )
-        token += m.group( 2 ) if m.group( 2 ) is not None else m.group( 3 )
-        token += m.group( 4 )
-
-        tokens.append( token )
-
-        line = line[ m.end(): ]
-
-      else:
-
-        for token in line.split():
-          tokens.append( token.strip() )
-
-        break
-
-    return tokens
-
-
-  def parse_cmdline( s, cmdline ):
-
-    KWARG_SEP = u"="
-
-    cmdline_toks = cmdline.lstrip().split( None, 2 )
-
-    args   = []
-    kwargs = {}
-
-    if len( cmdline_toks ) == 1:  ## One command, no subcommand, no args.
-      return cmdline_toks[0], None, args, kwargs
-
-    if len( cmdline_toks ) == 2:  ## One command, one subcommand, no args.
-      return cmdline_toks[0], cmdline_toks[1], args, kwargs
-
-    cmdname, subcmdname, cmdline = cmdline_toks
-
-    tokens = s.tokenize( cmdline )
-
-    for token in tokens:
-
-      if KWARG_SEP in token:
-        key, val = token.split( KWARG_SEP, 1 )
-        kwargs[ key ] = val
-
-      else:
-        args.append( token )
-
-    return cmdname, subcmdname, args, kwargs
-
-
   def execute( s, world, cmdline ):
 
-    cmdname, subcmdname, args, kwargs = s.parse_cmdline( cmdline )
-
-    if cmdname == s.HELP:
-
-      s.doHelp( world, s.tokenize( cmdline ) )
-      return
+    cmdname, _, _, _ = parse_cmdline( cmdline )
 
     command = s.lookupCommand( cmdname )
 
@@ -130,7 +55,22 @@ class CommandRegistry:
       world.info( u"%s: no such command." % cmdname )
       return
 
-    command.execute( world, subcmdname, args, kwargs )
+    subcmdname   = command.parseSubCommand( cmdline )
+    args, kwargs = command.parseArgs( cmdline )
+    cmd_callable = command.getCallableByName( cmdname, subcmdname )
+
+    if cmd_callable is None:  ## Command not found!
+
+      complete_cmdname = cmdname
+      if subcmdname:
+        complete_cmdname += " " + subcmdname
+
+      ## TODO: Improve case where subcommand was not found.
+      world.info( u"%s: no such command." % complete_cmdname )
+      return
+
+    ## TODO: Pass this to an executor that handles errors safely.
+    return cmd_callable( world, *args, **kwargs )
 
 
   def doHelp( s, world, tokens ):

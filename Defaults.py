@@ -73,7 +73,6 @@ DEFAULTS = (
 
   ( 'splitter_sizes', [ 1000, 100, 100 ], INTLIST ),
 
-  ( 'input_command_char', u"/", STR ),
   ( 'max_history_length', 0,    INT ), ## Unlimited.
   ( 'save_input_history', 10,   INT ),
   ( 'input_history',      [],   STRLIST ),

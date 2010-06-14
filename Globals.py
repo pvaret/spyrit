@@ -63,3 +63,8 @@ class ANSI_COLORS:
 ## Special characters:
 
 LEFTARROW = unichr( 0x2192 )
+
+
+## Command character.
+
+CMDCHAR = u"/"

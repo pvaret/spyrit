@@ -67,11 +67,13 @@ def tokenize( line ):
 
 def parse_cmdline( cmdline ):
 
-
   cmdline_toks = cmdline.lstrip().split( None, 2 )
 
   args   = []
   kwargs = {}
+
+  if len( cmdline_toks ) == 0:  ## Empty command line.
+    return None, None, args, kwargs
 
   if len( cmdline_toks ) == 1:  ## One command, no subcommand, no args.
     return cmdline_toks[0], None, args, kwargs

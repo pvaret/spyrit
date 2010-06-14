@@ -27,6 +27,7 @@ from Singletons       import singletons
 from ActionSet        import ActionSet
 from InputHistory     import InputHistory
 from ConfigObserver   import ConfigObserver
+from Globals          import CMDCHAR
 
 
 
@@ -145,9 +146,8 @@ class WorldInputUI( QtGui.QTextEdit ):
     if text:
       s.history.update( text )
 
-    cmdchar = s.conf._input_command_char
-    if text.startswith( cmdchar ):
-      singletons.commands.execute( s.world, text[ len( cmdchar ): ] )
+    if text.startswith( CMDCHAR ):
+      singletons.commands.execute( s.world, text[ len( CMDCHAR ): ] )
 
     else:
       s.world.socketpipeline.send( text + u"\r\n" )

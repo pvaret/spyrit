@@ -141,26 +141,39 @@ class BaseCommand( object ):
   #  pass
 
 
-  def parseSubCommand( s, cmdline ):
+  def parseSubCommand( s, context, remainder ):
 
-    _, subcmd, _, _ = parse_cmdline( cmdline )
+    cmdline = "%s %s" % ( context.get( 'cmdname' ), remainder )
 
-    if subcmd in s.subcmds:
-      return subcmd
+    _, subcmdname, _, _ = parse_cmdline( cmdline )
 
-    return None
+    context[ 'possible_subcmdname' ] = subcmdname
+
+    if subcmdname in s.subcmds:
+      context[ 'subcmdname' ] = subcmdname
+      remainder = remainder[ len( subcmdname ): ].lstrip()
+
+    return context, remainder
 
 
-  def parseArgs( s, cmdline ):
+  def parseArgs( s, context, remainder ):
+
+    cmdline = u"%s %s %s" % \
+      ( context.get( 'cmdname' ), context.get( 'subcmdname', u"" ), remainder )
 
     _, _, args, kwargs = parse_cmdline( cmdline )
 
-    return args, kwargs
+    context[ 'args' ]   = args
+    context[ 'kwargs' ] = kwargs
+
+    return context
 
 
-  def getCallableByName( s, cmd, subcmd=None ):
+  def getCallableFromParseContext( s, context ):
 
-    if subcmd is None:
+    subcmdname = context.get( 'subcmdname' )
+
+    if subcmdname is None:
       return getattr( s, s.CMD, None )
 
-    return s.subcmds.get( subcmd.lower() )
+    return s.subcmds.get( subcmdname.lower() )

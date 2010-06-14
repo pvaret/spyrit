@@ -21,7 +21,10 @@
 ##
 
 
+from Globals                 import CMDCHAR
 from commands.CommandParsing import parse_cmdline
+
+from textwrap import dedent
 
 
 class CommandRegistry:
@@ -48,34 +51,53 @@ class CommandRegistry:
 
     cmdname, _, _, _ = parse_cmdline( cmdline )
 
+    if cmdname is None:
+      return
+
     command = s.lookupCommand( cmdname )
 
     if not command:
 
-      world.info( u"%s: no such command." % cmdname )
+      help_txt = u"""%(cmdname)s: no such command.
+                 Type %(CMDCHAR)shelp for a list of available commands."""
+
+      world.info( dedent( help_txt ) \
+                 % { 'cmdname': cmdname, 'CMDCHAR': CMDCHAR } )
       return
 
-    subcmdname   = command.parseSubCommand( cmdline )
-    args, kwargs = command.parseArgs( cmdline )
-    cmd_callable = command.getCallableByName( cmdname, subcmdname )
+    remainder = cmdline[ len( cmdname ): ].lstrip()
+    context   = { 'cmdname': cmdname }
+
+    context, remainder = command.parseSubCommand( context, remainder )
+    context            = command.parseArgs( context, remainder )
+    cmd_callable       = command.getCallableFromParseContext( context )
 
     if cmd_callable is None:  ## Command not found!
 
       complete_cmdname = cmdname
+      subcmdname = context.get( 'possible_subcmdname' )
+
       if subcmdname:
         complete_cmdname += " " + subcmdname
 
-      ## TODO: Improve case where subcommand was not found.
-      world.info( u"%s: no such command." % complete_cmdname )
+      help_txt = u"""\
+          %(complete_cmdname)s: no such command.
+          Type %(CMDCHAR)shelp %(cmdname)s for help on this command."""
+
+      world.info( dedent( help_txt ) \
+                  % { 'complete_cmdname': complete_cmdname,
+                      'cmdname': cmdname,
+                      'CMDCHAR': CMDCHAR } )
       return
+
+    args   = context.get( 'args',   [] )
+    kwargs = context.get( 'kwargs', {} )
 
     ## TODO: Pass this to an executor that handles errors safely.
     return cmd_callable( world, *args, **kwargs )
 
 
   def doHelp( s, world, tokens ):
-
-    cmdchar = world.conf._input_command_char
 
     tokens = tokens[ 1: ]
 
@@ -93,11 +115,11 @@ class CommandRegistry:
         help = cmd.get_short_help()
 
         if help:
-          helptxt.append( cmdchar + u"%s" % cmdname.ljust( ljust ) + help )
+          helptxt.append( CMDCHAR + u"%s" % cmdname.ljust( ljust ) + help )
 
       helptxt += [ "" ]
       helptxt += [ "Type '%shelp COMMAND' for more help on a command."
-                   % cmdchar ]
+                   % CMDCHAR ]
 
       world.info( u'\n'.join( helptxt ) )
 
@@ -117,7 +139,7 @@ class CommandRegistry:
           world.info( "No help for command %s. " \
                       "(Command reserved for internal use.)" % cmdname )
         else:
-          world.info( cmdchar + u"%s " % cmdname + "\n  " + help )
+          world.info( CMDCHAR + u"%s " % cmdname + "\n  " + help )
 
 
   def __del__( s ):

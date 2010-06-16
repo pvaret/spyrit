@@ -21,8 +21,10 @@
 ##
 
 
-from Globals                 import CMDCHAR
-from commands.CommandParsing import parse_command
+from Globals                  import CMDCHAR
+from commands.CommandParsing  import parse_command
+from commands.CommandExecutor import execute
+from commands.CommandExecutor import ExecuteError
 
 from textwrap import dedent
 
@@ -57,7 +59,7 @@ class CommandRegistry:
     return None, cmdname, cmdline
 
 
-  def execute( s, world, cmdline ):
+  def runCmdLine( s, world, cmdline ):
 
     cmdname, possible_cmdname, remainder = s.parseCommand( cmdline )
 
@@ -98,8 +100,14 @@ class CommandRegistry:
       world.info( dedent( help_txt ) % ctx )
       return
 
-    ## TODO: Pass this to an executor that handles errors safely.
-    return cmd_callable( world, *args, **kwargs )
+    args.insert( 0, world )
+
+    try:
+      return execute( cmd_callable, args, kwargs )
+
+    except ExecuteError, e:
+      msg = u"Error while executing command: %s"
+      world.info( msg % e )
 
 
   def doHelp( s, world, tokens ):

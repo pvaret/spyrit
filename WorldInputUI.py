@@ -84,7 +84,7 @@ class WorldInputUI( QtGui.QTextEdit ):
                              % s.conf._input_font_color )
 
     if s.conf._input_font_name:
-      
+
       style_elements.append( u"font-family: %s" \
                              % s.conf._input_font_name )
 
@@ -147,7 +147,7 @@ class WorldInputUI( QtGui.QTextEdit ):
       s.history.update( text )
 
     if text.startswith( CMDCHAR ):
-      singletons.commands.execute( s.world, text[ len( CMDCHAR ): ] )
+      singletons.commands.runCmdLine( s.world, text[ len( CMDCHAR ): ] )
 
     else:
       s.world.socketpipeline.send( text + u"\r\n" )

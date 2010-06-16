@@ -20,52 +20,8 @@
 ##
 
 
-import inspect
-
 from CommandParsing import parse_command
 from CommandParsing import parse_arguments
-
-
-def match_args_to_function( func, args, kwargs ):
-
-  f_args, f_varargs, f_varkw, f_defaults = inspect.getargspec( func )
-
-  ## 1/ Compute the function's natural args and kwargs:
-
-  if f_defaults:
-    f_kwargs = dict( zip( f_args[ -len( f_defaults ): ], f_defaults ) )
-    f_args   = f_args[ :-len( f_defaults ) ]
-
-  else:
-    f_kwargs = {}
-
-  ## 2/ Match call kwargs to function kwargs:
-
-  if inspect.ismethod( func ):
-    ## Account for implicit self argument in methods.
-    args.insert( 0, 'self' )
-
-  for kwarg in kwargs:
-
-    if kwarg in f_kwargs:
-      del f_kwargs[ kwarg ]
-
-    elif not f_varkw:
-      ## Function called with a kwarg that isn't in its definition, and
-      ## function doesn't have a generic **kwargs to fallback to:
-      return False, u"%s: unknown parameter!" % kwarg
-
-  ## 3/ Match remaining call args to remaining function args.
-
-  if len( args ) < len( f_args ):
-    return False, u"Too few parameters!"
-
-  if len( args ) > len( f_args ) + len( f_kwargs ) and not f_varargs:
-    return False, u"Too many parameters!"
-
-  return True, None
-
-
 
 
 
@@ -123,23 +79,12 @@ class BaseCommand( object ):
     return u"\n".join( helptxt )
 
 
-  #def execute( s, world, subcmd, args, kwargs ):
+  def cmd( s, world, *args, **kwargs ):
 
-  #  cmd = s.subcmds.get( subcmd, getattr( s, s.CMD ) )
+    ## Default implementation that only displays help. Overload this in
+    ## subclasses.
 
-  #  matching, errmsg = match_args_to_function( cmd, [world] + args, kwargs )
-
-  #  if not matching:
-  #    world.info( errmsg )
-  #    return
-
-  #  cmd( world, *args, **kwargs )
-
-
-  #def cmd( s, world, *args, **kwargs ):
-
-  #  ## Default implementation that does nothing. Overload this in subclasses.
-  #  pass
+    world.info( s.get_help() )
 
 
   def parseSubCommand( s, cmdline ):

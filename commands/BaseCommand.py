@@ -22,7 +22,8 @@
 
 import inspect
 
-from CommandParsing import parse_cmdline
+from CommandParsing import parse_command
+from CommandParsing import parse_arguments
 
 
 def match_args_to_function( func, args, kwargs ):
@@ -141,37 +142,24 @@ class BaseCommand( object ):
   #  pass
 
 
-  def parseSubCommand( s, context, remainder ):
+  def parseSubCommand( s, cmdline ):
 
-    cmdline = "%s %s" % ( context.get( 'cmdname' ), remainder )
-
-    _, subcmdname, _, _ = parse_cmdline( cmdline )
-
-    context[ 'possible_subcmdname' ] = subcmdname
+    subcmdname, remainder = parse_command( cmdline )
 
     if subcmdname in s.subcmds:
-      context[ 'subcmdname' ] = subcmdname
-      remainder = remainder[ len( subcmdname ): ].lstrip()
+      return subcmdname, subcmdname, remainder
 
-    return context, remainder
-
-
-  def parseArgs( s, context, remainder ):
-
-    cmdline = u"%s %s %s" % \
-      ( context.get( 'cmdname' ), context.get( 'subcmdname', u"" ), remainder )
-
-    _, _, args, kwargs = parse_cmdline( cmdline )
-
-    context[ 'args' ]   = args
-    context[ 'kwargs' ] = kwargs
-
-    return context
+    return None, subcmdname, cmdline
 
 
-  def getCallableFromParseContext( s, context ):
+  def parseArgs( s, cmdline ):
 
-    subcmdname = context.get( 'subcmdname' )
+    args, kwargs = parse_arguments( cmdline )
+
+    return args, kwargs
+
+
+  def getCallableForName( s, cmdname, subcmdname ):
 
     if subcmdname is None:
       return getattr( s, s.CMD, None )

@@ -22,7 +22,7 @@
 
 
 from Globals                 import CMDCHAR
-from commands.CommandParsing import parse_cmdline
+from commands.CommandParsing import parse_command
 
 from textwrap import dedent
 
@@ -47,51 +47,56 @@ class CommandRegistry:
     return s.commands.get( command.strip().lower() )
 
 
+  def parseCommand( s, cmdline ):
+
+    cmdname, remainder = parse_command( cmdline )
+
+    if cmdname in s.commands:
+      return cmdname, cmdname, remainder
+
+    return None, cmdname, cmdline
+
+
   def execute( s, world, cmdline ):
 
-    cmdname, _, _, _ = parse_cmdline( cmdline )
+    cmdname, possible_cmdname, remainder = s.parseCommand( cmdline )
 
-    if cmdname is None:
+    if not possible_cmdname:  ## Empty command line. Do nothing.
+      return
+
+    if not cmdname:  ## Command not found.
+
+      help_txt = u"""\
+                 %(possible_cmdname)s: no such command.
+                 Type %(CMDCHAR)shelp for a list of available commands."""
+
+      ctx = { 'possible_cmdname': possible_cmdname, 'CMDCHAR': CMDCHAR }
+      world.info( dedent( help_txt ) % ctx )
       return
 
     command = s.lookupCommand( cmdname )
 
-    if not command:
+    subcmdname, possible_subcmdname, remainder = command.parseSubCommand( remainder )
 
-      help_txt = u"""%(cmdname)s: no such command.
-                 Type %(CMDCHAR)shelp for a list of available commands."""
-
-      world.info( dedent( help_txt ) \
-                 % { 'cmdname': cmdname, 'CMDCHAR': CMDCHAR } )
-      return
-
-    remainder = cmdline[ len( cmdname ): ].lstrip()
-    context   = { 'cmdname': cmdname }
-
-    context, remainder = command.parseSubCommand( context, remainder )
-    context            = command.parseArgs( context, remainder )
-    cmd_callable       = command.getCallableFromParseContext( context )
+    args, kwargs = command.parseArgs( remainder )
+    cmd_callable = command.getCallableForName( cmdname, subcmdname )
 
     if cmd_callable is None:  ## Command not found!
 
       complete_cmdname = cmdname
-      subcmdname = context.get( 'possible_subcmdname' )
 
-      if subcmdname:
-        complete_cmdname += " " + subcmdname
+      if possible_subcmdname:
+        cmdname +=  " " + possible_subcmdname
 
       help_txt = u"""\
           %(complete_cmdname)s: no such command.
           Type %(CMDCHAR)shelp %(cmdname)s for help on this command."""
 
-      world.info( dedent( help_txt ) \
-                  % { 'complete_cmdname': complete_cmdname,
-                      'cmdname': cmdname,
-                      'CMDCHAR': CMDCHAR } )
+      ctx = { 'complete_cmdname': complete_cmdname,
+              'CMDCHAR': CMDCHAR,
+              'cmdname': cmdname }
+      world.info( dedent( help_txt ) % ctx )
       return
-
-    args   = context.get( 'args',   [] )
-    kwargs = context.get( 'kwargs', {} )
 
     ## TODO: Pass this to an executor that handles errors safely.
     return cmd_callable( world, *args, **kwargs )

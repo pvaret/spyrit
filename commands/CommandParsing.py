@@ -65,23 +65,23 @@ def tokenize( line ):
   return tokens
 
 
-def parse_cmdline( cmdline ):
+def parse_command( cmdline ):
 
-  cmdline_toks = cmdline.lstrip().split( None, 2 )
+  ## For now, a simple split will do.
+
+  cmdline = cmdline.strip()
+
+  if cmdline:
+    cmd = cmdline.split()[0]
+    return cmd, cmdline[ len( cmd ): ]
+
+  return "", cmdline
+
+
+def parse_arguments( cmdline ):
 
   args   = []
   kwargs = {}
-
-  if len( cmdline_toks ) == 0:  ## Empty command line.
-    return None, None, args, kwargs
-
-  if len( cmdline_toks ) == 1:  ## One command, no subcommand, no args.
-    return cmdline_toks[0], None, args, kwargs
-
-  if len( cmdline_toks ) == 2:  ## One command, one subcommand, no args.
-    return cmdline_toks[0], cmdline_toks[1], args, kwargs
-
-  cmdname, subcmdname, cmdline = cmdline_toks
 
   tokens = tokenize( cmdline )
 
@@ -94,4 +94,4 @@ def parse_cmdline( cmdline ):
     else:
       args.append( token )
 
-  return cmdname, subcmdname, args, kwargs
+  return args, kwargs

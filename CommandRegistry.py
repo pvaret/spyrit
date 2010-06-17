@@ -16,8 +16,8 @@
 ##
 ## CommandRegistry.py
 ##
-## This holds the command registry that knows about commands, parses their
-## arguments, retrieves their help and dispatches their calls.
+## This holds the command registry that knows about commands and how to run
+## them.
 ##
 
 
@@ -28,10 +28,10 @@ from commands.CommandExecutor import ExecuteError
 
 from textwrap import dedent
 
+HELP = "help"
+
 
 class CommandRegistry:
-
-  HELP = "help"
 
   def __init__( s ):
 
@@ -44,6 +44,7 @@ class CommandRegistry:
     s.commands[ cmdname ] = command_class()
 
 
+  ## TODO: rename this to lookup(), implement it on BaseCommand too.
   def lookupCommand( s, command ):
 
     return s.commands.get( command.strip().lower() )
@@ -70,9 +71,11 @@ class CommandRegistry:
 
       help_txt = u"""\
                  %(possible_cmdname)s: no such command.
-                 Type %(CMDCHAR)shelp for a list of available commands."""
+                 Type %(CMDCHAR)s%(HELP)s for a list of available commands."""
 
-      ctx = { 'possible_cmdname': possible_cmdname, 'CMDCHAR': CMDCHAR }
+      ctx = { 'possible_cmdname': possible_cmdname,
+              'CMDCHAR': CMDCHAR,
+              'HELP': HELP }
       world.info( dedent( help_txt ) % ctx )
       return
 
@@ -92,11 +95,12 @@ class CommandRegistry:
 
       help_txt = u"""\
           %(complete_cmdname)s: no such command.
-          Type %(CMDCHAR)shelp %(cmdname)s for help on this command."""
+          Type %(CMDCHAR)s%(HELP)s %(cmdname)s for help on this command."""
 
       ctx = { 'complete_cmdname': complete_cmdname,
               'CMDCHAR': CMDCHAR,
-              'cmdname': cmdname }
+              'cmdname': cmdname,
+              'HELP': HELP }
       world.info( dedent( help_txt ) % ctx )
       return
 
@@ -106,53 +110,8 @@ class CommandRegistry:
       return execute( cmd_callable, args, kwargs )
 
     except ExecuteError, e:
-      msg = u"Error while executing command: %s"
+      msg = u"Command error: %s"
       world.info( msg % e )
-
-
-  def doHelp( s, world, tokens ):
-
-    tokens = tokens[ 1: ]
-
-    ##XXX Improve whole help handling!
-
-    if not tokens:  ## Default help text.
-
-      helptxt = [ "Available commands:\n" ]
-
-      ljust = max( len( c ) for c in s.commands.keys() ) + 2
-
-      for cmdname in sorted( s.commands.keys() ):
-
-        cmd  = s.lookupCommand( cmdname )
-        help = cmd.get_short_help()
-
-        if help:
-          helptxt.append( CMDCHAR + u"%s" % cmdname.ljust( ljust ) + help )
-
-      helptxt += [ "" ]
-      helptxt += [ "Type '%shelp COMMAND' for more help on a command."
-                   % CMDCHAR ]
-
-      world.info( u'\n'.join( helptxt ) )
-
-    else:  ## Help on a specific command.
-
-      cmdname = tokens[0]
-      cmd     = s.lookupCommand( cmdname )
-
-      if not cmd:
-        world.info( "No such command: %s" % cmdname )
-
-      else:
-
-        help = cmd.get_help()
-
-        if not help:
-          world.info( "No help for command %s. " \
-                      "(Command reserved for internal use.)" % cmdname )
-        else:
-          world.info( CMDCHAR + u"%s " % cmdname + "\n  " + help )
 
 
   def __del__( s ):
@@ -163,8 +122,9 @@ class CommandRegistry:
 
 ## Offer a function to register our local commands:
 
-def register_local_commands( commands ):
+def register_local_commands( cmd_registry ):
 
+  from commands.HelpCommand    import HelpCommand
   from commands.ConfCommand    import ConfCommand
   from commands.DebugCommand   import DebugCommand
   from commands.OutputCommand  import OutputCommand
@@ -172,9 +132,10 @@ def register_local_commands( commands ):
   from commands.SoundCommand   import SoundCommand
   from commands.MatchCommand   import MatchCommand
 
-  commands.registerCommand( "conf",    ConfCommand )
-  commands.registerCommand( "debug",   DebugCommand )
-  commands.registerCommand( "output",  OutputCommand )
-  commands.registerCommand( "session", SessionCommand )
-  commands.registerCommand( "sound",   SoundCommand )
-  commands.registerCommand( "match",   MatchCommand )
+  cmd_registry.registerCommand( HELP,      HelpCommand )
+  cmd_registry.registerCommand( "conf",    ConfCommand )
+  cmd_registry.registerCommand( "debug",   DebugCommand )
+  cmd_registry.registerCommand( "output",  OutputCommand )
+  cmd_registry.registerCommand( "session", SessionCommand )
+  cmd_registry.registerCommand( "sound",   SoundCommand )
+  cmd_registry.registerCommand( "match",   MatchCommand )

@@ -43,48 +43,12 @@ class BaseCommand( object ):
         s.subcmds[ name[ len( s.CMD + "_" ): ].lower() ] = attr
 
 
-  def get_short_help( s ):
-
-    if s.__doc__:
-      return s.__doc__.split( u"\n" )[0].strip()
-
-    return None
-
-
-  def get_help( s ):
-
-    if not s.__doc__:
-      return None
-
-    doc = s.__doc__.strip()
-
-    if not s.subcmds:
-      return doc
-
-    helptxt  = [ doc ]
-    helptxt += [ u"" ]
-    helptxt += [ u"Subcommands:" ]
-
-    ljust = max( len( c ) for c in s.subcmds.keys() ) + 2
-
-    for cmdname, cmd in sorted( s.subcmds.iteritems() ):
-
-      doc = cmd.__doc__
-
-      if doc:
-        line = ( "  %s " % ( cmdname.ljust( ljust ) )
-               + doc.split( u"\n" )[0].strip() )
-        helptxt.append( line )
-
-    return u"\n".join( helptxt )
-
-
   def cmd( s, world, *args, **kwargs ):
 
     ## Default implementation that only displays help. Overload this in
     ## subclasses.
 
-    world.info( s.get_help() )
+    world.info( s.get_help() )  ## TODO: fix. get_help() is no longer on self.
 
 
   def parseSubCommand( s, cmdline ):

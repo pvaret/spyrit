@@ -22,13 +22,13 @@
 
 
 from Globals                  import CMDCHAR
+from Globals                  import HELP
 from commands.CommandParsing  import parse_command
 from commands.CommandExecutor import execute
 from commands.CommandExecutor import ExecuteError
 
 from textwrap import dedent
 
-HELP = "help"
 
 
 class CommandRegistry:

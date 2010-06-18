@@ -22,6 +22,10 @@
 
 from Singletons  import singletons
 from BaseCommand import BaseCommand
+from Globals     import CMDCHAR
+from Globals     import HELP
+
+from textwrap import dedent
 
 
 class HelpCommand( BaseCommand ):
@@ -36,12 +40,12 @@ class HelpCommand( BaseCommand ):
         return s.helpNoSuchCommand( world, cmdname )
 
       if subcmdname:
-        subcmd = cmd.subcmds.get( subcmdname.strip().lower() )
+        subcmd = cmd.getCallableForName( cmdname, subcmdname )
 
         if not subcmd:
           return s.helpNoSuchCommand( world, cmdname, subcmdname )
 
-        return s.helpSubCommand( world, subcmd, cmdname, subcmdname )
+        return s.helpCommand( world, subcmd, cmdname, subcmdname )
 
       return s.helpCommand( world, cmd, cmdname )
 
@@ -49,98 +53,98 @@ class HelpCommand( BaseCommand ):
 
 
   def helpNoSuchCommand( s, world, cmdname, subcmdname=None ):
-    pass ## TODO: implement
+
+    if subcmdname:
+      cmdname += " " + subcmdname
+
+    help_txt = u"""\
+        %(cmdname)s: no such command.
+        Type %(CMDCHAR)s%(HELP)s for help on commands."""
+
+    ctx = { 'CMDCHAR': CMDCHAR,
+            'cmdname': cmdname,
+            'HELP': HELP }
+
+    world.info( dedent( help_txt ) % ctx )
 
 
-  def helpAll( s, world ):
-    pass ## TODO: implement
+  def helpCommand( s, world, cmd, cmdname, subcmdname=None ):
+
+    if subcmdname:
+      cmdname += " " + subcmdname
+
+    help_txt = s.get_help( cmd )
+
+    if not help_txt:
+      world.info( u"No help on command '%s'." % cmdname  )
+      return
+
+    ctx = { 'CMDCHAR': CMDCHAR,
+            'cmdname': cmdname,
+            'HELP': HELP }
+
+    help_txt = u"Help on '%(CMDCHAR)s%(cmdname)s':\n" + help_txt
+    world.info( help_txt % ctx )
 
 
-  def helpCommand( s, world, cmd, cmdname ):
-    pass ## TODO: implement
+  def get_short_help( s, cmd ):
 
-
-  def helpSubCommand( s, world, cmd, cmdname, subcmdname ):
-    pass ## TODO: implement
-
-
-  def get_short_help( s ):
-
-    if s.__doc__:
-      return s.__doc__.split( u"\n" )[0].strip()
+    if cmd.__doc__:
+      return cmd.__doc__.split( u"\n" )[0].strip()
 
     return None
 
 
-  def get_help( s ):
+  def get_help( s, cmd ):
 
-    if not s.__doc__:
+    if not cmd.__doc__:
       return None
 
-    doc = s.__doc__.strip()
+    doc = cmd.__doc__.strip()
 
-    if not s.subcmds:
+    if not hasattr( cmd, 'subcmds' ):
       return doc
 
     helptxt  = [ doc ]
     helptxt += [ u"" ]
     helptxt += [ u"Subcommands:" ]
 
-    ljust = max( len( c ) for c in s.subcmds.keys() ) + 2
+    ljust = max( len( c ) for c in cmd.subcmds.keys() ) + 2
 
-    for cmdname, cmd in sorted( s.subcmds.iteritems() ):
+    for subcmdname, subcmd in sorted( cmd.subcmds.iteritems() ):
 
-      doc = cmd.__doc__
+      doc = subcmd.__doc__
 
       if doc:
-        line = ( "  %s " % ( cmdname.ljust( ljust ) )
+        line = ( "  %s " % ( subcmdname.ljust( ljust ) )
                + doc.split( u"\n" )[0].strip() )
         helptxt.append( line )
+
+    helptxt += [ u"" ]
+    helptxt += [ u"Type '/help COMMAND SUBCOMMAND' for specific help on a " \
+                  "subcommand." ]
 
     return u"\n".join( helptxt )
 
 
+  def helpAll( s, world ):
 
-  def doHelp( s, world, tokens ):
+    helptxt = [ "Available commands:\n" ]
 
-    tokens = tokens[ 1: ]
+    cmd_registry = singletons.commands
 
-    ##XXX Improve whole help handling!
+    ljust = max( len( c ) for c in cmd_registry.commands.keys() ) + 2
 
-    if not tokens:  ## Default help text.
+    for cmdname in sorted( cmd_registry.commands.keys() ):
 
-      helptxt = [ "Available commands:\n" ]
+      cmd  = cmd_registry.lookupCommand( cmdname )
+      help = s.get_short_help( cmd )
 
-      ljust = max( len( c ) for c in s.commands.keys() ) + 2
+      if help:
+        helptxt.append( CMDCHAR + u"%s" % cmdname.ljust( ljust ) + help )
 
-      for cmdname in sorted( s.commands.keys() ):
+    helptxt += [ u"" ]
+    helptxt += [ u"Type '%shelp COMMAND' for more help on a command."
+                 % CMDCHAR ]
 
-        cmd  = s.lookupCommand( cmdname )
-        help = cmd.get_short_help()
-
-        if help:
-          helptxt.append( CMDCHAR + u"%s" % cmdname.ljust( ljust ) + help )
-
-      helptxt += [ "" ]
-      helptxt += [ "Type '%shelp COMMAND' for more help on a command."
-                   % CMDCHAR ]
-
-      world.info( u'\n'.join( helptxt ) )
-
-    else:  ## Help on a specific command.
-
-      cmdname = tokens[0]
-      cmd     = s.lookupCommand( cmdname )
-
-      if not cmd:
-        world.info( "No such command: %s" % cmdname )
-
-      else:
-
-        help = cmd.get_help()
-
-        if not help:
-          world.info( "No help for command %s. " \
-                      "(Command reserved for internal use.)" % cmdname )
-        else:
-          world.info( CMDCHAR + u"%s " % cmdname + "\n  " + help )
+    world.info( u'\n'.join( helptxt ) )

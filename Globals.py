@@ -65,6 +65,7 @@ class ANSI_COLORS:
 LEFTARROW = unichr( 0x2192 )
 
 
-## Command character.
+## Command-related globals.
 
 CMDCHAR = u"/"
+HELP    = "help"

@@ -22,7 +22,8 @@
 
 from CommandParsing import parse_command
 from CommandParsing import parse_arguments
-
+from Singletons     import singletons
+from Globals        import HELP
 
 
 class BaseCommand( object ):
@@ -48,7 +49,13 @@ class BaseCommand( object ):
     ## Default implementation that only displays help. Overload this in
     ## subclasses.
 
-    world.info( s.get_help() )  ## TODO: fix. get_help() is no longer on self.
+    help_cmd = singletons.commands.lookupCommand( HELP )
+
+    ## TODO: Clean this up.
+    cmdname = [ k for k, v in singletons.commands.commands.iteritems()
+                if v is s ][0]
+
+    help_cmd.cmd( world, cmdname )
 
 
   def parseSubCommand( s, cmdline ):

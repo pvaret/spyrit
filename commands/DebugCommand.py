@@ -29,10 +29,11 @@ class DebugCommand( BaseCommand ):
 
   def cmd_raise( s, world, *args ):
 
+    e = None
+
     if args:
 
       parent_exception = __builtins__.get( "BaseException", Exception )
-
       exc = __builtins__.get( args[0], None )
 
       try:
@@ -42,11 +43,14 @@ class DebugCommand( BaseCommand ):
         is_an_exception = False
 
       if is_an_exception:
+        e = exc( *args[1:] )
 
-        raise exc( *args[1:] )
-        return
+    if not e:
+      e = Exception( args and " ".join( args ) or None )
 
-    raise Exception( args and " ".join( args ) or None )
+    e.do_not_catch = True
+
+    raise e
 
 
   def cmd_execute( s, world, filename ):

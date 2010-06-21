@@ -86,4 +86,11 @@ def execute( func, args, kwargs ):
     return func( *args, **kwargs )
 
   except Exception, e:
+
+    ## Special case: if this exception is handcrafted by the debug command,
+    ## then let it fly untouched:
+
+    if getattr( e, 'do_not_catch', False ):
+      raise e
+
     raise ExecuteError( unicode( e ) )

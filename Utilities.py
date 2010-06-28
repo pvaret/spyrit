@@ -20,7 +20,7 @@
 ##
 
 
-def test_python_version():
+def check_python_version():
 
   REQUIRED_MAJOR = 2
   REQUIRED_MINOR = 5
@@ -36,7 +36,7 @@ def test_python_version():
 
 
 
-def test_pyqt4():
+def check_pyqt4_installed():
 
   try:
     import PyQt4
@@ -47,7 +47,7 @@ def test_pyqt4():
 
 
 
-def test_sip_version():
+def check_sip_version():
 
   REQUIRED_MAJOR = 4
   REQUIRED_MINOR = 5
@@ -75,7 +75,7 @@ def qt_version():
 
 
 
-def test_qt_version():
+def check_qt_version():
 
   REQUIRED_MAJOR = 4
   REQUIRED_MINOR = 4

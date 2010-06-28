@@ -27,18 +27,18 @@
 
 def main():
 
-  from Utilities import test_python_version
-  from Utilities import test_sip_version
-  from Utilities import test_pyqt4
-  from Utilities import test_qt_version
+  from Utilities import check_python_version
+  from Utilities import check_sip_version
+  from Utilities import check_pyqt4_installed
+  from Utilities import check_qt_version
 
 
-  for test in ( test_python_version,
-                test_sip_version,
-                test_pyqt4,
-                test_qt_version ):
+  for check in ( check_python_version,
+                 check_sip_version,
+                 check_pyqt4_installed,
+                 check_qt_version ):
 
-    ok, msg = test()
+    ok, msg = check()
 
     if not ok:
 

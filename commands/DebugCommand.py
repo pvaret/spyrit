@@ -33,13 +33,12 @@ class DebugCommand( BaseCommand ):
 
     if args:
 
-      parent_exception = __builtins__.get( "BaseException", Exception )
       exc = __builtins__.get( args[0], None )
 
       try:
-        is_an_exception = issubclass( exc, parent_exception )
+        is_an_exception = issubclass( exc, BaseException )
 
-      except TypeError:
+      except TypeError:  ## exc is not a class!
         is_an_exception = False
 
       if is_an_exception:

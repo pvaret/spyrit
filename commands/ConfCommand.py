@@ -30,7 +30,13 @@ class ConfCommand( BaseCommand ):
 
   def cmd_set( s, world, key, *args ):
 
-    u"Sets given configuration key to the given value globally."
+    u"""\
+    Sets the given configuration key to the given value.
+
+    Usage: %(cmd)s <key> <value>
+
+    Example: %(cmd)s output_font_name "Courier New"
+    """
 
     args = " ".join( args )
 
@@ -46,7 +52,13 @@ class ConfCommand( BaseCommand ):
 
   def cmd_worldset( s, world, key, *args ):
 
-    u"Sets given configuration key to the given value for this world."
+    u"""\
+    Sets given configuration key to the given value, for this world only.
+
+    Usage: %(cmd)s <key> <value>
+
+    Example: %(cmd)s output_font_name "Courier New"
+    """
 
     args = " ".join( args )
 
@@ -62,7 +74,18 @@ class ConfCommand( BaseCommand ):
 
   def cmd_reset( s, world, key ):
 
-    u"Resets the given configuration key to its default value."
+    u"""\
+    Resets the given configuration key to its default value.
+
+    Usage: %(cmd)s <key>
+
+    Example: %(cmd)s output_font_name
+    """
+
+    t = world.conf.getType( key )
+
+    if not t:
+      world.info( u"Unknown configuration key: %s" % key )
 
     try:
       del singletons.config[ key ]
@@ -73,7 +96,18 @@ class ConfCommand( BaseCommand ):
 
   def cmd_worldreset( s, world, key ):
 
-    u"Resets the given configuration key for this world to its global value."
+    u"""\
+    Resets the given configuration key for this world to its global value.
+
+    Usage: %(cmd)s <key>
+
+    Example: %(cmd)s output_font_name
+    """
+
+    t = world.conf.getType( key )
+
+    if not t:
+      world.info( u"Unknown configuration key: %s" % key )
 
     try:
       del world.conf[ key ]

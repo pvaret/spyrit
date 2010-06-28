@@ -79,9 +79,12 @@ class HelpCommand( BaseCommand ):
       world.info( u"No help on command '%s'." % cmdname  )
       return
 
+    cmd = CMDCHAR + cmdname
+
     ctx = { 'CMDCHAR': CMDCHAR,
             'cmdname': cmdname,
-            'HELP': HELP }
+            'cmd':     cmd,
+            'HELP':    HELP }
 
     help_txt = u"Help on '%(CMDCHAR)s%(cmdname)s':\n" + help_txt
     world.info( help_txt % ctx )
@@ -100,7 +103,7 @@ class HelpCommand( BaseCommand ):
     if not cmd.__doc__:
       return None
 
-    doc = cmd.__doc__.strip()
+    doc = dedent( cmd.__doc__ )
 
     if not hasattr( cmd, 'subcmds' ):
       return doc

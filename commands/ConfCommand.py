@@ -50,7 +50,10 @@ class ConfCommand( BaseCommand ):
     singletons.config[ key ] = args
 
     value = t.to_string( args )
-    world.info( u"Key set to '%s'." % value )
+    if ' ' in value:
+      value = '"%s"' % value
+
+    world.info( u"%s set to value %s" % ( key, value ) )
 
 
   def cmd_worldset( s, world, key, *args ):
@@ -75,7 +78,11 @@ class ConfCommand( BaseCommand ):
     world.conf[ key ] = args
 
     value = t.to_string( args )
-    world.info( u"Key set to '%s' on world." % value )
+    if ' ' in value:
+      value = '"%s"' % value
+
+    world.info( u"%s set to value %s on world %s" \
+                % ( key, value, world.title() ) )
 
 
   def cmd_reset( s, world, key ):
@@ -101,7 +108,10 @@ class ConfCommand( BaseCommand ):
       pass
 
     value = t.to_string( singletons.config[ key ] )
-    world.info( u"Key reset to default value: %s" % value )
+    if ' ' in value:
+      value = '"%s"' % value
+
+    world.info( u"%s reset to value %s" % ( key, value ) )
 
 
   def cmd_worldreset( s, world, key ):
@@ -127,4 +137,8 @@ class ConfCommand( BaseCommand ):
       pass
 
     value = t.to_string( world.conf[ key ] )
-    world.info( u"Key reset to global value: %s" % value )
+    if ' ' in value:
+      value = '"%s"' % value
+
+    world.info( u"%s reset to value %s on world %s" \
+                % ( key, value, world.title() ) )

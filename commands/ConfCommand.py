@@ -44,10 +44,13 @@ class ConfCommand( BaseCommand ):
 
     if not t:
       world.info( u"Unknown configuration key: %s" % key )
+      return
 
-    else:
-      args = t.from_string( args )
-      singletons.config[ key ] = args
+    args = t.from_string( args )
+    singletons.config[ key ] = args
+
+    value = t.to_string( args )
+    world.info( u"Key set to '%s'." % value )
 
 
   def cmd_worldset( s, world, key, *args ):
@@ -66,10 +69,13 @@ class ConfCommand( BaseCommand ):
 
     if not t:
       world.info( u"Unknown configuration key: %s" % key )
+      return
 
-    else:
-      args = t.from_string( args )
-      world.conf[ key ] = args
+    args = t.from_string( args )
+    world.conf[ key ] = args
+
+    value = t.to_string( args )
+    world.info( u"Key set to '%s' on world." % value )
 
 
   def cmd_reset( s, world, key ):
@@ -86,12 +92,16 @@ class ConfCommand( BaseCommand ):
 
     if not t:
       world.info( u"Unknown configuration key: %s" % key )
+      return
 
     try:
       del singletons.config[ key ]
 
     except KeyError:
       pass
+
+    value = t.to_string( singletons.config[ key ] )
+    world.info( u"Key reset to default value: %s" % value )
 
 
   def cmd_worldreset( s, world, key ):
@@ -108,9 +118,13 @@ class ConfCommand( BaseCommand ):
 
     if not t:
       world.info( u"Unknown configuration key: %s" % key )
+      return
 
     try:
       del world.conf[ key ]
 
     except KeyError:
       pass
+
+    value = t.to_string( world.conf[ key ] )
+    world.info( u"Key reset to global value: %s" % value )

@@ -55,7 +55,7 @@ class BOOL:
   @staticmethod
   def from_string( b ):
 
-    return b.lower() in ( u"1", u"y", u"yes", u"on", u"true" )
+    return b.strip().lower() in ( u"1", u"y", u"yes", u"on", u"true" )
 
 
   @staticmethod

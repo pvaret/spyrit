@@ -22,6 +22,7 @@
 
 from BaseCommand import BaseCommand
 from Singletons  import singletons
+from Defaults    import ALL_DESCS
 
 
 class ConfCommand( BaseCommand ):
@@ -142,3 +143,23 @@ class ConfCommand( BaseCommand ):
 
     world.info( u"%s reset to value %s on world %s" \
                 % ( key, value, world.title() ) )
+
+
+  def cmd_keys( s, world ):
+
+    u"""\
+    Lists all available configuration keys.
+
+    Usage: %(cmd)s
+    """
+
+    max_len = max( len( k ) for k in ALL_DESCS )
+
+    output = u"Available configuration keys:\n"
+
+    for key, desc in sorted( ALL_DESCS.iteritems() ):
+      output += key.ljust( max_len + 2 )
+      output += desc
+      output += '\n'
+
+    world.info( output )

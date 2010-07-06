@@ -107,58 +107,62 @@ DEFAULTS = (
 )
 
 
+## Note: only the configuration keys with a description are listed by the
+## configuration commands.
 
-DESCS = {
+DESCRIPTIONS = {
 
-  'logfile_name': "default log filename pattern",
-  'logfile_dir':  "default log directory",
-  'autolog':      "start logging automatically on connect",
+  'logfile_name': u"default log filename pattern",
+  'logfile_dir':  u"default log directory",
+  'autolog':      u"start logging automatically on connect",
 
-  'output_font_name':        "name of font in output window",
-  'output_font_size':        "font size in output window",
-  'output_background_color': "background color of output window",
-  'output_format':           "format description for output window text",
-  'info_format':             "format description for information text",
+  'output_font_name':        u"name of font in output window",
+  'output_font_size':        u"font size in output window",
+  'output_background_color': u"background color of output window",
+  'output_format':           u"format description for output window text",
+  'info_format':             u"format description for information text",
 
-  'input_font_name':        "name of font in input field",
-  'input_font_size':        "size of font in input field",
-  'input_font_color':       "color of text in input field",
-  'input_background_color': "background color of input field",
+  'input_font_name':        u"name of font in input field",
+  'input_font_size':        u"size of font in input field",
+  'input_font_color':       u"color of text in input field",
+  'input_background_color': u"background color of input field",
 
-  'world_encoding': "server character encoding",
+  'world_encoding': u"server character encoding",
 
-  'split_scrollback': "split output window when scrolling back",
-  'paging':           "stop scrolling after one page of text",
+  'split_scrollback': u"split output window when scrolling back",
+  'paging':           u"stop scrolling after one page of text",
 
-  'save_input_history': "length of input history to keep between sessions",
+  'save_input_history': u"length of input history to keep between sessions",
 
-  'shortcut_about':          "shortcut: About... dialog",
-  'shortcut_aboutqt':        "shortcult: About Qt... dialog",
-  'shortcut_newworld':       "shortcut: New World... dialog",
-  'shortcut_quickconnect':   "shortcut: Quick Connect... dialog",
-  'shortcut_quit':           "shortcut: quit the application",
-  'shortcut_nexttab':        "shortcut: switch to the next tab",
-  'shortcut_previoustab':    "shortcut: switch to the previous tab",
-  'shortcut_close':          "shortcut: close the current tab",
-  'shortcut_connect':        "shortcut: reconnect to the current world",
-  'shortcut_disconnect':     "shortcut: disconnect from the current world",
-  'shortcut_historyup':      "shortcut: previous entry in input history",
-  'shortcut_historydown':    "shortcut: next entry in input history",
-  'shortcut_autocomplete':   "shortcut: autocomplete current word in input field",
-  'shortcut_pageup':         "shortcut: scroll one page up",
-  'shortcut_pagedown':       "shortcut: scroll one page down",
-  'shortcut_stepup':         "shortcut: scroll one line up",
-  'shortcut_stepdown':       "shortcut: scroll one line down",
-  'shortcut_home':           "shortcut: scroll to the beginning of output",
-  'shortcut_end':            "shortcut: scroll to the end of output",
-  'shortcut_startlog':       "shortcut: start logging output",
-  'shortcut_stoplog':        "shortcut: stop logging output",
-  'shortcut_toggle2ndinput': "shortcut: toggle secondary input field",
+  'shortcut_about':          u"shortcut: About... dialog",
+  'shortcut_aboutqt':        u"shortcut: About Qt... dialog",
+  'shortcut_newworld':       u"shortcut: New World... dialog",
+  'shortcut_quickconnect':   u"shortcut: Quick Connect... dialog",
+  'shortcut_quit':           u"shortcut: quit the application",
+  'shortcut_nexttab':        u"shortcut: switch to the next tab",
+  'shortcut_previoustab':    u"shortcut: switch to the previous tab",
+  'shortcut_close':          u"shortcut: close the current tab",
+  'shortcut_connect':        u"shortcut: reconnect to the current world",
+  'shortcut_disconnect':     u"shortcut: disconnect from the current world",
+  'shortcut_historyup':      u"shortcut: previous entry in input history",
+  'shortcut_historydown':    u"shortcut: next entry in input history",
+  'shortcut_autocomplete':   u"shortcut: autocomplete current word in input field",
+  'shortcut_pageup':         u"shortcut: scroll one page up",
+  'shortcut_pagedown':       u"shortcut: scroll one page down",
+  'shortcut_stepup':         u"shortcut: scroll one line up",
+  'shortcut_stepdown':       u"shortcut: scroll one line down",
+  'shortcut_home':           u"shortcut: scroll to the beginning of output",
+  'shortcut_end':            u"shortcut: scroll to the end of output",
+  'shortcut_startlog':       u"shortcut: start logging output",
+  'shortcut_stoplog':        u"shortcut: stop logging output",
+  'shortcut_toggle2ndinput': u"shortcut: toggle secondary input field",
 
-  'alert_on_activity': "animate taskbar when text is received from the server",
+  'alert_on_activity': u"animate taskbar when text is received from the server",
 
 }
 
 
 ALL_DEFAULTS = dict( ( k, v ) for ( k, v, t ) in DEFAULTS )
 ALL_TYPES    = dict( ( k, t ) for ( k, v, t ) in DEFAULTS )
+ALL_DESCS    = dict( ( k, DESCRIPTIONS[ k ] ) for ( k, _ , _ ) in DEFAULTS
+                                              if k in DESCRIPTIONS )

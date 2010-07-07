@@ -163,3 +163,93 @@ class ConfCommand( BaseCommand ):
       output += '\n'
 
     world.info( output )
+
+
+  def cmd_show( s, world, key=None ):
+
+    u"""\
+    Show the current configuration.
+
+    Usage: %(cmd)s [<key> | all]
+
+    By default, only the values differing from defaults are shown.
+    If an optional key argument is given, list all values for that key
+    (default, global, world.)
+
+    If the optional argument 'all' is given, then all values for all keys are
+    listed.
+
+    Example: %(cmd)s output_font_name
+             %(cmd)s all
+    """
+
+    worldconf  = world.conf
+    globalconf = singletons.config
+    defaults   = globalconf.parent
+
+    ## 1/ Retrieve list of keys to list, based on the argument given by the
+    ## user:
+
+    if key is not None:
+      key = key.lower().strip()
+
+    if key is None:  ## No argument given. Show non-default keys.
+
+      list_keys = []
+
+      for k in sorted( ALL_DESCS ):
+
+        if worldconf.owns( k ) or globalconf.owns( k ):
+          list_keys.append( k )
+
+      if not list_keys:
+        world.info( u"All the configuration keys have default values." )
+        return
+
+    elif key == "all":
+      list_keys = sorted( ALL_DESCS )
+
+    else:
+
+      if defaults.getType( key ) is None:
+        world.info( u"No such configuration key." )
+        return
+
+      list_keys = [ key ]
+
+
+    ## 2/ Format and display as a table:
+
+    output = "Current configuration:\n"
+
+    columns = []
+
+    def line_up_column( column ):
+
+      l = max( len( token ) for token in column )
+      return [ token.ljust( l + 4 ) for token in column ]
+
+    key_column = [ u"Key", u"---" ] + list_keys
+    key_column = line_up_column( key_column )
+
+    columns.append( key_column )
+
+    for title, conf in ( ( u"Defaults", defaults ),
+                         ( u"Global",   globalconf ),
+                         ( u"World",    worldconf ) ):
+
+      column = [ title, u"-" * len( title ) ]
+
+      for k in list_keys:
+
+        t = globalconf.getType( k )
+        value = t.to_string( conf[ k ] ) if conf.owns( k ) else u"-"
+
+        column.append( value if value else u"None" )
+
+      columns.append( line_up_column( column ) )
+
+    for row in zip( *columns ):
+      output += ''.join( row ) + '\n'
+
+    world.info( output )

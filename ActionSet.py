@@ -27,16 +27,16 @@ from ConfigObserver import ConfigObserver
 
 
 class ActionSet:
-  
+
   def __init__( s, parent ):
-   
+
     s.parent = parent
 
     config     = singletons.config
     s.observer = ConfigObserver( config )
 
     s.closures = []
-    
+
     s.actions = {
 
       ## Global actions
@@ -90,9 +90,9 @@ class ActionSet:
 
 
   def bindAction( s, action, slot ):
-    
+
     text, icon = s.actions[ action ]
-    
+
     a = QtGui.QAction( text, s.parent )
 
     if icon: a.setIcon( QtGui.QIcon( icon ) )
@@ -118,7 +118,7 @@ class ActionSet:
     s.closures.append( set_action_shortcut )
 
     role = s.roles.get( action )
-    
+
     if role is not None:
       a.setMenuRole( role )
 
@@ -126,13 +126,13 @@ class ActionSet:
 
     if context is not None:
       a.setShortcutContext( context )
-    
+
     connect( a, SIGNAL( "triggered()" ), slot )
 
     ## It is necessary to add the action to a widget before its shortcuts will
     ## work.
     s.parent.addAction( a )
-    
+
     return a
 
 

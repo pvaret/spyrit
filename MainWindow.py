@@ -309,6 +309,15 @@ class MainWindow( QtGui.QMainWindow ):
     pos = ( s.pos().x(), s.pos().y() )
     config._mainwindow_pos = pos
 
+    ## WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
+    ## which sometimes causes a segfault when exitting. This works around the
+    ## bug.
+    s.hide()
+    mb = s.menuBar()
+    mb.setParent(None)
+    mb.deleteLater()
+
+    ## And we're done, and can quit.
     event.accept()
 
 

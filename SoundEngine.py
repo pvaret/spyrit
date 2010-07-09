@@ -23,10 +23,13 @@
 
 from localqt import *
 
+import os.path
+
 from Singletons       import singletons
 from QSoundBackend    import QSoundBackend
 from PygameBackend    import PygameBackend
 from PlatformSpecific import platformSpecific
+
 
 SOUNDBACKENDS = {
   "qsound": QSoundBackend,
@@ -58,6 +61,17 @@ class SoundEngine:
   def play( s, soundfile ):
 
     if not s.backend:
-      return
+      return False, u"No sound engine available."
 
-    s.backend.play( singletons.tmprc.get( soundfile ) )
+    filename = singletons.tmprc.get( soundfile )
+
+    if not os.path.exists( filename ):
+      return False, u"%s: file not found." % soundfile
+
+    if not os.path.isfile( filename ):
+      return False, u"%s: not a valid file." % soundfile
+
+    ## TODO: Check that filename is a valid WAV file.
+
+    s.backend.play( filename )
+    return True, None

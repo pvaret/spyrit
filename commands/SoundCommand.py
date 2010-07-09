@@ -20,6 +20,8 @@
 ##
 
 
+import os.path
+
 from BaseCommand import BaseCommand
 from Singletons  import singletons
 
@@ -28,8 +30,20 @@ class SoundCommand( BaseCommand ):
 
   u"Sound-related operations."
 
-  def cmd_play( s, world, filename ):
+  def cmd_play( s, world, filename=":/sound/pop" ):
 
-    u"Play a sound."
+    u"""\
+    Play a sound.
 
-    singletons.sound.play( filename )
+    Usage: %(cmd)s [<soundfile.wav>]
+
+    If you omit the sound file name, a default 'pop' sound will be played.
+    The purpose of this command is to test your sound setup.
+
+    """
+
+    filename = os.path.expanduser( filename )
+    ok, msg = singletons.sound.play( filename )
+
+    if not ok:
+      world.info( msg )

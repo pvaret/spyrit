@@ -20,12 +20,13 @@
 ##
 
 
+from textwrap import dedent
+
 from Singletons  import singletons
 from BaseCommand import BaseCommand
 from Globals     import CMDCHAR
 from Globals     import HELP
 
-from textwrap import dedent
 
 
 class HelpCommand( BaseCommand ):

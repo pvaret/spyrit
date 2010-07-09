@@ -30,7 +30,8 @@ class TempResources:
 
   def __init__( s ):
 
-    s.map = {}
+    s.map      = {}
+    s.tmpfiles = set()
 
     app = qApp()
 
@@ -66,15 +67,18 @@ class TempResources:
 
     tmp.close()
 
-    return unicode( tmp.fileName() )
+    tmpfname = unicode( tmp.fileName() )
+    s.tmpfiles.add( tmpfname )
+
+    return tmpfname
 
 
   def cleanup( s ):
 
-    for fname in s.map.itervalues():
+    while s.tmpfiles:
 
       try:
-        os.unlink( fname )
+        os.unlink( s.tmpfiles.pop() )
       except OSError:
         pass
 

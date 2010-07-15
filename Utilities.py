@@ -31,8 +31,7 @@ def check_python_version():
   if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
     return True, None
 
-  else:
-    return False, u"Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+  return False, u"Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
 
 
 
@@ -141,7 +140,8 @@ UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
 
 def remove_accents( s ):
-  """Turns a Unicode string into its non-accented equivalent.
+  u"""\
+  Turns a Unicode string into its non-accented equivalent.
 
   >>> print remove_accents( u"Touché!" )
   Touche!
@@ -200,3 +200,31 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
                                              exc_value,
                                              exc_traceback ) )
   sys.exit( 1 )
+
+
+def format_as_table( columns, headers ):
+  u"""\
+  Format a set of columns and headers as a table.
+
+  >>> print format_as_table( columns=( [ 'item 1' ], [ 'item 2' ] ),
+  ...                        headers=['Header A', 'Header B'] )
+  Header A  Header B
+  --------  --------
+  item 1    item 2
+
+  """
+
+  if len( headers ) < len( columns ):
+    headers = list( headers ) + [ '' ] * ( len( columns ) - len( headers ) )
+
+  for column, header in zip( columns, headers ):
+
+    column.insert( 0, header )
+    column.insert( 1, "-" * len( header ) )
+
+    justify_to = max( len( item ) for item in column )
+
+    for i, item in enumerate( column ):
+      column[ i ] = item.ljust( justify_to + 2 )
+
+  return '\n'.join( ''.join( line ) for line in zip( *columns ) )

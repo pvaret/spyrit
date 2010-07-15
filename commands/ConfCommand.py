@@ -51,7 +51,12 @@ class ConfCommand( BaseCommand ):
     args = t.from_string( args )
     singletons.config[ key ] = args
 
+    ## TODO: Factorize display between this, worldset, reset and worldreset.
     value = t.to_string( args )
+
+    if value is None:
+      value = u'None'
+
     if ' ' in value:
       value = '"%s"' % value
 
@@ -80,6 +85,10 @@ class ConfCommand( BaseCommand ):
     world.conf[ key ] = args
 
     value = t.to_string( args )
+
+    if value is None:
+      value = u'None'
+
     if ' ' in value:
       value = '"%s"' % value
 
@@ -110,6 +119,10 @@ class ConfCommand( BaseCommand ):
       pass
 
     value = t.to_string( singletons.config[ key ] )
+
+    if value is None:
+      value = u'None'
+
     if ' ' in value:
       value = '"%s"' % value
 
@@ -139,6 +152,10 @@ class ConfCommand( BaseCommand ):
       pass
 
     value = t.to_string( world.conf[ key ] )
+
+    if value is None:
+      value = u'None'
+
     if ' ' in value:
       value = '"%s"' % value
 

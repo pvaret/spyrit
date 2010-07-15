@@ -208,9 +208,9 @@ def format_as_table( columns, headers ):
 
   >>> print format_as_table( columns=( [ 'item 1' ], [ 'item 2' ] ),
   ...                        headers=['Header A', 'Header B'] )
-  Header A  Header B
-  --------  --------
-  item 1    item 2
+  Header A    Header B
+  --------    --------
+  item 1      item 2
 
   """
 
@@ -225,6 +225,6 @@ def format_as_table( columns, headers ):
     justify_to = max( len( item ) for item in column )
 
     for i, item in enumerate( column ):
-      column[ i ] = item.ljust( justify_to + 2 )
+      column[ i ] = item.ljust( justify_to + 4 )
 
-  return '\n'.join( ''.join( line ) for line in zip( *columns ) )
+  return '\n'.join( ''.join( line ).rstrip() for line in zip( *columns ) )

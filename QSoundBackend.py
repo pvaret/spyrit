@@ -28,6 +28,8 @@ from localqt import *
 
 class QSoundBackend:
 
+  name = u"Native (Qt)"
+
   def isAvailable( s ):
 
     return QtGui.QSound.isAvailable()

@@ -31,31 +31,58 @@ from PygameBackend    import PygameBackend
 from PlatformSpecific import platformSpecific
 
 
-SOUNDBACKENDS = {
-  "qsound": QSoundBackend,
-  "pygame": PygameBackend,
-}
+
+
+class SoundBackendRegistry:
+
+  SOUNDBACKENDS = {
+    "qsound": QSoundBackend,
+    "pygame": PygameBackend,
+  }
+
+  def __init__( s ):
+
+    s.preferred_backends = platformSpecific.get_sound_backends()
+    s.backend_cache = {}
+
+
+  def pollForBackend( s ):
+
+    for backend_name in s.preferred_backends:
+
+      backend = s.lookupBackend( backend_name )
+
+      if backend.isAvailable():
+        return backend
+
+    return None
+
+
+  def lookupBackend( s, backend_name ):
+
+    if backend_name not in s.backend_cache:
+      s.backend_cache[ backend_name ] = s.SOUNDBACKENDS[ backend_name ]()
+
+    return s.backend_cache[ backend_name ]
+
+
+  def listBackends( s, also_list_unsupported=False ):
+
+      if also_list_unsupported:
+        backend_list = s.SOUNDBACKENDS.keys()
+      else:
+        backend_list = s.preferred_backends
+
+      return [ s.lookupBackend( backend_name )
+               for backend_name in backend_list ]
 
 
 class SoundEngine:
 
   def __init__( s ):
 
-    s.backend = None
-
-    s.pollForBackend()
-
-
-  def pollForBackend( s ):
-
-    for backend in platformSpecific.get_sound_backends():
-
-      b = SOUNDBACKENDS[backend]()
-
-      if b.isAvailable():
-
-        s.backend = b
-        break
+    s.registry = SoundBackendRegistry()
+    s.backend  = s.registry.pollForBackend()
 
 
   def play( s, soundfile ):

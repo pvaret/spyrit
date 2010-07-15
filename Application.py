@@ -74,7 +74,7 @@ class Application( QtGui.QApplication ):
     from Config        import Config
     from WorldsManager import WorldsManager
     from MainWindow    import MainWindow
-    
+
     singletons.addInstance( "config",        Config() )
     singletons.addInstance( "worldsmanager", WorldsManager() )
     singletons.addInstance( "mw",            MainWindow() )

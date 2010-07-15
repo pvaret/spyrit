@@ -22,6 +22,7 @@
 
 from BaseCommand import BaseCommand
 from Singletons  import singletons
+from Utilities   import format_as_table
 from Defaults    import ALL_DESCS
 
 
@@ -222,34 +223,21 @@ class ConfCommand( BaseCommand ):
 
     output = "Current configuration:\n"
 
-    columns = []
+    headers = ( u"Keys", u"Defaults", u"Global", u"World" )
 
-    def line_up_column( column ):
+    columns = [ list_keys ]
 
-      l = max( len( token ) for token in column )
-      return [ token.ljust( l + 4 ) for token in column ]
+    for conf in ( defaults, globalconf, worldconf ):
 
-    key_column = [ u"Key", u"---" ] + list_keys
-    key_column = line_up_column( key_column )
-
-    columns.append( key_column )
-
-    for title, conf in ( ( u"Defaults", defaults ),
-                         ( u"Global",   globalconf ),
-                         ( u"World",    worldconf ) ):
-
-      column = [ title, u"-" * len( title ) ]
+      column = []
 
       for k in list_keys:
-
         t = globalconf.getType( k )
         value = t.to_string( conf[ k ] ) if conf.owns( k ) else u"-"
 
         column.append( value if value else u"None" )
 
-      columns.append( line_up_column( column ) )
+      columns.append( column )
 
-    for row in zip( *columns ):
-      output += ''.join( row ) + '\n'
-
+    output += format_as_table( columns, headers )
     world.info( output )

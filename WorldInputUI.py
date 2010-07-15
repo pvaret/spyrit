@@ -143,6 +143,11 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     s.clear()
 
+    ## Ensure the input is cleared right away even if processing takes a little
+    ## time:
+    s.repaint()
+    qApp().processEvents()
+
     if text:
       s.history.update( text )
 

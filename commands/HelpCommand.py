@@ -106,7 +106,7 @@ class HelpCommand( BaseCommand ):
 
     doc = dedent( cmd.__doc__ )
 
-    if not hasattr( cmd, 'subcmds' ):
+    if not hasattr( cmd, 'subcmds' ) or len( cmd.subcmds ) == 0:
       return doc
 
     helptxt  = [ doc ]

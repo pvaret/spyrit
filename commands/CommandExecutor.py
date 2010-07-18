@@ -82,15 +82,16 @@ def execute( func, args, kwargs ):
   if not ok:
     raise ExecuteError( errmsg )
 
-  try:
-    return func( *args, **kwargs )
+  return func( *args, **kwargs )
+  #try:
+  #  return func( *args, **kwargs )
 
-  except Exception, e:
+  #except Exception, e:
 
-    ## Special case: if this exception is handcrafted by the debug command,
-    ## then let it fly untouched:
+  #  ## Special case: if this exception is handcrafted by the debug command,
+  #  ## then let it fly untouched:
 
-    if getattr( e, 'do_not_catch', False ):
-      raise e
+  #  if getattr( e, 'do_not_catch', False ):
+  #   raise e
 
-    raise ExecuteError( unicode( e ) )
+  #  raise ExecuteError( unicode( e ) )

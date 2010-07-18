@@ -26,32 +26,55 @@ from Singletons  import singletons
 
 class SessionCommand( BaseCommand ):
 
-  u"""Connect, disconnect, close, quit."""
+  ## TODO: Maybe split this out into several commands. Those don't feel like
+  ## they belong together. So for now we hide the docstring so the commands
+  ## will remain hidden in the help.
+  #u"""Connect, disconnect, close, quit."""
 
-  def cmd_connect( s, world ):
+  def cmd_reconnect( s, world ):
 
-    u"Opens connection to the current world if it is currently closed."
+    u"""\
+    Reconnect to the current world if it is currently disconnected.
+
+    Usage: %(cmd)s
+
+    """
 
     world.connectToWorld()
 
 
   def cmd_disconnect( s, world ):
 
-    u"Closes connection to the current world."
+    u"""\
+    Disconnect from the current world.
+
+    Usage: %(cmd)s
+
+    """
 
     world.disconnectFromWorld()
 
 
   def cmd_quit( s, world ):
 
-    u"Quits the application."
+    u"""\
+    Quit the application.
+
+    Usage: %(cmd)s
+
+    """
 
     singletons.mw.close()
 
 
   def cmd_close( s, world ):
 
-    u"Closes the current world."
+    u"""\
+    Closes the current tab.
+
+    Usage: %(cmd)s
+
+    """
 
     world.worldui.close()
 

@@ -14,29 +14,31 @@
 ##
 
 ##
-## OutputCommand.py
+## FindCommand.py
 ##
-## Command to manage the world's output.
+## Command to search the output window for specific text.
 ##
 
 
 from BaseCommand import BaseCommand
 
 
-class OutputCommand( BaseCommand ):
+class FindCommand( BaseCommand ):
 
-  u"""Manage the output window."""
+  u"""\
+  Find text in the output window.
 
-  def cmd_load( s, world, *args ):
+  Usage: %(cmd)s [<text>]
 
-    ## No docstring. This is not a user-visible subcommand.
+  If <text> is omitted, the last search is repeated.
+  If <text> is a sentence containing spaces, it should be enclosed in quotes.
 
-    world.loadFile( args and u" ".join( args ) or None )
+  Examples: %(cmd)s Character
+            %(cmd)s "Character pages"
+            %(cmd)s
 
+  """
 
-  def cmd_find( s, world, *args ):
+  def cmd( s, world, text=None ):
 
-    u"""Finds the given text in the output window.
-    If <string> is omitted, repeat the last search."""
-
-    world.worldui.output_manager.findInHistory( u" ".join( args ) )
+    world.worldui.output_manager.findInHistory( text )

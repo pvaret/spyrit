@@ -127,7 +127,7 @@ def register_local_commands( cmd_registry ):
   from commands.HelpCommand    import HelpCommand
   from commands.ConfCommand    import ConfCommand
   from commands.DebugCommand   import DebugCommand
-  from commands.OutputCommand  import OutputCommand
+  from commands.FindCommand    import FindCommand
   from commands.SessionCommand import SessionCommand
   from commands.SoundCommand   import SoundCommand
   from commands.MatchCommand   import MatchCommand
@@ -135,7 +135,7 @@ def register_local_commands( cmd_registry ):
   cmd_registry.registerCommand( HELP,      HelpCommand )
   cmd_registry.registerCommand( "conf",    ConfCommand )
   cmd_registry.registerCommand( "debug",   DebugCommand )
-  cmd_registry.registerCommand( "output",  OutputCommand )
+  cmd_registry.registerCommand( "find",    FindCommand )
   cmd_registry.registerCommand( "session", SessionCommand )
   cmd_registry.registerCommand( "sound",   SoundCommand )
   cmd_registry.registerCommand( "match",   MatchCommand )

@@ -207,7 +207,7 @@ def format_as_table( columns, headers ):
   Format a set of columns and headers as a table.
 
   >>> print format_as_table( columns=( [ 'item 1' ], [ 'item 2' ] ),
-  ...                        headers=['Header A', 'Header B'] )
+  ...                        headers=[ 'Header A', 'Header B' ] )
   Header A    Header B
   --------    --------
   item 1      item 2

@@ -29,6 +29,8 @@ class DebugCommand( BaseCommand ):
 
   def cmd_raise( s, world, *args ):
 
+    ## No docstring. This is not a user-visible subcommand.
+
     e = None
 
     if args:
@@ -54,9 +56,18 @@ class DebugCommand( BaseCommand ):
 
   def cmd_execute( s, world, filename ):
 
-      f = world.openFileOrErr( filename )
+    ## No docstring. This is not a user-visible subcommand.
 
-      if not f:
-        return
+    f = world.openFileOrErr( filename )
 
-      exec f.read()
+    if not f:
+      return
+
+    exec f.read()
+
+
+  def cmd_load( s, world, *args ):
+
+    ## No docstring. This is not a user-visible subcommand.
+
+    world.loadFile( args and u" ".join( args ) or None )

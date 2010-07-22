@@ -35,7 +35,7 @@ class MatchCreationError( Exception ):
 
 class RegexMatch:
 
-  matchtype = "regex"
+  matchtype = u"regex"
 
   def __init__( s, pattern=None ):
 
@@ -105,7 +105,7 @@ class RegexMatch:
 
   def __unicode__( s ):
 
-    return u":".join( [ s.matchtype, s.pattern ] )
+    return s.pattern
 
 
 
@@ -114,38 +114,38 @@ class RegexMatch:
 ## or asterisks, if they aren't preceded by an odd number of backslashes.
 
 
-TOKEN = r" *\w+ *" ## Non-null word with optional surrounding space.
+TOKEN = ur' *\w+ *' ## Non-null word with optional surrounding space.
 
-BS      = r"\\" ## Backslash
-ASTER   = r"\*" ## Asterisk
-PERCENT = r"\%" ## Percent sign
+BS      = ur'\\' ## Backslash
+ASTER   = ur'\*' ## Asterisk
+PERCENT = ur'\%' ## Percent sign
 
-LSB   = r"\[" ## Left square bracket
-RSB   = r"\]" ## Right square bracket
+LSB   = ur'\[' ## Left square bracket
+RSB   = ur'\]' ## Right square bracket
 
 PARSER = re.compile(
-    "(?:"                      ## Either...
-  +   "^"                      ## Beginning of string
-  + "|"                        ## Or...
-  +   "[^" + BS + "]"          ## Any one character other than a backslash
-  + ")"                        ## Then...
-  + "(?:" + BS * 2 + ")"
-  + "*"                        ## An even number of backslashes
-  + "("                        ## And then, group-match either...
-  +   PERCENT                  ## A percent sign
-  + "|"                        ## Or...
-  +   ASTER                    ## An asterisk
-  + "|"                        ## Or...
-  +   LSB
-  +     TOKEN                  ## Something of the form [token].
-  +   RSB
-  + ")"
+    u'(?:'                      ## Either...
+  +   u'^'                      ## Beginning of string
+  + u'|'                        ## Or...
+  +   u'[^' + BS + u']'         ## Any one character other than a backslash
+  + u')'                        ## Then...
+  + u'(?:' + BS * 2 + u')'
+  + u'*'                        ## An even number of backslashes
+  + u'('                        ## And then, group-match either...
+  +    PERCENT                  ## A percent sign
+  + u'|'                        ## Or...
+  +    ASTER                    ## An asterisk
+  + u'|'                        ## Or...
+  +    LSB
+  +      TOKEN                  ## Something of the form [token].
+  +    RSB
+  + u')'
 )
 
 
 class SmartMatch( RegexMatch ):
 
-  matchtype = "smart"
+  matchtype = u"smart"
 
   def patternToRegex( s, pattern ):
 
@@ -193,10 +193,10 @@ class SmartMatch( RegexMatch ):
     ## re-escape according to the rules of Python's re module.
 
     replacements = (
-      ( "\[",   "[" ),
-      ( "\]",   "]" ),
-      ( "\*",   "*" ),
-      ( "\\"*2, "\\" ),
+      ( u"\[",   u"[" ),
+      ( u"\]",   u"]" ),
+      ( u"\*",   u"*" ),
+      ( u"\\"*2, u"\\" ),
     )
 
     for from_, to in replacements:

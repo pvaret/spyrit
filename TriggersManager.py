@@ -25,8 +25,13 @@ import ConfigTypes
 
 from Singletons     import singletons
 from ConfigBasket   import ConfigBasket
-from Matches        import SmartMatch, RegexMatch, load_match_by_type
-from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
+from Matches        import SmartMatch
+from Matches        import RegexMatch
+from Matches        import MatchCreationError
+from Matches        import load_match_by_type
+from PipelineChunks import HighlightChunk
+from PipelineChunks import UnicodeTextChunk
+from PipelineChunks import chunktypes
 
 
 
@@ -205,21 +210,30 @@ class TriggersManager:
 
       matches = conf.get( 'match' )
 
-      if not matches:
-        continue
+      match_count = 0
 
       for match in matches:
 
         type = match.lower().split( ':', 1 )[0]
 
-        if type in ( "smart", "regex" ):
-          pattern = match[ len( type )+1: ]
-          m = s.createMatch( pattern, type )
+        try:
 
-        else:
-          m = s.createMatch( match )
+          ## TODO: Should this method have to know about match types?
+          if type in ( u"smart", u"regex" ):
+            pattern = match[ len( type )+1: ]
+            m = s.createMatch( pattern, type )
+
+          else:
+            m = s.createMatch( match )
+
+        except MatchCreationError:
+          continue
 
         s.addMatch( m, groupname )
+        match_count += 1
+
+      if match_count == 0:  ## No match created, presumably due to errors.
+        continue
 
       if 'gag' in conf:
 
@@ -252,7 +266,8 @@ class TriggersManager:
     for group in s.matches.iterkeys():
 
       group_dict = {}
-      group_dict[ 'match' ] = [ unicode( m ) for m in s.matches[ group ] ]
+      group_dict[ 'match' ] = [ m.matchtype + u':' + unicode( m )
+                                for m in s.matches[ group ] ]
 
       for action in s.actions.get( group, () ):
         group_dict[ action.name ] = unicode( action )

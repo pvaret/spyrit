@@ -20,19 +20,35 @@
 ##
 
 
+from Matches     import MatchCreationError
 from BaseCommand import BaseCommand
 from Globals     import LEFTARROW
 
 
 class MatchCommand( BaseCommand ):
 
-  u"Create, list, delete match patterns."
+  u"""Create, list, delete match patterns."""
 
-  def cmd_add( s, world, match ):
+  def cmd_add( s, world, pattern, group=None, type=u"smart" ):
 
-    u"Add a new match pattern."
+    u"""\
+    Add a new match pattern.
 
-    world.socketpipeline.triggersmanager.addMatch( match )
+    Usage: %(cmd)s <pattern> [<group>] [type=smart|regex]
+
+    """
+
+    mgr = world.socketpipeline.triggersmanager
+
+    try:
+      match = mgr.createMatch( pattern, type )
+
+    except MatchCreationError, e:
+      world.info( unicode( e ) )
+      return
+
+    mgr.addMatch( match, group )
+    world.info( u"Match added." )
 
 
   def cmd_del( s, world, matchgroup ):

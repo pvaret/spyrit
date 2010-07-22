@@ -25,7 +25,7 @@ import ConfigTypes
 
 from Singletons     import singletons
 from ConfigBasket   import ConfigBasket
-from Matches        import SmartMatch, RegexMatch, load_from_string
+from Matches        import SmartMatch, RegexMatch, load_match_by_type
 from PipelineChunks import HighlightChunk, UnicodeTextChunk, chunktypes
 
 
@@ -164,7 +164,7 @@ class GagAction:
 
   def __unicode__( s ):
 
-    return ""
+    return u""
 
 
 
@@ -209,7 +209,17 @@ class TriggersManager:
         continue
 
       for match in matches:
-        s.addMatch( match, groupname )
+
+        type = match.lower().split( ':', 1 )[0]
+
+        if type in ( "smart", "regex" ):
+          pattern = match[ len( type )+1: ]
+          m = s.createMatch( pattern, type )
+
+        else:
+          m = s.createMatch( match )
+
+        s.addMatch( m, groupname )
 
       if 'gag' in conf:
 
@@ -260,15 +270,18 @@ class TriggersManager:
       conf.saveSection( new_match_conf, conf._matches_section )
 
 
-  def addMatch( s, matchstring, group=None ):
+  def createMatch( s, pattern, type=u"smart" ):
 
-    m = load_from_string( matchstring )
-    ## TODO: Handle errors in match creation.
+    return load_match_by_type( pattern, type )
 
+
+  def addMatch( s, match, group=None ):
+
+    ## TODO: Better group naming algorithm.
     if group is None:
       group = str( len( s.matches ) )
 
-    s.matches.setdefault( group, [] ).append( m )
+    s.matches.setdefault( group, [] ).append( match )
 
 
   def loadAction( s, actionname, args, kwargs ):

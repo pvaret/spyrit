@@ -29,6 +29,8 @@
 import re
 
 
+class MatchCreationError( Exception ):
+  pass
 
 
 class RegexMatch:
@@ -57,7 +59,7 @@ class RegexMatch:
 
     except re.error, e:
       s.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
-      s.error = e.message
+      s.error = unicode( e )
 
 
   def setPattern( s, pattern ):
@@ -70,6 +72,7 @@ class RegexMatch:
 
   def patternToRegex( s, pattern ):
 
+    ## This is a regex match, so the regex IS the pattern.
     return pattern
 
 
@@ -178,8 +181,8 @@ class SmartMatch( RegexMatch ):
       else:  ## New token
         tokens.add( token )
 
-        ## Named match for any non-null string, non-greedy.
-        regex.append( ur"\b(?P<%s>.+?)\b" % token )
+        ## Named match for any non-null string, greedy.
+        regex.append( ur"(?P<%s>.+)" % token )
 
     return u''.join( regex )
 
@@ -204,13 +207,23 @@ class SmartMatch( RegexMatch ):
 
 
 
+def load_match_by_type( pattern, type=u"smart" ):
 
-def load_from_string( string ):
+  type = type.lower().strip()
 
-  if string.startswith( "regex:" ):
-    return RegexMatch( string[ 6: ] )
+  TYPES = {
+    u"smart": SmartMatch,
+    u"regex": RegexMatch,
+  }
 
-  if string.startswith( "smart:" ):
-    return SmartMatch( string[ 6: ] )
+  klass = TYPES.get( type )
 
-  return SmartMatch( string )
+  if not klass:
+    raise MatchCreationError( u"Unknown match type: %s" % type )
+
+  match = klass( pattern )
+
+  if match.error:
+    raise MatchCreationError( u"Match pattern syntax error: %s" % match.error )
+
+  return match

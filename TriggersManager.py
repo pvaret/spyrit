@@ -292,9 +292,19 @@ class TriggersManager:
 
   def addMatch( s, match, group=None ):
 
-    ## TODO: Better group naming algorithm.
     if group is None:
-      group = str( len( s.matches ) )
+
+      ## If no group name is given: use the smallest available number as the
+      ## group name.
+
+      existing_number_groups = [ int( g ) for g in s.matches.keys()
+                                 if g.isdigit() ]
+      new_group_number = min( i for i in range( 1, len( s.matches ) + 2 )
+                              if i not in existing_number_groups )
+      group = unicode( new_group_number )
+
+    else:
+      group = group.strip()
 
     s.matches.setdefault( group, [] ).append( match )
 

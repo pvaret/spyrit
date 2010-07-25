@@ -49,9 +49,9 @@ class MatchCommand( BaseCommand ):
 
     'smart' is a very simple pattern syntax:
         '*' matches anything, as many characters as it can;
-        '%' matches anything, as few characters as it can;
+        '%%' matches anything, as few characters as it can;
         '[<token>]' matches anything as token <token>.
-    The characters '*', '%', '[' and ']' can be escaped with a backslash.
+    The characters '*', '%%', '[' and ']' can be escaped with a backslash.
 
     'regex' follows the usual syntax of regular expressions:
         http://docs.python.org/library/re.html

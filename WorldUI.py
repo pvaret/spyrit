@@ -101,7 +101,8 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
       s.outputui.pingPage )
 
-    world.socketpipeline.addSink( s.output_manager.processChunks )
+    world.socketpipeline.addSink( s.output_manager.processChunk )
+    world.socketpipeline.addSink( s.output_manager.textformatmanager.processChunk )
 
     s.setFocusProxy( s.inputui )
 
@@ -224,7 +225,7 @@ class WorldUI( QtGui.QSplitter ):
       s.steadyIcon()
 
 
-  def startIconBlink( s, chunks ):
+  def startIconBlink( s, chunk ):
 
     ## Don't blink if already blinking:
 
@@ -233,15 +234,11 @@ class WorldUI( QtGui.QSplitter ):
 
     ## Only blink if something interesting is happening:
 
-    types = [ c.chunktype for c in chunks \
-              if c.chunktype in ( chunktypes.TEXT,
-                                  chunktypes.FLOWCONTROL,
-                                  chunktypes.NETWORK ) ]
+    if chunk.chunktype in ( chunktypes.TEXT,
+                            chunktypes.FLOWCONTROL,
+                            chunktypes.NETWORK ):
 
-    if len( types ) == 0:
-      return
-
-    s.blinker.start()
+      s.blinker.start()
 
 
   def iconBlink( s, frame ):

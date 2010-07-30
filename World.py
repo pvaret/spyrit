@@ -160,36 +160,34 @@ class World( QtCore.QObject ):
     s.logger.stopLogging()
 
 
-  def sink( s, chunks ):
+  def sink( s, chunk ):
 
     previous_status = s.status
 
-    for chunk in chunks:
+    if not chunk.chunktype == ChunkTypes.NETWORK:
+      return
 
-      if not chunk.chunktype == ChunkTypes.NETWORK:
-        continue
+    if   chunk.data in ( NetworkChunk.RESOLVING, NetworkChunk.CONNECTING ):
 
-      if   chunk.data in ( NetworkChunk.RESOLVING, NetworkChunk.CONNECTING ):
+      s.status = Status.CONNECTING
 
-        s.status = Status.CONNECTING
+    elif chunk.data == NetworkChunk.CONNECTED:
 
-      elif chunk.data == NetworkChunk.CONNECTED:
+      s.status = Status.CONNECTED
 
-        s.status = Status.CONNECTED
+    elif chunk.data == NetworkChunk.DISCONNECTING:
 
-      elif chunk.data == NetworkChunk.DISCONNECTING:
+      s.status = Status.DISCONNECTING
 
-        s.status = Status.DISCONNECTING
+    elif chunk.data in (
+                          NetworkChunk.DISCONNECTED,
+                          NetworkChunk.CONNECTIONREFUSED,
+                          NetworkChunk.HOSTNOTFOUND,
+                          NetworkChunk.TIMEOUT,
+                          NetworkChunk.OTHERERROR,
+                       ):
 
-      elif chunk.data in (
-                            NetworkChunk.DISCONNECTED,
-                            NetworkChunk.CONNECTIONREFUSED,
-                            NetworkChunk.HOSTNOTFOUND,
-                            NetworkChunk.TIMEOUT,
-                            NetworkChunk.OTHERERROR,
-                         ):
-
-        s.status = Status.DISCONNECTED
+      s.status = Status.DISCONNECTED
 
 
     if s.status != previous_status:

@@ -25,12 +25,13 @@
 from localqt import *
 
 from PipelineChunks   import ByteChunk
-from PipelineChunks   import theEndOfPacketChunk, thePromptSweepChunk
+from PipelineChunks   import thePacketStartChunk, thePacketEndChunk
+from PipelineChunks   import thePromptSweepChunk
 from CallbackRegistry import CallbackRegistry
 
 
 class Pipeline:
-  
+
   PROMPT_TIMEOUT = 700 ## ms
 
 
@@ -53,14 +54,15 @@ class Pipeline:
 
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
-    
+
+    s.feedChunk( thePacketStartChunk )
     s.feedChunk( ByteChunk( packet ) )
-    
+
     ## Then we notify the filters that this is the end of the packet.
 
-    s.feedChunk( theEndOfPacketChunk )
+    s.feedChunk( thePacketEndChunk )
     s.prompt_timer.start()
-  
+
 
   def sweepPrompt( s ):
 
@@ -68,7 +70,7 @@ class Pipeline:
 
 
   def feedChunk( s, chunk ):
-  
+
     if not s.filters:
       return
 
@@ -79,20 +81,21 @@ class Pipeline:
     ## output bucket. So we can flush it.
 
     s.flushOutputBuffer()
-  
-  
+
+
   def appendToOutputBuffer( s, chunk ):
-  
+
     s.outputBuffer.append( chunk )
-  
-  
+
+
   def flushOutputBuffer( s ):
-  
-    s.sinks.triggerAll( s.outputBuffer )
+
+    for chunk in s.outputBuffer:
+      s.sinks.triggerAll( chunk )
 
     s.outputBuffer = []
 
-    
+
   def addFilter( s, filterclass, **kwargs ):
 
     kwargs.setdefault( 'context', s ) ## Set up context if not already present.

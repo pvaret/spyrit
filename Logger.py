@@ -39,7 +39,7 @@ class Logger( QtCore.QObject ):
     QtCore.QObject.__init__( s )
 
     s.world   = world
-    
+
     s.logfile = None
     s.buffer  = []
 
@@ -58,7 +58,7 @@ class Logger( QtCore.QObject ):
 
     if not isdir( dir ):
 
-      try: 
+      try:
         os.makedirs( dir )
 
       except ( IOError, OSError ):
@@ -83,20 +83,18 @@ class Logger( QtCore.QObject ):
       s.logfile = None
 
 
-  def logOutput( s, chunks ):
+  def logOutput( s, chunk ):
 
     ## Don't buffer data if there is no logfile to send it to.
     if not s.logfile:
       return
 
-    for chunk in chunks:
+    if chunk.chunktype == ChunkTypes.TEXT:
+      s.buffer.append( chunk.data )
 
-      if chunk.chunktype == ChunkTypes.TEXT:
-        s.buffer.append( chunk.data )
-
-      if       chunk.chunktype == chunktypes.FLOWCONTROL \
-           and chunk.data == FlowControlChunk.LINEFEED:
-        s.buffer.append( u"\n" )
+    if       chunk.chunktype == chunktypes.FLOWCONTROL \
+         and chunk.data == FlowControlChunk.LINEFEED:
+      s.buffer.append( u"\n" )
 
     QtCore.QTimer.singleShot( 0, s.writeToFile )
 
@@ -118,14 +116,14 @@ class Logger( QtCore.QObject ):
       messages.warn( u"A logging file is already open, it will be closed." )
 
     if not s.openLogFile( filename ):
-    
+
       messages.warn( u"Error while opening %s for log writing" % filename )
       return
 
     s.world.info( u"Started logging to %s" % basename( filename ) )
 
     if backlog:
-    
+
       s.buffer.append( backlog )
       s.writeToFile()
 
@@ -140,7 +138,7 @@ class Logger( QtCore.QObject ):
 
       s.writeToFile()
       s.close()
-      
+
       s.world.info( u"Logging stopped." )
 
     emit( s, SIGNAL( "nowLogging( bool )" ), s.isLogging() )

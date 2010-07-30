@@ -40,7 +40,7 @@ class ChunkTypeMismatch( Exception ):
 class ChunkTypes:
 
   NETWORK     = 1 << 0
-  ENDOFPACKET = 1 << 1
+  PACKETBOUND = 1 << 1
   PROMPTSWEEP = 1 << 2
   BYTES       = 1 << 3
   TELNET      = 1 << 4
@@ -225,19 +225,23 @@ class NetworkChunk( BaseChunk ):
     return '<Chunk Type: %s; State: %s>' % ( chunktype, s.states[ s.data ] )
 
 
-## ---[ Class EndOfPacketChunk ]---------------------------------------
+## ---[ Class PacketBoundChunk ]---------------------------------------
 
-class EndOfPacketChunk( BaseChunk ):
+class PacketBoundChunk( BaseChunk ):
   """
   This chunk type represents the end of a given packet. It is necessary
   because some filters in the pipeline need to be informed that the current
   packet is done, so they can wrap up their processing.
   """
 
-  chunktype = chunktypes.ENDOFPACKET
+  chunktype = chunktypes.PACKETBOUND
+
+  START = 0
+  END   = 1
 
 
-theEndOfPacketChunk = EndOfPacketChunk()
+thePacketStartChunk = PacketBoundChunk( PacketBoundChunk.START )
+thePacketEndChunk   = PacketBoundChunk( PacketBoundChunk.END )
 
 
 ## ---[ Class PromptSweepChunk ]-----------------------------------------

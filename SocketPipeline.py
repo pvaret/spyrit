@@ -107,10 +107,10 @@ class SocketPipeline:
   def disconnectFromHost( s ):
 
     s.socket.disconnectFromHost()
-  
-  
+
+
   def abort( s ):
-    
+
     s.socket.abort()
     s.socket.close()
 

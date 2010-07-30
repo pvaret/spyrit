@@ -237,7 +237,7 @@ class Autocompleter:
 
       s.textedit   = None
       s.matchstate = None
-      
+
       return
 
     ## All the following cases modify the textedit's content, so we apply the
@@ -279,7 +279,7 @@ class Autocompleter:
     s.textedit   = None
 
     ## And done!
-    
+
 
   def insertResult( s, result ):
 
@@ -291,21 +291,19 @@ class Autocompleter:
     s.textedit.setTextCursor( tc )
 
 
-  def sink( s, chunks ):
+  def sink( s, chunk ):
 
-    for chunk in chunks:
+    if chunk.chunktype == chunktypes.TEXT:
+      s.buffer.append( chunk.data )
 
-      if chunk.chunktype == chunktypes.TEXT:
-        s.buffer.append( chunk.data )
+    if     chunk.chunktype == chunktypes.FLOWCONTROL \
+       and chunk.data      == chunk.LINEFEED:
 
-      if     chunk.chunktype == chunktypes.FLOWCONTROL \
-         and chunk.data      == chunk.LINEFEED:
-        
-        data     = "".join( s.buffer )
-        s.buffer = []
+      data     = "".join( s.buffer )
+      s.buffer = []
 
-        for word in s.split( data ):
-          s.completionlist.addWord( word )
+      for word in s.split( data ):
+        s.completionlist.addWord( word )
 
 
   def split( s, line ):

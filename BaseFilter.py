@@ -21,7 +21,7 @@
 ##
 
 
-from PipelineChunks import theEndOfPacketChunk, ChunkTypeMismatch, chunktypes
+from PipelineChunks import thePacketEndChunk, ChunkTypeMismatch, chunktypes
 
 
 class BaseFilter:
@@ -50,7 +50,7 @@ class BaseFilter:
 
     if s.postponedChunk:
       raise Exception( "Whoa, there should NOT be a chunk in there already..." )
-    
+
     else:
       s.postponedChunk = chunk
 
@@ -80,21 +80,21 @@ class BaseFilter:
     if not s.postponedChunk:
       return chunk
 
-    if chunk is theEndOfPacketChunk:
-      ## The End Of Packet chunk is a special case, and is never merged
-      ## with other chunks.
+    if chunk.chunktype == chunktypes.PACKETBOUND:
+      ## This chunk type is a special case, and is never merged with other
+      ## chunks.
       return chunk
-      
+
     ## If there was some bit of chunk that we postponed earlier...
     postponed = s.postponedChunk
     s.postponedChunk = None
     ## We retrieve it...
-    
+
     try:
       ## And try to merge it with the new chunk.
       postponed.concat( chunk )
       chunk = postponed
-      
+
     except ChunkTypeMismatch:
       ## If they're incompatible, it means the postponed chunk was really
       ## complete, so we send it downstream.
@@ -104,7 +104,7 @@ class BaseFilter:
 
 
   def feedChunk( s, chunk ):
-    
+
     if chunk.chunktype & s.relevant_types:
 
       chunk = s.concatPostponed( chunk )
@@ -120,7 +120,7 @@ class BaseFilter:
 
       for chunk in chunks:
         s.sink( chunk )
-      
+
     else:
       s.sink( chunk )
 

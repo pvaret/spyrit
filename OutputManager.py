@@ -96,30 +96,22 @@ class OutputManager:
     return s.searchmanager.find( string )
 
 
-  def processChunks( s, chunks ):
+  def processChunk( s, chunk ):
 
-    s.textcursor.beginEditBlock()
+    if chunk is thePacketStartChunk:
+      s.textcursor.beginEditBlock()
 
-    for chunk in chunks:
+    elif chunk.chunktype == chunktypes.TEXT:
+      s.insertText( chunk.data )
 
-      if   chunk.chunktype == chunktypes.TEXT:
-        s.insertText( chunk.data )
+    elif chunk.chunktype == chunktypes.FLOWCONTROL:
+      s.processFlowControlChunk( chunk.data )
 
-      elif chunk.chunktype == chunktypes.FLOWCONTROL:
-        s.processFlowControlChunk( chunk.data )
+    elif chunk.chunktype == chunktypes.NETWORK:
+      s.processNetworkChunk( chunk.data )
 
-      elif chunk.chunktype == chunktypes.ANSI:
-        s.textformatmanager.applyAnsiFormat( chunk.data )
-
-      elif chunk.chunktype == chunktypes.HIGHLIGHT:
-
-        id, format = chunk.data
-        s.textformatmanager.applyFormat( id, format )
-
-      elif chunk.chunktype == chunktypes.NETWORK:
-        s.processNetworkChunk( chunk.data )
-
-    s.textcursor.endEditBlock()
+    elif chunk is thePacketEndChunk:
+      s.textcursor.endEditBlock()
 
     if s.conf._alert_on_activity:
       qApp().alert( s.textview.window() )

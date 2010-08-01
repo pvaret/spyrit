@@ -112,7 +112,7 @@ class Pipeline:
 
   def addSink( s, callback ):
 
-    ## 'callback' should be a callable that takes a list of chunks.
+    ## 'callback' should be a callable that accepts and handles a chunk.
     s.sinks.add( callback )
 
 

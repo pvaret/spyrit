@@ -239,6 +239,7 @@ class WorldUI( QtGui.QSplitter ):
                             chunktypes.NETWORK ):
 
       s.blinker.start()
+      QtCore.QTimer.singleShot( 0, s.windowAlert )
 
 
   def iconBlink( s, frame ):
@@ -256,6 +257,12 @@ class WorldUI( QtGui.QSplitter ):
     led = s.led.select( connected = s.world.isConnected(),
                         lit       = not s.isVisible() )
     s.tab.setTabIcon( led )
+
+
+  def windowAlert( s ):
+
+    if s.world.conf._alert_on_activity:
+      qApp().alert( s.window() )
 
 
   def saveSplitterPosition( s ):

@@ -113,9 +113,6 @@ class OutputManager:
     elif chunk is thePacketEndChunk:
       s.textcursor.endEditBlock()
 
-    if s.conf._alert_on_activity:
-      qApp().alert( s.textview.window() )
-
 
   def processFlowControlChunk( s, event ):
 

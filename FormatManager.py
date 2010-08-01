@@ -166,15 +166,10 @@ class FormatManager:
     s.applyFormat( s.BASE, newformat )
 
 
-  def applyAnsiFormat( s, format ):
-
-    s.applyFormat( s.ANSI, format )
-
-
   def processChunk( s, chunk ):
 
     if chunk.chunktype == chunktypes.ANSI:
-      s.applyAnsiFormat( chunk.data )
+      s.applyFormat( s.ANSI, chunk.data )
 
     elif chunk.chunktype == chunktypes.HIGHLIGHT:
 

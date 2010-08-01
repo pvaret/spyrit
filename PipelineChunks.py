@@ -68,6 +68,17 @@ class ChunkTypes:
     s.name = dict( ( getattr( ChunkTypes, name ), name )
                              for name in chunkTypeList )
 
+
+  def list( s ):
+
+    type = 0x01
+
+    while type < s.ALL_TYPES:
+
+      yield type
+      type = type << 1
+
+
 chunktypes = ChunkTypes()
 
 

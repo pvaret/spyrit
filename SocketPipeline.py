@@ -25,6 +25,7 @@ from localqt import *
 
 from Pipeline        import Pipeline
 from PipelineChunks  import NetworkChunk
+from PipelineChunks  import chunktypes
 
 from AnsiFilter        import AnsiFilter
 from TelnetFilter      import TelnetFilter
@@ -181,9 +182,9 @@ class SocketPipeline:
     s.socket.flush()
 
 
-  def addSink( s, sink ):
+  def addSink( s, sink, types=chunktypes.ALL_TYPES ):
 
-    s.pipeline.addSink( sink )
+    s.pipeline.addSink( sink, types )
 
 
   def __del__( s ):

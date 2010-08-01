@@ -27,6 +27,7 @@ from localqt import *
 from PipelineChunks   import ByteChunk
 from PipelineChunks   import thePacketStartChunk, thePacketEndChunk
 from PipelineChunks   import thePromptSweepChunk
+from PipelineChunks   import chunktypes
 from CallbackRegistry import CallbackRegistry
 
 
@@ -40,7 +41,8 @@ class Pipeline:
     s.parent       = parent
     s.filters      = []
     s.outputBuffer = []
-    s.sinks        = CallbackRegistry()
+    s.sinks        = dict( ( type, CallbackRegistry() )
+                           for type in chunktypes.list() )
 
     s.notification_registry = {}
 
@@ -91,7 +93,7 @@ class Pipeline:
   def flushOutputBuffer( s ):
 
     for chunk in s.outputBuffer:
-      s.sinks.triggerAll( chunk )
+      s.sinks[ chunk.chunktype ].triggerAll( chunk )
 
     s.outputBuffer = []
 
@@ -110,10 +112,14 @@ class Pipeline:
     s.filters.append( filter )
 
 
-  def addSink( s, callback ):
+  def addSink( s, callback, types=chunktypes.ALL_TYPES ):
 
     ## 'callback' should be a callable that accepts and handles a chunk.
-    s.sinks.add( callback )
+
+    for type in chunktypes.list():
+
+      if type & types:
+        s.sinks[ type ].add( callback )
 
 
   def formatForSending( s, data ):

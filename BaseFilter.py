@@ -107,7 +107,8 @@ class BaseFilter:
 
     if chunk.chunktype & s.relevant_types:
 
-      chunk = s.concatPostponed( chunk )
+      if s.postponedChunk:
+        chunk = s.concatPostponed( chunk )
 
       ## At this point, the postponed chunk has either been merged with
       ## the new one, or been sent downstream. At any rate, it's been dealt

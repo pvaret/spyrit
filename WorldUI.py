@@ -31,7 +31,7 @@ from OutputManager      import OutputManager
 from SplittableTextView import SplittableTextView
 
 from Singletons         import singletons
-from PipelineChunks     import chunktypes
+from PipelineChunks     import ChunkTypes
 
 
 
@@ -77,7 +77,8 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.blinker, SIGNAL( "frameChanged( int )" ), s.iconBlink )
     connect( s.blinker, SIGNAL( "finished()" ), s.steadyIcon )
 
-    s.world.socketpipeline.addSink( s.startIconBlink )
+    s.world.socketpipeline.addSink( s.startIconBlink,
+                                    ChunkTypes.PACKETBOUND | ChunkTypes.NETWORK )
 
     ## Setup input and output UI.
 
@@ -101,8 +102,11 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
       s.outputui.pingPage )
 
-    world.socketpipeline.addSink( s.output_manager.processChunk )
-    world.socketpipeline.addSink( s.output_manager.textformatmanager.processChunk )
+    world.socketpipeline.addSink( s.output_manager.processChunk,
+                                  ChunkTypes.PACKETBOUND | ChunkTypes.TEXT |
+                                  ChunkTypes.FLOWCONTROL | ChunkTypes.NETWORK )
+    world.socketpipeline.addSink( s.output_manager.textformatmanager.processChunk,
+                                  ChunkTypes.ANSI | ChunkTypes.HIGHLIGHT )
 
     s.setFocusProxy( s.inputui )
 
@@ -229,17 +233,11 @@ class WorldUI( QtGui.QSplitter ):
 
     ## Don't blink if already blinking:
 
-    if s.blinker.state() == QtCore.QTimeLine.Running:
+    if s.blinker.state() != QtCore.QTimeLine.NotRunning:
       return
 
-    ## Only blink if something interesting is happening:
-
-    if chunk.chunktype in ( chunktypes.TEXT,
-                            chunktypes.FLOWCONTROL,
-                            chunktypes.NETWORK ):
-
-      s.blinker.start()
-      QtCore.QTimer.singleShot( 0, s.windowAlert )
+    s.blinker.start()
+    QtCore.QTimer.singleShot( 0, s.windowAlert )
 
 
   def iconBlink( s, frame ):

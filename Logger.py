@@ -92,7 +92,7 @@ class Logger( QtCore.QObject ):
     if chunk.chunktype == ChunkTypes.TEXT:
       s.buffer.append( chunk.data )
 
-    if       chunk.chunktype == chunktypes.FLOWCONTROL \
+    elif     chunk.chunktype == ChunkTypes.FLOWCONTROL \
          and chunk.data == FlowControlChunk.LINEFEED:
       s.buffer.append( u"\n" )
 

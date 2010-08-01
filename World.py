@@ -63,8 +63,9 @@ class World( QtCore.QObject ):
     s.status = Status.DISCONNECTED
 
     s.socketpipeline = SocketPipeline( conf )
-    s.socketpipeline.addSink( s.sink )
-    s.socketpipeline.addSink( s.logger.logOutput )
+    s.socketpipeline.addSink( s.sink, ChunkTypes.NETWORK )
+    s.socketpipeline.addSink( s.logger.logOutput,
+                              ChunkTypes.TEXT | ChunkTypes.FLOWCONTROL )
 
 
   def title( s ):
@@ -164,9 +165,6 @@ class World( QtCore.QObject ):
 
     previous_status = s.status
 
-    if not chunk.chunktype == ChunkTypes.NETWORK:
-      return
-
     if   chunk.data in ( NetworkChunk.RESOLVING, NetworkChunk.CONNECTING ):
 
       s.status = Status.CONNECTING
@@ -252,7 +250,7 @@ class World( QtCore.QObject ):
 
     while True:
 
-      data = f.read( 8192 )
+      data = f.read( 4096 )
 
       if not data: break
       if not s.socketpipeline: break

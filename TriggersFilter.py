@@ -32,6 +32,8 @@ from PipelineChunks import chunktypes, FlowControlChunk, HighlightChunk
 
 class TriggersFilter( BaseFilter ):
 
+  relevant_types = chunktypes.ALL_TYPES & ~chunktypes.PACKETBOUND
+
   def __init__( s, context=None, manager=None ):
 
     s.buffer  = []

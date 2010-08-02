@@ -99,6 +99,8 @@ class OutputManager:
   def processChunk( s, chunk ):
 
     if chunk is thePacketStartChunk:
+      ## TODO: This should probably happen based on the beginning of the
+      ## Pipeline.flushOutputBuffer() operation.
       s.textcursor.beginEditBlock()
 
     elif chunk.chunktype == chunktypes.TEXT:
@@ -111,6 +113,8 @@ class OutputManager:
       s.processNetworkChunk( chunk.data )
 
     elif chunk is thePacketEndChunk:
+      ## TODO: This should probably happen based on the ending of the
+      ## Pipeline.flushOutputBuffer() operation.
       s.textcursor.endEditBlock()
 
 

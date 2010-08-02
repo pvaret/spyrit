@@ -47,12 +47,6 @@ class FormatManager:
     s.formatstack[ s.ANSI ] = {}
 
 
-  def refreshProperties( s, *props ):
-
-    for property in props:
-      s.refreshProperty( property )
-
-
   def refreshProperty( s, property ):
 
     ## Explore the format stack for the topmost available value for property.
@@ -103,22 +97,15 @@ class FormatManager:
 
   def applyFormat( s, format_id, newformat ):
 
-    if not newformat:  ## newformat is any value that evaluates to False.
-      newformat = {}   ## Replace it with an empty dict, since we'll call
-                       ## .keys() on it underneath.
-
     ## Create or retrieve the format dict in the stack.
 
     oldformat = s.formatstack.setdefault( format_id, {} )
 
-    ## And compute the list of properties being modified here.
-
-    props = set( oldformat.keys() )
-    props.update( newformat.keys() )
-
     ## Case 1: This is a reset of the format.
 
     if not newformat:  ## reset all
+
+      keys = oldformat.keys()
 
       if format_id in s.STATIC:
         ## This is one of the static formatters. Clear it, but leave it in
@@ -130,8 +117,8 @@ class FormatManager:
         if format_id in s.formatstack:
           del s.formatstack[ format_id ]
 
-      if props:
-        s.refreshProperties( *props )
+      for prop in keys:
+        s.refreshProperty( prop )
 
       return
 
@@ -142,12 +129,12 @@ class FormatManager:
       if not v:  ## reset property
 
         if k in oldformat:
-          del oldformat[k]
+          del oldformat[ k ]
 
       else:      ## apply property
         oldformat[ k ] = v
 
-    s.refreshProperties( *props )
+      s.refreshProperty( k )
 
 
   def setBaseFormat( s, format ):

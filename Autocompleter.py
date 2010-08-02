@@ -28,6 +28,7 @@ from PipelineChunks import *
 from Utilities      import normalize_text
 
 from os.path        import commonprefix
+from collections    import deque
 
 import re
 import bisect
@@ -47,16 +48,17 @@ class CompletionList:
     ## 20 screens back that you no longer care about.
 
     s.wordcount = {}
-    s.wordpipe  = []
+    s.wordpipe  = deque()
 
-    for word in words: s.addWord( word )
+    for word in words:
+      s.addWord( word )
 
 
   def addWord( s, word ):
 
     key = normalize_text( word )
 
-    s.wordpipe.append( word )
+    s.wordpipe.appendleft( word )
     s.wordcount[ word ] = s.wordcount.setdefault( word, 0 ) + 1
 
     l = len( s.words )
@@ -71,7 +73,7 @@ class CompletionList:
 
     while len( s.words ) > MAX_WORD_LIST_LENGTH:
 
-      oldword = s.wordpipe.pop( 0 )
+      oldword = s.wordpipe.pop()
       s.wordcount[ oldword ] -= 1
 
       if s.wordcount[ oldword ] == 0:
@@ -296,10 +298,10 @@ class Autocompleter:
     if chunk.chunktype == chunktypes.TEXT:
       s.buffer.append( chunk.data )
 
-    if     chunk.chunktype == chunktypes.FLOWCONTROL \
-       and chunk.data      == chunk.LINEFEED:
+    elif  chunk.chunktype == chunktypes.FLOWCONTROL \
+      and chunk.data      == chunk.LINEFEED:
 
-      data     = "".join( s.buffer )
+      data     = u"".join( s.buffer )
       s.buffer = []
 
       for word in s.split( data ):

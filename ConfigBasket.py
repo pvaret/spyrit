@@ -375,7 +375,7 @@ class ConfigBasket( object ):
 
     except KeyError:
       raise KeyError( "This configuration object doesn't have a section "
-                    + "called %s." % section )
+                    + "called %s." % name )
 
 
   def createAnonymousSection( s ):

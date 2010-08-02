@@ -208,7 +208,7 @@ class TriggersManager:
 
     for groupname, conf in all_groups.iteritems():
 
-      matches = conf.get( 'match' )
+      matches = conf.get( 'match', [] )
 
       match_count = 0
 

@@ -46,6 +46,63 @@ class FormatManager:
     s.formatstack[ s.BASE ] = {}
     s.formatstack[ s.ANSI ] = {}
 
+    s.property_setter_mapping = {}
+
+    s.setupPropertyMapping()
+
+
+  def setupPropertyMapping( s ):
+
+    for property, setter in (
+      ( FORMAT_PROPERTIES.COLOR     , s.setForegroundProperty ),
+      ( FORMAT_PROPERTIES.BACKGROUND, s.setBackgroundProperty ),
+      ( FORMAT_PROPERTIES.ITALIC    , s.setItalicProperty     ),
+      ( FORMAT_PROPERTIES.UNDERLINE , s.setUnderlineProperty  ),
+      ( FORMAT_PROPERTIES.BOLD      , s.setFontWeightProperty ),
+    ):
+      s.property_setter_mapping[ property ] = setter
+
+
+  def setForegroundProperty( s, property, value ):
+
+    value = value.lower()
+
+    brush = s.brush_cache.get( value )
+
+    if brush is None:
+      brush = s.brush_cache.setdefault( value,
+                                        QtGui.QBrush( QtGui.QColor( value ) ) )
+
+    s.textformat.setForeground( brush )
+
+
+  def setBackgroundProperty( s, property, value ):
+
+    value = value.lower()
+
+    brush = s.brush_cache.get( value )
+
+    if brush is None:
+      brush = s.brush_cache.setdefault( value,
+                                        QtGui.QBrush( QtGui.QColor( value ) ) )
+
+    s.textformat.setBackground( brush )
+
+
+  def setUnderlineProperty( s, property, value ):
+
+    s.textformat.setFontUnderline( True )
+
+
+  def setItalicProperty( s, property, value ):
+
+    s.textformat.setFontItalic( True )
+
+
+  def setFontWeightProperty( s, property, value ):
+
+    s.textformat.setFontWeight( QtGui.QFont.Black )
+
 
   def refreshProperty( s, property ):
 
@@ -73,26 +130,7 @@ class FormatManager:
 
   def setProperty( s, property, value ):
 
-    if property == FORMAT_PROPERTIES.COLOR:
-
-      brush = s.brush_cache.setdefault(
-              value.lower(), QtGui.QBrush( QtGui.QColor( value ) ) )
-      s.textformat.setForeground( brush )
-
-    elif property == FORMAT_PROPERTIES.BACKGROUND:
-
-      brush = s.brush_cache.setdefault(
-              value.lower(), QtGui.QBrush( QtGui.QColor( value ) ) )
-      s.textformat.setBackground( brush )
-
-    elif property == FORMAT_PROPERTIES.BOLD:
-      s.textformat.setFontWeight( QtGui.QFont.Black )
-
-    elif property == FORMAT_PROPERTIES.ITALIC:
-      s.textformat.setFontItalic( True )
-
-    elif property == FORMAT_PROPERTIES.UNDERLINE:
-      s.textformat.setFontUnderline( True )
+    s.property_setter_mapping[ property ]( property, value )
 
 
   def applyFormat( s, format_id, newformat ):

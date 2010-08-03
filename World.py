@@ -250,7 +250,7 @@ class World( QtCore.QObject ):
 
     while True:
 
-      data = f.read( 4096 )
+      data = f.read( 8192 )
 
       if not data: break
       if not s.socketpipeline: break

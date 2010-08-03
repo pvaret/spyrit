@@ -31,7 +31,7 @@ from Matches        import MatchCreationError
 from Matches        import load_match_by_type
 from PipelineChunks import HighlightChunk
 from PipelineChunks import UnicodeTextChunk
-from PipelineChunks import chunktypes
+from PipelineChunks import ChunkTypes
 
 
 
@@ -61,7 +61,7 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
       target_pos, new_chunk = new_chunks.pop( 0 )
 
-    if chunk.chunktype != chunktypes.TEXT:
+    if chunk.chunktype != ChunkTypes.TEXT:
       continue
 
     if pos == target_pos:
@@ -161,9 +161,9 @@ class GagAction:
 
       chunk = chunkbuffer[ i ]
 
-      if chunk.chunktype in ( chunktypes.TEXT,
-                              chunktypes.FLOWCONTROL,
-                              chunktypes.HIGHLIGHT ):
+      if chunk.chunktype in ( ChunkTypes.TEXT,
+                              ChunkTypes.FLOWCONTROL,
+                              ChunkTypes.HIGHLIGHT ):
         del chunkbuffer[ i ]
 
 

@@ -193,10 +193,10 @@ class FormatManager:
 
   def processChunk( s, chunk ):
 
-    if chunk.chunktype == chunktypes.ANSI:
+    if chunk.chunktype == ChunkTypes.ANSI:
       s.applyFormat( s.ANSI, chunk.data )
 
-    elif chunk.chunktype == chunktypes.HIGHLIGHT:
+    elif chunk.chunktype == ChunkTypes.HIGHLIGHT:
 
       id, format = chunk.data
       s.applyFormat( id, format )

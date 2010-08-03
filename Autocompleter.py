@@ -295,10 +295,10 @@ class Autocompleter:
 
   def sink( s, chunk ):
 
-    if chunk.chunktype == chunktypes.TEXT:
+    if chunk.chunktype == ChunkTypes.TEXT:
       s.buffer.append( chunk.data )
 
-    elif  chunk.chunktype == chunktypes.FLOWCONTROL \
+    elif  chunk.chunktype == ChunkTypes.FLOWCONTROL \
       and chunk.data      == chunk.LINEFEED:
 
       data     = u"".join( s.buffer )

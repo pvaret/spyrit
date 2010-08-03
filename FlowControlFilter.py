@@ -26,12 +26,12 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, UnicodeTextChunk, FlowControlChunk
+from PipelineChunks import ChunkTypes, UnicodeTextChunk, FlowControlChunk
 
 
 class FlowControlFilter( BaseFilter ):
 
-  relevant_types = chunktypes.TEXT
+  relevant_types = ChunkTypes.TEXT
 
   match          = re.compile( ur'(\r|\n)' )
   unix_like_cr   = re.compile( ur'(?<!\r)\n' )

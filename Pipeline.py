@@ -27,7 +27,7 @@ from localqt import *
 from PipelineChunks   import ByteChunk
 from PipelineChunks   import thePacketStartChunk, thePacketEndChunk
 from PipelineChunks   import thePromptSweepChunk
-from PipelineChunks   import chunktypes
+from PipelineChunks   import ChunkTypes
 from CallbackRegistry import CallbackRegistry
 
 
@@ -43,7 +43,7 @@ class Pipeline( QtCore.QObject ):
     s.filters      = []
     s.outputBuffer = []
     s.sinks        = dict( ( type, CallbackRegistry() )
-                           for type in chunktypes.list() )
+                           for type in ChunkTypes.list() )
 
     s.notification_registry = {}
 
@@ -117,11 +117,11 @@ class Pipeline( QtCore.QObject ):
     s.filters.append( filter )
 
 
-  def addSink( s, callback, types=chunktypes.ALL_TYPES ):
+  def addSink( s, callback, types=ChunkTypes.ALL_TYPES ):
 
     ## 'callback' should be a callable that accepts and handles a chunk.
 
-    for type in chunktypes.list():
+    for type in ChunkTypes.list():
 
       if type & types:
         s.sinks[ type ].add( callback )

@@ -24,13 +24,13 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, ByteChunk, FormatChunk
+from PipelineChunks import ChunkTypes, ByteChunk, FormatChunk
 from Globals        import FORMAT_PROPERTIES
 
 
 class AnsiFilter( BaseFilter ):
 
-  relevant_types = chunktypes.BYTES
+  relevant_types = ChunkTypes.BYTES
 
   ## For the time being, we only catch the SGR (Set Graphics Rendition) part
   ## of the ECMA 48 specification (a.k.a. ANSI escape codes).

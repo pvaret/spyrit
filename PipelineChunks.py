@@ -21,9 +21,6 @@
 ##
 
 
-## ---[ Exception ChunkTypeMismatch ]----------------------------------
-
-
 class ChunkTypeMismatch( Exception ):
   """
   Exception ChunkTypeMismatch
@@ -35,7 +32,7 @@ class ChunkTypeMismatch( Exception ):
 
 
 
-## ---[ Class ChunkTypes ]---------------------------------------------
+## Define chunk types:
 
 class ChunkTypes:
 
@@ -52,37 +49,33 @@ class ChunkTypes:
   ALL_TYPES   = ( 1 << 9 ) - 1
 
 
-  def __init__( s ):
+  ## The following is an ugly hack to generate the reverse mapping from value
+  ## to chunk type name based on the above information.
 
-    ## The following is an ugly hack to generate the reverse mapping from value
-    ## to chunk type name based on the above information.
-    ## It allows you to look up ChunkTypes by value, for instance:
-    ## ChunkType.name[0] returns the string "NETWORK"
-    ## This is mostly intended for debugging purposes.
+  @classmethod
+  def name( cls, chunk_type ):
 
-    chunkTypeList = [ name for name in dir( ChunkTypes )
-                      if  name.isalpha()
-                      and name.isupper()
-                      and type( getattr( ChunkTypes, name ) ) is int ]
+    chunk_names = dict( ( getattr( cls, name ), name )
+                        for name in dir( cls )
+                        if name.isalpha()
+                           and name.isupper()
+                           and type( getattr( cls, name ) ) is int )
 
-    s.name = dict( ( getattr( ChunkTypes, name ), name )
-                             for name in chunkTypeList )
+    return chunk_names.get( chunk_type )
 
 
-  def list( s ):
+  @classmethod
+  def list( cls ):
 
     type = 0x01
 
-    while type < s.ALL_TYPES:
+    while type < cls.ALL_TYPES:
 
       yield type
       type = type << 1
 
 
-chunktypes = ChunkTypes()
 
-
-## ---[ Class BaseChunk ]----------------------------------------------
 
 class BaseChunk:
   """
@@ -104,8 +97,8 @@ class BaseChunk:
     if s.chunktype != other.chunktype \
                    or type( other.data ) not in ( type( "" ), type( u"" ) ):
 
-      chunktypename      = chunktypes.name[     s.chunktype ]
-      otherchunktypename = chunktypes.name[ other.chunktype ]
+      chunktypename      = ChunkTypes.name(     s.chunktype )
+      otherchunktypename = ChunkTypes.name( other.chunktype )
 
       raise ChunkTypeMismatch( "Trying to concat %s chunk with %s chunk!" % \
                                ( chunktypename, otherchunktypename ) )
@@ -122,7 +115,7 @@ class BaseChunk:
 
   def __repr__( s ):
 
-    chunktype = chunktypes.name[ s.chunktype ]
+    chunktype = ChunkTypes.name( s.chunktype )
 
     if s.data is not None:
       return '<Chunk Type: %s; Data: "%s">' % ( chunktype, s.data )
@@ -140,7 +133,7 @@ class ByteChunk( BaseChunk ):
   there. Those will have to be decoded at some point through the pipeline.
   """
 
-  chunktype = chunktypes.BYTES
+  chunktype = ChunkTypes.BYTES
 
 
 ## ---[ Class FormatChunk ]--------------------------------------------
@@ -155,7 +148,7 @@ class FormatChunk( BaseChunk ):
   other sources such as MXP codes.
   """
 
-  chunktype = chunktypes.ANSI
+  chunktype = ChunkTypes.ANSI
 
   ANSI_MAPPING = (
     ( "1",  ( FORMAT_PROPERTIES.BOLD,      True ) ),
@@ -191,14 +184,14 @@ class FormatChunk( BaseChunk ):
 
 class UnicodeTextChunk( BaseChunk ):
 
-  chunktype = chunktypes.TEXT
+  chunktype = ChunkTypes.TEXT
 
 
 ## ---[ Class NetworkChunk ]-------------------------------------------
 
 class NetworkChunk( BaseChunk ):
 
-  chunktype = chunktypes.NETWORK
+  chunktype = ChunkTypes.NETWORK
 
   DISCONNECTED  = 0
   RESOLVING     = 1
@@ -232,7 +225,7 @@ class NetworkChunk( BaseChunk ):
 
   def __repr__( s ):
 
-    chunktype = chunktypes.name[ s.chunktype ]
+    chunktype = ChunkTypes.name( s.chunktype )
     return '<Chunk Type: %s; State: %s>' % ( chunktype, s.states[ s.data ] )
 
 
@@ -245,7 +238,7 @@ class PacketBoundChunk( BaseChunk ):
   packet is done, so they can wrap up their processing.
   """
 
-  chunktype = chunktypes.PACKETBOUND
+  chunktype = ChunkTypes.PACKETBOUND
 
   START = 0
   END   = 1
@@ -266,7 +259,7 @@ class PromptSweepChunk( BaseChunk ):
   packet.
   """
 
-  chunktype = chunktypes.PROMPTSWEEP
+  chunktype = ChunkTypes.PROMPTSWEEP
 
 
 thePromptSweepChunk = PromptSweepChunk()
@@ -277,7 +270,7 @@ thePromptSweepChunk = PromptSweepChunk()
 
 class FlowControlChunk( BaseChunk ):
 
-  chunktype = chunktypes.FLOWCONTROL
+  chunktype = ChunkTypes.FLOWCONTROL
 
   LINEFEED       = 0
   CARRIAGERETURN = 1
@@ -291,7 +284,7 @@ class FlowControlChunk( BaseChunk ):
 
   def __repr__( s ):
 
-    chunktype = chunktypes.name[ s.chunktype ]
+    chunktype = ChunkTypes.name( s.chunktype )
     return '<Chunk Type: %s; Type: %s>' % ( chunktype, s.types[ s.data ] )
 
 
@@ -304,4 +297,4 @@ class HighlightChunk( BaseChunk ):
   TriggersFilter when a line matches one of the user's triggers.
   """
 
-  chunktype = chunktypes.HIGHLIGHT
+  chunktype = ChunkTypes.HIGHLIGHT

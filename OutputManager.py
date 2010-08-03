@@ -98,13 +98,13 @@ class OutputManager:
 
   def processChunk( s, chunk ):
 
-    if chunk.chunktype == chunktypes.TEXT:
+    if chunk.chunktype == ChunkTypes.TEXT:
       s.insertText( chunk.data )
 
-    elif chunk.chunktype == chunktypes.FLOWCONTROL:
+    elif chunk.chunktype == ChunkTypes.FLOWCONTROL:
       s.processFlowControlChunk( chunk.data )
 
-    elif chunk.chunktype == chunktypes.NETWORK:
+    elif chunk.chunktype == ChunkTypes.NETWORK:
       s.processNetworkChunk( chunk.data )
 
 

@@ -26,14 +26,14 @@ import codecs
 
 from Messages       import messages
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, UnicodeTextChunk
+from PipelineChunks import ChunkTypes, UnicodeTextChunk
 
 
 
 
 class UnicodeTextFilter( BaseFilter ):
 
-  relevant_types = chunktypes.BYTES
+  relevant_types = ChunkTypes.BYTES
 
 
   def __init__( s, context, encoding ):

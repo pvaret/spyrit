@@ -25,12 +25,12 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import ByteChunk, chunktypes
+from PipelineChunks import ByteChunk, ChunkTypes
 
 
 class TelnetFilter( BaseFilter ):
 
-  relevant_types = chunktypes.BYTES
+  relevant_types = ChunkTypes.BYTES
 
   SE   = chr( 240 )  ## End option subnegotiation
   NOP  = chr( 241 )  ## No operation

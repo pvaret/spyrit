@@ -21,7 +21,7 @@
 ##
 
 
-from PipelineChunks import thePacketEndChunk, ChunkTypeMismatch, chunktypes
+from PipelineChunks import thePacketEndChunk, ChunkTypeMismatch, ChunkTypes
 
 
 class BaseFilter:
@@ -29,7 +29,7 @@ class BaseFilter:
   ## This class attribute lists the chunk types that this filter will process.
   ## Those unlisted will be passed down the filter chain untouched.
 
-  relevant_types = chunktypes.ALL_TYPES
+  relevant_types = ChunkTypes.ALL_TYPES
 
 
   def __init__( s, context=None ):
@@ -80,7 +80,7 @@ class BaseFilter:
     if not s.postponedChunk:
       return chunk
 
-    if chunk.chunktype == chunktypes.PACKETBOUND:
+    if chunk.chunktype == ChunkTypes.PACKETBOUND:
       ## This chunk type is a special case, and is never merged with other
       ## chunks.
       return chunk

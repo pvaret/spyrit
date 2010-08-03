@@ -46,7 +46,7 @@ class SocketPipeline:
 
     s.triggersmanager = TriggersManager()
 
-    s.pipeline = Pipeline( s )
+    s.pipeline = Pipeline()
 
     s.pipeline.addFilter( TelnetFilter )
     s.pipeline.addFilter( AnsiFilter )

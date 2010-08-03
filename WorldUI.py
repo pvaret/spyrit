@@ -102,11 +102,20 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
       s.outputui.pingPage )
 
+    connect( s.world.socketpipeline.pipeline, SIGNAL( "flushBegin()" ),
+             s.output_manager.textcursor.beginEditBlock )
+
+    connect( s.world.socketpipeline.pipeline, SIGNAL( "flushEnd()" ),
+             s.output_manager.textcursor.endEditBlock )
+
     world.socketpipeline.addSink( s.output_manager.processChunk,
-                                  ChunkTypes.PACKETBOUND | ChunkTypes.TEXT |
-                                  ChunkTypes.FLOWCONTROL | ChunkTypes.NETWORK )
+                                    ChunkTypes.TEXT
+                                  | ChunkTypes.FLOWCONTROL
+                                  | ChunkTypes.NETWORK )
+
     world.socketpipeline.addSink( s.output_manager.textformatmanager.processChunk,
-                                  ChunkTypes.ANSI | ChunkTypes.HIGHLIGHT )
+                                    ChunkTypes.ANSI
+                                  | ChunkTypes.HIGHLIGHT )
 
     s.setFocusProxy( s.inputui )
 

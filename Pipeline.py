@@ -31,14 +31,15 @@ from PipelineChunks   import chunktypes
 from CallbackRegistry import CallbackRegistry
 
 
-class Pipeline:
+class Pipeline( QtCore.QObject ):
 
   PROMPT_TIMEOUT = 700 ## ms
 
 
-  def __init__( s, parent=None ):
+  def __init__( s ):
 
-    s.parent       = parent
+    QtCore.QObject.__init__( s )
+
     s.filters      = []
     s.outputBuffer = []
     s.sinks        = dict( ( type, CallbackRegistry() )
@@ -92,8 +93,12 @@ class Pipeline:
 
   def flushOutputBuffer( s ):
 
+    s.emit( SIGNAL( "flushBegin()" ) )
+
     for chunk in s.outputBuffer:
       s.sinks[ chunk.chunktype ].triggerAll( chunk )
+
+    s.emit( SIGNAL( "flushEnd()" ) )
 
     s.outputBuffer = []
 
@@ -154,7 +159,6 @@ class Pipeline:
 
   def __del__( s ):
 
-    s.parent  = None
     s.filters = None
     s.sinks   = None
 

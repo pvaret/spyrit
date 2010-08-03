@@ -25,26 +25,27 @@
 
 import re
 
-from BaseFilter     import BaseFilter
-from PipelineChunks import ChunkTypes, UnicodeTextChunk, FlowControlChunk
+import ChunkData
+
+from BaseFilter import BaseFilter
 
 
 class FlowControlFilter( BaseFilter ):
 
-  relevant_types = ChunkTypes.TEXT
+  relevant_types = ChunkData.TEXT
 
-  match          = re.compile( ur'(\r|\n)' )
-  unix_like_cr   = re.compile( ur'(?<!\r)\n' )
+  match        = re.compile( ur'(\r|\n)' )
+  unix_like_cr = re.compile( ur'(?<!\r)\n' )
 
   chunkmapping = {
-    u'\n': FlowControlChunk( FlowControlChunk.LINEFEED ),
-    u'\r': FlowControlChunk( FlowControlChunk.CARRIAGERETURN ),
+    u'\n': ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ),
+    u'\r': ( ChunkData.FLOWCONTROL, ChunkData.CARRIAGERETURN ),
   }
 
 
   def processChunk( s, chunk ):
 
-    text = chunk.data
+    _, text = chunk
 
     ## Expand tabs to spaces:
     text = text.replace( u'\t', u' '*8 )
@@ -60,7 +61,7 @@ class FlowControlFilter( BaseFilter ):
         text = tail
 
         if head:
-          yield UnicodeTextChunk( head )
+          yield ( ChunkData.TEXT, head )
 
         yield s.chunkmapping[ fc.group() ]
 
@@ -70,7 +71,7 @@ class FlowControlFilter( BaseFilter ):
         break
 
     if text:
-      yield( UnicodeTextChunk( text ) )
+      yield ( ChunkData.TEXT, text )
 
 
   def formatForSending( s, data ):

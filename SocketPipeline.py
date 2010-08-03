@@ -23,10 +23,7 @@
 
 from localqt import *
 
-from Pipeline        import Pipeline
-from PipelineChunks  import NetworkChunk
-from PipelineChunks  import ChunkTypes
-
+from Pipeline          import Pipeline
 from AnsiFilter        import AnsiFilter
 from TelnetFilter      import TelnetFilter
 from TriggersFilter    import TriggersFilter
@@ -38,6 +35,9 @@ from TriggersManager import TriggersManager
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
+
+import ChunkData
+
 
 
 class SocketPipeline:
@@ -119,39 +119,39 @@ class SocketPipeline:
   def reportStateChange( s, state ):
 
     if   state == QtNetwork.QAbstractSocket.HostLookupState:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.RESOLVING ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.RESOLVING ) )
 
     elif state == QtNetwork.QAbstractSocket.ConnectingState:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.CONNECTING ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTING ) )
 
     elif state == QtNetwork.QAbstractSocket.ConnectedState:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.CONNECTED ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTED ) )
 
     elif state == QtNetwork.QAbstractSocket.UnconnectedState:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.DISCONNECTED ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.DISCONNECTED ) )
 
 
   def reportEncrypted( s ):
 
-    s.pipeline.feedChunk( NetworkChunk( NetworkChunk.ENCRYPTED ) )
+    s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
 
 
   def reportError( s, error ):
 
     if   error == QtNetwork.QAbstractSocket.ConnectionRefusedError:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.CONNECTIONREFUSED ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTIONREFUSED ) )
 
     elif error == QtNetwork.QAbstractSocket.HostNotFoundError:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.HOSTNOTFOUND ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.HOSTNOTFOUND ) )
 
     elif error == QtNetwork.QAbstractSocket.SocketTimeoutError:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.TIMEOUT ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.TIMEOUT ) )
 
     elif error == QtNetwork.QAbstractSocket.RemoteHostClosedError:
       pass  ## It's okay, we handle it as a disconnect.
 
     else:
-      s.pipeline.feedChunk( NetworkChunk( NetworkChunk.OTHERERROR ) )
+      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.OTHERERROR ) )
 
 
   def handleSslErrors( s, errors ):
@@ -182,7 +182,7 @@ class SocketPipeline:
     s.socket.flush()
 
 
-  def addSink( s, sink, types=ChunkTypes.ALL_TYPES ):
+  def addSink( s, sink, types=ChunkData.ALL_TYPES ):
 
     s.pipeline.addSink( sink, types )
 

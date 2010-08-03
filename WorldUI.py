@@ -31,7 +31,8 @@ from OutputManager      import OutputManager
 from SplittableTextView import SplittableTextView
 
 from Singletons         import singletons
-from PipelineChunks     import ChunkTypes
+
+import ChunkData
 
 
 
@@ -78,7 +79,7 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.blinker, SIGNAL( "finished()" ), s.steadyIcon )
 
     s.world.socketpipeline.addSink( s.startIconBlink,
-                                    ChunkTypes.PACKETBOUND | ChunkTypes.NETWORK )
+                                    ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
     ## Setup input and output UI.
 
@@ -109,13 +110,13 @@ class WorldUI( QtGui.QSplitter ):
              s.output_manager.textcursor.endEditBlock )
 
     world.socketpipeline.addSink( s.output_manager.processChunk,
-                                    ChunkTypes.TEXT
-                                  | ChunkTypes.FLOWCONTROL
-                                  | ChunkTypes.NETWORK )
+                                    ChunkData.TEXT
+                                  | ChunkData.FLOWCONTROL
+                                  | ChunkData.NETWORK )
 
     world.socketpipeline.addSink( s.output_manager.textformatmanager.processChunk,
-                                    ChunkTypes.ANSI
-                                  | ChunkTypes.HIGHLIGHT )
+                                    ChunkData.ANSI
+                                  | ChunkData.HIGHLIGHT )
 
     s.setFocusProxy( s.inputui )
 

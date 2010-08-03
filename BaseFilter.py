@@ -21,7 +21,7 @@
 ##
 
 
-from PipelineChunks import thePacketEndChunk, ChunkTypeMismatch, ChunkTypes
+import ChunkData
 
 
 class BaseFilter:
@@ -29,7 +29,7 @@ class BaseFilter:
   ## This class attribute lists the chunk types that this filter will process.
   ## Those unlisted will be passed down the filter chain untouched.
 
-  relevant_types = ChunkTypes.ALL_TYPES
+  relevant_types = ChunkData.ALL_TYPES
 
 
   def __init__( s, context=None ):
@@ -49,7 +49,7 @@ class BaseFilter:
   def postpone( s, chunk ):
 
     if s.postponedChunk:
-      raise Exception( "Whoa, there should NOT be a chunk in there already..." )
+      raise Exception( u"Duplicate postponed chunk!" )
 
     else:
       s.postponedChunk = chunk
@@ -80,7 +80,9 @@ class BaseFilter:
     if not s.postponedChunk:
       return chunk
 
-    if chunk.chunktype == ChunkTypes.PACKETBOUND:
+    chunk_type, _ = chunk
+
+    if chunk_type == ChunkData.PACKETBOUND:
       ## This chunk type is a special case, and is never merged with other
       ## chunks.
       return chunk
@@ -92,8 +94,7 @@ class BaseFilter:
 
     try:
       ## And try to merge it with the new chunk.
-      postponed.concat( chunk )
-      chunk = postponed
+      chunk = ChunkData.concat_chunks( postponed, chunk )
 
     except ChunkTypeMismatch:
       ## If they're incompatible, it means the postponed chunk was really
@@ -105,7 +106,9 @@ class BaseFilter:
 
   def feedChunk( s, chunk ):
 
-    if chunk.chunktype & s.relevant_types:
+    chunk_type, _ = chunk
+
+    if chunk_type & s.relevant_types:
 
       if s.postponedChunk:
         chunk = s.concatPostponed( chunk )
@@ -117,9 +120,7 @@ class BaseFilter:
       ## when processChunk() is called. If not, there's something shifty
       ## going on...
 
-      chunks = s.processChunk( chunk )
-
-      for chunk in chunks:
+      for chunk in s.processChunk( chunk ):
         s.sink( chunk )
 
     else:
@@ -137,13 +138,15 @@ class BaseFilter:
 
   def notifify( s, notification, *args ):
 
-    if not s.context: return
+    if not s.context:
+      return
 
     s.context.notify( notification, *args )
 
 
   def bindNotificationListener( s, notification, callback ):
 
-    if not s.context: return
+    if not s.context:
+      return
 
     s.context.bindNotificationListener( notification, callback )

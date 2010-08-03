@@ -23,13 +23,14 @@
 
 from localqt import *
 
-from PipelineChunks import *
 from SearchManager  import SearchManager
 from FormatManager  import FormatManager
 from ConfigObserver import ConfigObserver
 from Globals        import LEFTARROW
 
 from Singletons import singletons
+
+import ChunkData
 
 
 ## This is used a lot, so define it right away.
@@ -98,56 +99,58 @@ class OutputManager:
 
   def processChunk( s, chunk ):
 
-    if chunk.chunktype == ChunkTypes.TEXT:
-      s.insertText( chunk.data )
+    chunk_type, payload = chunk
 
-    elif chunk.chunktype == ChunkTypes.FLOWCONTROL:
-      s.processFlowControlChunk( chunk.data )
+    if chunk_type == ChunkData.TEXT:
+      s.insertText( payload )
 
-    elif chunk.chunktype == ChunkTypes.NETWORK:
-      s.processNetworkChunk( chunk.data )
+    elif chunk_type == ChunkData.FLOWCONTROL:
+      s.processFlowControlChunk( payload )
+
+    elif chunk_type == ChunkData.NETWORK:
+      s.processNetworkChunk( payload )
 
 
   def processFlowControlChunk( s, event ):
 
-    if event == FlowControlChunk.LINEFEED:
+    if event == ChunkData.LINEFEED:
       s.insertNewLine()
 
 
   def processNetworkChunk( s, event ):
 
-    if   event == NetworkChunk.CONNECTING:
+    if   event == ChunkData.CONNECTING:
       s.insertInfoText( u"Connecting..." )
 
-    elif event == NetworkChunk.CONNECTED:
+    elif event == ChunkData.CONNECTED:
 
       if not s.was_connected:
         s.insertInfoText( u"Connected!" )
         s.was_connected = True
 
-    elif event == NetworkChunk.ENCRYPTED:
+    elif event == ChunkData.ENCRYPTED:
       s.insertInfoText( u"SSL encryption started." )
 
-    elif event == NetworkChunk.DISCONNECTED:
+    elif event == ChunkData.DISCONNECTED:
 
       if s.was_connected:
         s.insertInfoText( u"Connection closed." )
         s.was_connected = False
 
-    elif event == NetworkChunk.RESOLVING:
+    elif event == ChunkData.RESOLVING:
       s.insertInfoText( u"Resolving %s ..." % s.world.host() )
 
 
-    elif event == NetworkChunk.CONNECTIONREFUSED:
+    elif event == ChunkData.CONNECTIONREFUSED:
       s.insertInfoText( u"Connection refused." )
 
-    elif event == NetworkChunk.HOSTNOTFOUND:
+    elif event == ChunkData.HOSTNOTFOUND:
       s.insertInfoText( u"Host not found." )
 
-    elif event == NetworkChunk.TIMEOUT:
+    elif event == ChunkData.TIMEOUT:
       s.insertInfoText( u"Network timeout." )
 
-    elif event == NetworkChunk.OTHERERROR:
+    elif event == ChunkData.OTHERERROR:
       s.insertInfoText( u"Network error." )
 
 

@@ -25,16 +25,15 @@ import os
 import time
 
 from localqt          import *
-from PipelineChunks   import *
-
-from Utilities        import check_ssl_is_available
 
 from Singletons       import singletons
-from SocketPipeline   import SocketPipeline
-
 from PlatformSpecific import platformSpecific
+from Utilities        import check_ssl_is_available
 
+from SocketPipeline   import SocketPipeline
 from Logger           import Logger
+
+import ChunkData
 
 
 
@@ -63,9 +62,9 @@ class World( QtCore.QObject ):
     s.status = Status.DISCONNECTED
 
     s.socketpipeline = SocketPipeline( conf )
-    s.socketpipeline.addSink( s.sink, ChunkTypes.NETWORK )
+    s.socketpipeline.addSink( s.sink, ChunkData.NETWORK )
     s.socketpipeline.addSink( s.logger.logOutput,
-                              ChunkTypes.TEXT | ChunkTypes.FLOWCONTROL )
+                              ChunkData.TEXT | ChunkData.FLOWCONTROL )
 
 
   def title( s ):
@@ -165,25 +164,24 @@ class World( QtCore.QObject ):
 
     previous_status = s.status
 
-    if   chunk.data in ( NetworkChunk.RESOLVING, NetworkChunk.CONNECTING ):
+    _, payload = chunk
 
+    if   payload in ( ChunkData.RESOLVING, ChunkData.CONNECTING ):
       s.status = Status.CONNECTING
 
-    elif chunk.data == NetworkChunk.CONNECTED:
-
+    elif payload == ChunkData.CONNECTED:
       s.status = Status.CONNECTED
 
-    elif chunk.data == NetworkChunk.DISCONNECTING:
-
+    elif payload == ChunkData.DISCONNECTING:
       s.status = Status.DISCONNECTING
 
-    elif chunk.data in (
-                          NetworkChunk.DISCONNECTED,
-                          NetworkChunk.CONNECTIONREFUSED,
-                          NetworkChunk.HOSTNOTFOUND,
-                          NetworkChunk.TIMEOUT,
-                          NetworkChunk.OTHERERROR,
-                       ):
+    elif payload in (
+                      ChunkData.DISCONNECTED,
+                      ChunkData.CONNECTIONREFUSED,
+                      ChunkData.HOSTNOTFOUND,
+                      ChunkData.TIMEOUT,
+                      ChunkData.OTHERERROR,
+                    ):
 
       s.status = Status.DISCONNECTED
 

@@ -26,10 +26,11 @@ import codecs
 from os.path        import basename, dirname, isdir
 
 from localqt        import *
-from PipelineChunks import *
 
 from time           import strftime
 from Messages       import messages
+
+import ChunkData
 
 
 class Logger( QtCore.QObject ):
@@ -89,11 +90,12 @@ class Logger( QtCore.QObject ):
     if not s.logfile:
       return
 
-    if chunk.chunktype == ChunkTypes.TEXT:
-      s.buffer.append( chunk.data )
+    chunk_type, payload = chunk
 
-    elif     chunk.chunktype == ChunkTypes.FLOWCONTROL \
-         and chunk.data == FlowControlChunk.LINEFEED:
+    if chunk_type == ChunkData.TEXT:
+      s.buffer.append( payload )
+
+    elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
       s.buffer.append( u"\n" )
 
     QtCore.QTimer.singleShot( 0, s.writeToFile )

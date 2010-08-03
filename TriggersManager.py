@@ -29,9 +29,8 @@ from Matches        import SmartMatch
 from Matches        import RegexMatch
 from Matches        import MatchCreationError
 from Matches        import load_match_by_type
-from PipelineChunks import HighlightChunk
-from PipelineChunks import UnicodeTextChunk
-from PipelineChunks import chunktypes
+
+import ChunkData
 
 
 
@@ -61,7 +60,9 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
       target_pos, new_chunk = new_chunks.pop( 0 )
 
-    if chunk.chunktype != chunktypes.TEXT:
+    chunk_type, payload = chunk
+
+    if chunk_type != ChunkData.TEXT:
       continue
 
     if pos == target_pos:
@@ -70,21 +71,21 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
       new_chunk = None
       continue
 
-    elif target_pos - pos < len( chunk.data ):
+    elif target_pos - pos < len( payload ):
 
       split_pos = target_pos - pos
 
       chunkbuffer.pop( i )
-      chunkbuffer.insert( i,   UnicodeTextChunk( chunk.data[ :split_pos ] ) )
+      chunkbuffer.insert( i,   ( ChunkData.TEXT, payload[ :split_pos ] ) )
       chunkbuffer.insert( i+1, new_chunk )
-      chunkbuffer.insert( i+2, UnicodeTextChunk( chunk.data[ split_pos: ] ) )
+      chunkbuffer.insert( i+2, ( ChunkData.TEXT, payload[ split_pos: ] ) )
 
       pos += split_pos
       new_chunk = None
       continue
 
     else:
-      pos += len( chunk.data )
+      pos += len( payload )
 
     if target_pos == pos:
       chunkbuffer.append( new_chunk )
@@ -118,8 +119,8 @@ class HighlightAction:
     hl = s.highlight
 
     new_chunks = [
-      ( start, HighlightChunk( ( id( hl ), hl ) ) ),
-      ( end,   HighlightChunk( ( id( hl ), {} ) ) ),
+      ( start, ( ChunkData.HIGHLIGHT, ( id( hl ), hl ) ) ),
+      ( end,   ( ChunkData.HIGHLIGHT, ( id( hl ), {} ) ) ),
     ]
 
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
@@ -161,9 +162,11 @@ class GagAction:
 
       chunk = chunkbuffer[ i ]
 
-      if chunk.chunktype in ( chunktypes.TEXT,
-                              chunktypes.FLOWCONTROL,
-                              chunktypes.HIGHLIGHT ):
+      chunk_type, _ = chunk
+
+      if chunk_type in ( ChunkData.TEXT,
+                         ChunkData.FLOWCONTROL,
+                         ChunkData.HIGHLIGHT ):
         del chunkbuffer[ i ]
 
 

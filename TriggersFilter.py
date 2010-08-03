@@ -26,7 +26,8 @@
 import re
 
 from BaseFilter     import BaseFilter
-from PipelineChunks import chunktypes, FlowControlChunk, HighlightChunk
+
+import ChunkData
 
 
 
@@ -66,15 +67,14 @@ class TriggersFilter( BaseFilter ):
 
     s.buffer.append( chunk )
 
-    type = chunk.chunktype
+    chunk_type, _ = chunk
 
-    if type in ( chunktypes.NETWORK, chunktypes.PROMPTSWEEP ) \
-      or   ( type       == chunktypes.FLOWCONTROL \
-         and chunk.data == FlowControlChunk.LINEFEED ):
+    if chunk_type in ( ChunkData.NETWORK, ChunkData.PROMPTSWEEP ) \
+       or chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
 
-      line = u"".join( [ chunk.data
-                         for chunk in s.buffer
-                         if chunk.chunktype == chunktypes.TEXT ] )
+      line = u"".join( chunk[1]
+                       for chunk in s.buffer
+                       if chunk[0] == ChunkData.TEXT )
 
 
       if line:

@@ -25,7 +25,8 @@ from localqt import *
 
 from Globals        import FORMAT_PROPERTIES
 from OrderedDict    import OrderedDict
-from PipelineChunks import *
+
+import ChunkData
 
 
 
@@ -193,10 +194,12 @@ class FormatManager:
 
   def processChunk( s, chunk ):
 
-    if chunk.chunktype == chunktypes.ANSI:
-      s.applyFormat( s.ANSI, chunk.data )
+    chunk_type, payload = chunk
 
-    elif chunk.chunktype == chunktypes.HIGHLIGHT:
+    if chunk_type == ChunkData.ANSI:
+      s.applyFormat( s.ANSI, payload )
 
-      id, format = chunk.data
+    elif chunk_type == ChunkData.HIGHLIGHT:
+
+      id, format = payload
       s.applyFormat( id, format )

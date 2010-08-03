@@ -24,10 +24,8 @@
 
 from localqt import *
 
-from PipelineChunks   import ByteChunk
-from PipelineChunks   import thePacketStartChunk, thePacketEndChunk
-from PipelineChunks   import thePromptSweepChunk
-from PipelineChunks   import chunktypes
+import ChunkData
+
 from CallbackRegistry import CallbackRegistry
 
 
@@ -43,11 +41,11 @@ class Pipeline( QtCore.QObject ):
     s.filters      = []
     s.outputBuffer = []
     s.sinks        = dict( ( type, CallbackRegistry() )
-                           for type in chunktypes.list() )
+                           for type in ChunkData.chunk_type_list() )
 
     s.notification_registry = {}
 
-    s.prompt_timer = QtCore.QTimer()
+    s.prompt_timer = QtCore.QTimer( s )
     s.prompt_timer.setSingleShot( True )
     s.prompt_timer.setInterval( s.PROMPT_TIMEOUT )
     connect( s.prompt_timer, SIGNAL( "timeout()" ), s.sweepPrompt )
@@ -58,18 +56,18 @@ class Pipeline( QtCore.QObject ):
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
 
-    s.feedChunk( thePacketStartChunk )
-    s.feedChunk( ByteChunk( packet ) )
+    s.feedChunk( ChunkData.thePacketStartChunk )
+    s.feedChunk( ( ChunkData.BYTES, packet ) )
 
     ## Then we notify the filters that this is the end of the packet.
 
-    s.feedChunk( thePacketEndChunk )
+    s.feedChunk( ChunkData.thePacketEndChunk )
     s.prompt_timer.start()
 
 
   def sweepPrompt( s ):
 
-    s.feedChunk( thePromptSweepChunk )
+    s.feedChunk( ChunkData.thePromptSweepChunk )
 
 
   def feedChunk( s, chunk ):
@@ -96,7 +94,9 @@ class Pipeline( QtCore.QObject ):
     s.emit( SIGNAL( "flushBegin()" ) )
 
     for chunk in s.outputBuffer:
-      s.sinks[ chunk.chunktype ].triggerAll( chunk )
+
+      chunk_type, _ = chunk
+      s.sinks[ chunk_type ].triggerAll( chunk )
 
     s.emit( SIGNAL( "flushEnd()" ) )
 
@@ -117,11 +117,11 @@ class Pipeline( QtCore.QObject ):
     s.filters.append( filter )
 
 
-  def addSink( s, callback, types=chunktypes.ALL_TYPES ):
+  def addSink( s, callback, types=ChunkData.ALL_TYPES ):
 
     ## 'callback' should be a callable that accepts and handles a chunk.
 
-    for type in chunktypes.list():
+    for type in ChunkData.chunk_type_list():
 
       if type & types:
         s.sinks[ type ].add( callback )

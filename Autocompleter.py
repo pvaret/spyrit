@@ -24,7 +24,8 @@
 
 from localqt        import *
 
-from PipelineChunks import *
+import ChunkData
+
 from Utilities      import normalize_text
 
 from os.path        import commonprefix
@@ -295,11 +296,12 @@ class Autocompleter:
 
   def sink( s, chunk ):
 
-    if chunk.chunktype == chunktypes.TEXT:
-      s.buffer.append( chunk.data )
+    chunk_type, payload = chunk
 
-    elif  chunk.chunktype == chunktypes.FLOWCONTROL \
-      and chunk.data      == chunk.LINEFEED:
+    if chunk_type == ChunkData.TEXT:
+      s.buffer.append( payload )
+
+    elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
 
       data     = u"".join( s.buffer )
       s.buffer = []

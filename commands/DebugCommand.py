@@ -66,8 +66,19 @@ class DebugCommand( BaseCommand ):
     exec f.read()
 
 
-  def cmd_load( s, world, *args ):
+  def cmd_load( s, world, filename=None, blocksize=None ):
 
     ## No docstring. This is not a user-visible subcommand.
 
-    world.loadFile( args and u" ".join( args ) or None )
+    if blocksize is not None and not blocksize.isdigit():
+      blocksize = None
+
+    kwargs = {}
+
+    if filename:
+      kwargs[ 'filename' ] = filename
+
+    if blocksize:
+      kwargs[ 'blocksize' ] = int( blocksize )
+
+    world.loadFile( **kwargs )

@@ -224,7 +224,7 @@ class World( QtCore.QObject ):
       return None
 
 
-  def loadFile( s, filename=None ):
+  def loadFile( s, filename=None, blocksize=2048 ):
 
     if filename is None:
 
@@ -248,10 +248,10 @@ class World( QtCore.QObject ):
 
     while True:
 
-      data = f.read( 8192 )
+      data = f.read( blocksize )
 
-      if not data: break
-      if not s.socketpipeline: break
+      if not data or not s.socketpipeline:
+        break
 
       s.socketpipeline.pipeline.feedBytes( data )
       qApp().processEvents()

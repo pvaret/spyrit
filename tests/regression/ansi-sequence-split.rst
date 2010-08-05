@@ -13,6 +13,13 @@ Setup the Pipeline:
 >>> p = Pipeline()
 >>> p.addFilter( AnsiFilter )
 
+Silence Qt warnings:
+
+>>> def silent( *args ):
+...   pass
+>>> from PyQt4 import QtCore
+>>> QtCore.qInstallMsgHandler( silent )
+
 Setup a sink for the Pipeline:
 
 >>> buffer = []

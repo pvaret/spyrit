@@ -19,6 +19,12 @@
 ## This file contains various utility functions.
 ##
 
+"""
+:doctest:
+
+>>> from Utilities import *
+
+"""
 
 def check_python_version():
 
@@ -138,8 +144,7 @@ def make_unicode_translation_table():
 
 UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
-
-def remove_accents( s ):
+def remove_accents( s, translation_table=UNICODE_TRANSLATION_TABLE ):
   u"""\
   Turns a Unicode string into its non-accented equivalent.
 
@@ -150,7 +155,7 @@ def remove_accents( s ):
 
   assert type( s ) is type( u'' )  ## Only accept Unicode strings.
 
-  return s.translate( UNICODE_TRANSLATION_TABLE )
+  return s.translate( translation_table )
 
 
 def normalize_text( s ):

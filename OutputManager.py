@@ -23,10 +23,11 @@
 
 from localqt import *
 
-from SearchManager  import SearchManager
-from FormatManager  import FormatManager
-from ConfigObserver import ConfigObserver
-from Globals        import LEFTARROW
+from SearchManager        import SearchManager
+from FormatStack          import FormatStack
+from QTextFormatFormatter import QTextFormatFormatter
+from ConfigObserver       import ConfigObserver
+from Globals              import LEFTARROW
 
 from Singletons import singletons
 
@@ -55,8 +56,8 @@ class OutputManager:
     s.textformat = QtGui.QTextCharFormat()
     s.infoformat = QtGui.QTextCharFormat()
 
-    s.textformatmanager = FormatManager( s.textformat )
-    s.infoformatmanager = FormatManager( s.infoformat )
+    s.textformatmanager = FormatStack( QTextFormatFormatter( s.textformat ) )
+    s.infoformatmanager = FormatStack( QTextFormatFormatter( s.infoformat ) )
 
     s.textformatmanager.setBaseFormat( s.conf[ "output_format" ] )
     s.infoformatmanager.setBaseFormat( s.conf[ "info_format" ] )

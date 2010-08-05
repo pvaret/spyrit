@@ -236,11 +236,13 @@ class World( QtCore.QObject ):
 
       filename = unicode( filename )  ## QString -> unicode
 
-    if not filename: return
+    if not filename:
+      return
 
     f = s.openFileOrErr( filename )
 
-    if not f: return
+    if not f:
+      return
 
     s.info( u"Loading %s..." % os.path.basename( filename ) )
 

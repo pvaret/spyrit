@@ -16,8 +16,8 @@ Setup the Pipeline:
 Setup a sink for the Pipeline:
 
 >>> buffer = []
->>> def sink( chunks ):
-...   buffer.extend( chunks )
+>>> def sink( chunk ):
+...   buffer.append( chunk )
 >>> p.addSink( sink )
 
 And test the behavior.
@@ -26,5 +26,8 @@ And test the behavior.
 >>> p.feedBytes( ansi_seq[0:1] )
 >>> p.sweepPrompt()
 >>> p.feedBytes( ansi_seq[1:] )
->>> print buffer
-[... <Chunk Type: ANSI...]
+
+Ensure the buffer now contains a proper ANSI chunk:
+>>> from ChunkData import chunk_repr
+>>> print [ chunk_repr( chunk ) for chunk in buffer ]
+[...<Chunk: ANSI...]

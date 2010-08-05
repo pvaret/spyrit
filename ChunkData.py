@@ -32,17 +32,22 @@ class ChunkTypeMismatch( Exception ):
 
 ## Define chunk types:
 
-NETWORK     = 1 << 0
-PACKETBOUND = 1 << 1
-PROMPTSWEEP = 1 << 2
-BYTES       = 1 << 3
-TELNET      = 1 << 4
-ANSI        = 1 << 5
-FLOWCONTROL = 1 << 6
-TEXT        = 1 << 7
-HIGHLIGHT   = 1 << 8
+CHUNK_TYPES = dict(
+  NETWORK     = 1 << 0,
+  PACKETBOUND = 1 << 1,
+  PROMPTSWEEP = 1 << 2,
+  BYTES       = 1 << 3,
+  TELNET      = 1 << 4,
+  ANSI        = 1 << 5,
+  FLOWCONTROL = 1 << 6,
+  TEXT        = 1 << 7,
+  HIGHLIGHT   = 1 << 8,
 
-ALL_TYPES   = ( 1 << 9 ) - 1
+  ALL_TYPES   = ( 1 << 9 ) - 1
+)
+
+## Make entries available directly from module namespace:
+globals().update( CHUNK_TYPES )
 
 
 def chunk_type_list():
@@ -81,10 +86,24 @@ def concat_chunks( chunk1, chunk2 ):
     return ( chunk1_type, chunk1_payload + ( chunk2_payload or "" ) )
 
 
+def chunk_repr( chunk ):
+
+  chunk_type, payload = chunk
+
+  if chunk_type not in CHUNK_TYPES.values():
+    type_str = u"(unknown)"
+
+  else:
+    type_str = [ k for k, v in CHUNK_TYPES.iteritems()
+                 if v == chunk_type ].pop()
+
+  if payload is None:
+    return u"<Chunk: %s>" % type_str
+
+  return u"<Chunk: %s; %r>" % ( type_str, payload )
 
 
 ## ANSI-related data:
-
 
 from Globals import FORMAT_PROPERTIES
 from Globals import ANSI_COLORS as COL
@@ -123,26 +142,33 @@ ANSI_TO_FORMAT = dict( ANSI_MAPPING )
 
 ## Network-related data:
 
-DISCONNECTED  = 0
-RESOLVING     = 1
-CONNECTING    = 2
-CONNECTED     = 3
-ENCRYPTED     = 4
-DISCONNECTING = 5
+NETWORK_STATE = dict(
+  DISCONNECTED  = 0,
+  RESOLVING     = 1,
+  CONNECTING    = 2,
+  CONNECTED     = 3,
+  ENCRYPTED     = 4,
+  DISCONNECTING = 5,
 
-CONNECTIONREFUSED = 6
-HOSTNOTFOUND      = 7
-TIMEOUT           = 8
-OTHERERROR        = 9
+  CONNECTIONREFUSED = 6,
+  HOSTNOTFOUND      = 7,
+  TIMEOUT           = 8,
+  OTHERERROR        = 9,
+)
 
-
+## Make entries available directly from module namespace:
+globals().update( NETWORK_STATE )
 
 
 ## Packet-related data:
 
-START = 0
-END   = 1
+PACKET_BOUNDARY = dict(
+  START = 0,
+  END   = 1,
+)
 
+## Make entries available directly from module namespace:
+globals().update( PACKET_BOUNDARY )
 
 thePacketStartChunk = ( PACKETBOUND, START )
 thePacketEndChunk   = ( PACKETBOUND, END )
@@ -158,5 +184,10 @@ thePromptSweepChunk = ( PROMPTSWEEP, None )
 
 ## Flow control data:
 
-LINEFEED       = 0
-CARRIAGERETURN = 1
+FLOW_CONTROL = dict(
+  LINEFEED       = 0,
+  CARRIAGERETURN = 1,
+)
+
+## Make entries available directly from module namespace:
+globals().update( FLOW_CONTROL )

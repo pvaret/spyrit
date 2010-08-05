@@ -255,8 +255,7 @@ class World( QtCore.QObject ):
       if not data or not s.socketpipeline:
         break
 
-      s.socketpipeline.pipeline.feedBytes( data )
-      qApp().processEvents()
+      s.socketpipeline.pipeline.feedBytes( data, blocksize )
 
     t2 = time.time()
 

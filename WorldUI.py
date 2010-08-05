@@ -109,6 +109,9 @@ class WorldUI( QtGui.QSplitter ):
     connect( s.world.socketpipeline.pipeline, SIGNAL( "flushEnd()" ),
              s.output_manager.textcursor.endEditBlock )
 
+    connect( s.world.socketpipeline.pipeline, SIGNAL( "flushEnd()" ),
+             s.outputui.repaint )
+
     world.socketpipeline.addSink( s.output_manager.processChunk,
                                     ChunkData.TEXT
                                   | ChunkData.FLOWCONTROL

@@ -51,17 +51,19 @@ class Pipeline( QtCore.QObject ):
     connect( s.prompt_timer, SIGNAL( "timeout()" ), s.sweepPrompt )
 
 
-  def feedBytes( s, packet ):
+  def feedBytes( s, packet, blocksize=2048 ):
 
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
 
-    s.feedChunk( ChunkData.thePacketStartChunk )
-    s.feedChunk( ( ChunkData.BYTES, packet ) )
+    while packet:
 
-    ## Then we notify the filters that this is the end of the packet.
+      bytes, packet = packet[ :blocksize ], packet[ blocksize: ]
 
-    s.feedChunk( ChunkData.thePacketEndChunk )
+      s.feedChunk( ChunkData.thePacketStartChunk, autoflush=False )
+      s.feedChunk( ( ChunkData.BYTES, bytes ), autoflush=False )
+      s.feedChunk( ChunkData.thePacketEndChunk )
+
     s.prompt_timer.start()
 
 
@@ -70,7 +72,7 @@ class Pipeline( QtCore.QObject ):
     s.feedChunk( ChunkData.thePromptSweepChunk )
 
 
-  def feedChunk( s, chunk ):
+  def feedChunk( s, chunk, autoflush=True ):
 
     if not s.filters:
       return
@@ -81,7 +83,8 @@ class Pipeline( QtCore.QObject ):
     ## the chain of filters, and the resulting chunks are waiting in the
     ## output bucket. So we can flush it.
 
-    s.flushOutputBuffer()
+    if autoflush:
+      s.flushOutputBuffer()
 
 
   def appendToOutputBuffer( s, chunk ):

@@ -131,21 +131,15 @@ class OrderedDict(dict, DictMixin):
     def __ne__(self, other):
         return not self == other
 
-    def insert( s, i, k, v ):
-
-      dict.__setitem__( s, k, v )
-
-      curr = s.__end
-
-      while i:
-          i -= 1
+    def insert(self, index, key, value):
+      dict.__setitem__(self, key, value)
+      curr = self.__end
+      while index:
+          index -= 1
           curr = curr[2]
-
       next = curr[2]
-      new = [k, curr, next]
-      next[1] = curr[2] = new
+      next[1] = curr[2] = self.__map[key] = [key, curr, next]
 
 
-    def last( s ):
-
-      return s.get( s.__end[1][0] )
+    def last(self):
+      return self.get(self.__end[1][0])

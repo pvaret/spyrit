@@ -64,6 +64,11 @@ class FormatStack:
 
   def _applyFormat( s, id, format ):
 
+    if not format:
+
+      s._clearFormat( id )
+      return
+
     for property, value in format.iteritems():
 
       stack = s.stacks[ property ]
@@ -96,3 +101,23 @@ class FormatStack:
 
       else:
         s.formatter.clearProperty( property )
+
+
+  def _clearFormat( s, id ):
+
+    for property, stack in s.stacks.iteritems():
+
+      if id in stack:
+
+        old_end_value = stack.last()
+        del stack[ id ]
+        new_end_value = stack.last()
+
+        if new_end_value == old_end_value:
+          continue
+
+        if new_end_value:
+          s.formatter.setProperty( property, new_end_value )
+
+        else:
+          s.formatter.clearProperty( property )

@@ -252,7 +252,7 @@ class World( QtCore.QObject ):
 
       data = f.read( blocksize )
 
-      if not data or not s.socketpipeline:
+      if not data:
         break
 
       s.socketpipeline.pipeline.feedBytes( data, blocksize )

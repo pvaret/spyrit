@@ -23,103 +23,22 @@
 ##
 
 
+from collections import defaultdict
 from OrderedDict import OrderedDict
 
 import ChunkData
 
 
+BASE = 0
+ANSI = 1
+
 
 class FormatStack:
 
-  BASE = "base"
-  ANSI = "ansi"
-
-  STATIC = ( BASE, ANSI )
-
-
   def __init__( s, formatter ):
 
-    s.formatter  = formatter
-
-    s.formatstack = OrderedDict()
-    s.formatstack[ s.BASE ] = {}
-    s.formatstack[ s.ANSI ] = {}
-
-
-  def refreshProperty( s, property ):
-
-    ## Explore the format stack for the topmost available value for property.
-
-    values = [ format.get( property )
-               for format in reversed( s.formatstack.values() )
-               if property in format ] or [ None ]
-
-    value = values[0]
-
-    ## And then apply it!
-
-    if not value:
-      s.formatter.clearProperty( property )
-
-    else:
-      s.formatter.setProperty( property, value )
-
-
-  def applyFormat( s, format_id, newformat ):
-
-    ## Create or retrieve the format dict in the stack.
-
-    oldformat = s.formatstack.setdefault( format_id, {} )
-
-    ## Case 1: This is a reset of the format.
-
-    if not newformat:  ## reset all
-
-      keys = oldformat.keys()
-
-      if format_id in s.STATIC:
-        ## This is one of the static formatters. Clear it, but leave it in
-        ## its place in the stack.
-        oldformat.clear()
-
-      else:
-        ## This was one of the temporary formatters. Delete it.
-        if format_id in s.formatstack:
-          del s.formatstack[ format_id ]
-
-      for prop in keys:
-        s.refreshProperty( prop )
-
-      return
-
-    ## Case 2: Apply new format definition.
-
-    for k, v in newformat.iteritems():
-
-      if not v:  ## reset property
-
-        if k in oldformat:
-          del oldformat[ k ]
-
-      else:      ## apply property
-        oldformat[ k ] = v
-
-      s.refreshProperty( k )
-
-
-  def setBaseFormat( s, format ):
-
-    ## Unlike the applyFormat method, this one doesn't update, but replaces the
-    ## existing format outright. We implement this by explicitly setting all
-    ## the existing keys in the format to None in the new format definition.
-
-    newformat = dict( ( k, None )
-                      for k in s.formatstack.get( s.BASE, {} ).keys() )
-
-    ## Then we apply the requested format modifier.
-    newformat.update( format )
-
-    s.applyFormat( s.BASE, newformat )
+    s.formatter = formatter
+    s.stacks    = defaultdict( OrderedDict )
 
 
   def processChunk( s, chunk ):
@@ -127,9 +46,53 @@ class FormatStack:
     chunk_type, payload = chunk
 
     if chunk_type == ChunkData.ANSI:
-      s.applyFormat( s.ANSI, payload )
+      s._applyFormat( ANSI, payload )
 
     elif chunk_type == ChunkData.HIGHLIGHT:
 
       id, format = payload
-      s.applyFormat( id, format )
+      s._applyFormat( id, format )
+
+
+  def setBaseFormat( s, format ):
+
+    actual_format = dict( ( k, None ) for k in s.stacks )
+    actual_format.update( format )
+
+    s._applyFormat( BASE, actual_format )
+
+
+  def _applyFormat( s, id, format ):
+
+    for property, value in format.iteritems():
+
+      stack = s.stacks[ property ]
+
+      old_end_value = stack.last()
+
+      if value:
+
+        if id not in stack and id in ( BASE, ANSI ):
+          stack.insert( id, id, value )
+
+        else:
+          stack[ id ] = value
+
+      else:
+
+        if id in stack:
+          del stack[ id ]
+
+        else:
+          continue
+
+      new_end_value = stack.last()
+
+      if new_end_value == old_end_value:
+        continue
+
+      if new_end_value:
+        s.formatter.setProperty( property, new_end_value )
+
+      else:
+        s.formatter.clearProperty( property )

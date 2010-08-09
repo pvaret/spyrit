@@ -1,8 +1,12 @@
-This is a list of features that need implementing sooner or later.
+Stuff to do before next release:
+
+* Make TriggersManager instance unique across app.
+* Finish commands to add/edit/remove matches, highlights and actions.
+
+This is an unordered list of features that need implementing sooner or later:
 
 * GUI for search.
-* Bookmarking of lines in output.
-* Make TriggersManager instance unique across app.
+* Bookmarking of lines in output?
 * Scripting.
 * Configuration screens for everything.
 * Switch between on/off icons rather than having two of them side by side.
@@ -11,7 +15,16 @@ This is a list of features that need implementing sooner or later.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
 * Improve paging when less than a page of text is displayed initially and when /commands are used.
 * GUI for completion.
-* Fix unloading of sound engines when quitting.
-* Make catching of Command exceptions dependant on a variable settable from a debug command.
+* Fix unloading of sound engines when quitting?
+* Make catching of Command exceptions dependant on a variable settable from a debug command?
 * Online tutorial in MUSH form, why not?
 * Create real help system, with possibility to register topics and stuff. Use it to reimplement /help command.
+
+Protocol support:
+
+* Telnet (non-trivial option negotiation: ECHO, TTYPE, GA, SGA, EOR, NAWS; see http://www.mudpedia.org/wiki/TELNET)
+* VT100 escape codes (even if we ignore them, they shouldn't be displayed! See http://www.mudpedia.org/wiki/VT100 & http://ascii-table.com/ansi-escape-sequences-vt-100.php).
+* 256 color ANSI (see http://www.mudpedia.org/wiki/Xterm_color)
+* MCCP
+* MCP? MXP?
+* FANSI 2.0 (see http://fansi.org/)

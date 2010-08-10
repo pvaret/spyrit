@@ -29,6 +29,7 @@ from localqt          import *
 from Singletons       import singletons
 from PlatformSpecific import platformSpecific
 from Utilities        import check_ssl_is_available
+from Utilities        import ensure_valid_filename
 
 from SocketPipeline   import SocketPipeline
 from Logger           import Logger
@@ -151,6 +152,7 @@ class World( QtCore.QObject ):
 
     logfile = time.strftime( logfile )
     logfile = logfile.replace( u"[WORLDNAME]", s.title() )
+    logfile = ensure_valid_filename( logfile )
 
     s.logger.startLogging( os.path.join( logdir, logfile ) )
 

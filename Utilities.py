@@ -125,7 +125,7 @@ def make_unicode_translation_table():
   for i in range( 0x1FFF ):
 
     try:
-      c = unichr(i)
+      c = unichr( i )
 
     except ValueError:
       continue
@@ -144,25 +144,52 @@ def make_unicode_translation_table():
 
 UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
-def remove_accents( s, translation_table=UNICODE_TRANSLATION_TABLE ):
+def remove_accents( string, translation_table=UNICODE_TRANSLATION_TABLE ):
   u"""\
-  Turns a Unicode string into its non-accented equivalent.
+  Filters the diacritics off Latin characters in the given Unicode string.
 
   >>> print remove_accents( u"Touché!" )
   Touche!
 
   """
 
-  assert type( s ) is type( u'' )  ## Only accept Unicode strings.
+  assert type( string ) is type( u'' )  ## Only accept Unicode strings.
 
-  return s.translate( translation_table )
-
-
-def normalize_text( s ):
-
-  return remove_accents( s ).lower()
+  return string.translate( translation_table )
 
 
+def normalize_text( string ):
+
+  return remove_accents( string ).lower()
+
+
+def ensure_valid_filename( filename ):
+
+  u"""\
+  Make the given string safe(r) to use as a filename.
+
+  Some platforms refuse certain characters in filenames. This function filters
+  those characters out of the given string and replace them with an underscore.
+
+  The resulting string is not guaranteed to be valid, because ultimately it's
+  the filesystem's call and we can't second-guess it. This function only makes
+  a best-effort attempt which should hopefully suffice in most cases.
+
+  Note: the filename must be given as Unicode.
+
+  >>> print ensure_valid_filename( u'(127.0.0.1:*).log' )
+  (127.0.0.1__).log
+
+  """
+
+  assert type( filename ) is type( u'' )  ## Only accept Unicode strings.
+
+  invalid_char_codes = range( 32 )
+  invalid_char_codes.extend( ord( c ) for c in u'<>:"/\\|?*' )
+
+  translation_table = dict( ( c, u'_' ) for c in invalid_char_codes )
+
+  return filename.translate( translation_table )
 
 
 def handle_exception( exc_type, exc_value, exc_traceback ):

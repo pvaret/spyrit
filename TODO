@@ -2,6 +2,8 @@ Stuff to do before next release:
 
 * Make TriggersManager instance unique across app.
 * Finish commands to add/edit/remove matches, highlights and actions.
+* Update About page. Thank contributors!
+* Improve crash dialog.
 
 This is an unordered list of features that need implementing sooner or later:
 

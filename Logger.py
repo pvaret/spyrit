@@ -21,137 +21,112 @@
 
 
 import os
-import codecs
+from os.path import basename, dirname, isdir
 
-from os.path        import basename, dirname, isdir
-
-from localqt        import *
-
-from time           import strftime
-from Messages       import messages
+from localqt import *
 
 import ChunkData
 
 
-class Logger( QtCore.QObject ):
+class PlainLogger:
 
-  def __init__( s, world ):
+  log_chunk_types = ChunkData.TEXT | ChunkData.FLOWCONTROL
 
-    QtCore.QObject.__init__( s )
+  def __init__( s, world, logfile ):
 
     s.world   = world
+    s.logfile = logfile
 
-    s.logfile = None
-    s.buffer  = []
-
-
-  def openLogFile( s, fname ):
-
-    ## We shouldn't have a logFile still open, good practice suggests calling
-    ## stopLogging() before attempting to open another logfile.
-
-    s.close()
-
-    assert type( fname ) is unicode  ## The filename ought to be transmitted
-                                     ## internally as Unicode.
-
-    dir = dirname( fname )
-
-    if not isdir( dir ):
-
-      try:
-        os.makedirs( dir )
-
-      except ( IOError, OSError ):
-        pass
-
-    ## If logname exists, open it in append mode and let the codecs module
-    ## handle encoding issues.
-
-    try:
-      s.logfile = codecs.open( fname, "a", "utf-8" )
-      return True
-
-    except IOError:
-      return False
+    s.is_logging = False
+    s.buffer     = []
+    #if backlog:
+    #  s.buffer.append( backlog )
 
 
-  def close( s ):
-
-    if s.logfile:
-
-      s.logfile.close()
-      s.logfile = None
-
-
-  def logOutput( s, chunk ):
+  def logChunk( s, chunk ):
 
     ## Don't buffer data if there is no logfile to send it to.
-    if not s.logfile:
+    if not s.is_logging:
       return
 
     chunk_type, payload = chunk
 
     if chunk_type == ChunkData.TEXT:
-      s.buffer.append( payload )
+      s.buffer.append( payload.encode( "utf-8", "replace" ) )
 
     elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
-      s.buffer.append( u"\n" )
+      s.buffer.append( "\n" )
 
-    QtCore.QTimer.singleShot( 0, s.writeToFile )
+    QtCore.QTimer.singleShot( 0, s.flushBuffer )
 
 
-  def writeToFile( s ):
+  def flushBuffer( s ):
 
-    if s.logfile and s.buffer:
+    if s.is_logging and s.buffer:
 
       s.logfile.write( "".join( s.buffer ) )
       s.logfile.flush()
       s.buffer = []
 
 
-  def startLogging( s, filename, backlog="" ):
+  def start( s ):
 
     ## TODO: handle toolbar / statusbar related stuff
 
-    if s.isLogging():
-      messages.warn( u"A logging file is already open, it will be closed." )
-
-    if not s.openLogFile( filename ):
-
-      messages.warn( u"Error while opening %s for log writing" % filename )
+    if s.is_logging:
       return
 
-    s.world.info( u"Started logging to %s" % basename( filename ) )
+    ## TODO: move info message out of logger?
+    s.world.info( u"Started logging to %s" % basename( s.logfile.name ) )
 
-    if backlog:
+    if s.buffer:
+      s.flushBuffer()
 
-      s.buffer.append( backlog )
-      s.writeToFile()
-
-    emit( s, SIGNAL( "nowLogging( bool )" ), s.isLogging() )
+    s.is_logging = True
 
 
-  def stopLogging( s ):
+  def stop( s ):
+
+    if not s.is_logging:
+      return
 
     ## TODO: handle toolbar / statusbar related stuff
 
-    if s.isLogging():
+    s.flushBuffer()
+    s.is_logging = False
 
-      s.writeToFile()
-      s.close()
-
-      s.world.info( u"Logging stopped." )
-
-    emit( s, SIGNAL( "nowLogging( bool )" ), s.isLogging() )
-
-
-  def isLogging( s ):
-
-    return s.logfile is not None
+    ## TODO: move info message out of logger?
+    s.world.info( u"Stopped logging." )
 
 
   def __del__( s ):
 
-     ## last minute cleanup
-     s.close()
+     s.stop()
+
+     s.world   = None
+     s.logfile = None
+
+
+
+def create_logger_for_world( world, logfile ):
+
+  dir = dirname( logfile )
+
+  if not isdir( dir ):
+
+    try:
+      os.makedirs( dir )
+
+    except ( IOError, OSError ):
+      pass
+
+  file = world.openFileOrErr( logfile, 'a+' )
+
+  if not file:
+    return None
+
+  logger = PlainLogger( world, file )
+
+  world.socketpipeline.addSink( logger.logChunk, logger.log_chunk_types )
+
+  return logger

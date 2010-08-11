@@ -187,10 +187,10 @@ class WorldUI( QtGui.QSplitter ):
     connect( world,             SIGNAL( "disconnected( bool )" ),
              disconnect_action, SLOT( "setDisabled( bool )" ) )
 
-    connect( world.logger,    SIGNAL( "nowLogging( bool )" ),
+    connect( world,           SIGNAL( "nowLogging( bool )" ),
              startlog_action, SLOT( "setDisabled( bool )" ) )
 
-    connect( world.logger,   SIGNAL( "nowLogging( bool )" ),
+    connect( world,          SIGNAL( "nowLogging( bool )" ),
              stoplog_action, SLOT( "setEnabled( bool )" ) )
 
     s.toolbar.addAction( connect_action )
@@ -319,7 +319,7 @@ class WorldUI( QtGui.QSplitter ):
     s.setParent( None )
 
     s.world.worldui               = None
-    s.world.logger.world          = None
+    s.world.logger                = None
     s.tab.widget                  = None
     s.output_manager.world        = None
     s.inputui.world               = None

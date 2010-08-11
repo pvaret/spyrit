@@ -32,7 +32,7 @@ from Utilities        import check_ssl_is_available
 from Utilities        import ensure_valid_filename
 
 from SocketPipeline   import SocketPipeline
-from Logger           import Logger
+from Logger           import create_logger_for_world
 
 import ChunkData
 
@@ -56,7 +56,7 @@ class World( QtCore.QObject ):
 
     s.conf    = conf
     s.worldui = None
-    s.logger  = Logger( s )
+    s.logger  = None
 
     connect( s, SIGNAL( "connected( bool )" ), s.connectionStatusChanged )
 
@@ -64,8 +64,6 @@ class World( QtCore.QObject ):
 
     s.socketpipeline = SocketPipeline( conf )
     s.socketpipeline.addSink( s.sink, ChunkData.NETWORK )
-    s.socketpipeline.addSink( s.logger.logOutput,
-                              ChunkData.TEXT | ChunkData.FLOWCONTROL )
 
 
   def title( s ):
@@ -153,13 +151,27 @@ class World( QtCore.QObject ):
     logfile = time.strftime( logfile )
     logfile = logfile.replace( u"[WORLDNAME]", s.title() )
     logfile = ensure_valid_filename( logfile )
+    logfile = os.path.join( logdir, logfile )
 
-    s.logger.startLogging( os.path.join( logdir, logfile ) )
+    if s.logger:
+      s.logger.stop()
+      del s.logger
+
+    s.logger = create_logger_for_world( s, logfile )
+
+    if s.logger:
+      emit( s, SIGNAL( "nowLogging( bool )" ), True )
+      s.logger.start()
 
 
   def stopLogging( s ):
 
-    s.logger.stopLogging()
+    if not s.logger:
+      return
+
+    emit( s, SIGNAL( "nowLogging( bool )" ), False )
+    s.logger.stop()
+    s.logger = None
 
 
   def sink( s, chunk ):
@@ -211,17 +223,17 @@ class World( QtCore.QObject ):
     return QtGui.QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
 
 
-  def openFileOrErr( s, filename ):
+  def openFileOrErr( s, filename, mode='r' ):
 
     local_encoding = qApp().local_encoding
     basename = os.path.basename( filename )
 
     try:
-      return file( filename )  ## Note: filename can be unicode. This is OK!
+      return file( filename, mode )  ## NB: filename can be unicode. That's OK!
 
-    except IOError, e:
+    except ( IOError, OSError ), e:
 
-      errormsg = e.strerror.decode( local_encoding, "replace" )
+      errormsg = str( e ).decode( local_encoding, "replace" )
       s.info( u"Error: %s: %s" % ( basename, errormsg ) )
       return None
 

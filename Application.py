@@ -106,12 +106,12 @@ class Application( QtGui.QApplication ):
       s.bootstrap()
 
     QtCore.QTimer.singleShot( 0, s.afterStart )
-    
+
     return QtGui.QApplication.exec_()
 
 
   def saveConfig( s ):
-    
+
     if singletons.config:
       singletons.config.save( CONFIG_FILE )
 

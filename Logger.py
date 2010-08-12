@@ -21,9 +21,12 @@
 
 
 import os
+import time
+
 from os.path import basename, dirname, isdir
 
-from localqt import *
+from localqt     import *
+from FormatStack import FormatStack
 
 import ChunkData
 
@@ -31,6 +34,8 @@ import ChunkData
 class PlainLogger:
 
   log_chunk_types = ChunkData.TEXT | ChunkData.FLOWCONTROL
+  encoding = "utf-8"
+
 
   def __init__( s, world, logfile ):
 
@@ -42,22 +47,52 @@ class PlainLogger:
     #if backlog:
     #  s.buffer.append( backlog )
 
+    s.flush_timer = QtCore.QTimer()
+    s.flush_timer.setInterval( 100 )  ## ms
+    s.flush_timer.setSingleShot( True )
+    connect( s.flush_timer, SIGNAL( 'timeout()' ), s.flushBuffer )
+
 
   def logChunk( s, chunk ):
 
-    ## Don't buffer data if there is no logfile to send it to.
     if not s.is_logging:
       return
 
     chunk_type, payload = chunk
 
     if chunk_type == ChunkData.TEXT:
-      s.buffer.append( payload.encode( "utf-8", "replace" ) )
+      s.doLogText( payload )
 
     elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
-      s.buffer.append( "\n" )
+      s.doLogText( u"\n" )
 
-    QtCore.QTimer.singleShot( 0, s.flushBuffer )
+    else:
+      return
+
+    s.flush_timer.start()
+
+
+  def doLogText( s, text ):
+
+    s.buffer.append( text.encode( s.encoding, "replace" ) )
+
+
+  def doLogStart( s ):
+
+    ## TODO: move info message out of logger?
+    s.world.info( u"Started logging to %s" % basename( s.logfile.name ) )
+
+    now = time.strftime( u'%c', time.localtime() )
+    s.doLogText( u"%% Log start for %s on %s.\n" % ( s.world.title(), now ) )
+
+
+  def doLogStop( s ):
+
+    ## TODO: move info message out of logger?
+    s.world.info( u"Stopped logging." )
+
+    now = time.strftime( u'%c', time.localtime() )
+    s.doLogText( u"%% Log end on %s.\n" % now )
 
 
   def flushBuffer( s ):
@@ -71,18 +106,12 @@ class PlainLogger:
 
   def start( s ):
 
-    ## TODO: handle toolbar / statusbar related stuff
-
     if s.is_logging:
       return
 
-    ## TODO: move info message out of logger?
-    s.world.info( u"Started logging to %s" % basename( s.logfile.name ) )
-
-    if s.buffer:
-      s.flushBuffer()
-
     s.is_logging = True
+    s.doLogStart()
+    s.flushBuffer()
 
 
   def stop( s ):
@@ -90,13 +119,9 @@ class PlainLogger:
     if not s.is_logging:
       return
 
-    ## TODO: handle toolbar / statusbar related stuff
-
+    s.doLogStop()
     s.flushBuffer()
     s.is_logging = False
-
-    ## TODO: move info message out of logger?
-    s.world.info( u"Stopped logging." )
 
 
   def __del__( s ):
@@ -105,6 +130,47 @@ class PlainLogger:
 
      s.world   = None
      s.logfile = None
+
+
+
+
+class AnsiFormatter:
+
+  def __init__( s, buffer ):
+
+    s.buffer = buffer
+
+
+  def setProperty( s, property, value ):
+    print '%s -> %s' % ( property, value )
+
+  def clearProperty( s, property ):
+    print 'X %s' % property
+
+
+class AnsiLogger( PlainLogger ):
+
+  log_chunk_types = PlainLogger.log_chunk_types \
+                  | ChunkData.HIGHLIGHT | ChunkData.ANSI
+
+
+  def __init__( s, *args ):
+
+    PlainLogger.__init__( s, *args )
+
+    s.format_stack = FormatStack( AnsiFormatter( s.buffer ) )
+
+
+  def logChunk( s, chunk ):
+
+    chunk_type, payload = chunk
+
+    if chunk_type & ( ChunkData.HIGHLIGHT | ChunkData.ANSI ):
+      s.format_stack.processChunk( chunk )
+
+    else:
+      PlainLogger.logChunk( s, chunk )
+
 
 
 
@@ -125,7 +191,12 @@ def create_logger_for_world( world, logfile ):
   if not file:
     return None
 
-  logger = PlainLogger( world, file )
+  if world.conf._log_ansi:
+    LoggerClass = AnsiLogger
+  else:
+    LoggerClass = PlainLogger
+
+  logger = LoggerClass( world, file )
 
   world.socketpipeline.addSink( logger.logChunk, logger.log_chunk_types )
 

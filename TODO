@@ -4,9 +4,12 @@ Stuff to do before next release:
 * Finish commands to add/edit/remove matches, highlights and actions.
 * Update About page. Thank contributors!
 * Improve crash dialog.
+* Fix command parsing when multiple quoted strings in line.
 
 This is an unordered list of features that need implementing sooner or later:
 
+* Ensure unicity of simultaneous log files!
+* Refactor code to use new-style signal/slots.
 * GUI for search.
 * Bookmarking of lines in output?
 * Scripting.

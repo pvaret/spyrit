@@ -123,6 +123,8 @@ class World( QtCore.QObject ):
 
   def ensureWorldDisconnected( s ):
 
+    ## TODO: Is this really necessary anymore?
+
     if s.isConnected():
       s.socketpipeline.disconnectFromHost()
 
@@ -132,6 +134,8 @@ class World( QtCore.QObject ):
 
   def connectionStatusChanged( s, connected ):
 
+    ## TODO: This behavior is not fully satisfactory. If we were logging, and
+    ## we disconnect and then reconnect, then logging should resume.
     if connected:
 
       if s.conf._autolog:

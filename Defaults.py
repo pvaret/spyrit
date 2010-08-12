@@ -47,6 +47,7 @@ DEFAULTS = (
   ( 'logfile_name',        u"[WORLDNAME]-%Y.%m.%d.log", STR ),
   ( 'logfile_dir',         LOG_DIR,                     STR ),
   ( 'autolog',             False,                       BOOL ),
+  ( 'log_ansi',            False,                       BOOL ),
 
   ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
 
@@ -115,6 +116,7 @@ DESCRIPTIONS = {
   'logfile_name': u"default log filename pattern",
   'logfile_dir':  u"default log directory",
   'autolog':      u"start logging automatically on connect",
+  'log_ansi':     u"use ANSI to log colors",
 
   'output_font_name':        u"name of font in output window",
   'output_font_size':        u"font size in output window",

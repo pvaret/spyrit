@@ -14,6 +14,7 @@ syntax:glob
 *.e3s
 *.e3t
 *.swp
+*.swo
 TAGS
 tags
 resources.py

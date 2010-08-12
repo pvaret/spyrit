@@ -81,6 +81,11 @@ class WorldUI( QtGui.QSplitter ):
     s.world.socketpipeline.addSink( s.startIconBlink,
                                     ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
+    s.alert_timer = QtCore.QTimer()
+    s.alert_timer.setInterval( 0 )
+    s.alert_timer.setSingleShot( True )
+    connect( s.alert_timer, SIGNAL( 'timeout()' ), s.windowAlert )
+
     ## Setup input and output UI.
 
     s.outputui = SplittableTextView( s )
@@ -250,7 +255,7 @@ class WorldUI( QtGui.QSplitter ):
       return
 
     s.blinker.start()
-    QtCore.QTimer.singleShot( 0, s.windowAlert )
+    s.alert_timer.start()
 
 
   def iconBlink( s, frame ):

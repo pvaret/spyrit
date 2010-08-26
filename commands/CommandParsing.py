@@ -88,7 +88,14 @@ def parse_arguments( cmdline ):
   for token in tokens:
 
     if KWARG_SEP in token:
+
       key, val = token.split( KWARG_SEP, 1 )
+
+      ## WORKAROUND: Some versions of Python break on Unicode keyword
+      ## arguments. So encode them safely into bytestrings.
+      if isinstance( key, unicode ):
+        key = key.encode( 'utf-8' )
+
       kwargs[ key ] = val
 
     else:

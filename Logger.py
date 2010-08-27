@@ -27,6 +27,9 @@ from os.path import basename, dirname, isdir
 
 from localqt     import *
 from FormatStack import FormatStack
+from Globals     import FORMAT_PROPERTIES
+from Globals     import ESC
+from Globals     import compute_closest_ansi_color
 
 import ChunkData
 
@@ -79,17 +82,11 @@ class PlainLogger:
 
   def doLogStart( s ):
 
-    ## TODO: move info message out of logger?
-    s.world.info( u"Started logging to %s" % basename( s.logfile.name ) )
-
     now = time.strftime( u'%c', time.localtime() )
     s.doLogText( u"%% Log start for %s on %s.\n" % ( s.world.title(), now ) )
 
 
   def doLogStop( s ):
-
-    ## TODO: move info message out of logger?
-    s.world.info( u"Stopped logging." )
 
     now = time.strftime( u'%c', time.localtime() )
     s.doLogText( u"%% Log end on %s.\n" % now )
@@ -101,7 +98,7 @@ class PlainLogger:
 
       s.logfile.write( "".join( s.buffer ) )
       s.logfile.flush()
-      s.buffer = []
+      s.buffer[:] = []
 
 
   def start( s ):
@@ -111,6 +108,9 @@ class PlainLogger:
 
     s.is_logging = True
     s.doLogStart()
+    ## TODO: move info message out of logger?
+    s.world.info( u"Started logging to %s" % basename( s.logfile.name ) )
+
     s.flushBuffer()
 
 
@@ -120,6 +120,9 @@ class PlainLogger:
       return
 
     s.doLogStop()
+    ## TODO: move info message out of logger?
+    s.world.info( u"Stopped logging." )
+
     s.flushBuffer()
     s.is_logging = False
 
@@ -134,6 +137,8 @@ class PlainLogger:
 
 
 
+
+
 class AnsiFormatter:
 
   def __init__( s, buffer ):
@@ -142,10 +147,45 @@ class AnsiFormatter:
 
 
   def setProperty( s, property, value ):
-    print '%s -> %s' % ( property, value )
+
+    if   property == FORMAT_PROPERTIES.BOLD:
+        s.buffer.append( ESC + "[1m" )
+
+    elif property == FORMAT_PROPERTIES.ITALIC:
+        s.buffer.append( ESC + "[3m" )
+
+    elif property == FORMAT_PROPERTIES.UNDERLINE:
+        s.buffer.append( ESC + "[4m" )
+
+    elif property == FORMAT_PROPERTIES.COLOR:
+
+        ansi_color = compute_closest_ansi_color( value )
+        s.buffer.append( ESC + "[38;5;%dm" % ansi_color )
+
+    elif property == FORMAT_PROPERTIES.BACKGROUND:
+
+        ansi_color = compute_closest_ansi_color( value )
+        s.buffer.append( ESC + "[48;5;%dm" % ansi_color )
+
+
 
   def clearProperty( s, property ):
-    print 'X %s' % property
+
+    if   property == FORMAT_PROPERTIES.BOLD:
+        s.buffer.append( ESC + "[22m" )
+
+    elif property == FORMAT_PROPERTIES.ITALIC:
+        s.buffer.append( ESC + "[23m" )
+
+    elif property == FORMAT_PROPERTIES.UNDERLINE:
+        s.buffer.append( ESC + "[24m" )
+
+    elif property == FORMAT_PROPERTIES.COLOR:
+        s.buffer.append( ESC + "[39m" )
+
+    elif property == FORMAT_PROPERTIES.BACKGROUND:
+        s.buffer.append( ESC + "[49m" )
+
 
 
 class AnsiLogger( PlainLogger ):
@@ -170,6 +210,12 @@ class AnsiLogger( PlainLogger ):
 
     else:
       PlainLogger.logChunk( s, chunk )
+
+
+  def doLogStop( s ):
+
+    s.buffer.append( ESC + "[m" )
+    PlainLogger.doLogStop( s )
 
 
 

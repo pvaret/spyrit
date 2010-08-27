@@ -23,8 +23,9 @@
 
 import re
 
-from BaseFilter     import BaseFilter
-from Globals        import FORMAT_PROPERTIES
+from BaseFilter import BaseFilter
+from Globals    import FORMAT_PROPERTIES
+from Globals    import ESC
 
 import ChunkData
 
@@ -36,7 +37,6 @@ class AnsiFilter( BaseFilter ):
   ## For the time being, we only catch the SGR (Set Graphics Rendition) part
   ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
 
-  ESC   = "\x1b"
   CSI8b = "\x9b"
 
   CSI = "(?:" + ESC + r"\[" + "|" + CSI8b + ")"

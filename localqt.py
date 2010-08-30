@@ -34,6 +34,8 @@ SLOT       = QtCore.SLOT
 
 Qt = QtCore.Qt
 
+## Make it easier to use PDB:
+QtCore.pyqtRemoveInputHook()
 
 def qApp():
 

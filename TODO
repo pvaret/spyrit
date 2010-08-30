@@ -1,9 +1,10 @@
 Stuff to do before next release:
 
 * Finish commands to add/edit/remove matches, highlights and actions.
-* Update About page. Thank contributors!
-* Improve crash dialog.
+* Ensure non-collision of currently open log file.
 * Fix command parsing when multiple quoted strings in line.
+* Update About page. Thank contributors!
+* Improve crash dialog. Apologize for the inconvenience!
 
 This is an unordered list of features that need implementing sooner or later:
 

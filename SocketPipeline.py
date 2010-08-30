@@ -30,8 +30,8 @@ from TriggersFilter    import TriggersFilter
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
 
-from ConfigObserver  import ConfigObserver
-from TriggersManager import TriggersManager
+from ConfigObserver import ConfigObserver
+from Singletons     import singletons
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
@@ -44,7 +44,7 @@ class SocketPipeline:
 
   def __init__( s, conf ):
 
-    s.triggersmanager = TriggersManager()
+    s.triggersmanager = singletons.triggersmanager
 
     s.pipeline = Pipeline()
 

@@ -71,13 +71,15 @@ class Application( QtGui.QApplication ):
     ## the software. Note that they are created in the order they depend
     ## on each other.
 
-    from Config        import Config
-    from WorldsManager import WorldsManager
-    from MainWindow    import MainWindow
+    from Config          import Config
+    from TriggersManager import TriggersManager
+    from WorldsManager   import WorldsManager
+    from MainWindow      import MainWindow
 
-    singletons.addInstance( "config",        Config() )
-    singletons.addInstance( "worldsmanager", WorldsManager() )
-    singletons.addInstance( "mw",            MainWindow() )
+    singletons.addInstance( "config",          Config() )
+    singletons.addInstance( "triggersmanager", TriggersManager() )
+    singletons.addInstance( "worldsmanager",   WorldsManager() )
+    singletons.addInstance( "mw",              MainWindow() )
 
     singletons.mw.show()
 

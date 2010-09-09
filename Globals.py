@@ -19,7 +19,7 @@
 ## This file describes various bits of global data.
 ##
 
-"""
+u"""
 :doctest:
 
 >>> from Globals import *

@@ -8,7 +8,7 @@ import doctest
 THIS_DIR   = os.path.dirname( __file__ ) or '.'
 SPYRIT_DIR = os.path.join( THIS_DIR, os.path.pardir )
 
-sys.path.append( SPYRIT_DIR )
+sys.path.insert( 0, SPYRIT_DIR )
 
 OPTIONS = ( doctest.NORMALIZE_WHITESPACE
           | doctest.ELLIPSIS

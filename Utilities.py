@@ -19,7 +19,7 @@
 ## This file contains various utility functions.
 ##
 
-"""
+u"""
 :doctest:
 
 >>> from Utilities import *
@@ -169,7 +169,8 @@ def ensure_valid_filename( filename ):
   Make the given string safe(r) to use as a filename.
 
   Some platforms refuse certain characters in filenames. This function filters
-  those characters out of the given string and replace them with an underscore.
+  those characters out of the given string and replaces them with an
+  underscore.
 
   The resulting string is not guaranteed to be valid, because ultimately it's
   the filesystem's call and we can't second-guess it. This function only makes

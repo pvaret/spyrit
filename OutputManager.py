@@ -178,6 +178,8 @@ class OutputManager:
     if s.textcursor.columnNumber() > 0:
       s.textcursor.insertText( NL, s.infoformat )
 
+    text = text.rstrip()
+
     s.textcursor.insertText( LEFTARROW + " " + text, s.infoformat )
     s.pending_newline = True  ## There is always a new line after info text.
 

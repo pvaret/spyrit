@@ -19,21 +19,38 @@
 ## Provides helpers to parse command lines.
 ##
 
+u"""
+:doctest:
+
+>>> from commands.CommandParsing import *
+
+"""
+
 
 import re
 
-QUOTED = re.compile( ur'(\S*)' +
-                     ur'(?:'   +
-                       ur'"(.*?)"' + u'|' + ur"'(.*?)'" +
-                     ur')'     +
-                     ur'(\S*)' )
+QUOTED = re.compile( ur'([^"\'\s]*)' +     ## Anything but space or quote
+                     ur'(?:'         +     ## Non-grouping match...
+                       ur'"(.*?)"' + u'|' + ur"'(.*?)'" +  ## Anything quoted
+                     ur')'           +
+                     ur'([^"\'\s]*)' )     ## Anything but space or quote
 
 KWARG_SEP = u"="
 
 
 def tokenize( line ):
+  u"""\
+  Split a line of text into a list of tokens, respecting quotes.
 
-  ## Turns a line such as '"A B" C="D E" F' into [ 'A B', 'C=D E', 'F' ]
+  >>> print tokenize('''   "A B" C="D 'E'" F   ''')
+  ['A B', "C=D 'E'", 'F']
+
+  Does the right thing even in complex cases:
+
+  >>> print tokenize('''   '' "''" "'"   ''')
+  ['', "''", "'"]
+
+  """
 
   line   = line.strip()
   tokens = []

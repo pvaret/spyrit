@@ -181,8 +181,8 @@ class SmartMatch( RegexMatch ):
       else:  ## New token
         tokens.add( token )
 
-        ## Named match for any non-null string, greedy.
-        regex.append( ur"(?P<%s>.+)" % token )
+        ## Named match for any non-null string, non-greedy.
+        regex.append( ur"(?P<%s>.+?)" % token )
 
     return u''.join( regex )
 

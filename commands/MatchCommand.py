@@ -82,21 +82,89 @@ class MatchCommand( BaseCommand ):
     world.info( u"Match added." )
 
 
-  def cmd_del( s, world, matchgroup ):
+  def cmd_del( s, world, group, number=None ):
 
-    u"Delete the given match group."
+    u"""\
+    Delete a match pattern or group of match patterns.
 
-    world.socketpipeline.triggersmanager.delGroup( matchgroup )
+    Usage: %(cmd)s <group> [<number>]
+
+    If the match pattern number is provided, only that pattern is deleted from
+    the group.  If it isn't, the whole group is deleted.
+
+    Note that if you delete the last pattern from a group, then the group is
+    deleted as well.
+
+    Examples:
+        %(cmd)s pages 3
+        %(cmd)s pages
+
+    Given a match group called 'pages' containing more than three match
+    patterns, the first command deletes the third pattern in the group, and the
+    second command deletes the whole group.
+
+    """
+
+    mgr = world.socketpipeline.triggersmanager
+
+    if not mgr.hasGroup( group ):
+
+      world.info( u"No such match pattern group as '%s'!" % group )
+      return
+
+    if number is None:
+
+      mgr.delGroup( group )
+      world.info( u"Match pattern group '%s' deleted." % group )
+
+    else:
+
+      if not number.isdigit():
+
+        world.info( u"Match pattern number argument must be a number!" )
+        return
+
+      number = int( number )
+
+      size = mgr.sizeOfGroup( group )
+
+      if number > size:
+
+        world.info( u"Match pattern group '%s' only has %d pattern(s)!" \
+                    % ( group, size ) )
+        return
+
+      if number > 0:
+        number -= 1  ## Match is given as 1-index but used as 0-index.
+
+      if size > 1:
+
+        mgr.delMatch( group, number )
+        world.info( u"Match pattern #%d deleted from group '%s'." \
+                    % ( number + 1, group ) )
+
+      else:
+
+        mgr.delGroup( group )
+        world.info( u"Match pattern group '%s' now empty and deleted." \
+                    % group )
 
 
-  def cmd_ifmatch( s, world, matchgroup, action, *args, **kwargs ):
+  def cmd_action( s, world, group, action, *args, **kwargs ):
 
-    u"Add action to be taken when a line matches the given group."
+    u"""\
+    Add action to be taken when a line matches the given group.
 
-    action = world.socketpipeline.triggersmanager.loadAction( action, args, kwargs )
+    """
 
-    if action:
-      world.socketpipeline.triggersmanager.addAction( action, matchgroup )
+    mgr = world.socketpipeline.triggersmanager
+
+    action = mgr.loadAction( action, args, kwargs )
+
+    if not action:
+      world.info( u"%s" )
+
+    mgr.addAction( action, group )
 
 
   def cmd_list( s, world ):
@@ -118,9 +186,9 @@ class MatchCommand( BaseCommand ):
 
       for i, m in enumerate( tm.matches[ group ] ):
         if i == 0:
-          prefix = groupname
+          prefix = groupname + " #%d: " % ( i + 1 )
         else:
-          prefix = u" " * indent
+          prefix = u" " * indent + " #%d: " % ( i + 1 )
 
         msg.append( prefix + unicode( m ) )
 

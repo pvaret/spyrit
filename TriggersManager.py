@@ -334,6 +334,16 @@ class TriggersManager:
     s.actions.setdefault( group, [] ).append( action )
 
 
+  def hasGroup( s, group ):
+
+    return group in s.matches or group in s.actions
+
+
+  def sizeOfGroup( s, group ):
+
+    return len( s.matches.get( group, [] ) )
+
+
   def delGroup( s, group ):
 
     for d in ( s.matches, s.actions ):
@@ -343,6 +353,15 @@ class TriggersManager:
 
       except KeyError:
         pass
+
+
+  def delMatch( s, group, index ):
+
+    try:
+      s.matches[ group ].pop( index )
+
+    except ( KeyError, IndexError ):
+      pass
 
 
   def performMatchingActions( s, line, chunkbuffer ):

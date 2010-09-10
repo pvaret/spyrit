@@ -38,6 +38,7 @@ class ConfCommand( BaseCommand ):
     Usage: %(cmd)s <key> <value>
 
     Example: %(cmd)s output_font_name "Courier New"
+
     """
 
     args = " ".join( args )
@@ -71,6 +72,7 @@ class ConfCommand( BaseCommand ):
     Usage: %(cmd)s <key> <value>
 
     Example: %(cmd)s output_font_name "Courier New"
+
     """
 
     args = " ".join( args )
@@ -104,6 +106,7 @@ class ConfCommand( BaseCommand ):
     Usage: %(cmd)s <key>
 
     Example: %(cmd)s output_font_name
+
     """
 
     t = world.conf.getType( key )
@@ -137,6 +140,7 @@ class ConfCommand( BaseCommand ):
     Usage: %(cmd)s <key>
 
     Example: %(cmd)s output_font_name
+
     """
 
     t = world.conf.getType( key )
@@ -169,6 +173,7 @@ class ConfCommand( BaseCommand ):
     Lists all available configuration keys.
 
     Usage: %(cmd)s
+
     """
 
     max_len = max( len( k ) for k in ALL_DESCS )
@@ -197,8 +202,10 @@ class ConfCommand( BaseCommand ):
     If the optional argument 'all' is given, then all values for all keys are
     listed.
 
-    Example: %(cmd)s output_font_name
-             %(cmd)s all
+    Examples:
+        %(cmd)s output_font_name
+        %(cmd)s all
+
     """
 
     worldconf  = world.conf

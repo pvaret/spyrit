@@ -33,9 +33,10 @@ class FindCommand( BaseCommand ):
   If <text> is omitted, the last search is repeated.
   If <text> is a sentence containing spaces, it should be enclosed in quotes.
 
-  Examples: %(cmd)s Character
-            %(cmd)s "Character pages"
-            %(cmd)s
+  Examples:
+      %(cmd)s Character
+      %(cmd)s "Character pages"
+      %(cmd)s
 
   """
 

@@ -103,9 +103,14 @@ class RegexMatch:
     return [ tok[1] for tok in tokens ]
 
 
+  def __repr__( s ):
+
+    return s.matchtype + u':' + s.pattern
+
+
   def __unicode__( s ):
 
-    return s.pattern
+    return u"'" + s.pattern + u"' (regex)"
 
 
 
@@ -204,6 +209,10 @@ class SmartMatch( RegexMatch ):
 
     return re.escape( string )
 
+
+  def __unicode__( s ):
+
+    return u"'" + s.pattern + u"'"
 
 
 

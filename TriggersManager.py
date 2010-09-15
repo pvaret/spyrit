@@ -126,9 +126,15 @@ class HighlightAction:
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
-  def __unicode__( s ):
+  def __repr__( s ):
 
     return ConfigTypes.FORMAT.to_string( s.highlight )
+
+
+  def __unicode__( s ):
+
+    return u"highlight" + ( u" (%s)" % s.token if s.token else u"" ) + u": " \
+           + ConfigTypes.FORMAT.to_string( s.highlight )
 
 
 
@@ -146,9 +152,14 @@ class PlayAction:
     singletons.sound.play( s.soundfile )
 
 
-  def __unicode__( s ):
+  def __repr__( s ):
 
     return s.soundfile
+
+
+  def __unicode__( s ):
+
+    return s.name + u": " + s.soundfile
 
 
 
@@ -170,9 +181,14 @@ class GagAction:
         del chunkbuffer[ i ]
 
 
-  def __unicode__( s ):
+  def __repr__( s ):
 
     return u""
+
+
+  def __unicode__( s ):
+
+    return u"gag"
 
 
 
@@ -269,11 +285,10 @@ class TriggersManager:
     for group in s.matches.iterkeys():
 
       group_dict = {}
-      group_dict[ 'match' ] = [ m.matchtype + u':' + unicode( m )
-                                for m in s.matches[ group ] ]
+      group_dict[ 'match' ] = [ repr( m ) for m in s.matches[ group ] ]
 
       for action in s.actions.get( group, () ):
-        group_dict[ action.name ] = unicode( action )
+        group_dict[ action.name ] = repr( action )
 
       conf_dict[ ConfigBasket.SECTION_CHAR + group ] = group_dict
 

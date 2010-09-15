@@ -174,33 +174,30 @@ class MatchCommand( BaseCommand ):
     msg = []
     tm  = world.socketpipeline.triggersmanager
 
-    msg.append( u"Matches:" )
+    msg.append( u"Match patterns:" )
 
     if tm.isEmpty():
       msg.append( u"  None." )
+      return
 
     for group in sorted( tm.matches.iterkeys() ):
 
-      groupname = u"[%s] " % group
-      indent    = len( groupname )
+      msg.append( u"[%s]" % group )
 
       for i, m in enumerate( tm.matches[ group ] ):
-        if i == 0:
-          prefix = groupname + " #%d: " % ( i + 1 )
-        else:
-          prefix = u" " * indent + " #%d: " % ( i + 1 )
 
-        msg.append( prefix + unicode( m ) )
+        if i == 0:
+          msg.append( u"  Patterns:" )
+
+        msg.append( "    #%d: " % ( i + 1 ) + unicode( m ) )
 
       actions = tm.actions.get( group, [] )
 
       for i, a in enumerate( actions ):
 
         if i == 0:
-          prefix = u" " * indent + LEFTARROW + " "
-        else:
-          prefix = u" " * ( indent + 2 )
+          msg.append( u"  Actions:" )
 
-        msg.append( prefix + unicode( a ) )
+        msg.append( u"    " + unicode( a ) )
 
     world.info( u"\n".join( msg ) )

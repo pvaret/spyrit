@@ -1,6 +1,5 @@
 Stuff to do before next release:
 
-* Better default command when no subcommand is given.
 * Version the config file.
 * Finish commands to add/edit/remove matches, highlights and actions.
 * Make group case-insensitive in commands.

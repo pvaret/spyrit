@@ -26,18 +26,22 @@ u"""
 
 """
 
-def check_python_version():
 
-  REQUIRED_MAJOR = 2
-  REQUIRED_MINOR = 5
+REQUIRED_PYTHON_VERSION = ( 2, 5 )
+REQUIRED_SIP_VERSION    = ( 4, 5 )
+REQUIRED_QT_VERSION     = ( 4, 5 )
+
+
+
+def check_python_version():
 
   import sys
   v = sys.version_info[ 0:2 ]
 
-  if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
+  if v >= REQUIRED_PYTHON_VERSION:
     return True, None
 
-  return False, u"Python v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+  return False, u"Python v%d.%d required!" % REQUIRED_PYTHON_VERSION
 
 
 
@@ -54,18 +58,15 @@ def check_pyqt4_installed():
 
 def check_sip_version():
 
-  REQUIRED_MAJOR = 4
-  REQUIRED_MINOR = 5
-
   import sip
 
   v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." )[:2] )
 
-  if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
+  if v >= REQUIRED_SIP_VERSION:
     return True, None
 
   else:
-    return False, u"SIP v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+    return False, u"SIP v%d.%d required!" % REQUIRED_SIP_VERSION
 
 
 
@@ -82,16 +83,13 @@ def qt_version():
 
 def check_qt_version():
 
-  REQUIRED_MAJOR = 4
-  REQUIRED_MINOR = 4
-
   v = qt_version()
 
-  if v >= ( REQUIRED_MAJOR, REQUIRED_MINOR ):
+  if v >= REQUIRED_QT_VERSION:
     return True, None
 
   else:
-    return False, u"Qt v%d.%d required!" % ( REQUIRED_MAJOR, REQUIRED_MINOR )
+    return False, u"Qt v%d.%d required!" % REQUIRED_QT_VERSION
 
 
 

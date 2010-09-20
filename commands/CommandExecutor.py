@@ -20,6 +20,13 @@
 ## sets.
 ##
 
+u"""\
+
+:doctest:
+
+>>> from commands.CommandExecutor import *
+
+"""
 
 import inspect
 
@@ -28,51 +35,194 @@ class ExecuteError( RuntimeError ):
   pass
 
 
-def match_args_to_function( func, args, kwargs ):
 
-  f_args, f_varargs, f_varkw, f_defaults = inspect.getargspec( func )
 
-  ## 1/ Compute the function's natural args and kwargs:
+def match_args_to_function( callable, provided_args, provided_kwargs ):
 
-  if f_defaults:
-    f_kwargs = dict( zip( f_args[ -len( f_defaults ): ], f_defaults ) )
-    f_args   = f_args[ :-len( f_defaults ) ]
+  u"""\
+  Check that the given arguments fit the given callable's spec.
+
+  Given a few simple functions:
+
+  >>> def simple( a, b=None ):
+  ...   pass
+  >>> def simple_args( a, b=None, *args ):
+  ...   pass
+  >>> def simple_kwargs( a, b=None, **kwargs ):
+  ...   pass
+
+  Let us see how it works:
+
+  >>> ok, msg = match_args_to_function( simple, ( 'a', 'b' ), {} )
+  >>> print ok
+  True
+
+  >>> ok, msg = match_args_to_function( simple, ( 'a', ), {} )
+  >>> print ok
+  True
+
+  >>> ok, msg = match_args_to_function( simple, (), {} )
+  >>> print ok  ## Missing argument a!
+  False
+
+  >>> ok, msg = match_args_to_function( simple, (), { 'a': 1 } )
+  >>> print ok  ## Passing kwargs also works.
+  True
+
+  >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'c': 1 } )
+  >>> print ok  ## Passing an unexpected argument doesn't, though.
+  False
+
+  >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'a': 1 } )
+  >>> print ok  ## Neither does passing an already provided argument.
+  False
+
+  >>> ok, msg = match_args_to_function( simple, ( 'a', 'b', 'c' ), {} )
+  >>> print ok  ## And neither does passing too many arguments.
+  False
+
+  >>> ok, msg = match_args_to_function( simple_args, ( 'a', 'b', 'c' ), {} )
+  >>> print ok  ## Unless the function accepts *args.
+  True
+
+  >>> ok, msg = match_args_to_function( simple_kwargs, ( 'a', 'b' ), { 'c': 1 } )
+  >>> print ok  ## Or the function accepts **kwargs.
+  True
+
+  Class instantiations and method calls also work:
+
+  >>> class A:
+  ...   def __init__( self, a ):
+  ...     pass
+  ...   def method( self, a ):
+  ...     pass
+  ...   @classmethod
+  ...   def classmethod( cls, a ):
+  ...     pass
+  ...   @staticmethod
+  ...   def staticmethod( a ):
+  ...     pass
+
+  >>> ok, msg = match_args_to_function( A, ( 'a' ), {} )
+  >>> print ok
+  True
+
+  >>> a = A( 'a' )
+
+  >>> ok, msg = match_args_to_function( a.method, ( 'a' ), {} )
+  >>> print ok
+  True
+
+  >>> ok, msg = match_args_to_function( a.classmethod, ( 'a' ), {} )
+  >>> print ok
+  True
+
+  >>> ok, msg = match_args_to_function( a.staticmethod, ( 'a' ), {} )
+  >>> print ok
+  True
+
+  """
+
+  ## When a class is called, the actual method invoked is __init__. The
+  ## downside of this approach: this function fails if the class doesn't bear
+  ## an __init__ method, or if its __init__ method is a C builtin. Be careful.
+
+  if inspect.isclass( callable ):
+    callable = callable.__init__
+
+  expected_args, star_args, star_kwargs, defaults = inspect.getargspec( callable )
+
+  ## Reminder:
+  ##   - expected_args is the list of the callable's arguments.
+  ##   - defaults is a tuple of default arguments.
+  ##   - star_args and star_kwargs are the names of the * and ** arguments
+  ##     (usually 'args' and 'kwargs').
+
+  ## Account for implicit 'self' argument in methods:
+  if inspect.ismethod( callable ):
+    expected_args.pop( 0 )
+
+  actual_args = {}
+  actual_star_args = []
+  actual_star_kwargs = {}
+  args = expected_args[:]
+
+  ## Transform 'defaults' tuple into dict:
+  if defaults:
+    kw_defaults = dict( zip( args[ -len( defaults ): ], defaults ) )
 
   else:
-    f_kwargs = {}
+    kw_defaults = {}
 
-  ## 2/ Match call kwargs to function kwargs:
 
-  if inspect.ismethod( func ):
-    ## Account for implicit self argument in methods.
-    f_args.pop( 0 )
+  ## STEP 1: Apply unnammed args.
 
-  for kwarg in kwargs:
+  for value in provided_args:
 
-    if kwarg in f_kwargs:
-      del f_kwargs[ kwarg ]
+    try:
+      ## Populate next argument with next value.
+      arg = args.pop( 0 )
+      actual_args[ arg ] = value
 
-    elif not f_varkw:
-      ## Function called with a kwarg that isn't in its definition, and
-      ## function doesn't have a generic **kwargs to fallback to:
-      return False, u"%s: unknown parameter!" % kwarg
+    except IndexError:
 
-  ## 3/ Match remaining call args to remaining function args.
+      ## If there is no next argument, can we overflow into *args?
+      if star_args:
+        actual_star_args.append( value )
 
-  if len( args ) < len( f_args ):
-    return False, u"Too few parameters!"
+      else:
 
-  if len( args ) > len( f_args ) + len( f_kwargs ) and not f_varargs:
+        ## If not: too many arguments were passed to the callable. Abort.
+        if len( provided_args ) > 2:
+          msg = u"Too many parameters! (Did you forget some quotation marks?)"
 
-    if len( args ) > 2:
-      msg = u"Too many parameters! (Did you forget some quotation marks?)"
+        else:
+          msg = u"Too many parameters!"
 
-    else:
-      msg = u"Too many parameters!"
+        return False, msg
 
-    return False, msg
+
+  ## STEP 2: Apply named args.
+
+  for kwarg, kwvalue in provided_kwargs.iteritems():
+
+    if kwarg in actual_args:
+
+      ## Argument has already been populated! Abort.
+      return False, u"Parameter %s given several times!" % kwarg
+
+    if kwarg not in expected_args:
+
+      ## Unknown argument. Can we put it into **kwargs?
+      if star_kwargs:
+        actual_star_kwargs[ kwarg ] = kwvalue
+
+      else:
+        ## If not: unknown argument.
+        return False, u"%s: unknown parameter!" % kwarg
+
+    actual_args[ kwarg ] = kwvalue
+
+
+  ## STEP 3: Apply default values.
+
+  for default_arg, default_value in kw_defaults.iteritems():
+
+    if default_arg not in actual_args:
+      actual_args[ default_arg ] = default_value
+
+
+  ## STEP 4: Are there still missing arguments?
+
+  if len( expected_args ) > len( actual_args ):
+    return False, u"Too few parameters! (Missing parameter %s)" % expected_args[ 0 ]
+
+
+  ## STEP 5: If not, all's good!
 
   return True, None
+
+
 
 
 def execute( func, args, kwargs ):
@@ -83,15 +233,3 @@ def execute( func, args, kwargs ):
     raise ExecuteError( errmsg )
 
   return func( *args, **kwargs )
-  #try:
-  #  return func( *args, **kwargs )
-
-  #except Exception, e:
-
-  #  ## Special case: if this exception is handcrafted by the debug command,
-  #  ## then let it fly untouched:
-
-  #  if getattr( e, 'do_not_catch', False ):
-  #   raise e
-
-  #  raise ExecuteError( unicode( e ) )

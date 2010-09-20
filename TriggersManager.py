@@ -93,11 +93,11 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
 class HighlightAction:
 
-  def __init__( s, highlight, token=None ):
+  def __init__( s, format, token=None ):
 
     s.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
 
-    s.highlight = ConfigTypes.FORMAT.from_string( highlight )
+    s.highlight = ConfigTypes.FORMAT.from_string( format )
     s.token     = token
 
 
@@ -331,17 +331,26 @@ class TriggersManager:
 
     ## TODO: Make this less hardcody. We can do it. We have the technology.
 
+    from commands.CommandExecutor import match_args_to_function
+
     if actionname == "gag":
-      return GagAction()
+      action = GagAction
 
-    if actionname == "highlight":
-      ## TODO: Validate arguments!
-      return HighlightAction( args[0], kwargs.get( "token", None ) )
+    elif actionname == "highlight":
+      action = HighlightAction
 
-    if actionname == "play":
-      return PlayAction( args[0] )
+    elif actionname == "play":
+      action = PlayAction
 
-    return None
+    else:
+      return None, u"No such action as %s!" % actionname
+
+    ok, msg = match_args_to_function( action, args, kwargs )
+
+    if not ok:
+      return None, msg
+
+    return action( *args, **kwargs ), None
 
 
   def addAction( s, action, group ):

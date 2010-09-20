@@ -153,23 +153,82 @@ class MatchCommand( BaseCommand ):
   def cmd_action( s, world, group, action, *args, **kwargs ):
 
     u"""\
-    Add action to be taken when a line matches the given group.
+    Add a match action to the provided group.
+
+    Usage: %(cmd)s <group> <action> [<parameters...>]
+
+    If the given action already exists in the group, it is updated instead.
+
+    Available actions are:
+      highlight - colorize the matching pattern or token
+      play      - play a WAV sound file when a line matches
+      gag       - don't display the matching line
+
+    The required parameters depend on the chosen action.
+
+    Action parameters:
+      highlight <format> [token=<token>]
+        <format> is a format description. It is a semicolon-separated list of
+          format parameters. Possible format parameters are 'bold', 'italic',
+          'underline' and 'color: #rrggbb' (without quotes). Don't forget to
+          quote the format description.
+        <token> is the identifier of a token defined in a match pattern. If
+          this argument is omitted, the highlight applies to the whole pattern.
+
+      play [<soundfile>]
+        <soundfile> is the path to a WAV sound file. If this argument is
+          omitted, a default 'pop' sound is used.
+
+      gag
+        This action takes no argument.
+
+    Examples:
+      Assuming a group 'my_pages' containing the following pattern:
+        [player] pages: "[message]"
+
+      %(cmd)s my_pages highlight "bold ; color: #ffffff"
+      %(cmd)s my_pages highlight "underline" token=player
+
+      The above makes the whole line white and bold; the name of the player who
+      pages you is also underlined.
+
+      %(cmd)s my_pages play /path/to/sound.wav
+
+      The above plays the given sound file when you receive a page.
+
+      %(cmd)s my_pages gag
+
+      The above hides all the pages you receive.
 
     """
 
     mgr = world.socketpipeline.triggersmanager
 
-    action = mgr.loadAction( action, args, kwargs )
+    action, msg = mgr.loadAction( action, args, kwargs )
 
     if not action:
-      world.info( u"%s" )
+      world.info( msg )
+      return
 
     mgr.addAction( action, group )
 
 
+  def cmd_delaction( s, world, group, number ):
+    pass
+
+
+  def cmd_test( s, world, line ):
+    pass
+
+
   def cmd_list( s, world ):
 
-    u"List all matches and the related actions."
+    u"""\
+    List all match groups with their match patterns and related actions.
+
+    Usage: %(cmd)s
+
+    """
 
     msg = []
     tm  = world.socketpipeline.triggersmanager

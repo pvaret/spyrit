@@ -49,8 +49,6 @@ class DebugCommand( BaseCommand ):
     if not e:
       e = Exception( args and " ".join( args ) or None )
 
-    e.do_not_catch = True
-
     raise e
 
 

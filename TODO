@@ -13,6 +13,7 @@ This is an unordered list of features that need implementing sooner or later:
 * Ensure unicity of simultaneous log files!
 * Refactor code to use new-style signal/slots.
 * GUI for search.
+* Log command.
 * Bookmarking of lines in output?
 * Scripting.
 * Configuration screens for everything.

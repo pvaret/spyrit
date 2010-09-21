@@ -204,13 +204,21 @@ class MatchCommand( BaseCommand ):
 
     mgr = world.socketpipeline.triggersmanager
 
-    action, msg = mgr.loadAction( action, args, kwargs )
+    if not mgr.hasGroup( group ):
 
-    if not action:
+      world.info( u"No such match pattern group as '%s'!" % group )
+      return
+
+    act, msg = mgr.loadAction( action, args, kwargs )
+
+    if not act:
       world.info( msg )
       return
 
-    mgr.addAction( action, group )
+    mgr.addAction( act, group )
+
+    world.info( u"Action '%s' added to match pattern group '%s'." \
+                % ( action, group ) )
 
 
   def cmd_delaction( s, world, group, number ):

@@ -226,7 +226,10 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   ## STEP 4: Are there still missing arguments?
 
   if len( expected_args ) > len( actual_args ):
-    return False, u"Too few parameters! (Missing parameter %s)" % expected_args[ 0 ]
+
+    missing_args = [ arg for arg in expected_args if arg not in actual_args ]
+    return False, u"Too few parameters! (Missing parameter '%s')" \
+                  % missing_args[ 0 ]
 
 
   ## STEP 5: If not, all's good!

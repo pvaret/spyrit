@@ -91,7 +91,10 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
   Class instantiations and method calls also work:
 
-  >>> class A:
+  >>> class A1:
+  ...   pass
+
+  >>> class A2:
   ...   def __init__( self, a ):
   ...     pass
   ...   def method( self, a ):
@@ -103,22 +106,26 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   ...   def staticmethod( a ):
   ...     pass
 
-  >>> ok, msg = match_args_to_function( A, ( 'a' ), {} )
-  >>> print ok
+  >>> ok, msg = match_args_to_function( A1, (), {} )
+  >>> print ok  ## It works even with no __init__ method defined.
   True
 
-  >>> a = A( 'a' )
+  >>> ok, msg = match_args_to_function( A2, ( 'a' ), {} )
+  >>> print ok  ## If __init__ exists, its spec is used.
+  True
+
+  >>> a = A2( 'a' )
 
   >>> ok, msg = match_args_to_function( a.method, ( 'a' ), {} )
-  >>> print ok
+  >>> print ok  ## Instance methods work like you'd expect.
   True
 
   >>> ok, msg = match_args_to_function( a.classmethod, ( 'a' ), {} )
-  >>> print ok
+  >>> print ok  ## But so do class methods.
   True
 
   >>> ok, msg = match_args_to_function( a.staticmethod, ( 'a' ), {} )
-  >>> print ok
+  >>> print ok  ## And static methods.
   True
 
   """
@@ -128,9 +135,13 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   ## an __init__ method, or if its __init__ method is a C builtin. Be careful.
 
   if inspect.isclass( callable ):
-    callable = callable.__init__
 
-  expected_args, star_args, star_kwargs, defaults = inspect.getargspec( callable )
+    ## When a class is instantiated, what's really called is its __init__
+    ## method. In there is no such method, use a null function instead.
+    callable = getattr( callable, "__init__", lambda: None )
+
+  expected_args, star_args, star_kwargs, defaults = \
+                                           inspect.getargspec( callable )
 
   ## Reminder:
   ##   - expected_args is the list of the callable's arguments.

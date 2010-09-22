@@ -392,7 +392,9 @@ class TriggersManager:
 
     for group, matches in sorted( s.matches.iteritems() ):
       for match in matches:
+
         result = match.match( line )
+
         if result:
           yield group, result
 
@@ -401,6 +403,7 @@ class TriggersManager:
 
     for group, matchresult in s.findMatches( line ):
       for action in s.actions.get( group, [] ):
+
         action( matchresult, chunkbuffer )
 
 

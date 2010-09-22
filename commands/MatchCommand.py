@@ -222,7 +222,48 @@ class MatchCommand( BaseCommand ):
 
 
   def cmd_delaction( s, world, group, number ):
-    pass
+
+    u"""\
+    Delete an action from the given match pattern group.
+
+    Usage: %(cmd)s <group> <number>
+
+    Example:
+      %(cmd)s my_pages 2
+
+    Given a match pattern group 'my_pages' containing several actions, the
+    above command deletes the second action from the group.
+
+    """
+
+    mgr = world.socketpipeline.triggersmanager
+
+    if not mgr.hasGroup( group ):
+
+      world.info( u"No such match pattern group as '%s'!" % group )
+      return
+
+    if not number.isdigit():
+
+      world.info( u"Match pattern number argument must be a number!" )
+      return
+
+    number = int( number )
+
+    size = len( mgr.actions.get( group, [] ) )
+
+    if number > size:
+
+      world.info( u"Match pattern group '%s' only has %d action(s)!" \
+                  % ( group, size ) )
+      return
+
+    if number > 0:
+      number -= 1  ## Match is given as 1-index but used as 0-index.
+
+    mgr.delAction( group, number )
+    world.info( u"Action #%d deleted from match group '%s'." \
+                % ( number + 1, group ) )
 
 
   def cmd_test( s, world, line ):
@@ -232,6 +273,8 @@ class MatchCommand( BaseCommand ):
 
     Report which group matches the line, and what tokens, if any, have been
     recognized.
+
+    Usage: %(cmd)s <line>
 
     Don't forget to enclose the line in quotes.
 
@@ -282,33 +325,33 @@ class MatchCommand( BaseCommand ):
 
     """
 
-    msg = []
-    tm  = world.socketpipeline.triggersmanager
+    mgr = world.socketpipeline.triggersmanager
 
+    msg = []
     msg.append( u"Match patterns:" )
 
-    if tm.isEmpty():
+    if mgr.isEmpty():
       msg.append( u"  None." )
       return
 
-    for group in sorted( tm.matches.iterkeys() ):
+    for group in sorted( mgr.matches.iterkeys() ):
 
       msg.append( u"[%s]" % group )
 
-      for i, m in enumerate( tm.matches[ group ] ):
+      for i, m in enumerate( mgr.matches[ group ] ):
 
         if i == 0:
           msg.append( u"  Patterns:" )
 
-        msg.append( "    #%d: " % ( i + 1 ) + unicode( m ) )
+        msg.append( u"    #%d: " % ( i + 1 ) + unicode( m ) )
 
-      actions = tm.actions.get( group, [] )
+      actions = mgr.actions.get( group, [] )
 
       for i, a in enumerate( actions ):
 
         if i == 0:
           msg.append( u"  Actions:" )
 
-        msg.append( u"    " + unicode( a ) )
+        msg.append( u"    #%d: " % ( i + 1 ) + unicode( a ) )
 
     world.info( u"\n".join( msg ) )

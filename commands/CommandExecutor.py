@@ -249,6 +249,10 @@ def execute( func, args, kwargs ):
 
   ok, errmsg = match_args_to_function( func, args, kwargs )
 
+  ## TODO: Use match_args_to_function to compute an exact argument -> value
+  ## mapping, and call the function with that mapping, so we can be more
+  ## flexible about argument order.
+
   if not ok:
     raise ExecuteError( errmsg )
 

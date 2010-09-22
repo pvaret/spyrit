@@ -388,6 +388,15 @@ class TriggersManager:
       pass
 
 
+  def delAction( s, group, index ):
+
+    try:
+      s.actions[ group ].pop( index )
+
+    except ( KeyError, IndexError ):
+      pass
+
+
   def findMatches( s, line ):
 
     for group, matches in sorted( s.matches.iteritems() ):

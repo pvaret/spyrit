@@ -1,7 +1,8 @@
 Stuff to do before next release:
 
 * Version the config file.
-* Finish commands to add/edit/remove matches, highlights and actions.
+* Ensure unicity of action in group.
+* Handle errors while creating actions!
 * Make group case-insensitive in commands.
 * Ensure non-collision of currently open log file.
 * Update About page. Thank contributors!
@@ -13,6 +14,7 @@ This is an unordered list of features that need implementing sooner or later:
 * Better implementation of gagging, with GAG chunks instead of chunk deletion.
 * Refactor code to use new-style signal/slots.
 * GUI for search.
+* GUI for completion.
 * Log command.
 * Bookmarking of lines in output?
 * Scripting.
@@ -22,7 +24,6 @@ This is an unordered list of features that need implementing sooner or later:
 * Split state data and configuration.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
 * Improve paging when less than a page of text is displayed initially and when /commands are used.
-* GUI for completion.
 * Fix unloading of sound engines when quitting?
 * Make catching of Command exceptions dependant on a variable settable from a debug command?
 * Online tutorial in MUSH form, why not?

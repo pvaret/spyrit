@@ -41,7 +41,6 @@ class RegexMatch:
 
     s.pattern   = pattern
     s.regex     = None
-    s.result    = None
     s.error     = None
     s.name      = None
 
@@ -51,7 +50,6 @@ class RegexMatch:
 
   def compileRegex( s, regex ):
 
-    s.result = None
     s.error  = None
 
     try:
@@ -76,21 +74,12 @@ class RegexMatch:
     return pattern
 
 
-  def matches( s, string ):
-
-    s.result = None
+  def match( s, string ):
 
     if not s.regex:
-      return False
+      return None
 
-    m = s.regex.search( string )
-
-    if m is None:  ## Doesn't match.
-      return False
-
-    s.result = m
-
-    return True
+    return s.regex.search( string )
 
 
   def matchtokens( s ):

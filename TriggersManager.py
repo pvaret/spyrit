@@ -388,16 +388,20 @@ class TriggersManager:
       pass
 
 
-  def performMatchingActions( s, line, chunkbuffer ):
+  def findMatches( s, line ):
 
     for group, matches in sorted( s.matches.iteritems() ):
-
       for match in matches:
+        result = match.match( line )
+        if result:
+          yield group, result
 
-        if match.matches( line ):
 
-          for action in s.actions.get( group, [] ):
-            action( match.result, chunkbuffer )
+  def performMatchingActions( s, line, chunkbuffer ):
+
+    for group, matchresult in s.findMatches( line ):
+      for action in s.actions.get( group, [] ):
+        action( matchresult, chunkbuffer )
 
 
   def isEmpty( s ):

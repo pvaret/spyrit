@@ -226,7 +226,51 @@ class MatchCommand( BaseCommand ):
 
 
   def cmd_test( s, world, line ):
-    pass
+
+    u"""\
+    Test an input line against every match pattern group.
+
+    Report which group matches the line, and what tokens, if any, have been
+    recognized.
+
+    Don't forget to enclose the line in quotes.
+
+    Example:
+      Assuming a group 'my_pages' containing the following pattern:
+        [player] pages: "[message]"
+
+      %(cmd)s 'Arthur pages: "Hi!"'
+
+      The above command reports that the group 'my_pages' matches, with the
+      tokens 'player' and 'message' containing 'Arthur' and 'Hi!' respectively.
+
+    """
+
+    mgr = world.socketpipeline.triggersmanager
+
+    matches = list( mgr.findMatches( line ) )
+
+    if not matches:
+      world.info( u"No match found." )
+      return
+
+    msg = []
+    msg.append( u"Matches found:" )
+
+    for group, matchresult in matches:
+
+      tokens = sorted( matchresult.groupdict().iteritems() )
+
+      if tokens:
+
+        msg.append( u"Group '%s' matches with tokens:" % group )
+        for token, value in tokens:
+          msg.append( u"  %s: %s" % ( token, value ) )
+
+      else:
+        msg.append( u"Group '%s' matches." % group )
+
+    world.info( u'\n'.join( msg ) )
 
 
   def cmd_list( s, world ):

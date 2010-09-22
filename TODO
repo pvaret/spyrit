@@ -10,6 +10,7 @@ Stuff to do before next release:
 This is an unordered list of features that need implementing sooner or later:
 
 * Implement MatchGroup object to put together match pattern lists and their related actions.
+* Better implementation of gagging, with GAG chunks instead of chunk deletion.
 * Refactor code to use new-style signal/slots.
 * GUI for search.
 * Log command.

@@ -2,7 +2,6 @@ Stuff to do before next release:
 
 * Version the config file.
 * Ensure unicity of action in group.
-* Handle errors while creating actions!
 * Make group case-insensitive in commands.
 * Ensure non-collision of currently open log file.
 * Update About page. Thank contributors!

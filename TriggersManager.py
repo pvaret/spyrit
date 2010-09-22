@@ -21,14 +21,15 @@
 ##
 
 import re
+import os.path
 import ConfigTypes
 
-from Singletons     import singletons
-from ConfigBasket   import ConfigBasket
-from Matches        import SmartMatch
-from Matches        import RegexMatch
-from Matches        import MatchCreationError
-from Matches        import load_match_by_type
+from Singletons   import singletons
+from ConfigBasket import ConfigBasket
+from Matches      import SmartMatch
+from Matches      import RegexMatch
+from Matches      import MatchCreationError
+from Matches      import load_match_by_type
 
 import ChunkData
 
@@ -93,11 +94,22 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
 class HighlightAction:
 
+  @classmethod
+  def factory( cls, format, token=None ):
+
+    format = ConfigTypes.FORMAT.from_string( format )
+
+    if not format:
+      return None, u"Invalid format!"
+
+    return cls( format, token ), None
+
+
   def __init__( s, format, token=None ):
 
     s.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
 
-    s.highlight = ConfigTypes.FORMAT.from_string( format )
+    s.highlight = format
     s.token     = token
 
 
@@ -142,30 +154,49 @@ class PlayAction:
 
   name = "play"
 
+  @classmethod
+  def factory( cls, soundfile=None ):
+
+    if soundfile:
+
+      soundfile = os.path.expanduser( soundfile )
+
+      if not os.path.isfile( soundfile ):
+        return None, u"File not found!"
+
+    return cls( soundfile ), None
+
+
   def __init__( s, soundfile=None ):
 
-    s.soundfile = soundfile or ":/sound/pop"
+    s.soundfile = soundfile
 
 
   def __call__( s, match, chunkbuffer ):
 
-    singletons.sound.play( s.soundfile )
+    singletons.sound.play( s.soundfile or ":/sound/pop" )
 
 
   def __repr__( s ):
 
-    return s.soundfile
+    return s.soundfile or ""
 
 
   def __unicode__( s ):
 
-    return s.name + u": " + s.soundfile
+    return s.name + u": " + ( s.soundfile or "pop" )
 
 
 
 class GagAction:
 
   name = "gag"
+
+  @classmethod
+  def factory( cls ):
+
+    return cls()
+
 
   def __call__( s, match, chunkbuffer ):
 
@@ -256,11 +287,16 @@ class TriggersManager:
 
       if 'gag' in conf:
 
-        s.addAction( GagAction(), groupname )
+        action, _ = GagAction.factory()
+        if action:
+          s.addAction( action, groupname )
         continue  ## If there's a gag, ignore all other actions!
 
       if 'play' in conf:
-        s.addAction( PlayAction( conf.get( 'play' ) ), groupname )
+
+        action, _ = PlayAction.factory( conf.get( 'play' ) )
+        if action:
+          s.addAction( action, groupname )
 
       highlight_keys = [ k for k in conf if k.startswith( "highlight" ) ]
 
@@ -272,7 +308,9 @@ class TriggersManager:
         else:
           token = None
 
-        s.addAction( HighlightAction( conf[ k ], token ), groupname )
+        action, _ = HighlightAction.factory( conf[ k ], token )
+        if action:
+          s.addAction( action, groupname )
 
 
   def save( s, conf ):
@@ -345,12 +383,13 @@ class TriggersManager:
     else:
       return None, u"No such action as %s!" % actionname
 
-    ok, msg = match_args_to_function( action, args, kwargs )
+    factory = action.factory
+    ok, msg = match_args_to_function( factory, args, kwargs )
 
     if not ok:
       return None, msg
 
-    return action( *args, **kwargs ), None
+    return factory( *args, **kwargs )
 
 
   def addAction( s, action, group ):

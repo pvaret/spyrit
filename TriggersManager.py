@@ -195,7 +195,7 @@ class GagAction:
   @classmethod
   def factory( cls ):
 
-    return cls()
+    return cls(), None
 
 
   def __call__( s, match, chunkbuffer ):
@@ -394,7 +394,16 @@ class TriggersManager:
 
   def addAction( s, action, group ):
 
-    s.actions.setdefault( group, [] ).append( action )
+    actions = s.actions.setdefault( group, [] )
+    action_names = [ a.name for a in actions ]
+
+    if action.name in action_names:
+      ## This action already exists in the group. Replace it.
+      i = action_names.index( action.name )
+      actions[ i ] = action
+
+    else:
+      actions.append( action )
 
 
   def hasGroup( s, group ):

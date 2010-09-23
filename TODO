@@ -1,9 +1,9 @@
 Stuff to do before next release:
 
 * Version the config file.
-* Ensure unicity of action in group.
 * Make group case-insensitive in commands.
 * Ensure non-collision of currently open log file.
+* Improve paging when less than a page of text is displayed initially and when /commands are used.
 * Update About page. Thank contributors!
 * Improve crash dialog. Apologize for the inconvenience!
 
@@ -22,7 +22,6 @@ This is an unordered list of features that need implementing sooner or later:
 * Opera-like default page.
 * Split state data and configuration.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
-* Improve paging when less than a page of text is displayed initially and when /commands are used.
 * Fix unloading of sound engines when quitting?
 * Make catching of Command exceptions dependant on a variable settable from a debug command?
 * Online tutorial in MUSH form, why not?

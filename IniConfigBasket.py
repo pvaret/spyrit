@@ -41,6 +41,9 @@ def parseIniLine( line ):
 
   line=line.strip()
 
+  if line and line[ 0 ] in ( '#', ';' ):  ## Line is a comment.
+    return None
+
   m = RE_SECTION.match( line )
 
   if m:
@@ -98,7 +101,8 @@ class IniConfigBasket( ConfigBasket ):
     for line in f:
 
       result = parseIniLine( line )
-      if not result: continue
+      if not result:
+        continue
 
       key = result[ "key" ]
 
@@ -146,6 +150,7 @@ class IniConfigBasket( ConfigBasket ):
     s.aboutToSave.triggerAll()
 
     config_txt = []
+    config_txt.append( u"## version: 1\n" )
 
     def save_section( configobj, indent_level=0 ):
 

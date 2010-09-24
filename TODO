@@ -1,6 +1,5 @@
 Stuff to do before next release:
 
-* Version the config file.
 * Make group case-insensitive in commands.
 * Ensure non-collision of currently open log file.
 * Update About page. Thank contributors!

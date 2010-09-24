@@ -3,7 +3,6 @@ Stuff to do before next release:
 * Version the config file.
 * Make group case-insensitive in commands.
 * Ensure non-collision of currently open log file.
-* Improve paging when less than a page of text is displayed initially and when /commands are used.
 * Update About page. Thank contributors!
 * Improve crash dialog. Apologize for the inconvenience!
 

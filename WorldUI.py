@@ -102,10 +102,10 @@ class WorldUI( QtGui.QSplitter ):
     s.addWidget( s.secondaryinputui )
     s.secondaryinputui.hide()
 
-    connect( s.inputui,          SIGNAL( "textSent( str )" ),
+    connect( s.inputui,          SIGNAL( "returnPressed()" ),
       s.outputui.pingPage )
 
-    connect( s.secondaryinputui, SIGNAL( "textSent( str )" ),
+    connect( s.secondaryinputui, SIGNAL( "returnPressed()" ),
       s.outputui.pingPage )
 
     connect( s.world.socketpipeline.pipeline, SIGNAL( "flushBegin()" ),

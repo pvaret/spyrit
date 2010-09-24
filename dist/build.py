@@ -11,12 +11,14 @@ import marshal
 import os.path
 
 
-LAUNCHER_STUB = """#!/usr/bin/python
+LAUNCHER_STUB = """\
+#!/usr/bin/env python
 ## -*- coding: utf-8 -*-
 
-EMBEDDED_MODULES = {
-%s
-}
+
+
+EMBEDDED_MODULES = %(modules)s
+
 
 
 import sys
@@ -40,13 +42,15 @@ class embedded_module_importer:
     if fullname == "MAIN":
       fullname = "__main__"
 
-    filename, source = EMBEDDED_MODULES[ fullname ]
+    filename, path, source = EMBEDDED_MODULES[ fullname ]
     source = bz2.decompress( base64.decodestring( source ) )
     code   = compile( source, filename, 'exec' )
 
     mod = sys.modules.setdefault( fullname, imp.new_module( fullname ) )
     mod.__file__ = filename
     mod.__loader__ = s
+    if path:
+      mod.__path__ = path
 
     exec code in mod.__dict__
 
@@ -79,23 +83,24 @@ def make_source_archive( filename ):
 #  return bc
 
 
-def make_module_dict( modules ):
+def compile_module_dict( modules ):
 
   mods = []
 
-  for ( modulename, f ) in modules:
-    #bc = make_bytecode( f )
-    bc = make_source_archive( f )
-    mods.append( "  %s: ( %s, %s )" % ( repr( modulename ), 
-                                        repr( f ), 
-                                        repr( bc ) ) )
+  for ( modulename, filename, path ) in sorted( modules ):
+    #bc = make_bytecode( filename )
+    bc = make_source_archive( filename )
+    mods.append( "  %s: ( %s, %s, %s )" % ( repr( modulename ),
+                                            repr( filename ),
+                                            repr( path or '' ),
+                                            repr( bc ) ) )
 
-  return ",\n".join( mods )
+  return "{\n%s\n}" % ",\n".join( mods )
 
 
 def make_launcher( main, modules ):
 
-  return LAUNCHER_STUB % ( make_module_dict( modules ) )
+  return LAUNCHER_STUB % { 'modules': compile_module_dict( modules ) }
 
 
 def build( scriptname, outputname=None ):
@@ -112,8 +117,9 @@ def build( scriptname, outputname=None ):
   mf = ModuleFinder( [ "." ] )
   mf.run_script( os.path.basename( scriptname ) )
 
-  libs = [ ( name, mod.__file__ ) for ( name, mod ) in mf.modules.iteritems()
-                                  if mod.__file__ ]
+  libs = [ ( name, mod.__file__, mod.__path__ )
+               for ( name, mod ) in mf.modules.iteritems()
+               if mod.__file__ ]
 
   output = make_launcher( mainname, libs )
 

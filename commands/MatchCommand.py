@@ -78,7 +78,7 @@ class MatchCommand( BaseCommand ):
       world.info( unicode( e ) )
       return
 
-    mgr.addMatch( match, group )
+    mgr.createOrGetMatchGroup( group ).addMatch( match )
     world.info( u"Match added." )
 
 
@@ -215,7 +215,7 @@ class MatchCommand( BaseCommand ):
       world.info( msg )
       return
 
-    mgr.addAction( act, group )
+    mgr.createOrGetMatchGroup( group ).addAction( act )
 
     world.info( u"Action '%s' added to match pattern group '%s'." \
                 % ( action, group ) )
@@ -250,7 +250,7 @@ class MatchCommand( BaseCommand ):
 
     number = int( number )
 
-    size = len( mgr.actions.get( group, [] ) )
+    size = len( mgr.createOrGetMatchGroup( group ).actions )
 
     if number > size:
 
@@ -300,8 +300,9 @@ class MatchCommand( BaseCommand ):
     msg = []
     msg.append( u"Matches found:" )
 
-    for group, matchresult in matches:
+    for matchgroup, matchresult in matches:
 
+      group = matchgroup.name
       tokens = sorted( matchresult.groupdict().iteritems() )
 
       if tokens:
@@ -334,20 +335,20 @@ class MatchCommand( BaseCommand ):
       msg.append( u"  None." )
       return
 
-    for group in sorted( mgr.matches.iterkeys() ):
+    for key, matchgroup in sorted( mgr.groups.iteritems() ):
+
+      group = matchgroup.name
 
       msg.append( u"[%s]" % group )
 
-      for i, m in enumerate( mgr.matches[ group ] ):
+      for i, m in enumerate( matchgroup.matches ):
 
         if i == 0:
           msg.append( u"  Patterns:" )
 
         msg.append( u"    #%d: " % ( i + 1 ) + unicode( m ) )
 
-      actions = mgr.actions.get( group, [] )
-
-      for i, a in enumerate( actions ):
+      for i, a in enumerate( matchgroup.actions.itervalues() ):
 
         if i == 0:
           msg.append( u"  Actions:" )

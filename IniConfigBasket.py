@@ -154,7 +154,7 @@ class IniConfigBasket( ConfigBasket ):
 
     def save_section( configobj, indent_level=0 ):
 
-      for k, v in configobj.getOwnDict().iteritems():
+      for k, v in sorted( configobj.getOwnDict().iteritems() ):
 
         t = configobj.getType( k )
 
@@ -166,7 +166,7 @@ class IniConfigBasket( ConfigBasket ):
         config_txt.append( s.INDENT * indent_level )
         config_txt.append( u"%s = %s\n" % ( k, v ) )
 
-      for sectionname, section in configobj.sections.iteritems():
+      for sectionname, section in sorted( configobj.sections.iteritems() ):
 
         if section.isEmpty():  ## Section is empty
           continue

@@ -30,6 +30,8 @@ from Matches      import SmartMatch
 from Matches      import RegexMatch
 from Matches      import MatchCreationError
 from Matches      import load_match_by_type
+from OrderedDict  import OrderedDict
+from Utilities    import normalize_text
 
 import ChunkData
 
@@ -241,12 +243,32 @@ def get_matches_configuration( conf ):
 
 
 
+
+class MatchGroup:
+
+  def __init__( s, name ):
+
+    s.name    = name.strip()
+    s.matches = []
+    s.actions = OrderedDict()
+
+
+  def addMatch( s, match ):
+
+    s.matches.append( match )
+
+
+  def addAction( s, action ):
+
+    s.actions[ action.name ] = action
+
+
+
 class TriggersManager:
 
   def __init__( s ):
 
-    s.matches = {}
-    s.actions = {}
+    s.groups = {}
 
     s.load( singletons.config )
     singletons.config.registerSaveCallback( s.confSaveCallback )
@@ -260,7 +282,7 @@ class TriggersManager:
 
       matches = conf.get( 'match', [] )
 
-      match_count = 0
+      matchgroup = None
 
       for match in matches:
 
@@ -279,24 +301,27 @@ class TriggersManager:
         except MatchCreationError:
           continue
 
-        s.addMatch( m, groupname )
-        match_count += 1
+        if not matchgroup:
+          matchgroup = s.createOrGetMatchGroup( groupname )
 
-      if match_count == 0:  ## No match created, presumably due to errors.
+        matchgroup.addMatch( m )
+
+      if not matchgroup:  ## No match created, presumably due to errors.
         continue
 
       if 'gag' in conf:
 
         action, _ = GagAction.factory()
         if action:
-          s.addAction( action, groupname )
+          matchgroup.addAction( action )
+
         continue  ## If there's a gag, ignore all other actions!
 
       if 'play' in conf:
 
         action, _ = PlayAction.factory( conf.get( 'play' ) )
         if action:
-          s.addAction( action, groupname )
+          matchgroup.addAction( action )
 
       highlight_keys = [ k for k in conf if k.startswith( "highlight" ) ]
 
@@ -310,7 +335,7 @@ class TriggersManager:
 
         action, _ = HighlightAction.factory( conf[ k ], token )
         if action:
-          s.addAction( action, groupname )
+          matchgroup.addAction( action )
 
 
   def save( s, conf ):
@@ -320,15 +345,15 @@ class TriggersManager:
 
     conf_dict = {}
 
-    for group in s.matches.iterkeys():
+    for matchgroup in s.groups.itervalues():
 
       group_dict = {}
-      group_dict[ 'match' ] = [ repr( m ) for m in s.matches[ group ] ]
+      group_dict[ 'match' ] = [ repr( m ) for m in matchgroup.matches ]
 
-      for action in s.actions.get( group, () ):
+      for action in matchgroup.actions.itervalues():
         group_dict[ action.name ] = repr( action )
 
-      conf_dict[ ConfigBasket.SECTION_CHAR + group ] = group_dict
+      conf_dict[ ConfigBasket.SECTION_CHAR + matchgroup.name ] = group_dict
 
     new_match_conf = ConfigBasket.buildFromDict( conf_dict )
 
@@ -346,23 +371,22 @@ class TriggersManager:
     return load_match_by_type( pattern, type )
 
 
-  def addMatch( s, match, group=None ):
+  def createOrGetMatchGroup( s, group=None ):
 
     if group is None:
 
       ## If no group name is given: use the smallest available number as the
       ## group name.
 
-      existing_number_groups = [ int( g ) for g in s.matches.keys()
+      existing_number_groups = [ int( g ) for g in s.groups.keys()
                                  if g.isdigit() ]
-      new_group_number = min( i for i in range( 1, len( s.matches ) + 2 )
+      new_group_number = min( i for i in range( 1, len( s.groups ) + 2 )
                               if i not in existing_number_groups )
       group = unicode( new_group_number )
 
-    else:
-      group = group.strip()
+    key = normalize_text( group.strip() )
 
-    s.matches.setdefault( group, [] ).append( match )
+    return s.groups.setdefault( key, MatchGroup( group ) )
 
 
   def loadAction( s, actionname, args, kwargs ):
@@ -392,45 +416,29 @@ class TriggersManager:
     return factory( *args, **kwargs )
 
 
-  def addAction( s, action, group ):
-
-    actions = s.actions.setdefault( group, [] )
-    action_names = [ a.name for a in actions ]
-
-    if action.name in action_names:
-      ## This action already exists in the group. Replace it.
-      i = action_names.index( action.name )
-      actions[ i ] = action
-
-    else:
-      actions.append( action )
-
-
   def hasGroup( s, group ):
 
-    return group in s.matches or group in s.actions
+    return normalize_text( group.strip() ) in s.groups
 
 
   def sizeOfGroup( s, group ):
 
-    return len( s.matches.get( group, [] ) )
+    return len( s.groups )
 
 
   def delGroup( s, group ):
 
-    for d in ( s.matches, s.actions ):
+    try:
+      del s.groups[ normalize_text( group.strip() ) ]
 
-      try:
-        del d[ group ]
-
-      except KeyError:
-        pass
+    except KeyError:
+      pass
 
 
   def delMatch( s, group, index ):
 
     try:
-      s.matches[ group ].pop( index )
+      s.groups[ normalize_text( group.strip() ) ].matches.pop( index )
 
     except ( KeyError, IndexError ):
       pass
@@ -439,7 +447,10 @@ class TriggersManager:
   def delAction( s, group, index ):
 
     try:
-      s.actions[ group ].pop( index )
+      actions = s.groups[ normalize_text( group.strip() ) ].actions
+
+      key = list( k for k in actions )[ index ]
+      del actions[ key ]
 
     except ( KeyError, IndexError ):
       pass
@@ -447,26 +458,26 @@ class TriggersManager:
 
   def findMatches( s, line ):
 
-    for group, matches in sorted( s.matches.iteritems() ):
-      for match in matches:
+    for matchgroup in sorted( s.groups.itervalues() ):
+      for match in matchgroup.matches:
 
         result = match.match( line )
 
         if result:
-          yield group, result
+          yield matchgroup, result
 
 
   def performMatchingActions( s, line, chunkbuffer ):
 
-    for group, matchresult in s.findMatches( line ):
-      for action in s.actions.get( group, [] ):
+    for matchgroup, matchresult in s.findMatches( line ):
+      for action in matchgroup.actions.itervalues():
 
         action( matchresult, chunkbuffer )
 
 
   def isEmpty( s ):
 
-    return len( s.matches ) == 0
+    return len( s.groups ) == 0
 
 
   def confSaveCallback( s ):

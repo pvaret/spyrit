@@ -1,2 +1,11 @@
-Pascal Varet <p.varet@gmail.com>
-Clément Mairet <clement.mairet@leapingtiger.org>
+AUTHORS
+=======
+
+Pascal Varet <p.varet@gmail.com> - Project lead & main developer
+Clément Mairet <clement.mairet@leapingtiger.org> - Additional development
+
+
+CONTRIBUTORS
+============
+
+Matthew Groat - Idea and initial patch for SDL sound engine and ANSI colors in logs

@@ -146,7 +146,7 @@ class MatchCommand( BaseCommand ):
       else:
 
         mgr.delGroup( group )
-        world.info( u"Match pattern group '%s' now empty and deleted." \
+        world.info( u"Match pattern group '%s' is now empty and was deleted." \
                     % group )
 
 
@@ -303,7 +303,9 @@ class MatchCommand( BaseCommand ):
     for matchgroup, matchresult in matches:
 
       group = matchgroup.name
-      tokens = sorted( matchresult.groupdict().iteritems() )
+      tokens = sorted( ( tok, value )
+                         for tok, value in matchresult.groupdict().iteritems()
+                         if value is not None )
 
       if tokens:
 

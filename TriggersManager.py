@@ -263,6 +263,11 @@ class MatchGroup:
     s.actions[ action.name ] = action
 
 
+  def __len__( s ):
+
+    return len( s.matches )
+
+
 
 class TriggersManager:
 
@@ -423,7 +428,9 @@ class TriggersManager:
 
   def sizeOfGroup( s, group ):
 
-    return len( s.groups )
+    key = normalize_text( group.strip() )
+
+    return len( s.groups.get( key, [] ) )
 
 
   def delGroup( s, group ):

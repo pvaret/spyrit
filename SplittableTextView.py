@@ -282,11 +282,14 @@ class SplittableTextView( QtGui.QTextEdit ):
   def nextPageForPos( s, pos ):
 
     if pos == 0:
-        return 0
+      height = int( s.document().documentLayout().documentSize().height() )
+
+    else:
+      height = pos + s.viewport().height()
 
     l, t, r, b = s.getContentsMargins()
 
-    return pos + s.viewport().height() - s.scrollbar.singleStep() - t - b - 1
+    return height - s.scrollbar.singleStep() - t - b - 1
 
 
   def linesRemaining( s ):

@@ -191,6 +191,20 @@ def ensure_valid_filename( filename ):
   return filename.translate( translation_table )
 
 
+
+CRASH_MSG = u"""\
+<qt>A critical error has occurred. You did nothing wrong! This is most likely a
+bug in Spyrit, and we are terribly sorry. The error is:<br/>
+<center><b><i>%(error)s</i></b></center><br/>
+It occured on <b>line %(line)d</b> of file <b>%(filename)s</b>.<br/>
+<br/>
+We would be grateful if you would kindly send us the exact error message above
+to <a href="mailto:spyrit-devel@lists.sourceforge.net">spyrit-devel@lists.sourceforge.net</a>,
+so we can look into it.<br/>
+<br/>
+Spyrit will now close.</qt>
+"""
+
 def handle_exception( exc_type, exc_value, exc_traceback ):
 
   import sys
@@ -210,20 +224,17 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
   filename, line, dummy, dummy = traceback.extract_tb( exc_traceback ).pop()
   filename = os.path.basename( filename )
-  error    = "%s: %s" % ( exc_type.__name__, exc_value )
+  error    = u"%s: %s" % ( exc_type.__name__, exc_value )
 
   from Singletons import singletons
 
   mw = singletons.mw  ## Will be set to None if no main window yet.
 
-  QtGui.QMessageBox.critical( mw, "Houston, we have a problem...",
-    "<center>Whoops. A critical error has occured. This is most likely a bug "
-  + "in Spyrit. The error is:<br/><br/>"
-  + "<b><i>%s</i></b><br/><br/>" % error
-  + "It occured at <b>line %d</b> of file <b>%s</b>.<br/><br/>"
-      % ( line, filename )
-  + "Spyrit will now close.</center>" )
+  args = dict( filename=filename, line=line, error=error )
 
+  QtGui.QMessageBox.critical( mw, "Oh dear...",
+                              CRASH_MSG % args,
+                              buttons=QtGui.QMessageBox.Close )
 
   print "Spyrit has closed due to an error. This is the full error report:"
   print

@@ -24,6 +24,8 @@
 import os
 import time
 
+from glob import glob
+
 from localqt          import *
 
 from Singletons       import singletons
@@ -57,6 +59,9 @@ class World( QtCore.QObject ):
     s.conf    = conf
     s.worldui = None
     s.logger  = None
+
+    s.was_logging       = False
+    s.last_log_filename = None
 
     connect( s, SIGNAL( "connected( bool )" ), s.connectionStatusChanged )
 
@@ -132,22 +137,20 @@ class World( QtCore.QObject ):
       s.socketpipeline.abort()
 
 
-  def connectionStatusChanged( s, connected ):
+  def connectionStatusChanged( s ):
 
-    ## TODO: This behavior is not fully satisfactory. If we were logging, and
-    ## we disconnect and then reconnect, then logging should resume.
-    if connected:
+    if s.status == Status.CONNECTED:
 
-      if s.conf._autolog:
+      if s.conf._autolog or s.was_logging:
         s.startLogging()
 
-    else:
+    elif s.status == Status.DISCONNECTED:
+
+      s.was_logging = ( s.logger is not None )
       s.stopLogging()
 
 
-  def startLogging( s ):
-
-    ## TODO: Prompt for a logfile name if none is recorded in config
+  def computeLogFileName( s ):
 
     logfile = s.conf._logfile_name
     logdir  = s.conf._logfile_dir
@@ -157,11 +160,47 @@ class World( QtCore.QObject ):
     logfile = ensure_valid_filename( logfile )
     logfile = os.path.join( logdir, logfile )
 
+    if not os.path.exists( logfile ):
+      ## File name is available. Good!
+      return logfile
+
+    base, ext = os.path.splitext( logfile )
+
+    if s.last_log_filename and s.last_log_filename.startswith( base ):
+      ## File exists but already seems to belong to this session. Keep using
+      ## it.
+      return s.last_log_filename
+
+    ## File exists. Compute an available variant in the form "filename_X.ext".
+    candidate = base + u"_%d" + ext
+    existing  = set( glob( base + u"_*" + ext ) )
+
+    possible_filenames = [ candidate % i
+                             for i in range( 1, len( existing ) + 2 )
+                             if candidate % i not in existing ]
+
+    logfile = possible_filenames[ 0 ]
+
+    return logfile
+
+
+  def startLogging( s ):
+
+    ## TODO: Prompt for a logfile name if none is recorded in config
+
+    logfile = s.computeLogFileName()
+
     if s.logger:
+
+      if logfile == s.last_log_filename:
+        ## We're already logging to the correct file! Good.
+        return
+
       s.logger.stop()
       del s.logger
 
     s.logger = create_logger_for_world( s, logfile )
+    s.last_log_filename = logfile
 
     if s.logger:
       emit( s, SIGNAL( "nowLogging( bool )" ), True )
@@ -230,6 +269,7 @@ class World( QtCore.QObject ):
   def openFileOrErr( s, filename, mode='r' ):
 
     local_encoding = qApp().local_encoding
+    filename = os.path.expanduser( filename )
     basename = os.path.basename( filename )
 
     try:

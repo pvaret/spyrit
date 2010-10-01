@@ -23,7 +23,6 @@
 
 from localqt             import *
 
-from World          import World
 from WorldUI        import WorldUI
 from ActionSet      import ActionSet
 from Singletons     import singletons
@@ -32,7 +31,6 @@ from SmartTabWidget import SmartTabWidget
 
 from Globals   import CMDCHAR
 from Messages  import messages
-from Utilities import case_insensitive_cmp
 
 
 class MainWindow( QtGui.QMainWindow ):

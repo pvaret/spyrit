@@ -4,6 +4,7 @@ Stuff to do before next release:
 
 This is an unordered list of features that need implementing sooner or later:
 
+* Simplify TabWidget, now that Qt already does what we need.
 * Use exception rather than return values in match action creation.
 * Better implementation of gagging, with GAG chunks instead of chunk deletion.
 * Refactor code to use new-style signal/slots.

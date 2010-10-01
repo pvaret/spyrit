@@ -26,19 +26,19 @@ from Utilities  import case_insensitive_cmp, normalize_text
 
 
 class WorldsManager( QtCore.QObject ):
-  
+
   def __init__( s ):
-    
+
     QtCore.QObject.__init__( s )
 
     ## Create the section for worlds in the configuration if it doesn't exist
     ## already.
 
-    config = singletons.config 
+    config = singletons.config
 
     if not config.hasSection( config._worlds_section ):
       config.createSection( config._worlds_section )
-      
+
     s.worldconfig = config.getSection( config._worlds_section )
 
     ## LEGACY: The following code manages the case of old configuration files
@@ -58,11 +58,11 @@ class WorldsManager( QtCore.QObject ):
 
 
   def generateMappings( s ):
-        
+
     ## Provide mappings to lookup worlds based on their name and based on
     ## their (host, port) connection pair.
-    
-    s.name_mapping = dict( 
+
+    s.name_mapping = dict(
                            ( s.normalize( conf._name ), conf )
                            for conf in s.worldconfig.sections.itervalues()
                          )
@@ -74,7 +74,7 @@ class WorldsManager( QtCore.QObject ):
                                      ( conf._host, conf._port ), []
                                    ).append( conf )
 
- 
+
   def normalize( s, name ):
 
     return normalize_text( name.strip() )
@@ -102,7 +102,7 @@ class WorldsManager( QtCore.QObject ):
     if ssl:  worldconf._ssl  = ssl
 
     return worldconf
-    
+
 
   def saveWorld( s, world ):
 
@@ -117,7 +117,7 @@ class WorldsManager( QtCore.QObject ):
   def newWorld( s, conf ):
 
     return World( conf )
-    
+
 
   def newAnonymousWorld( s, host="", port=0, ssl=False ):
 

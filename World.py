@@ -54,7 +54,8 @@ class World( QtCore.QObject ):
 
     QtCore.QObject.__init__( s )
 
-    if not conf: conf = singletons.worldsmanager.newWorldConf()
+    if not conf:
+      conf = singletons.worldsmanager.newWorldConf()
 
     s.conf    = conf
     s.worldui = None

@@ -30,6 +30,7 @@ from Singletons     import singletons
 from ConfigObserver import ConfigObserver
 from SmartTabWidget import SmartTabWidget
 
+from Globals   import CMDCHAR
 from Messages  import messages
 from Utilities import case_insensitive_cmp
 
@@ -155,6 +156,17 @@ class MainWindow( QtGui.QMainWindow ):
 
     connect( singletons.worldsmanager, SIGNAL( "worldListChanged()" ),
              s.refreshMenuWorlds )
+
+    ## Set up a MOTD to properly welcome our user:
+
+    MOTD = (
+        u"Welcome to %s %s!" % ( config._app_name, config._app_version ),
+        u"Type %shelp for help on available commands." % CMDCHAR
+    )
+
+    ## Note the use of iter(), so the MOTD is only displayed once for all
+    ## worlds.
+    s.motd = iter( MOTD )
 
     ## And with this, our Main Window is created, whee!
 

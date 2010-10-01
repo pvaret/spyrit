@@ -217,6 +217,9 @@ class WorldUI( QtGui.QSplitter ):
     connect( singletons.mw.toolbar_main, SIGNAL( "iconSizeChanged( QSize )" ),
                                          s.updateToolBarIcons )
 
+    for line in singletons.mw.motd:
+      s.world.info( line)
+
 
   def updateToolBarIcons( s, new_size=None ):
 

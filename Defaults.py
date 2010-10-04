@@ -31,7 +31,7 @@ default_font = PlatformSpecific.default_font
 DEFAULTS = (
 
   ( 'app_name',            u"Spyrit",    STR ),
-  ( 'app_version',         u"0.4",       STR ),
+  ( 'app_version',         u"0.5dev",    STR ),
   ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
   ( 'mainwindow_pos',      None,         INTLIST ),
   ( 'worlds_section',      u"Worlds",    STR ),

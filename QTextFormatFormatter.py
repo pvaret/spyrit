@@ -31,7 +31,7 @@ class QTextFormatFormatter:
   def __init__( s, qtextformat ):
 
     s.qtextformat = qtextformat
-    s.brush_cache = {}
+    s.color_cache = {}
 
     s.property_setter_mapping = {}
 
@@ -54,26 +54,24 @@ class QTextFormatFormatter:
 
     value = value.lower()
 
-    brush = s.brush_cache.get( value )
+    color = s.color_cache.get( value )
 
-    if brush is None:
-      brush = s.brush_cache.setdefault( value,
-                                        QtGui.QBrush( QtGui.QColor( value ) ) )
+    if color is None:
+      color = s.color_cache.setdefault( value, QtGui.QColor( value ) )
 
-    s.qtextformat.setForeground( brush )
+    s.qtextformat.setForeground( color )
 
 
   def _setBackgroundProperty( s, property, value ):
 
     value = value.lower()
 
-    brush = s.brush_cache.get( value )
+    color = s.color_cache.get( value )
 
-    if brush is None:
-      brush = s.brush_cache.setdefault( value,
-                                        QtGui.QBrush( QtGui.QColor( value ) ) )
+    if color is None:
+      color = s.color_cache.setdefault( value, QtGui.QColor( value ) )
 
-    s.qtextformat.setBackground( brush )
+    s.qtextformat.setBackground( color )
 
 
   def _setUnderlineProperty( s, property, value ):

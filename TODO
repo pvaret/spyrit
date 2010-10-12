@@ -21,7 +21,11 @@ This is an unordered list of features that need implementing sooner or later:
 * Fix unloading of sound engines when quitting?
 * Make catching of Command exceptions dependant on a variable settable from a debug command?
 * Online tutorial in MUSH form, why not?
-* Create real help system, with possibility to register topics and stuff. Use it to reimplement /help command.
+* Create real help system, with possibility to register topics and stuff. Use it to reimplement /help command. Add pointers in the help menu! Maybe allow for '/help /command' as well.
+* Make command character / configurable.
+* Add /send command.
+* Idea: In case of missing parameters for command, provide brief usage summary (ex: conf without parameters -> "usage: /conf [keys|set|show|worldreset|reset]")
+* Aliases (/alias str 'send something to the world with [PARAMETERS]')
 
 Protocol support:
 

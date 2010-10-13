@@ -110,6 +110,8 @@ class WorldInputUI( QtGui.QTextEdit ):
     ## Custom key sequence handler: since all our shortcuts are configurable,
     ## and are allowed to override the default QTextEdit shortcuts, we have to
     ## override the key event handler to preempt the use of those shortcuts.
+    ## Note: This still doesn't work for Tab & Shift+Tab, which are handled
+    ## straight in QWidget.event() by Qt.
 
     key = QtGui.QKeySequence( int( e.modifiers() ) + e.key() )
 

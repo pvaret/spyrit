@@ -90,7 +90,7 @@ DEFAULTS = (
   ( 'shortcut_disconnect',     u"Ctrl+Shift+D",    STR ),
   ( 'shortcut_historyup',      u"Ctrl+Up",         STR ),
   ( 'shortcut_historydown',    u"Ctrl+Down",       STR ),
-  ( 'shortcut_autocomplete',   u"Tab",             STR ),
+  ( 'shortcut_autocomplete',   u"Ctrl+Space",      STR ),
   ( 'shortcut_pageup',         u"PgUp",            STR ),
   ( 'shortcut_pagedown',       u"PgDown",          STR ),
   ( 'shortcut_stepup',         u"Ctrl+Shift+Up",   STR ),

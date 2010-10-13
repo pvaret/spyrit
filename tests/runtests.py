@@ -26,7 +26,7 @@ def is_rst_doctest( fname ):
   if not fname.lower().endswith( ".rst" ):
     return False
 
-  data = file( fname ).read( 1024 )
+  data = file( fname ).read( 4096 )
 
   for line in data.split( "\n" ):
     if line.lstrip( "." ).strip() == ":doctest:":
@@ -40,7 +40,7 @@ def is_python_module_doctest( fname ):
   if not fname.lower().endswith( ".py" ):
     return False
 
-  data = file( fname ).read( 1024 )
+  data = file( fname ).read( 4096 )
 
   for line in data.split( "\n" ):
     if line.lstrip( "." ).strip() == ":doctest:":

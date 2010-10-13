@@ -31,12 +31,71 @@
 ## it for callback storage.
 ##
 
+u"""
+:doctest:
+
+>>> from CallbackRegistry import *
+
+"""
+
+
 import new
 
 from weakref import ref, ReferenceError
 
 
 class WeakCallableRef:
+
+  u"""\
+  Implements a weakref for callables, be they functions or methods.
+
+  Let's create callables of both types:
+
+  >>> def test1():
+  ...   pass
+
+  >>> class TestClass:
+  ...   def test2( s ):
+  ...     pass
+
+  >>> test_obj = TestClass()
+
+  And a little function to tell us when a ref is deleted:
+
+  >>> def call_this_when_ref_deleted( ref ):
+  ...   print "Deleted %r!" % ref
+
+  Ok. And now, let's create the weakrefs.
+
+  >>> ref1 = WeakCallableRef( test1, call_this_when_ref_deleted )
+  >>> ref2 = WeakCallableRef( test_obj.test2, call_this_when_ref_deleted )
+
+  The original callable can be retrieved by calling the weakref:
+
+  >>> print ref1()
+  <function test1 at ...>
+
+  >>> print ref2()
+  <bound method TestClass.test2 ...>
+
+  When the original callable is deleted, the notification function is
+  triggered.
+
+  >>> del test1
+  Deleted <...WeakCallableRef...(test1)...>!
+
+  >>> del test_obj
+  Deleted <...WeakCallableRef...(test2)...>!
+
+  And if called, the weakref must now return None:
+
+  >>> print ref1()
+  None
+
+  >>> print ref2()
+  None
+
+  """
 
   def __init__( s, fn, callback=None ):
 
@@ -51,7 +110,7 @@ class WeakCallableRef:
 
     obj = getattr( fn, "im_self", None )
 
-    if obj:  ## fn is a bound method
+    if obj is not None:  ## fn is a bound method
       s._objref = ref( obj,        s.markDead )
       s._fnref  = ref( fn.im_func, s.markDead )
       s._class  = fn.im_class
@@ -62,7 +121,7 @@ class WeakCallableRef:
       s._fnname = fn.func_name
 
 
-  def markDead( s, fnref ):
+  def markDead( s, objref ):
 
     if not s._dead:
 
@@ -75,7 +134,7 @@ class WeakCallableRef:
       s._callback = None
 
       if callback:
-        return callback( fnref )
+        return callback( s )
 
 
   def __call__( s ):
@@ -94,9 +153,10 @@ class WeakCallableRef:
 
   def __repr__( s ):
 
-    return "<%s instance at %s%s>" % (
+    return "<%s instance at %s (%s)%s>" % (
              s.__class__,
              hex( id( s ) ),
+             s._fnname,
              s._dead and "; dead" or ""
            )
 
@@ -113,6 +173,27 @@ class WeakCallableRef:
 
 class WeakCallable:
 
+  u"""\
+  Wraps a callable into a weakly referenced proxy object.
+
+  If the proxy object is called after the reference is deleted, this raises a
+  ReferenceError.
+
+  >>> def test1():
+  ...   print "Function called!"
+
+  >>> test_ref = WeakCallable( test1 )
+  >>> test_ref()
+  Function called!
+
+  >>> del test1
+  >>> test_ref()
+  Traceback (most recent call last):
+  ...
+  ReferenceError: Attempted to call dead WeakCallable...
+
+  """
+
   def __init__( s, fn ):
 
     s._ref = WeakCallableRef( fn )
@@ -121,7 +202,8 @@ class WeakCallable:
   def __call__( s, *args, **kwargs ):
 
     fn = s._ref()
-    if fn: return fn( *args, **kwargs )
+    if fn is not None:
+      return fn( *args, **kwargs )
 
     raise ReferenceError( "Attempted to call dead WeakCallable %s!" % s )
 
@@ -141,6 +223,43 @@ class WeakCallable:
 
 
 class CallbackRegistry:
+
+  u"""\
+  Maintains a registry of weakly referenced callbacks.
+
+  Let's create a registry:
+
+  >>> reg = CallbackRegistry()
+
+  At first, it's empty:
+
+  >>> print len( reg )
+  0
+
+  Let's populate it:
+
+  >>> def callback( arg ):
+  ...   print "Callback called with argument: %s" % arg
+
+  >>> reg.add( callback )
+  >>> print len( reg )
+  1
+
+  The registry can trigger the call of all its callbacks with the given
+  arguments:
+
+  >>> reg.triggerAll( "Hello world!" )
+  Callback called with argument: Hello world!
+
+  And since the callbacks are weakly referenced, they disappear automatically
+  from the registry when deleted.
+
+  >>> del callback
+  >>> reg.triggerAll( "Hello again!" )  ## nothing happens!
+  >>> print len( reg )
+  0
+
+  """
 
   def __init__( s ):
 
@@ -162,13 +281,15 @@ class CallbackRegistry:
       pass
 
 
+  def __len__( s ):
+
+    return len( s.__registry )
+
+
   def triggerAll( s, *args, **kwargs ):
 
     for fnref in s.__registry.itervalues():
+
       fn = fnref()
-      if fn: fn( *args, **kwargs )
-
-
-#  def __del__( s ):
-#
-#    del s.__registry
+      if fn is not None:
+        fn( *args, **kwargs )

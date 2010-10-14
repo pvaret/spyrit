@@ -29,8 +29,6 @@ from QTextFormatFormatter import QTextFormatFormatter
 from ConfigObserver       import ConfigObserver
 from Globals              import LEFTARROW
 
-from Singletons import singletons
-
 import ChunkData
 
 

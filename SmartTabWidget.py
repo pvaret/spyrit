@@ -46,40 +46,40 @@ class TabBarWheelEventHandler( QtCore.QObject ):
 class ScrollableTabBar( QtGui.QTabBar ):
 
   def __init__( s, parent=None ):
-    
+
     QtGui.QTabBar.__init__( s, parent )
     s.installEventFilter( TabBarWheelEventHandler( s ) )
-  
+
 
   def nextTab( s ):
-    
+
     if s.count() <= 1: return
-    
+
     s.setCurrentIndex( ( s.currentIndex() + 1 ) % s.count() )
-    
-    
+
+
   def previousTab( s ):
-    
+
     if s.count() <= 1: return
-    
-    s.setCurrentIndex( ( s.currentIndex() - 1 ) % s.count() ) 
-    
-    
+
+    s.setCurrentIndex( ( s.currentIndex() - 1 ) % s.count() )
+
+
 class ScrollableTabWidget( QtGui.QTabWidget ):
 
   def __init__( s, parent=None ):
-    
+
     QtGui.QTabWidget.__init__( s, parent )
-    
+
     s.tabbar = ScrollableTabBar( s )
     s.setTabBar( s.tabbar )
 
 
   def tabInserted( s, i ):
- 
+
     ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
     ## is modified, even if Qt doesn't think it should.
- 
+
     s.emit( SIGNAL( "currentChanged ( int )" ), s.currentIndex() )
     s.emit( SIGNAL( "numberOfTabChanged( int )" ), s.count() )
 
@@ -97,7 +97,7 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
 class SmartTabWidget( QtGui.QStackedWidget ):
 
   def __init__( s, parent=None, fallback=None ):
-    
+
     QtGui.QStackedWidget.__init__( s, parent )
 
     s.tabwidget = ScrollableTabWidget( s )
@@ -106,12 +106,13 @@ class SmartTabWidget( QtGui.QStackedWidget ):
     s.addWidget( s.tabwidget )
     s.addWidget( s.fallback )
 
-    if fallback: s.setCurrentWidget( s.fallback )
+    if fallback:
+      s.setCurrentWidget( s.fallback )
 
     connect( s.tabwidget, SIGNAL( "numberOfTabChanged( int )" ), s.switchView )
 
 
   def switchView( s, tabcount ):
 
-    if tabcount > 0: s.setCurrentWidget( s.tabwidget )
-    else:            s.setCurrentWidget( s.fallback )
+    current = s.tabwidget if tabcount > 0 else s.fallback
+    s.setCurrentWidget( current )

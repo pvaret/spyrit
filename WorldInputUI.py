@@ -37,6 +37,7 @@ class WorldInputUI( QtGui.QTextEdit ):
 
     QtGui.QTextEdit.__init__( s, parent )
 
+    s.setTabChangesFocus( True )
     s.setAcceptRichText( False )
 
     s.world    = world

@@ -72,19 +72,19 @@ class WeakCallableRef:
 
   The original callable can be retrieved by calling the weakref:
 
-  >>> print ref1()
+  >>> print ref1()  #doctest: +ELLIPSIS
   <function test1 at ...>
 
-  >>> print ref2()
+  >>> print ref2()  #doctest: +ELLIPSIS
   <bound method TestClass.test2 ...>
 
   When the original callable is deleted, the notification function is
   triggered.
 
-  >>> del test1
+  >>> del test1  #doctest: +ELLIPSIS
   Deleted <...WeakCallableRef...(test1)...>!
 
-  >>> del test_obj
+  >>> del test_obj  #doctest: +ELLIPSIS
   Deleted <...WeakCallableRef...(test2)...>!
 
   And if called, the weakref must now return None:
@@ -187,7 +187,7 @@ class WeakCallable:
   Function called!
 
   >>> del test1
-  >>> test_ref()
+  >>> test_ref()  #doctest: +ELLIPSIS
   Traceback (most recent call last):
   ...
   ReferenceError: Attempted to call dead WeakCallable...

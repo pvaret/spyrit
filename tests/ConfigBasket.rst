@@ -156,17 +156,17 @@ The callbacks are linked to with weak references, to ease garbage collection.
 
 
 
-MetaDictProxy
+DictAttrProxy
 -------------
 
-The module also provides the ``MetaDictProxy`` metaclass, which makes the
-items in a dict-like class accessible as underscore-prefixed attributes. It is
-used internally in the implementation of ``ConfigBasket``.
+The module also provides the ``DictAttrProxy`` class, which makes the items in
+a dict-like subclass accessible as underscore-prefixed attributes. It is used
+internally in the implementation of ``ConfigBasket``.
 
->>> from ConfigBasket import MetaDictProxy
+>>> from ConfigBasket import DictAttrProxy
 
->>> class MyDictClass( dict ):
-...   __metaclass__ = MetaDictProxy
+>>> class MyDictClass( dict, DictAttrProxy ):
+...   pass
 
 >>> m = MyDictClass()
 >>> m['test'] = 'TEST'
@@ -183,7 +183,7 @@ True
 >>> print 'test' in m
 False
 
->>> del MetaDictProxy, MyDictClass, m
+>>> del DictAttrProxy, MyDictClass, m
 
 
 WeakList

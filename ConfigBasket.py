@@ -28,28 +28,19 @@ import string
 VALID_KEY_CHARACTER = string.ascii_letters + string.digits + "_"
 
 
-## ---[ Class MetaDictProxy ]------------------------------------------
+## ---[ Class DictAttrProxy ]------------------------------------------
 
-class MetaDictProxy( type ):
+class DictAttrProxy( object ):
   """
-  MetaDictProxy( type )
-
-  Metaclass that makes the items of a dictionary-like class accessible
-  as attributes. Set it as a the metaclass for that class, and you can
-  then access:
+  This class is meant to be inherited from by dict-like subclasses, and makes
+  the dict's keys accessible as attributes. Use it as a parent class, and you
+  can then access:
     d[ "somekey" ]
   as:
     d._somekey
-  It requires the target class to have the __{set|get|del}item__ methods
-  of a dictionary.
+  It requires the child class to have the __{set|get|del}item__ methods of a
+  dictionary.
   """
-
-  def __init__( cls, name, bases, dict ):
-
-    super( MetaDictProxy, cls ).__init__( name, bases, dict )
-    setattr( cls, '__setattr__', MetaDictProxy.__mysetattr )
-    setattr( cls, '__getattr__', MetaDictProxy.__mygetattr )
-    setattr( cls, '__delattr__', MetaDictProxy.__mydelattr )
 
 
   @staticmethod
@@ -57,8 +48,8 @@ class MetaDictProxy( type ):
     """
     Static method. Determines whether the parameter begins with one
     underscore '_' but not two. Returns None otherwise.
-    Attributes beginning with one underscore will be looked up in the
-    mapped dictionary.
+    Attributes beginning with one underscore will be looked up as items on
+    self.
     """
 
     if len( attr ) >= 2 \
@@ -70,10 +61,9 @@ class MetaDictProxy( type ):
     return None
 
 
-  @staticmethod
-  def __mygetattr( obj, attr ):
+  def __getattr__( s, attr ):
 
-    vattr = MetaDictProxy.validatedAttr( attr )
+    vattr = s.validatedAttr( attr )
 
     if vattr is None:
       ## This is neither an existing native attribute, nor a 'special'
@@ -82,44 +72,37 @@ class MetaDictProxy( type ):
       raise AttributeError( attr )
 
     try:
-      return obj[ vattr ]
+      return s[ vattr ]
 
     except KeyError:
       raise AttributeError( attr )
 
 
-  @staticmethod
-  def __mysetattr( obj, attr, value ):
+  def __setattr__( s, attr, value ):
 
-    vattr = MetaDictProxy.validatedAttr( attr )
+    vattr = s.validatedAttr( attr )
 
-    if vattr is None:
-      ## If this is a 'normal' attribute, treat it the normal way
-      ## and then return.
-      obj.__dict__[ attr ] = value
-      return
+    if vattr:
+      s[ vattr ] = value
 
-    obj[ vattr ] = value
+    else:
+      ## If this is a 'normal' attribute, treat it the normal way.
+      object.__setattr__( s, attr, value )
 
 
-  @staticmethod
-  def __mydelattr( obj, attr ):
+  def __delattr__( s, attr ):
 
-    vattr = MetaDictProxy.validatedAttr( attr )
+    vattr = s.validatedAttr( attr )
 
     if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
-      try:
-        del obj.__dict__[ attr ]
-
-      except KeyError:
-        raise AttributeError( attr )
+      object.__delattr__( s, attr )
 
       return
 
     try:
-      del obj[ vattr ]
+      del s[ vattr ]
 
     except KeyError:
       raise AttributeError( attr )
@@ -139,14 +122,10 @@ class WeakList( WeakValueDictionary ):
 
 ## ---[ Class ConfigBasket ]---------------------------------------
 
-class ConfigBasket( object ):
+class ConfigBasket( DictAttrProxy ):
   """
-  ConfigBasket( object )
-
-  This class holds the core behavior for a set of configuration keys.
+  Holds the core behavior for a set of configuration keys.
   """
-
-  __metaclass__ = MetaDictProxy
 
   SECTION_CHAR = "@"
 

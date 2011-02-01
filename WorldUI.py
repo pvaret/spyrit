@@ -342,6 +342,7 @@ class WorldUI( QtGui.QSplitter ):
     s.world.socketpipeline          = None
 
     s.world = None
+    s.deleteLater()
 
 
   def __del__( s ):

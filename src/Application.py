@@ -34,13 +34,11 @@ from ConfigPaths import CONFIG_FILE
 
 class Application( QtGui.QApplication ):
 
-  def __init__( s, args=None ):
-
-    if not args:
-      args = sys.argv
+  def __init__( s, args ):
 
     QtGui.QApplication.__init__( s, args )
 
+    s.args           = args
     s.bootstrapped   = False
     s.local_encoding = locale.getpreferredencoding()  ## Try to guess the
                                                       ## local encoding.
@@ -129,7 +127,7 @@ class Application( QtGui.QApplication ):
     ## At this point, the arguments that Qt uses have already been filtered
     ## by Qt itself.
 
-    for arg in sys.argv[ 1: ]:
+    for arg in s.args[ 1: ]:
 
       arg = arg.decode( s.local_encoding, "replace" )
 

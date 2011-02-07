@@ -24,14 +24,14 @@
 ##
 
 
+import sys
 
-def main():
+def main( args ):
 
   from Utilities import check_python_version
   from Utilities import check_sip_version
   from Utilities import check_pyqt4_installed
   from Utilities import check_qt_version
-
 
   for check in ( check_python_version,
                  check_sip_version,
@@ -45,12 +45,14 @@ def main():
       from Messages import messages
       messages.error( msg )
 
-      import sys
-      sys.exit( 1 )
+      sys.exit( 1 )  ## Fail!
+
+  if "--check-dependencies-only" in args:
+    sys.exit( 0 )  ## Success.
 
   from Application import Application
-  Application().exec_()
+  Application( args ).exec_()
 
 
 if __name__ == "__main__":
-  main()
+  main( sys.argv )

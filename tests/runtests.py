@@ -5,8 +5,8 @@ import os
 import sys
 import doctest
 
-THIS_DIR   = os.path.dirname( __file__ ) or '.'
-SPYRIT_DIR = os.path.join( THIS_DIR, os.path.pardir )
+THIS_DIR   = os.path.dirname( __file__ ) or os.curdir
+SPYRIT_DIR = os.path.join( THIS_DIR, os.path.pardir, 'src' )
 
 sys.path.insert( 0, SPYRIT_DIR )
 
@@ -51,17 +51,19 @@ def is_python_module_doctest( fname ):
 
 def find_all_tests():
 
-  for current, dirs, files in os.walk( SPYRIT_DIR ):
+  for DIR in ( SPYRIT_DIR, THIS_DIR ):
 
-    for f in files:
+    for current, dirs, files in os.walk( DIR ):
 
-      fname = os.path.join( current, f )
+      for f in files:
 
-      if is_rst_doctest( fname ):
-        yield fname.split(os.path.sep, 1)[-1]
+        fname = os.path.join( current, f )
 
-      elif is_python_module_doctest( fname ):
-        yield fname.split(os.path.sep, 1)[-1]
+        if is_rst_doctest( fname ):
+          yield fname.split(os.path.sep, 1)[-1]
+
+        elif is_python_module_doctest( fname ):
+          yield fname.split(os.path.sep, 1)[-1]
 
 
 

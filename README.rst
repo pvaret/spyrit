@@ -1,6 +1,9 @@
 
+SPYRIT
+======
+
 ABOUT SPYRIT
-============
+------------
 
 **Spyrit** is a modern graphical client for textual roleplaying games of the MUSH, MUCK, MOO and MUD kind. It aims to be simple and pleasant to use, while providing a number of features to make your roleplaying more enjoyable:
 
@@ -19,7 +22,7 @@ Follow the development on BitBucket: http://bitbucket.org/balinares/spyrit/
 
 
 PREREQUISITES
-=============
+-------------
 
 **Spyrit** requires Python 2.5 or later, Qt 4.5 or later, and the PyQt4 bindings.
 On Ubuntu and other Debian-like OS, install the package ``python-qt4`` and you will be good to go.
@@ -30,13 +33,14 @@ Windows and Mac OS X users may want to download the latest binary release for th
 
 
 INSTALLATION
-============
+------------
 
 No installation is required. **Spyrit** can run straight from the current directory.
+
 Start **Spyrit** by running ``spyrit.sh`` in this directory.
 
 
 FEEDBACK
-========
+--------
 
 **Spyrit** is still a work in progress. Some things stand to be improved, and others are outright missing. Please give us feedback by joining the user mailing list at https://lists.sourceforge.net/lists/listinfo/spyrit-users!

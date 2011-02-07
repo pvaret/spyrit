@@ -1,4 +1,5 @@
-INTRODUCTION
+
+ABOUT SPYRIT
 ============
 
 **Spyrit** is a modern graphical client for textual roleplaying games of the MUSH, MUCK, MOO and MUD kind. It aims to be simple and pleasant to use, while providing a number of features to make your roleplaying more enjoyable:

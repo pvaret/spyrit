@@ -20,20 +20,17 @@
 ## given world's configuration.
 ##
 
-import re
 import os.path
 import ConfigTypes
 
 from Singletons   import singletons
 from ConfigBasket import ConfigBasket
-from Matches      import SmartMatch
-from Matches      import RegexMatch
 from Matches      import MatchCreationError
 from Matches      import load_match_by_type
 from OrderedDict  import OrderedDict
 from Utilities    import normalize_text
 
-import ChunkData
+from pipeline     import ChunkData
 
 
 

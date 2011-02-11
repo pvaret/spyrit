@@ -29,7 +29,7 @@ from QTextFormatFormatter import QTextFormatFormatter
 from ConfigObserver       import ConfigObserver
 from Globals              import LEFTARROW
 
-import ChunkData
+from pipeline             import ChunkData
 
 
 ## This is used a lot, so define it right away.

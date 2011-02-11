@@ -26,7 +26,7 @@
 from collections import defaultdict
 from OrderedDict import OrderedDict
 
-import ChunkData
+from pipeline    import ChunkData
 
 
 BASE = 0

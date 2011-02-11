@@ -31,7 +31,7 @@ from Globals     import FORMAT_PROPERTIES
 from Globals     import ESC
 from Globals     import compute_closest_ansi_color
 
-import ChunkData
+from pipeline    import ChunkData
 
 
 class PlainLogger:

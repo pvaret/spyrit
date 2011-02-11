@@ -24,11 +24,10 @@
 
 from localqt        import *
 
-import ChunkData
+from pipeline       import ChunkData
 
 from Utilities      import normalize_text
 
-from os.path        import commonprefix
 from collections    import deque
 
 import re

@@ -30,13 +30,12 @@ from localqt          import *
 
 from Singletons       import singletons
 from PlatformSpecific import platformSpecific
-from Utilities        import check_ssl_is_available
 from Utilities        import ensure_valid_filename
-
-from SocketPipeline   import SocketPipeline
 from Logger           import create_logger_for_world
 
-import ChunkData
+from pipeline                import ChunkData
+from pipeline.SocketPipeline import SocketPipeline
+
 
 
 

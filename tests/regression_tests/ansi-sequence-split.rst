@@ -8,8 +8,8 @@ sweep.
 
 Setup the Pipeline:
 
->>> from Pipeline import Pipeline
->>> from AnsiFilter import AnsiFilter
+>>> from pipeline.Pipeline import Pipeline
+>>> from pipeline.AnsiFilter import AnsiFilter
 >>> p = Pipeline()
 >>> p.addFilter( AnsiFilter )
 
@@ -35,6 +35,6 @@ And test the behavior.
 >>> p.feedBytes( ansi_seq[1:] )
 
 Ensure the buffer now contains a proper ANSI chunk:
->>> from ChunkData import chunk_repr
+>>> from pipeline.ChunkData import chunk_repr
 >>> print [ chunk_repr( chunk ) for chunk in buffer ]  #doctest: +ELLIPSIS
 [...<Chunk: ANSI...]

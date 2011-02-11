@@ -29,10 +29,10 @@ from WorldInputUI       import WorldInputUI
 from Autocompleter      import Autocompleter
 from OutputManager      import OutputManager
 from SplittableTextView import SplittableTextView
+from pipeline           import ChunkData
 
 from Singletons         import singletons
 
-import ChunkData
 
 
 

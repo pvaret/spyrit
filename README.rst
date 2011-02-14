@@ -44,3 +44,6 @@ FEEDBACK
 --------
 
 **Spyrit** is still a work in progress. Some things stand to be improved, and others are outright missing. Please give us feedback by joining the user mailing list at https://lists.sourceforge.net/lists/listinfo/spyrit-users!
+
+
+**Spyrit** is (c) 2007-2011 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv2.

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2010 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2011 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##

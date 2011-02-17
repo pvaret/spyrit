@@ -22,8 +22,9 @@
 
 import os.path
 
+from localqt import *
+
 from BaseCommand import BaseCommand
-from Singletons  import singletons
 from Utilities   import format_as_table
 
 
@@ -44,8 +45,12 @@ class SoundCommand( BaseCommand ):
 
     """
 
+    sound = qApp().sound
+    if not sound:
+      return
+
     filename = os.path.expanduser( filename )
-    ok, msg = singletons.sound.play( filename )
+    ok, msg = sound.play( filename )
 
     if not ok:
       world.info( msg )
@@ -67,8 +72,12 @@ class SoundCommand( BaseCommand ):
 
     """
 
-    registry        = singletons.sound.registry
-    current_backend = singletons.sound.backend
+    sound = qApp().sound
+    if not sound:
+      return
+
+    registry        = sound.registry
+    current_backend = sound.backend
 
     list_all = ( all is not None and all.lower().strip() == u"all" )
 

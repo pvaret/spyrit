@@ -226,9 +226,8 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   filename = os.path.basename( filename )
   error    = u"%s: %s" % ( exc_type.__name__, exc_value )
 
-  from Singletons import singletons
-
-  mw = singletons.mw  ## Will be set to None if no main window yet.
+  if qApp():
+    mw = qApp().mw
 
   args = dict( filename=filename, line=line, error=error )
 

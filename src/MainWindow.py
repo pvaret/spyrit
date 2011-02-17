@@ -25,7 +25,6 @@ from localqt             import *
 
 from WorldUI        import WorldUI
 from ActionSet      import ActionSet
-from Singletons     import singletons
 from ConfigObserver import ConfigObserver
 from SmartTabWidget import SmartTabWidget
 
@@ -35,13 +34,11 @@ from Messages  import messages
 
 class MainWindow( QtGui.QMainWindow ):
 
-  def __init__( s, parent=None ):
+  def __init__( s, config ):
 
-    QtGui.QMainWindow.__init__( s, parent )
+    QtGui.QMainWindow.__init__( s )
 
     ## Set up main window according to its configuration.
-
-    config = singletons.config
 
     s.setWindowTitle( config._app_name )
 
@@ -152,7 +149,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.refreshMenuWorlds()
 
-    connect( singletons.worldsmanager, SIGNAL( "worldListChanged()" ),
+    worldsmanager = qApp().worldsmanager
+    connect( worldsmanager, SIGNAL( "worldListChanged()" ),
              s.refreshMenuWorlds )
 
     ## Set up a MOTD to properly welcome our user:
@@ -171,7 +169,11 @@ class MainWindow( QtGui.QMainWindow ):
 
   def refreshStyle( s ):
 
-    style = singletons.config._widget_style
+    config = qApp().config
+    if not config:
+      return
+
+    style = config._widget_style
 
     if not style: style = s.initial_style
 
@@ -183,7 +185,11 @@ class MainWindow( QtGui.QMainWindow ):
 
   def refreshIcons( s ):
 
-    size = singletons.config._toolbar_icon_size
+    config = qApp().config
+    if not config:
+      return
+
+    size = config._toolbar_icon_size
 
     if not size:
       size = QtGui.QApplication.style() \
@@ -205,7 +211,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.menu_connect.clear()
 
-    worlds = singletons.worldsmanager.knownWorldList()
+    worldsmanager = qApp().worldsmanager
+    worlds = worldsmanager.knownWorldList()
 
     if not worlds:
 
@@ -311,7 +318,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Save the main window's geometry when it's about to be closed.
 
-    config = singletons.config
+    config = qApp().config
 
     size = ( s.size().width(), s.size().height() )
     config._mainwindow_size = size
@@ -341,7 +348,8 @@ class MainWindow( QtGui.QMainWindow ):
 
   def openWorldByName( s, worldname ):
 
-    world = singletons.worldsmanager.lookupWorldByName( worldname )
+    worldsmanager = qApp().worldsmanager
+    world = worldsmanager.lookupWorldByName( worldname )
 
     if world:
       s.openWorld( world )
@@ -352,14 +360,15 @@ class MainWindow( QtGui.QMainWindow ):
 
   def openWorldByHostPort( s, host, port, ssl=False ):
 
-    world = singletons.worldsmanager.lookupWorldByHostPort( host, port )
+    worldsmanager = qApp().worldsmanager
+    world = worldsmanager.lookupWorldByHostPort( host, port )
 
     if world:
       s.openWorld( world )
 
     else:
       s.openWorld(
-        singletons.worldsmanager.newAnonymousWorld( host, port, ssl )
+        worldsmanager.newAnonymousWorld( host, port, ssl )
       )
 
 
@@ -367,7 +376,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     from NewWorldDialog import NewWorldDialog
 
-    world  = singletons.worldsmanager.newAnonymousWorld()
+    worldsmanager = qApp().worldsmanager
+    world  = worldsmanager.newAnonymousWorld()
     dialog = NewWorldDialog( world.conf, s )
 
     if dialog.exec_():
@@ -380,7 +390,8 @@ class MainWindow( QtGui.QMainWindow ):
 
     from QuickConnectDialog import QuickConnectDialog
 
-    world  = singletons.worldsmanager.newAnonymousWorld()
+    worldsmanager = qApp().worldsmanager
+    world  = worldsmanager.newAnonymousWorld()
     dialog = QuickConnectDialog( world.conf, s )
 
     if dialog.exec_():
@@ -409,4 +420,6 @@ class MainWindow( QtGui.QMainWindow ):
   def actionAbout( s ):
 
     from AboutDialog import AboutDialog
-    AboutDialog( singletons.config, s ).exec_()
+
+    config = qApp().config
+    AboutDialog( config, s ).exec_()

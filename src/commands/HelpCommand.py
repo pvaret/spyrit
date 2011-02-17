@@ -22,7 +22,8 @@
 
 from textwrap import dedent
 
-from Singletons  import singletons
+from localqt import *
+
 from BaseCommand import BaseCommand
 from Globals     import CMDCHAR
 from Globals     import HELP
@@ -33,9 +34,11 @@ class HelpCommand( BaseCommand ):
 
   def cmd( s, world, cmdname=None, subcmdname=None ):
 
+    commands = qApp().command
+
     if cmdname:
 
-      cmd = singletons.commands.lookupCommand( cmdname )
+      cmd = commands.lookupCommand( cmdname )
 
       if not cmd:
         return s.helpNoSuchCommand( world, cmdname )
@@ -135,7 +138,7 @@ class HelpCommand( BaseCommand ):
 
     helptxt = [ "Available commands:\n" ]
 
-    cmd_registry = singletons.commands
+    cmd_registry = qApp().commands
 
     ljust = max( len( c ) for c in cmd_registry.commands.keys() ) + 2
 

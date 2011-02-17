@@ -31,7 +31,6 @@ from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
 
 from ConfigObserver import ConfigObserver
-from Singletons     import singletons
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
@@ -44,7 +43,7 @@ class SocketPipeline:
 
   def __init__( s, conf ):
 
-    s.triggersmanager = singletons.triggersmanager
+    triggersmanager = qApp().triggersmanager
 
     s.pipeline = Pipeline()
 
@@ -52,7 +51,7 @@ class SocketPipeline:
     s.pipeline.addFilter( AnsiFilter )
     s.pipeline.addFilter( UnicodeTextFilter, encoding=conf._world_encoding )
     s.pipeline.addFilter( FlowControlFilter )
-    s.pipeline.addFilter( TriggersFilter, manager=s.triggersmanager )
+    s.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
 
     s.using_ssl = False
     s.socket    = None
@@ -192,5 +191,3 @@ class SocketPipeline:
     s.socket   = None
     s.pipeline = None
     s.observer = None
-
-    s.triggersmanager = None

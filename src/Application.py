@@ -28,8 +28,16 @@ from localqt     import *
 
 from Messages    import messages
 from Utilities   import handle_exception
-from Singletons  import singletons
 from ConfigPaths import CONFIG_FILE
+
+from Config          import Config
+from TriggersManager import TriggersManager
+from WorldsManager   import WorldsManager
+from MainWindow      import MainWindow
+
+from TempResources   import TempResources
+from SoundEngine     import SoundEngine
+from CommandRegistry import CommandRegistry, register_local_commands
 
 
 class Application( QtGui.QApplication ):
@@ -42,6 +50,14 @@ class Application( QtGui.QApplication ):
     s.bootstrapped   = False
     s.local_encoding = locale.getpreferredencoding()  ## Try to guess the
                                                       ## local encoding.
+    s.mw              = None
+    s.tmprc           = None
+    s.sound           = None
+    s.config          = None
+    s.commands        = None
+    s.worldsmanager   = None
+    s.triggersmanager = None
+
 
     connect( s, SIGNAL( "aboutToQuit()" ), s.beforeStop )
 
@@ -69,33 +85,24 @@ class Application( QtGui.QApplication ):
     ## the software. Note that they are created in the order they depend
     ## on each other.
 
-    from Config          import Config
-    from TriggersManager import TriggersManager
-    from WorldsManager   import WorldsManager
-    from MainWindow      import MainWindow
+    s.config          = Config()
+    s.triggersmanager = TriggersManager( s.config )
+    s.worldsmanager   = WorldsManager( s.config )
+    s.mw              = MainWindow( s.config )
 
-    singletons.addInstance( "config",          Config() )
-    singletons.addInstance( "triggersmanager", TriggersManager() )
-    singletons.addInstance( "worldsmanager",   WorldsManager() )
-    singletons.addInstance( "mw",              MainWindow() )
-
-    singletons.mw.show()
+    s.mw.show()
 
     ## Load up additional global resources.
 
-    from TempResources   import TempResources
-    from SoundEngine     import SoundEngine
-    from CommandRegistry import CommandRegistry, register_local_commands
-
-    singletons.addInstance( "tmprc",    TempResources() )
-    singletons.addInstance( "sound",    SoundEngine() )
-    singletons.addInstance( "commands", CommandRegistry() )
+    s.tmprc    = TempResources()
+    s.sound    = SoundEngine()
+    s.commands = CommandRegistry()
 
     ## The command registry has to be populated with what commands have
     ## been implemented at this point. The register_local_commands function
     ## knows how to do that.
 
-    register_local_commands( singletons.commands )
+    register_local_commands( s.commands )
 
     s.bootstrapped = True
 
@@ -112,8 +119,8 @@ class Application( QtGui.QApplication ):
 
   def saveConfig( s ):
 
-    if singletons.config:
-      singletons.config.save( CONFIG_FILE )
+    if s.config:
+      s.config.save( CONFIG_FILE )
 
 
   def afterStart( s ):
@@ -135,18 +142,20 @@ class Application( QtGui.QApplication ):
 
         server, port = arg.split( u":", 1 )
 
-        try:               port = int( port )
-        except ValueError: port = 0
+        try:
+          port = int( port )
+        except ValueError:
+          port = 0
 
         if not port or not server:
           messages.warn( u"Invalid <server>:<port> command line: %s" % arg )
 
         else:
-          singletons.mw.openWorldByHostPort( server, port )
+          s.mw.openWorldByHostPort( server, port )
 
       else:
 
-        singletons.mw.openWorldByName( arg )
+        s.mw.openWorldByName( arg )
 
 
   def beforeStop( s ):

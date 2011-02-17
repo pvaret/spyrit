@@ -1,7 +1,3 @@
-Stuff to do before next release:
-
-  Nothing. We're done!
-
 This is an unordered list of features that need implementing sooner or later:
 
 * Simplify TabWidget, now that Qt already does what we need.
@@ -26,6 +22,7 @@ This is an unordered list of features that need implementing sooner or later:
 * Add /send command.
 * Idea: In case of missing parameters for command, provide brief usage summary (ex: conf without parameters -> "usage: /conf [keys|set|show|worldreset|reset]")
 * Aliases (/alias str 'send something to the world with [PARAMETERS]')
+* Clean up ActionSet with config/shortcut-aware QAction subclasses and no closures.
 
 Protocol support:
 

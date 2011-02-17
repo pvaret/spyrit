@@ -23,7 +23,8 @@
 import os.path
 import ConfigTypes
 
-from Singletons   import singletons
+from localqt import *
+
 from ConfigBasket import ConfigBasket
 from Matches      import MatchCreationError
 from Matches      import load_match_by_type
@@ -173,7 +174,9 @@ class PlayAction:
 
   def __call__( s, match, chunkbuffer ):
 
-    singletons.sound.play( s.soundfile or ":/sound/pop" )
+    sound = qApp().sound
+    if sound:
+      sound.play( s.soundfile or ":/sound/pop" )
 
 
   def __repr__( s ):
@@ -268,12 +271,12 @@ class MatchGroup:
 
 class TriggersManager:
 
-  def __init__( s ):
+  def __init__( s, config ):
 
     s.groups = {}
 
-    s.load( singletons.config )
-    singletons.config.registerSaveCallback( s.confSaveCallback )
+    s.load( config )
+    config.registerSaveCallback( s.confSaveCallback )
 
 
   def load( s, conf ):
@@ -486,4 +489,6 @@ class TriggersManager:
 
   def confSaveCallback( s ):
 
-    s.save( singletons.config )
+    config = qApp().config
+    if config:
+      s.save( config )

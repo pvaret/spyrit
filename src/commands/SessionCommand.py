@@ -19,9 +19,9 @@
 ## Commands to manage the session's state.
 ##
 
+from localqt import *
 
 from BaseCommand import BaseCommand
-from Singletons  import singletons
 
 
 class SessionCommand( BaseCommand ):
@@ -64,7 +64,9 @@ class SessionCommand( BaseCommand ):
 
     """
 
-    singletons.mw.close()
+    mw = qApp().mw
+    if mw:
+      mw.close()
 
 
   def cmd_close( s, world ):

@@ -25,7 +25,6 @@ from localqt import *
 
 import os.path
 
-from Singletons       import singletons
 from QSoundBackend    import QSoundBackend
 from PygameBackend    import PygameBackend
 from PlatformSpecific import platformSpecific
@@ -90,7 +89,11 @@ class SoundEngine:
     if not s.backend:
       return False, u"No sound engine available."
 
-    filename = singletons.tmprc.get( soundfile )
+    tmprc = qApp().tmprc
+    if not tmprc:
+      return False, u"Application not initialized."
+
+    filename = tmprc.get( soundfile )
 
     if not os.path.exists( filename ):
       return False, u"%s: file not found." % soundfile

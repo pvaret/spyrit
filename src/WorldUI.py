@@ -31,8 +31,6 @@ from OutputManager      import OutputManager
 from SplittableTextView import SplittableTextView
 from pipeline           import ChunkData
 
-from Singletons         import singletons
-
 
 
 
@@ -214,20 +212,23 @@ class WorldUI( QtGui.QSplitter ):
 
     s.updateToolBarIcons()
 
-    connect( singletons.mw.toolbar_main, SIGNAL( "iconSizeChanged( QSize )" ),
-                                         s.updateToolBarIcons )
+    mw = qApp().mw
+    connect( mw.toolbar_main, SIGNAL( "iconSizeChanged( QSize )" ),
+                              s.updateToolBarIcons )
 
-    for line in singletons.mw.motd:
+    for line in mw.motd:
       s.world.info( line)
 
 
   def updateToolBarIcons( s, new_size=None ):
 
+    mw = qApp().mw
     if new_size:
       s.toolbar.setIconSize( new_size )
 
     else:
-      s.toolbar.setIconSize( singletons.mw.toolbar_main.iconSize() )
+      if mw:
+        s.toolbar.setIconSize( mw.toolbar_main.iconSize() )
 
 
   def toggleSecondaryInput( s ):
@@ -291,9 +292,11 @@ class WorldUI( QtGui.QSplitter ):
 
   def close( s ):
 
+    mw = qApp().mw
+
     if s.world.isConnected():
 
-      messagebox = QtGui.QMessageBox( singletons.mw )
+      messagebox = QtGui.QMessageBox( mw )
 
       messagebox.setWindowTitle( u"Confirm close" )
       messagebox.setIcon( QtGui.QMessageBox.Question )

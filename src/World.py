@@ -28,7 +28,6 @@ from glob import glob
 
 from localqt          import *
 
-from Singletons       import singletons
 from PlatformSpecific import platformSpecific
 from Utilities        import ensure_valid_filename
 from Logger           import create_logger_for_world
@@ -53,8 +52,9 @@ class World( QtCore.QObject ):
 
     QtCore.QObject.__init__( s )
 
+    worldsmanager = qApp().worldsmanager
     if not conf:
-      conf = singletons.worldsmanager.newWorldConf()
+      conf = worldsmanager.newWorldConf()
 
     s.conf    = conf
     s.worldui = None
@@ -84,7 +84,9 @@ class World( QtCore.QObject ):
 
   def save( s ):
 
-    singletons.worldsmanager.saveWorld( s )
+    worldsmanager = qApp().worldsmanager
+    if worldsmanager:
+      worldsmanager.saveWorld( s )
 
 
   def setUI( s, worldui ):
@@ -111,9 +113,11 @@ class World( QtCore.QObject ):
 
   def disconnectFromWorld( s ):
 
+    mw = qApp().mw
+
     if s.isConnected():
 
-      messagebox = QtGui.QMessageBox( singletons.mw )
+      messagebox = QtGui.QMessageBox( mw )
       messagebox.setWindowTitle( u"Confirm disconnect" )
       messagebox.setIcon( QtGui.QMessageBox.Question )
       messagebox.setText( u"Really disconnect from this world?" )

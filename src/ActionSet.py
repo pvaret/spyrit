@@ -22,7 +22,6 @@
 
 from localqt    import *
 
-from Singletons     import singletons
 from ConfigObserver import ConfigObserver
 
 
@@ -32,9 +31,8 @@ class ActionSet:
 
     s.parent = parent
 
-    config     = singletons.config
+    config = qApp().config
     s.observer = ConfigObserver( config )
-
     s.closures = []
 
     s.actions = {
@@ -98,12 +96,14 @@ class ActionSet:
     if icon: a.setIcon( QtGui.QIcon( icon ) )
 
     shortcutname = "shortcut_" + action
+    config = qApp().config
 
     def set_action_shortcut():
 
-      ## Note how this closure uses 'a' and 'shortcutname' as bound variables.
+      ## Note how this closure uses 'config', 'a' and 'shortcutname' as bound
+      ## variables.
 
-      shortcut = singletons.config[ shortcutname ]
+      shortcut = config[ shortcutname ]
 
       if shortcut: a.setShortcut( QtGui.QKeySequence( shortcut ) )
       else:        a.setShortcut( QtGui.QKeySequence() )

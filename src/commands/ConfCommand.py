@@ -20,8 +20,9 @@
 ##
 
 
+from localqt import *
+
 from BaseCommand import BaseCommand
-from Singletons  import singletons
 from Utilities   import format_as_table
 from Defaults    import ALL_DESCS
 
@@ -50,7 +51,10 @@ class ConfCommand( BaseCommand ):
       return
 
     args = t.from_string( args )
-    singletons.config[ key ] = args
+    config = qApp().config
+
+    if config:
+      config[ key ] = args
 
     ## TODO: Factorize display between this, worldset, reset and worldreset.
     value = t.to_string( args )
@@ -115,13 +119,17 @@ class ConfCommand( BaseCommand ):
       world.info( u"Unknown configuration key: %s" % key )
       return
 
+    config = qApp().config
+    if not config:
+      return
+
     try:
-      del singletons.config[ key ]
+      del config[ key ]
 
     except KeyError:
       pass
 
-    value = t.to_string( singletons.config[ key ] )
+    value = t.to_string( config[ key ] )
 
     if value is None:
       value = u'None'
@@ -209,7 +217,7 @@ class ConfCommand( BaseCommand ):
     """
 
     worldconf  = world.conf
-    globalconf = singletons.config
+    globalconf = qApp().config
     defaults   = globalconf.parent
 
     ## 1/ Retrieve list of keys to list, based on the argument given by the

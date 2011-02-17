@@ -21,20 +21,17 @@
 from localqt import *
 
 from World      import World
-from Singletons import singletons
-from Utilities  import case_insensitive_cmp, normalize_text
+from Utilities  import normalize_text
 
 
 class WorldsManager( QtCore.QObject ):
 
-  def __init__( s ):
+  def __init__( s, config ):
 
     QtCore.QObject.__init__( s )
 
     ## Create the section for worlds in the configuration if it doesn't exist
     ## already.
-
-    config = singletons.config
 
     if not config.hasSection( config._worlds_section ):
       config.createSection( config._worlds_section )

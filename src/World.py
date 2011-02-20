@@ -32,6 +32,7 @@ from ConfigObserver   import ConfigObserver
 from PlatformSpecific import platformSpecific
 from Utilities        import ensure_valid_filename
 from Logger           import create_logger_for_world
+from Globals          import CMDCHAR
 
 from pipeline                import ChunkData
 from pipeline.SocketPipeline import SocketPipeline
@@ -60,6 +61,11 @@ class World( QtCore.QObject ):
     s.conf    = conf
     s.worldui = None
     s.logger  = None
+
+    s.input = []
+    s.input_flush = QtCore.QTimer()
+    s.input_flush.setSingleShot( True )
+    connect( s.input_flush, SIGNAL( "timeout()" ), s.flushPendingInput )
 
     s.was_logging       = False
     s.last_log_filename = None
@@ -326,6 +332,27 @@ class World( QtCore.QObject ):
     f.close()
 
     s.info( u"File loaded in %.2fs." % ( t2 - t1 ) )
+
+
+  def flushPendingInput( s ):
+
+    while s.input:
+
+      text = s.input.pop( 0 )
+
+      if text.startswith( CMDCHAR ):
+        qApp().core.commands.runCmdLine( s, text[ len( CMDCHAR ): ] )
+
+      else:
+        s.socketpipeline.send( text + u"\r\n" )
+
+
+  def processInput( s, input ):
+
+    for line in input.split( u'\n' ):
+      s.input.append( line )
+
+    s.input_flush.start()
 
 
   def __del__( s ):

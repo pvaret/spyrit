@@ -26,7 +26,6 @@ from localqt import *
 from ActionSet        import ActionSet
 from InputHistory     import InputHistory
 from ConfigObserver   import ConfigObserver
-from Globals          import CMDCHAR
 
 
 
@@ -141,25 +140,14 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def clearAndSend( s ):
 
-    text = unicode( s.toPlainText() ).rstrip( u"\r\n" )
+    text = unicode( s.toPlainText() )
 
     s.clear()
-
-    ## Ensure the input is cleared right away even if processing takes a little
-    ## time:
-    s.repaint()
-    qApp().processEvents()
 
     if text:
       s.history.update( text )
 
-    commands = qApp().core.commands
-    if text.startswith( CMDCHAR ):
-      commands.runCmdLine( s.world, text[ len( CMDCHAR ): ] )
-
-    else:
-      s.world.socketpipeline.send( text + u"\r\n" )
-      emit( s, SIGNAL( "textSent( str )" ), text )
+    s.world.processInput( text )
 
 
   def historyUp( s ):

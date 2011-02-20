@@ -78,7 +78,6 @@ class WorldUI( QtGui.QSplitter ):
                                     ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
     s.alert_timer = QtCore.QTimer()
-    s.alert_timer.setInterval( 0 )
     s.alert_timer.setSingleShot( True )
     connect( s.alert_timer, SIGNAL( 'timeout()' ), s.windowAlert )
 
@@ -257,6 +256,9 @@ class WorldUI( QtGui.QSplitter ):
 
   def iconBlink( s, frame ):
 
+    if not s.world:
+      return
+
     led = s.led.select( connected = s.world.isConnected(),
                         lit       = ( frame % 2 != 1 ) )
     s.tab.setTabIcon( led )
@@ -267,12 +269,18 @@ class WorldUI( QtGui.QSplitter ):
     if s.blinker.state() == QtCore.QTimeLine.Running:
       return
 
+    if not s.world:
+      return
+
     led = s.led.select( connected = s.world.isConnected(),
                         lit       = not s.isVisible() )
     s.tab.setTabIcon( led )
 
 
   def windowAlert( s ):
+
+    if not s.world:
+      return
 
     if s.world.conf._alert_on_activity:
       qApp().alert( s.window() )

@@ -24,20 +24,11 @@
 import sys
 import locale
 
-from localqt     import *
+from localqt    import *
 
-from Messages    import messages
-from Utilities   import handle_exception
-from ConfigPaths import CONFIG_FILE
-
-from Config          import Config
-from TriggersManager import TriggersManager
-from WorldsManager   import WorldsManager
-from MainWindow      import MainWindow
-
-from TempResources   import TempResources
-from SoundEngine     import SoundEngine
-from CommandRegistry import CommandRegistry, register_local_commands
+from Messages   import messages
+from Utilities  import handle_exception
+from SpyritCore import construct_spyrit_core
 
 
 class Application( QtGui.QApplication ):
@@ -50,14 +41,7 @@ class Application( QtGui.QApplication ):
     s.bootstrapped   = False
     s.local_encoding = locale.getpreferredencoding()  ## Try to guess the
                                                       ## local encoding.
-    s.mw              = None
-    s.tmprc           = None
-    s.sound           = None
-    s.config          = None
-    s.commands        = None
-    s.worldsmanager   = None
-    s.triggersmanager = None
-
+    s.core = None
 
     connect( s, SIGNAL( "aboutToQuit()" ), s.beforeStop )
 
@@ -67,6 +51,8 @@ class Application( QtGui.QApplication ):
     ## Check that we aren't already bootstrapped.
     if s.bootstrapped:
       return
+
+    s.bootstrapped = True
 
     ## Attempt to load resources. Log error if resources not found.
     try:
@@ -81,30 +67,8 @@ class Application( QtGui.QApplication ):
     ## Setup icon.
     s.setWindowIcon( QtGui.QIcon( ":/app/icon" ) )
 
-    ## Load and register the singleton instances that are used throughout
-    ## the software. Note that they are created in the order they depend
-    ## on each other.
-
-    s.config          = Config()
-    s.triggersmanager = TriggersManager( s.config )
-    s.worldsmanager   = WorldsManager( s.config )
-    s.mw              = MainWindow( s.config )
-
-    s.mw.show()
-
-    ## Load up additional global resources.
-
-    s.tmprc    = TempResources()
-    s.sound    = SoundEngine()
-    s.commands = CommandRegistry()
-
-    ## The command registry has to be populated with what commands have
-    ## been implemented at this point. The register_local_commands function
-    ## knows how to do that.
-
-    register_local_commands( s.commands )
-
-    s.bootstrapped = True
+    ## And create the core object for Spyrit:
+    s.core = construct_spyrit_core( s )
 
 
   def exec_( s ):
@@ -117,12 +81,6 @@ class Application( QtGui.QApplication ):
     return QtGui.QApplication.exec_()
 
 
-  def saveConfig( s ):
-
-    if s.config:
-      s.config.save( CONFIG_FILE )
-
-
   def afterStart( s ):
 
     ## This method is called once, right after the start of the event loop.
@@ -130,6 +88,8 @@ class Application( QtGui.QApplication ):
     ## has begun running.
 
     sys.excepthook = handle_exception
+
+    s.core.constructMainWindow()
 
     ## At this point, the arguments that Qt uses have already been filtered
     ## by Qt itself.
@@ -151,14 +111,13 @@ class Application( QtGui.QApplication ):
           messages.warn( u"Invalid <server>:<port> command line: %s" % arg )
 
         else:
-          s.mw.openWorldByHostPort( server, port )
+          s.core.openWorldByHostPort( server, port )
 
       else:
 
-        s.mw.openWorldByName( arg )
+        s.core.openWorldByName( arg )
 
 
   def beforeStop( s ):
 
-    s.saveConfig()
     sys.excepthook = sys.__excepthook__

@@ -174,9 +174,7 @@ class PlayAction:
 
   def __call__( s, match, chunkbuffer ):
 
-    sound = qApp().sound
-    if sound:
-      sound.play( s.soundfile or ":/sound/pop" )
+    qApp().core.sound.play( s.soundfile or ":/sound/pop" )
 
 
   def __repr__( s ):
@@ -489,6 +487,5 @@ class TriggersManager:
 
   def confSaveCallback( s ):
 
-    config = qApp().config
-    if config:
-      s.save( config )
+    config = qApp().core.config
+    s.save( config )

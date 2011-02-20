@@ -33,11 +33,6 @@ class TempResources:
     s.map      = {}
     s.tmpfiles = set()
 
-    app = qApp()
-
-    if app:
-      connect( app, SIGNAL( "aboutToQuit()" ), s.cleanup )
-
 
   def get( s, fname ):
 

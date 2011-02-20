@@ -31,7 +31,7 @@ class ActionSet:
 
     s.parent = parent
 
-    config = qApp().config
+    config = qApp().core.config
     s.observer = ConfigObserver( config )
     s.closures = []
 
@@ -96,7 +96,7 @@ class ActionSet:
     if icon: a.setIcon( QtGui.QIcon( icon ) )
 
     shortcutname = "shortcut_" + action
-    config = qApp().config
+    config = qApp().core.config
 
     def set_action_shortcut():
 

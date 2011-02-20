@@ -45,9 +45,7 @@ class SoundCommand( BaseCommand ):
 
     """
 
-    sound = qApp().sound
-    if not sound:
-      return
+    sound = qApp().core.sound
 
     filename = os.path.expanduser( filename )
     ok, msg = sound.play( filename )
@@ -72,9 +70,7 @@ class SoundCommand( BaseCommand ):
 
     """
 
-    sound = qApp().sound
-    if not sound:
-      return
+    sound = qApp().core.sound
 
     registry        = sound.registry
     current_backend = sound.backend

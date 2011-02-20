@@ -65,8 +65,6 @@ class WorldUI( QtGui.QSplitter ):
     s.world = world
     s.led   = LED()
 
-    s.world.setUI( s )
-
     s.tab = TabDelegate( s )
 
     connect( s.tab, SIGNAL( "tabChanged( bool )" ), s.onTabChanged )
@@ -210,25 +208,20 @@ class WorldUI( QtGui.QSplitter ):
 
     s.toolbar.addSeparator()
 
-    s.updateToolBarIcons()
+    s.world.setUI( s )
 
-    mw = qApp().mw
-    connect( mw.toolbar_main, SIGNAL( "iconSizeChanged( QSize )" ),
-                              s.updateToolBarIcons )
-
-    for line in mw.motd:
-      s.world.info( line)
+    for line in qApp().core.motd:
+      s.world.info( line )
 
 
-  def updateToolBarIcons( s, new_size=None ):
+  def updateToolBarIcons( s, size ):
 
-    mw = qApp().mw
-    if new_size:
-      s.toolbar.setIconSize( new_size )
+    if not size:
+      size = QtGui.QApplication.style() \
+                  .pixelMetric( QtGui.QStyle.PM_ToolBarIconSize )
 
-    else:
-      if mw:
-        s.toolbar.setIconSize( mw.toolbar_main.iconSize() )
+    new_size = QtCore.QSize( size, size )
+    s.toolbar.setIconSize( new_size )
 
 
   def toggleSecondaryInput( s ):
@@ -292,11 +285,9 @@ class WorldUI( QtGui.QSplitter ):
 
   def close( s ):
 
-    mw = qApp().mw
-
     if s.world.isConnected():
 
-      messagebox = QtGui.QMessageBox( mw )
+      messagebox = QtGui.QMessageBox( s.window() )
 
       messagebox.setWindowTitle( u"Confirm close" )
       messagebox.setIcon( QtGui.QMessageBox.Question )

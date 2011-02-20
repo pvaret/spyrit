@@ -64,9 +64,7 @@ class SessionCommand( BaseCommand ):
 
     """
 
-    mw = qApp().mw
-    if mw:
-      mw.close()
+    qApp().closeAllWindows()
 
 
   def cmd_close( s, world ):

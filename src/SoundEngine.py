@@ -21,8 +21,6 @@
 ##
 
 
-from localqt import *
-
 import os.path
 
 from QSoundBackend    import QSoundBackend
@@ -78,8 +76,9 @@ class SoundBackendRegistry:
 
 class SoundEngine:
 
-  def __init__( s ):
+  def __init__( s, tmprc ):
 
+    s.tmprc    = tmprc
     s.registry = SoundBackendRegistry()
     s.backend  = s.registry.pollForBackend()
 
@@ -89,11 +88,7 @@ class SoundEngine:
     if not s.backend:
       return False, u"No sound engine available."
 
-    tmprc = qApp().tmprc
-    if not tmprc:
-      return False, u"Application not initialized."
-
-    filename = tmprc.get( soundfile )
+    filename = s.tmprc.get( soundfile )
 
     if not os.path.exists( filename ):
       return False, u"%s: file not found." % soundfile

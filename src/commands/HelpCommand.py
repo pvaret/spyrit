@@ -34,7 +34,7 @@ class HelpCommand( BaseCommand ):
 
   def cmd( s, world, cmdname=None, subcmdname=None ):
 
-    commands = qApp().command
+    commands = qApp().core.command
 
     if cmdname:
 
@@ -138,7 +138,7 @@ class HelpCommand( BaseCommand ):
 
     helptxt = [ "Available commands:\n" ]
 
-    cmd_registry = qApp().commands
+    cmd_registry = qApp().core.commands
 
     ljust = max( len( c ) for c in cmd_registry.commands.keys() ) + 2
 

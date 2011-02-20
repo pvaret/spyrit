@@ -21,15 +21,12 @@
 
 
 
-from localqt             import *
+from localqt        import *
 
 from WorldUI        import WorldUI
 from ActionSet      import ActionSet
 from ConfigObserver import ConfigObserver
 from SmartTabWidget import SmartTabWidget
-
-from Globals   import CMDCHAR
-from Messages  import messages
 
 
 class MainWindow( QtGui.QMainWindow ):
@@ -149,33 +146,19 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.refreshMenuWorlds()
 
-    worldsmanager = qApp().worldsmanager
+    worldsmanager = qApp().core.worlds
     connect( worldsmanager, SIGNAL( "worldListChanged()" ),
              s.refreshMenuWorlds )
-
-    ## Set up a MOTD to properly welcome our user:
-
-    MOTD = (
-        u"Welcome to %s %s!" % ( config._app_name, config._app_version ),
-        u"Type %shelp for help on available commands." % CMDCHAR
-    )
-
-    ## Note the use of iter(), so the MOTD is only displayed once for all
-    ## worlds.
-    s.motd = iter( MOTD )
 
     ## And with this, our Main Window is created, whee!
 
 
   def refreshStyle( s ):
 
-    config = qApp().config
-    if not config:
-      return
+    style = qApp().core.config._widget_style
 
-    style = config._widget_style
-
-    if not style: style = s.initial_style
+    if not style:
+      style = s.initial_style
 
     s.setUpdatesEnabled( False )
     QtGui.QApplication.setStyle( style )
@@ -185,11 +168,7 @@ class MainWindow( QtGui.QMainWindow ):
 
   def refreshIcons( s ):
 
-    config = qApp().config
-    if not config:
-      return
-
-    size = config._toolbar_icon_size
+    size = qApp().core.config._toolbar_icon_size
 
     if not size:
       size = QtGui.QApplication.style() \
@@ -211,7 +190,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.menu_connect.clear()
 
-    worldsmanager = qApp().worldsmanager
+    worldsmanager = qApp().core.worlds
     worlds = worldsmanager.knownWorldList()
 
     if not worlds:
@@ -318,7 +297,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Save the main window's geometry when it's about to be closed.
 
-    config = qApp().config
+    config = qApp().core.config
 
     size = ( s.size().width(), s.size().height() )
     config._mainwindow_size = size
@@ -340,62 +319,30 @@ class MainWindow( QtGui.QMainWindow ):
     event.accept()
 
 
-  def openWorld( s, world ):
-
-    s.newWorldUI( world )
-    world.connectToWorld()
-
-
-  def openWorldByName( s, worldname ):
-
-    worldsmanager = qApp().worldsmanager
-    world = worldsmanager.lookupWorldByName( worldname )
-
-    if world:
-      s.openWorld( world )
-
-    else:
-      messages.warn( u"No such world: %s" % worldname )
-
-
-  def openWorldByHostPort( s, host, port, ssl=False ):
-
-    worldsmanager = qApp().worldsmanager
-    world = worldsmanager.lookupWorldByHostPort( host, port )
-
-    if world:
-      s.openWorld( world )
-
-    else:
-      s.openWorld(
-        worldsmanager.newAnonymousWorld( host, port, ssl )
-      )
-
-
   def actionNewWorld( s ):
 
     from NewWorldDialog import NewWorldDialog
 
-    worldsmanager = qApp().worldsmanager
+    worldsmanager = qApp().core.worlds
     world  = worldsmanager.newAnonymousWorld()
     dialog = NewWorldDialog( world.conf, s )
 
     if dialog.exec_():
 
       world.save()
-      s.openWorld( world )
+      qApp().core.openWorld( world )
 
 
   def actionQuickConnect( s ):
 
     from QuickConnectDialog import QuickConnectDialog
 
-    worldsmanager = qApp().worldsmanager
+    worldsmanager = qApp().core.worlds
     world  = worldsmanager.newAnonymousWorld()
     dialog = QuickConnectDialog( world.conf, s )
 
     if dialog.exec_():
-      s.openWorld( world )
+      qApp().core.openWorld( world )
 
 
   def makeConnectToWorldAction( s, worldname ):
@@ -414,12 +361,12 @@ class MainWindow( QtGui.QMainWindow ):
     if not action: return
 
     worldname = unicode( action.data().toString() )
-    s.openWorldByName( worldname )
+    qApp().core.openWorldByName( worldname )
 
 
   def actionAbout( s ):
 
     from AboutDialog import AboutDialog
 
-    config = qApp().config
+    config = qApp().core.config
     AboutDialog( config, s ).exec_()

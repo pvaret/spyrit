@@ -227,11 +227,13 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   error    = u"%s: %s" % ( exc_type.__name__, exc_value )
 
   if qApp():
-    mw = qApp().mw
+    window = qApp().activeWindow()
+  else:
+    window = None
 
   args = dict( filename=filename, line=line, error=error )
 
-  QtGui.QMessageBox.critical( mw, "Oh dear...",
+  QtGui.QMessageBox.critical( window, "Oh dear...",
                               CRASH_MSG % args,
                               buttons=QtGui.QMessageBox.Close )
 
@@ -240,6 +242,9 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   print "".join( traceback.format_exception( exc_type,
                                              exc_value,
                                              exc_traceback ) )
+  if qApp():
+    qApp().core.atExit()
+
   sys.exit( 1 )
 
 

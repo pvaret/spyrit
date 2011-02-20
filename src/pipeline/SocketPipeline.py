@@ -43,7 +43,7 @@ class SocketPipeline:
 
   def __init__( s, conf ):
 
-    triggersmanager = qApp().triggersmanager
+    triggersmanager = qApp().core.triggers
 
     s.pipeline = Pipeline()
 

@@ -120,9 +120,8 @@ class CommandRegistry:
 
 
 
-## Offer a function to register our local commands:
+def construct_command_registry():
 
-def register_local_commands( cmd_registry ):
 
   from commands.HelpCommand    import HelpCommand
   from commands.ConfCommand    import ConfCommand
@@ -132,10 +131,14 @@ def register_local_commands( cmd_registry ):
   from commands.SoundCommand   import SoundCommand
   from commands.MatchCommand   import MatchCommand
 
-  cmd_registry.registerCommand( HELP,      HelpCommand )
-  cmd_registry.registerCommand( "conf",    ConfCommand )
-  cmd_registry.registerCommand( "debug",   DebugCommand )
-  cmd_registry.registerCommand( "find",    FindCommand )
-  cmd_registry.registerCommand( "session", SessionCommand )
-  cmd_registry.registerCommand( "sound",   SoundCommand )
-  cmd_registry.registerCommand( "match",   MatchCommand )
+  command_registry = CommandRegistry()
+
+  command_registry.registerCommand( HELP,      HelpCommand )
+  command_registry.registerCommand( "conf",    ConfCommand )
+  command_registry.registerCommand( "debug",   DebugCommand )
+  command_registry.registerCommand( "find",    FindCommand )
+  command_registry.registerCommand( "session", SessionCommand )
+  command_registry.registerCommand( "sound",   SoundCommand )
+  command_registry.registerCommand( "match",   MatchCommand )
+
+  return command_registry

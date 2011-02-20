@@ -51,10 +51,7 @@ class ConfCommand( BaseCommand ):
       return
 
     args = t.from_string( args )
-    config = qApp().config
-
-    if config:
-      config[ key ] = args
+    qApp().core.config[ key ] = args
 
     ## TODO: Factorize display between this, worldset, reset and worldreset.
     value = t.to_string( args )
@@ -119,9 +116,7 @@ class ConfCommand( BaseCommand ):
       world.info( u"Unknown configuration key: %s" % key )
       return
 
-    config = qApp().config
-    if not config:
-      return
+    config = qApp().core.config
 
     try:
       del config[ key ]
@@ -217,7 +212,7 @@ class ConfCommand( BaseCommand ):
     """
 
     worldconf  = world.conf
-    globalconf = qApp().config
+    globalconf = qApp().core.config
     defaults   = globalconf.parent
 
     ## 1/ Retrieve list of keys to list, based on the argument given by the

@@ -153,8 +153,8 @@ class WorldInputUI( QtGui.QTextEdit ):
     if text:
       s.history.update( text )
 
-    commands = qApp().commands
-    if commands and text.startswith( CMDCHAR ):
+    commands = qApp().core.commands
+    if text.startswith( CMDCHAR ):
       commands.runCmdLine( s.world, text[ len( CMDCHAR ): ] )
 
     else:

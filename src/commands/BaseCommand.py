@@ -49,7 +49,7 @@ class BaseCommand( object ):
     ## Default implementation that only displays help. Overload this in
     ## subclasses.
 
-    commands = qApp().commands
+    commands = qApp().core.commands
 
     ## TODO: Clean this up; store cmd name when registering it.
     cmdname = [ k for k, v in commands.commands.iteritems()

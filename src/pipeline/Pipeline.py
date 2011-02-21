@@ -26,6 +26,7 @@ from localqt import *
 
 import ChunkData
 
+from SingleShotTimer  import SingleShotTimer
 from CallbackRegistry import CallbackRegistry
 
 
@@ -45,10 +46,8 @@ class Pipeline( QtCore.QObject ):
 
     s.notification_registry = {}
 
-    s.prompt_timer = QtCore.QTimer( s )
-    s.prompt_timer.setSingleShot( True )
+    s.prompt_timer = SingleShotTimer( s.sweepPrompt )
     s.prompt_timer.setInterval( s.PROMPT_TIMEOUT )
-    connect( s.prompt_timer, SIGNAL( "timeout()" ), s.sweepPrompt )
 
 
   def feedBytes( s, packet, blocksize=2048 ):

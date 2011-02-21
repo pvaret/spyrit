@@ -28,6 +28,7 @@ from TabDelegate        import TabDelegate
 from WorldInputUI       import WorldInputUI
 from Autocompleter      import Autocompleter
 from OutputManager      import OutputManager
+from SingleShotTimer    import SingleShotTimer
 from SplittableTextView import SplittableTextView
 from pipeline           import ChunkData
 
@@ -77,9 +78,7 @@ class WorldUI( QtGui.QSplitter ):
     s.world.socketpipeline.addSink( s.startIconBlink,
                                     ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
-    s.alert_timer = QtCore.QTimer()
-    s.alert_timer.setSingleShot( True )
-    connect( s.alert_timer, SIGNAL( 'timeout()' ), s.windowAlert )
+    s.alert_timer = SingleShotTimer( s.windowAlert )
 
     ## Setup input and output UI.
 

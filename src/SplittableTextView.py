@@ -25,8 +25,8 @@
 from localqt import *
 
 from Utilities        import qt_version
+from SingleShotTimer  import SingleShotTimer
 from PlatformSpecific import platformSpecific
-
 
 
 class LineCount( QtGui.QLabel ):
@@ -46,10 +46,7 @@ class LineCount( QtGui.QLabel ):
 
     s.previous_size = QtCore.QSize()
 
-    s.updateTimer = QtCore.QTimer( s )
-    s.updateTimer.setSingleShot( True )
-
-    connect( s.updateTimer, SIGNAL( "timeout()" ), s.applyChanges )
+    s.update_timer = SingleShotTimer( s.applyChanges )
 
 
   def setAnchor( s, x, y ):
@@ -64,8 +61,8 @@ class LineCount( QtGui.QLabel ):
 
     s.line_count = count
 
-    if not s.updateTimer.isActive():
-      s.updateTimer.start()
+    if not s.update_timer.isActive():
+      s.update_timer.start()
 
 
   def applyChanges( s ):

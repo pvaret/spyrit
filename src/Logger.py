@@ -33,6 +33,7 @@ from Globals     import compute_closest_ansi_color
 
 from pipeline    import ChunkData
 
+from SingleShotTimer import SingleShotTimer
 
 class PlainLogger:
 
@@ -50,10 +51,8 @@ class PlainLogger:
     #if backlog:
     #  s.buffer.append( backlog )
 
-    s.flush_timer = QtCore.QTimer()
+    s.flush_timer = SingleShotTimer( s.flushBuffer )
     s.flush_timer.setInterval( 100 )  ## ms
-    s.flush_timer.setSingleShot( True )
-    connect( s.flush_timer, SIGNAL( 'timeout()' ), s.flushBuffer )
 
 
   def logChunk( s, chunk ):

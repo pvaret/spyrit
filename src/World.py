@@ -33,6 +33,7 @@ from PlatformSpecific import platformSpecific
 from Utilities        import ensure_valid_filename
 from Logger           import create_logger_for_world
 from Globals          import CMDCHAR
+from SingleShotTimer  import SingleShotTimer
 
 from pipeline                import ChunkData
 from pipeline.SocketPipeline import SocketPipeline
@@ -63,9 +64,7 @@ class World( QtCore.QObject ):
     s.logger  = None
 
     s.input = []
-    s.input_flush = QtCore.QTimer()
-    s.input_flush.setSingleShot( True )
-    connect( s.input_flush, SIGNAL( "timeout()" ), s.flushPendingInput )
+    s.input_flush = SingleShotTimer( s.flushPendingInput )
 
     s.was_logging       = False
     s.last_log_filename = None

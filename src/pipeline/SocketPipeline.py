@@ -27,6 +27,7 @@ from Pipeline          import Pipeline
 from AnsiFilter        import AnsiFilter
 from TelnetFilter      import TelnetFilter
 from TriggersFilter    import TriggersFilter
+from SingleShotTimer   import SingleShotTimer
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
 
@@ -57,9 +58,8 @@ class SocketPipeline:
     s.socket    = None
     s.conf      = conf
     s.buffer    = []
-    s.flush_timer = QtCore.QTimer()
-    s.flush_timer.setSingleShot( True )
-    connect( s.flush_timer, SIGNAL( "timeout()" ), s.flushBuffer )
+
+    s.flush_timer = SingleShotTimer( s.flushBuffer )
 
     s.observer = ConfigObserver( s.conf )
     s.observer.addCallback( "world_encoding", s.setStreamEncoding )

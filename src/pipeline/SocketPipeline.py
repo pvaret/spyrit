@@ -56,6 +56,10 @@ class SocketPipeline:
     s.using_ssl = False
     s.socket    = None
     s.conf      = conf
+    s.buffer    = []
+    s.flush_timer = QtCore.QTimer()
+    s.flush_timer.setSingleShot( True )
+    connect( s.flush_timer, SIGNAL( "timeout()" ), s.flushBuffer )
 
     s.observer = ConfigObserver( s.conf )
     s.observer.addCallback( "world_encoding", s.setStreamEncoding )
@@ -94,7 +98,8 @@ class SocketPipeline:
 
   def connectToHost( s ):
 
-    if not s.socket: s.setupSocket()
+    if not s.socket:
+      s.setupSocket()
 
     s.pipeline.resetInternalState()
 
@@ -118,6 +123,8 @@ class SocketPipeline:
 
   def reportStateChange( s, state ):
 
+    s.flushBuffer()
+
     if   state == QtNetwork.QAbstractSocket.HostLookupState:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.RESOLVING ) )
 
@@ -133,10 +140,13 @@ class SocketPipeline:
 
   def reportEncrypted( s ):
 
+    s.flushBuffer()
     s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
 
 
   def reportError( s, error ):
+
+    s.flushBuffer()
 
     if   error == QtNetwork.QAbstractSocket.ConnectionRefusedError:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTIONREFUSED ) )
@@ -170,6 +180,15 @@ class SocketPipeline:
   def readSocket( s ):
 
     data = str( s.socket.readAll() )
+    s.buffer.append( data )
+
+    s.flush_timer.start()
+
+
+  def flushBuffer( s ):
+
+    data = ''.join( s.buffer )
+    del s.buffer[:]
     s.pipeline.feedBytes( data )
 
 

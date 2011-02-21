@@ -63,7 +63,8 @@ class SocketPipeline:
 
   def setStreamEncoding( s ):
 
-    s.pipeline.notify( "encoding_changed", s.conf._world_encoding )
+    if s.pipeline:
+      s.pipeline.notify( "encoding_changed", s.conf._world_encoding )
 
 
   def setupSocket( s ):

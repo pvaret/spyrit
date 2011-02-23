@@ -34,6 +34,8 @@ class Pipeline( QtCore.QObject ):
 
   PROMPT_TIMEOUT = 700 ## ms
 
+  flushBegin = QtCore.pyqtSignal()
+  flushEnd   = QtCore.pyqtSignal()
 
   def __init__( s ):
 
@@ -93,14 +95,14 @@ class Pipeline( QtCore.QObject ):
 
   def flushOutputBuffer( s ):
 
-    s.emit( SIGNAL( "flushBegin()" ) )
+    s.flushBegin.emit()
 
     for chunk in s.outputBuffer:
 
       chunk_type, _ = chunk
       s.sinks[ chunk_type ].triggerAll( chunk )
 
-    s.emit( SIGNAL( "flushEnd()" ) )
+    s.flushEnd.emit()
 
     s.outputBuffer = []
 

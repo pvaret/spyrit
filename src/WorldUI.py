@@ -68,12 +68,12 @@ class WorldUI( QtGui.QSplitter ):
 
     s.tab = TabDelegate( s )
 
-    connect( s.tab, SIGNAL( "tabChanged( bool )" ), s.onTabChanged )
+    s.tab.tabChanged.connect( s.onTabChanged )
 
     s.blinker = QtCore.QTimeLine( 200, s ) ## ms
     s.blinker.setFrameRange( 0, 3 )
-    connect( s.blinker, SIGNAL( "frameChanged( int )" ), s.iconBlink )
-    connect( s.blinker, SIGNAL( "finished()" ), s.steadyIcon )
+    s.blinker.frameChanged.connect( s.iconBlink )
+    s.blinker.finished.connect( s.steadyIcon )
 
     s.world.socketpipeline.addSink( s.startIconBlink,
                                     ChunkData.PACKETBOUND | ChunkData.NETWORK )
@@ -96,20 +96,16 @@ class WorldUI( QtGui.QSplitter ):
     s.addWidget( s.secondaryinputui )
     s.secondaryinputui.hide()
 
-    connect( s.inputui,          SIGNAL( "returnPressed()" ),
-      s.outputui.pingPage )
+    s.inputui.returnPressed.connect( s.outputui.pingPage )
+    s.secondaryinputui.returnPressed.connect( s.outputui.pingPage )
 
-    connect( s.secondaryinputui, SIGNAL( "returnPressed()" ),
-      s.outputui.pingPage )
+    s.world.socketpipeline.pipeline.flushBegin.connect(
+                              s.output_manager.textcursor.beginEditBlock )
 
-    connect( s.world.socketpipeline.pipeline, SIGNAL( "flushBegin()" ),
-             s.output_manager.textcursor.beginEditBlock )
+    s.world.socketpipeline.pipeline.flushEnd.connect(
+                              s.output_manager.textcursor.endEditBlock )
 
-    connect( s.world.socketpipeline.pipeline, SIGNAL( "flushEnd()" ),
-             s.output_manager.textcursor.endEditBlock )
-
-    connect( s.world.socketpipeline.pipeline, SIGNAL( "flushEnd()" ),
-             s.outputui.repaint )
+    s.world.socketpipeline.pipeline.flushEnd.connect( s.outputui.repaint )
 
     world.socketpipeline.addSink( s.output_manager.processChunk,
                                     ChunkData.TEXT
@@ -122,11 +118,8 @@ class WorldUI( QtGui.QSplitter ):
 
     s.setFocusProxy( s.inputui )
 
-    connect( s.inputui,          SIGNAL( "focusChanged( QWidget )" ),
-             s.setFocusProxy )
-
-    connect( s.secondaryinputui, SIGNAL( "focusChanged( QWidget )" ),
-             s.setFocusProxy )
+    s.inputui.focusChanged.connect( s.setFocusProxy )
+    s.secondaryinputui.focusChanged.connect( s.setFocusProxy )
 
     ## Setup autocompleter.
 
@@ -138,7 +131,7 @@ class WorldUI( QtGui.QSplitter ):
     s.setChildrenCollapsible( False )
     s.setSizes( world.conf._splitter_sizes )
 
-    connect( s, SIGNAL( "splitterMoved( int, int )" ), s.saveSplitterPosition )
+    s.splitterMoved.connect( s.saveSplitterPosition )
 
     ## Create toolbar and bind World-related actions.
 
@@ -180,17 +173,12 @@ class WorldUI( QtGui.QSplitter ):
     stoplog_action.setEnabled( False )
 
 
-    connect( world,          SIGNAL( "disconnected( bool )" ),
-             connect_action, SLOT( "setEnabled( bool )" ) )
+    world.disconnected.connect( connect_action.setEnabled )
+    world.disconnected.connect( disconnect_action.setDisabled )
 
-    connect( world,             SIGNAL( "disconnected( bool )" ),
-             disconnect_action, SLOT( "setDisabled( bool )" ) )
 
-    connect( world,           SIGNAL( "nowLogging( bool )" ),
-             startlog_action, SLOT( "setDisabled( bool )" ) )
-
-    connect( world,          SIGNAL( "nowLogging( bool )" ),
-             stoplog_action, SLOT( "setEnabled( bool )" ) )
+    world.nowLogging.connect( startlog_action.setDisabled )
+    world.nowLogging.connect( stoplog_action.setEnabled )
 
     s.toolbar.addAction( connect_action )
     s.toolbar.addAction( disconnect_action )
@@ -233,6 +221,7 @@ class WorldUI( QtGui.QSplitter ):
       s.inputui.setFocus()
 
 
+  @QtCore.pyqtSlot( bool )
   def onTabChanged( s, is_now_visible ):
 
     if is_now_visible:
@@ -253,6 +242,7 @@ class WorldUI( QtGui.QSplitter ):
     s.alert_timer.start()
 
 
+  @QtCore.pyqtSlot( int )
   def iconBlink( s, frame ):
 
     if not s.world:
@@ -263,6 +253,7 @@ class WorldUI( QtGui.QSplitter ):
     s.tab.setTabIcon( led )
 
 
+  @QtCore.pyqtSlot()
   def steadyIcon( s ):
 
     if s.blinker.state() == QtCore.QTimeLine.Running:
@@ -285,6 +276,7 @@ class WorldUI( QtGui.QSplitter ):
       qApp().alert( s.window() )
 
 
+  #@QtCore.pyqtSlot()
   def saveSplitterPosition( s ):
 
     s.world.conf._splitter_sizes = s.sizes()

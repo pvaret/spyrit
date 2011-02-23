@@ -36,6 +36,8 @@ class TabDelegate( QtCore.QObject ):
               ])
 
 
+  tabChanged = QtCore.pyqtSignal( bool )
+
   def __init__( s, widget ):
 
     QtCore.QObject.__init__( s )
@@ -47,9 +49,10 @@ class TabDelegate( QtCore.QObject ):
 
     s.is_current_tab = False
 
-    connect( s.tabwidget, SIGNAL( "currentChanged( int )" ), s.onTabChanged )
+    s.tabwidget.currentChanged.connect( s.onTabChanged )
 
 
+  @QtCore.pyqtSlot( int )
   def onTabChanged( s, i ):
 
     tabindex = s.tabwidget.indexOf( s.widget )
@@ -58,7 +61,7 @@ class TabDelegate( QtCore.QObject ):
 
     if is_now_current_tab != s.is_current_tab:
 
-      s.emit( SIGNAL( "tabChanged( bool )" ), is_now_current_tab )
+      s.tabChanged.emit( is_now_current_tab )
       s.is_current_tab = is_now_current_tab
 
 

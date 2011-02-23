@@ -45,11 +45,10 @@ class PrettyOptionDialog( QtGui.QDialog ):
     if title:
       s.setWindowTitle( title )
 
-    connect( mapper,     SIGNAL( "isValid( bool )" ),
-             s.okbutton, SLOT( "setEnabled( bool )" ) )
+    mapper.isValid.connect( s.okbutton.setEnabled )
 
-    connect( s.buttonbox, SIGNAL( "accepted()" ), s, SLOT( "accept()" ) );
-    connect( s.buttonbox, SIGNAL( "rejected()" ), s, SLOT( "reject()" ) );
+    s.buttonbox.accepted.connect( s.accept )
+    s.buttonbox.rejected.connect( s.reject )
 
     mapper.refreshState()
 

@@ -61,6 +61,7 @@ class SpyritCore:
     s.motd = iter( MOTD )
 
 
+  @QtCore.pyqtSlot()
   def atExit( s ):
 
     s.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.
@@ -126,6 +127,6 @@ def construct_spyrit_core( application ):
            sound=sound,
          )
 
-  connect( application, SIGNAL( "aboutToQuit()" ), core.atExit )
+  application.aboutToQuit.connect( core.atExit )
 
   return core

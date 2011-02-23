@@ -31,6 +31,9 @@ from ConfigObserver   import ConfigObserver
 
 class WorldInputUI( QtGui.QTextEdit ):
 
+  returnPressed = QtCore.pyqtSignal()
+  focusChanged  = QtCore.pyqtSignal( 'QWidget' )
+
   def __init__( s, parent, world, shouldsavehistory=True ):
 
     QtGui.QTextEdit.__init__( s, parent )
@@ -65,7 +68,7 @@ class WorldInputUI( QtGui.QTextEdit ):
                             s.refresh
                           )
 
-    connect( s, SIGNAL( "returnPressed()" ), s.clearAndSend )
+    s.returnPressed.connect( s.clearAndSend )
 
 
   def refresh( s ):
@@ -131,13 +134,14 @@ class WorldInputUI( QtGui.QTextEdit ):
     if e.key() in ( Qt.Key_Return, Qt.Key_Enter ) \
       and alt_ctrl_shift == Qt.NoModifier:
 
-      emit( s, SIGNAL( "returnPressed()" ) )
+      s.returnPressed.emit()
       e.accept()
 
     else:
       QtGui.QTextEdit.keyPressEvent( s, e )
 
 
+  @QtCore.pyqtSlot()
   def clearAndSend( s ):
 
     text = unicode( s.toPlainText() )
@@ -172,7 +176,7 @@ class WorldInputUI( QtGui.QTextEdit ):
     ## Notify other possible interested parties that this widget now has the
     ## focus.
 
-    emit( s, SIGNAL( "focusChanged( QWidget )" ), s )
+    s.focusChanged.emit( s )
 
 
   def __del__( s ):

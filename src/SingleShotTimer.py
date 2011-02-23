@@ -30,4 +30,4 @@ class SingleShotTimer( QtCore.QTimer ):
 
     QtCore.QTimer.__init__( s )
     s.setSingleShot( True )
-    connect( s, SIGNAL( 'timeout()' ), slot )
+    s.timeout.connect( slot )

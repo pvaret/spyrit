@@ -78,9 +78,8 @@ class SocketPipeline:
       s.using_ssl = True
       s.socket    = QtNetwork.QSslSocket()
 
-      connect( s.socket, SIGNAL( "encrypted()" ), s.reportEncrypted )
-      connect( s.socket, SIGNAL( "sslErrors( const QList<QSslError> & )" ),
-                         s.handleSslErrors )
+      s.socket.encrypted.connect( s.reportEncrypted )
+      s.socket.sslErrors.connect( s.handleSslErrors )
 
     else:
       s.socket = QtNetwork.QTcpSocket()
@@ -89,11 +88,9 @@ class SocketPipeline:
         messages.warn( u"SSL functions not available; attempting" \
                        u"unencrypted connection instead..." )
 
-    connect( s.socket, SIGNAL( "stateChanged( QAbstractSocket::SocketState )" ),
-                       s.reportStateChange )
-    connect( s.socket, SIGNAL( "error( QAbstractSocket::SocketError )" ),
-                       s.reportError )
-    connect( s.socket, SIGNAL( "readyRead()" ), s.readSocket )
+    s.socket.stateChanged.connect( s.reportStateChange )
+    s.socket.error.connect( s.reportError )
+    s.socket.readyRead.connect( s.readSocket )
 
 
   def connectToHost( s ):
@@ -121,6 +118,7 @@ class SocketPipeline:
     s.socket.close()
 
 
+  @QtCore.pyqtSlot( "QAbstractSocket::SocketState" )
   def reportStateChange( s, state ):
 
     s.flushBuffer()
@@ -138,12 +136,14 @@ class SocketPipeline:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.DISCONNECTED ) )
 
 
+  @QtCore.pyqtSlot()
   def reportEncrypted( s ):
 
     s.flushBuffer()
     s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
 
 
+  @QtCore.pyqtSlot( "QAbstractSocket::SocketError" )
   def reportError( s, error ):
 
     s.flushBuffer()
@@ -164,6 +164,7 @@ class SocketPipeline:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.OTHERERROR ) )
 
 
+  @QtCore.pyqtSlot( "const QList<QSslError> &" )
   def handleSslErrors( s, errors ):
 
     ## We take note of the errors... and then discard them.
@@ -177,6 +178,7 @@ class SocketPipeline:
     s.socket.ignoreSslErrors()
 
 
+  @QtCore.pyqtSlot()
   def readSocket( s ):
 
     data = str( s.socket.readAll() )

@@ -123,18 +123,18 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.next_page_position = 0
     s.previous_selection = -1, -1
 
-    connect( s.scrollbar, SIGNAL( "valueChanged( int )" ), s.onScroll )
-    connect( s.scrollbar, SIGNAL( "rangeChanged( int, int )" ),
-                                                     s.onRangeChanged )
+    s.scrollbar.valueChanged.connect( s.onScroll )
+    s.scrollbar.rangeChanged.connect( s.onRangeChanged )
 
-    connect( s, SIGNAL( "textChanged()" ),      s.perhapsRepaintText )
-    connect( s, SIGNAL( "selectionChanged()" ), s.perhapsRepaintSelection )
+    s.textChanged.connect( s.perhapsRepaintText )
+    s.selectionChanged.connect( s.perhapsRepaintSelection )
 
     s.computeLineStep()
     s.more = LineCount( s )
     s.setMoreAnchor()
 
 
+  @QtCore.pyqtSlot()
   def perhapsRepaintText( s ):
 
     ## Right, so we've got a problem: when the text changes but the scrollbar
@@ -152,6 +152,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.update( s.splitBottomRect() )
 
 
+  @QtCore.pyqtSlot()
   def perhapsRepaintSelection( s ):
 
     if s.atbottom:             return
@@ -256,6 +257,7 @@ class SplittableTextView( QtGui.QTextEdit ):
       s.update()
 
 
+  @QtCore.pyqtSlot( int )
   def onScroll( s, pos ):
 
     s.atbottom = ( pos == s.scrollbar.maximum() )
@@ -460,6 +462,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     doc.documentLayout().draw( p, ctx )
 
 
+  @QtCore.pyqtSlot()
   def pingPage( s ):
 
     ## Paging implementation:
@@ -486,6 +489,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.scrollbar.setValue( s.scrollbar.minimum() )
 
 
+  @QtCore.pyqtSlot( int, int )
   def onRangeChanged( s, min, max ):
 
     ## 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'

@@ -59,8 +59,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.setCentralWidget( SmartTabWidget( s, default_pane ) )
     s.tabwidget = s.centralWidget().tabwidget
 
-    connect( s.tabwidget, SIGNAL( "currentChanged ( int )" ),
-                          s.setCurrentWorldToolbar )
+    s.tabwidget.currentChanged.connect( s.setCurrentWorldToolbar )
 
 
     ## Create all the actions.
@@ -147,8 +146,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.refreshMenuWorlds()
 
     worldsmanager = qApp().core.worlds
-    connect( worldsmanager, SIGNAL( "worldListChanged()" ),
-             s.refreshMenuWorlds )
+    worldsmanager.worldListChanged.connect( s.refreshMenuWorlds )
 
     ## And with this, our Main Window is created, whee!
 
@@ -177,6 +175,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.toolbar_main.setIconSize( QtCore.QSize( size, size ) )
 
 
+  @QtCore.pyqtSlot()
   def refreshMenuWorlds( s ):
 
     s.setUpdatesEnabled( False )
@@ -210,6 +209,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.setUpdatesEnabled( True )
 
 
+  @QtCore.pyqtSlot( int )
   def setCurrentWorldToolbar( s, i ):
 
     s.setUpdatesEnabled( False )
@@ -349,11 +349,12 @@ class MainWindow( QtGui.QMainWindow ):
 
     action = QtGui.QAction( worldname.replace( u"&", u"&&" ), s )
     action.setData( QtCore.QVariant( worldname ) )
-    connect( action, SIGNAL( "triggered()" ), s.actionConnectToWorld )
+    action.triggered.connect( s.actionConnectToWorld )
 
     return action
 
 
+  @QtCore.pyqtSlot()
   def actionConnectToWorld( s ):
 
     action = s.sender()

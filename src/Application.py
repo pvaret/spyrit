@@ -43,7 +43,7 @@ class Application( QtGui.QApplication ):
                                                       ## local encoding.
     s.core = None
 
-    connect( s, SIGNAL( "aboutToQuit()" ), s.beforeStop )
+    s.aboutToQuit.connect( s.beforeStop )
 
 
   def bootstrap( s ):
@@ -118,6 +118,7 @@ class Application( QtGui.QApplication ):
         s.core.openWorldByName( arg )
 
 
+  @QtCore.pyqtSlot()
   def beforeStop( s ):
 
     sys.excepthook = sys.__excepthook__

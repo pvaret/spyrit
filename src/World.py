@@ -51,6 +51,10 @@ class Status:
 
 class World( QtCore.QObject ):
 
+  connected    = QtCore.pyqtSignal( bool )
+  disconnected = QtCore.pyqtSignal( bool )
+  nowLogging   = QtCore.pyqtSignal( bool )
+
   def __init__( s, conf=None ):
 
     QtCore.QObject.__init__( s )
@@ -69,7 +73,7 @@ class World( QtCore.QObject ):
     s.was_logging       = False
     s.last_log_filename = None
 
-    connect( s, SIGNAL( "connected( bool )" ), s.connectionStatusChanged )
+    s.connected.connect( s.connectionStatusChanged )
 
     s.status = Status.DISCONNECTED
 
@@ -148,6 +152,7 @@ class World( QtCore.QObject ):
       s.socketpipeline.abort()
 
 
+  #@QtCore.pyqtSlot()
   def connectionStatusChanged( s ):
 
     if s.status == Status.CONNECTED:
@@ -214,7 +219,7 @@ class World( QtCore.QObject ):
     s.last_log_filename = logfile
 
     if s.logger:
-      emit( s, SIGNAL( "nowLogging( bool )" ), True )
+      s.nowLogging.emit( True )
       s.logger.start()
 
 
@@ -223,7 +228,7 @@ class World( QtCore.QObject ):
     if not s.logger:
       return
 
-    emit( s, SIGNAL( "nowLogging( bool )" ), False )
+    s.nowLogging.emit( False )
     s.logger.stop()
     s.logger = None
 
@@ -255,8 +260,8 @@ class World( QtCore.QObject ):
 
 
     if s.status != previous_status:
-      emit( s, SIGNAL( "connected( bool )" ),    s.isConnected() )
-      emit( s, SIGNAL( "disconnected( bool )" ), s.isDisconnected() )
+      s.connected.emit( s.isConnected() )
+      s.disconnected.emit( s.isDisconnected() )
 
 
   def isConnected( s ):

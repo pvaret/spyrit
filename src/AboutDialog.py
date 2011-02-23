@@ -113,4 +113,4 @@ class AboutDialog( QtGui.QDialog ):
     s.layout().addWidget( button )
     s.layout().setAlignment( button, Qt.AlignHCenter )
 
-    connect( button, SIGNAL( "clicked()" ), s, SLOT( "accept()" ) )
+    button.clicked.connect( s.accept )

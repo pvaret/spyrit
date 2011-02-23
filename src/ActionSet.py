@@ -127,7 +127,7 @@ class ActionSet:
     if context is not None:
       a.setShortcutContext( context )
 
-    connect( a, SIGNAL( "triggered()" ), slot )
+    a.triggered.connect( slot )
 
     ## It is necessary to add the action to a widget before its shortcuts will
     ## work.

@@ -45,6 +45,7 @@ class ConfigMapperWidget:
     mapper.widgets.append( s )
 
 
+  #@QtCore.pyqtSlot()
   def updateConfFromWidget( s ):
 
     ## This is the slot that updates the configuration object based on the
@@ -111,8 +112,7 @@ class LineEditMapper( ConfigMapperWidget, QtGui.QLineEdit ):
 
     s.setMinimumWidth( s.MINIMUM_WIDTH )
 
-    connect( s, SIGNAL( "textEdited( const QString & )" ),
-                s.updateConfFromWidget )
+    s.textEdited.connect( s.updateConfFromWidget )
 
     s.updateWidgetFromConf()
 
@@ -138,8 +138,7 @@ class SpinBoxMapper( ConfigMapperWidget, QtGui.QSpinBox ):
     s.setRange( 1, 65535 )
     s.setAlignment( Qt.AlignRight )
 
-    connect( s, SIGNAL( "valueChanged( int )" ),
-                s.updateConfFromWidget )
+    s.valueChanged.connect( s.updateConfFromWidget )
 
     s.updateWidgetFromConf()
 
@@ -163,13 +162,12 @@ class CheckBoxMapper( ConfigMapperWidget, QtGui.QCheckBox ):
 
     ConfigMapperWidget.__init__( s, mapper, option, label )
     QtGui.QCheckBox.__init__( s )
-    
+
     text    = s.label.rstrip( u":" )
     s.label = None
     s.setText( text )
 
-    connect( s, SIGNAL( "stateChanged( int )" ),
-                s.updateConfFromWidget )
+    s.stateChanged.connect( s.updateConfFromWidget )
 
     s.updateWidgetFromConf()
 
@@ -204,6 +202,9 @@ class ConfigMapper( QtCore.QObject ):
   ## configuration mapper widgets and automatically bind them to this mapper
   ## instance.
 
+  isValid    = QtCore.pyqtSignal( bool )
+  hasChanges = QtCore.pyqtSignal( bool )
+
   def __init__( s, conf ):
 
     QtCore.QObject.__init__( s )
@@ -220,22 +221,10 @@ class ConfigMapper( QtCore.QObject ):
 
   def refreshState( s ):
 
-    if s.conf.isEmpty():
-      emit( s, SIGNAL( "hasChanges( bool )" ), False )
+    valid = all( w.isValid() for w in s.widgets )
 
-    else:
-      emit( s, SIGNAL( "hasChanges( bool )" ), True )
-
-    d = s.conf.getOwnDict()
-
-    for w in s.widgets:
-
-      if not w.isValid():
-        emit( s, SIGNAL( "isValid( bool )" ), False )
-        break
-
-    else:
-      emit( s, SIGNAL( "isValid( bool )" ), True )
+    s.hasChanges.emit( not s.conf.isEmpty() )
+    s.isValid.emit( valid )
 
 
   def lineedit( s, option, label=None ):
@@ -261,23 +250,23 @@ class ConfigMapper( QtCore.QObject ):
 
 
 class PrettyOptionPanel( QtGui.QWidget ):
-  
+
   MIN_LEFT_MARGIN                = 20
   MAX_LABEL_WIDTH_UNTIL_WORDWRAP = 100
 
   def __init__( s, mapper, parent=None ):
 
     QtGui.QWidget.__init__( s, parent )
-    
+
     s.mapper = mapper
 
     s.relayout()
 
-    
+
   def relayout( s ):
-    
+
     layout = s.layout()
-    
+
     if layout:
       sip.delete( layout )
 
@@ -286,7 +275,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
     s.layout().setColumnStretch( 0, 0 )
     s.layout().setColumnStretch( 1, 0 )
     s.layout().setColumnStretch( 2, 1 )
-   
+
     s.currentrow = 0
 
     for group, items in s.mapper.contents:
@@ -300,7 +289,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
 
 
   def addGroupRow( s, name ):
-    
+
     label = QtGui.QLabel( u"<b>" + name + u"</b>", s )
     label.setAlignment( Qt.AlignLeft | Qt.AlignBottom )
 
@@ -311,10 +300,10 @@ class PrettyOptionPanel( QtGui.QWidget ):
                                       label.sizeHint().height() * 1.5 )
 
     s.currentrow += 1
-    
+
 
   def addItemRow( s, widget ):
-    
+
     label = widget.label
 
     if label:
@@ -327,7 +316,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
         l.setWordWrap( True )
 
       s.layout().addWidget( l, s.currentrow, 1 )
-    
+
     s.layout().addWidget( widget, s.currentrow, 2 )
 
     s.currentrow += 1
@@ -340,7 +329,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
 
 
   def defaults( s ):
-   
+
     s.mapper.conf.reset()
     s.mapper.updateWidgetsFromConf()
 

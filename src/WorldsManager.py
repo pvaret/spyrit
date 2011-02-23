@@ -26,6 +26,8 @@ from Utilities  import normalize_text
 
 class WorldsManager( QtCore.QObject ):
 
+  worldListChanged = QtCore.pyqtSignal()
+
   def __init__( s, config ):
 
     QtCore.QObject.__init__( s )
@@ -108,7 +110,7 @@ class WorldsManager( QtCore.QObject ):
       world.conf.saveAsSection( s.normalize( world.conf._name ) )
       s.generateMappings()
 
-      emit( s, SIGNAL( "worldListChanged()" ) )
+      s.worldListChanged.emit()
 
 
   def newWorld( s, conf ):

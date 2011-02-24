@@ -42,154 +42,154 @@ NL = "\n"
 
 class OutputManager:
 
-  def __init__( s, world, textview ):
+  def __init__( self, world, textview ):
 
-    s.world = world
-    s.conf  = world.conf
+    self.world = world
+    self.conf  = world.conf
 
-    s.textview = textview
+    self.textview = textview
 
-    s.textcursor = QTextCursor( textview.document() )
+    self.textcursor = QTextCursor( textview.document() )
 
-    s.observer = ConfigObserver( s.conf )
+    self.observer = ConfigObserver( self.conf )
 
-    s.textformat = QTextCharFormat()
-    s.infoformat = QTextCharFormat()
+    self.textformat = QTextCharFormat()
+    self.infoformat = QTextCharFormat()
 
-    s.textformatmanager = FormatStack( QTextFormatFormatter( s.textformat ) )
-    s.infoformatmanager = FormatStack( QTextFormatFormatter( s.infoformat ) )
+    self.textformatmanager = FormatStack( QTextFormatFormatter( self.textformat ) )
+    self.infoformatmanager = FormatStack( QTextFormatFormatter( self.infoformat ) )
 
-    s.textformatmanager.setBaseFormat( s.conf[ "output_format" ] )
-    s.infoformatmanager.setBaseFormat( s.conf[ "info_format" ] )
+    self.textformatmanager.setBaseFormat( self.conf[ "output_format" ] )
+    self.infoformatmanager.setBaseFormat( self.conf[ "info_format" ] )
 
-    s.observer.addCallback( "output_format",
-                            s.textformatmanager.setBaseFormat )
-    s.observer.addCallback( "info_format",
-                            s.infoformatmanager.setBaseFormat )
+    self.observer.addCallback( "output_format",
+                               self.textformatmanager.setBaseFormat )
+    self.observer.addCallback( "info_format",
+                               self.infoformatmanager.setBaseFormat )
 
-    s.searchmanager = SearchManager( textview, s.conf )
+    self.searchmanager = SearchManager( textview, self.conf )
 
-    s.was_connected   = False
-    s.pending_newline = False
+    self.was_connected   = False
+    self.pending_newline = False
 
-    s.refresh()
+    self.refresh()
 
-    s.observer.addCallback( [ "output_font_name",
-                              "output_font_size",
-                              "output_background_color" ],
-                            s.refresh )
+    self.observer.addCallback( [ "output_font_name",
+                                 "output_font_size",
+                                 "output_background_color" ],
+                               self.refresh )
 
-    s.textview.setSplitScrollback( s.conf[ "split_scrollback" ] )
-    s.textview.setPaging(          s.conf[ "paging" ] )
+    self.textview.setSplitScrollback( self.conf[ "split_scrollback" ] )
+    self.textview.setPaging(          self.conf[ "paging" ] )
 
-    s.observer.addCallback( "split_scrollback", s.textview.setSplitScrollback )
-    s.observer.addCallback( "paging",           s.textview.setPaging )
-
-
-  def refresh( s ):
-
-    s.textview.setConfiguration( s.conf._output_font_name,
-                                 s.conf._output_font_size,
-                                 s.conf._output_background_color )
+    self.observer.addCallback( "split_scrollback", self.textview.setSplitScrollback )
+    self.observer.addCallback( "paging",           self.textview.setPaging )
 
 
-  def findInHistory( s, string ):
+  def refresh( self ):
 
-    return s.searchmanager.find( string )
+    self.textview.setConfiguration( self.conf._output_font_name,
+                                    self.conf._output_font_size,
+                                    self.conf._output_background_color )
 
 
-  def processChunk( s, chunk ):
+  def findInHistory( self, string ):
+
+    return self.searchmanager.find( string )
+
+
+  def processChunk( self, chunk ):
 
     chunk_type, payload = chunk
 
     if chunk_type == ChunkData.TEXT:
-      s.insertText( payload )
+      self.insertText( payload )
 
     elif chunk_type == ChunkData.FLOWCONTROL:
-      s.processFlowControlChunk( payload )
+      self.processFlowControlChunk( payload )
 
     elif chunk_type == ChunkData.NETWORK:
-      s.processNetworkChunk( payload )
+      self.processNetworkChunk( payload )
 
 
-  def processFlowControlChunk( s, event ):
+  def processFlowControlChunk( self, event ):
 
     if event == ChunkData.LINEFEED:
-      s.insertNewLine()
+      self.insertNewLine()
 
 
-  def processNetworkChunk( s, event ):
+  def processNetworkChunk( self, event ):
 
     if   event == ChunkData.CONNECTING:
-      s.insertInfoText( u"Connecting..." )
+      self.insertInfoText( u"Connecting..." )
 
     elif event == ChunkData.CONNECTED:
 
-      if not s.was_connected:
-        s.insertInfoText( u"Connected!" )
-        s.was_connected = True
+      if not self.was_connected:
+        self.insertInfoText( u"Connected!" )
+        self.was_connected = True
 
     elif event == ChunkData.ENCRYPTED:
-      s.insertInfoText( u"SSL encryption started." )
+      self.insertInfoText( u"SSL encryption started." )
 
     elif event == ChunkData.DISCONNECTED:
 
-      if s.was_connected:
-        s.insertInfoText( u"Connection closed." )
-        s.was_connected = False
+      if self.was_connected:
+        self.insertInfoText( u"Connection closed." )
+        self.was_connected = False
 
     elif event == ChunkData.RESOLVING:
-      s.insertInfoText( u"Resolving %s ..." % s.world.host() )
+      self.insertInfoText( u"Resolving %s ..." % self.world.host() )
 
 
     elif event == ChunkData.CONNECTIONREFUSED:
-      s.insertInfoText( u"Connection refused." )
+      self.insertInfoText( u"Connection refused." )
 
     elif event == ChunkData.HOSTNOTFOUND:
-      s.insertInfoText( u"Host not found." )
+      self.insertInfoText( u"Host not found." )
 
     elif event == ChunkData.TIMEOUT:
-      s.insertInfoText( u"Network timeout." )
+      self.insertInfoText( u"Network timeout." )
 
     elif event == ChunkData.OTHERERROR:
-      s.insertInfoText( u"Network error." )
+      self.insertInfoText( u"Network error." )
 
 
-  def insertNewLine( s ):
+  def insertNewLine( self ):
 
-    if s.pending_newline:
-      s.textcursor.insertText( NL, s.textformat )
+    if self.pending_newline:
+      self.textcursor.insertText( NL, self.textformat )
 
-    s.pending_newline = True
-
-
-  def insertText( s, text ):
-
-    if s.pending_newline:
-
-      s.textcursor.insertText( NL, s.textformat )
-      s.pending_newline = False
-
-    s.textcursor.insertText( text, s.textformat )
+    self.pending_newline = True
 
 
-  def insertInfoText( s, text ):
+  def insertText( self, text ):
 
-    if s.textcursor.columnNumber() > 0:
-      s.textcursor.insertText( NL, s.infoformat )
+    if self.pending_newline:
+
+      self.textcursor.insertText( NL, self.textformat )
+      self.pending_newline = False
+
+    self.textcursor.insertText( text, self.textformat )
+
+
+  def insertInfoText( self, text ):
+
+    if self.textcursor.columnNumber() > 0:
+      self.textcursor.insertText( NL, self.infoformat )
 
     text = text.rstrip()
 
-    s.textcursor.insertText( LEFTARROW + " " + text, s.infoformat )
-    s.pending_newline = True  ## There is always a new line after info text.
+    self.textcursor.insertText( LEFTARROW + " " + text, self.infoformat )
+    self.pending_newline = True  ## There is always a new line after info text.
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.world          = None
-    s.conf           = None
-    s.textcursor     = None
-    s.charformat     = None
-    s.infocharformat = None
-    s.observer       = None
-    s.searchmanager  = None
+    self.world          = None
+    self.conf           = None
+    self.textcursor     = None
+    self.charformat     = None
+    self.infocharformat = None
+    self.observer       = None
+    self.searchmanager  = None

@@ -32,14 +32,14 @@ class Win32Specific:
   should_repaint_on_scroll = False
   default_font             = u"Courier New"
 
-  def get_homedir( s ):
+  def get_homedir( self ):
     return winpaths.get_homedir()
 
-  def get_configuration_dir( s ):
-    return os.path.join( winpaths.get_appdata(), s.CONFIG_DIR )
+  def get_configuration_dir( self ):
+    return os.path.join( winpaths.get_appdata(), self.CONFIG_DIR )
 
-  def get_configuration_file( s ):
-    return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )
+  def get_configuration_file( self ):
+    return os.path.join( self.get_configuration_dir(), self.CONFIG_FILE )
 
-  def get_sound_backends( s ):
+  def get_sound_backends( self ):
     return [ "qsound" ]

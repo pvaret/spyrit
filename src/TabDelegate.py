@@ -41,42 +41,42 @@ class TabDelegate( QObject ):
 
   tabChanged = pyqtSignal( bool )
 
-  def __init__( s, widget ):
+  def __init__( self, widget ):
 
-    QObject.__init__( s )
+    QObject.__init__( self )
 
-    s.widget    = widget
-    s.tabwidget = widget.parent()
+    self.widget    = widget
+    self.tabwidget = widget.parent()
 
-    assert isinstance( s.tabwidget, QTabWidget )
+    assert isinstance( self.tabwidget, QTabWidget )
 
-    s.is_current_tab = False
+    self.is_current_tab = False
 
-    s.tabwidget.currentChanged.connect( s.onTabChanged )
+    self.tabwidget.currentChanged.connect( self.onTabChanged )
 
 
   @pyqtSlot( int )
-  def onTabChanged( s, i ):
+  def onTabChanged( self, i ):
 
-    tabindex = s.tabwidget.indexOf( s.widget )
+    tabindex = self.tabwidget.indexOf( self.widget )
 
     is_now_current_tab = ( tabindex == i )
 
-    if is_now_current_tab != s.is_current_tab:
+    if is_now_current_tab != self.is_current_tab:
 
-      s.tabChanged.emit( is_now_current_tab )
-      s.is_current_tab = is_now_current_tab
+      self.tabChanged.emit( is_now_current_tab )
+      self.is_current_tab = is_now_current_tab
 
 
-  def __getattr__( s, attr ):
+  def __getattr__( self, attr ):
 
-    if not attr in s.DELEGATES:
+    if not attr in self.DELEGATES:
       raise AttributeError( attr )
 
     ## Might raise AttributeError, which is okay:
-    method = getattr( s.tabwidget, attr )
+    method = getattr( self.tabwidget, attr )
 
-    tabindex = s.tabwidget.indexOf( s.widget )
+    tabindex = self.tabwidget.indexOf( self.widget )
 
     def delegated_method( *args ):
       return method( tabindex, *args )

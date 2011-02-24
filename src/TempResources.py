@@ -29,23 +29,23 @@ from PyQt4.QtCore import QTemporaryFile
 
 class TempResources:
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.map      = {}
-    s.tmpfiles = set()
-
-
-  def get( s, fname ):
-
-    if fname in s.map:
-      return s.map[ fname ]
-
-    tmpfname = s.new_temp_resource( fname ) or fname
-
-    return s.map.setdefault( fname, tmpfname )
+    self.map      = {}
+    self.tmpfiles = set()
 
 
-  def new_temp_resource( s, fname ):
+  def get( self, fname ):
+
+    if fname in self.map:
+      return self.map[ fname ]
+
+    tmpfname = self.new_temp_resource( fname ) or fname
+
+    return self.map.setdefault( fname, tmpfname )
+
+
+  def new_temp_resource( self, fname ):
 
     ## This creates the temp file if fname is a resource, but not if it
     ## doesn't exist or is a real file.
@@ -64,23 +64,23 @@ class TempResources:
     tmp.close()
 
     tmpfname = unicode( tmp.fileName() )
-    s.tmpfiles.add( tmpfname )
+    self.tmpfiles.add( tmpfname )
 
     return tmpfname
 
 
-  def cleanup( s ):
+  def cleanup( self ):
 
-    while s.tmpfiles:
+    while self.tmpfiles:
 
       try:
-        os.unlink( s.tmpfiles.pop() )
+        os.unlink( self.tmpfiles.pop() )
       except OSError:
         pass
 
-    s.map.clear()
+    self.map.clear()
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.cleanup()
+    self.cleanup()

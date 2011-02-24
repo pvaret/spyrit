@@ -37,22 +37,22 @@ class Pipeline( QObject ):
   flushBegin = pyqtSignal()
   flushEnd   = pyqtSignal()
 
-  def __init__( s ):
+  def __init__( self ):
 
-    QObject.__init__( s )
+    QObject.__init__( self )
 
-    s.filters      = []
-    s.outputBuffer = []
-    s.sinks        = dict( ( type, CallbackRegistry() )
-                           for type in ChunkData.chunk_type_list() )
+    self.filters      = []
+    self.outputBuffer = []
+    self.sinks        = dict( ( type, CallbackRegistry() )
+                              for type in ChunkData.chunk_type_list() )
 
-    s.notification_registry = {}
+    self.notification_registry = {}
 
-    s.prompt_timer = SingleShotTimer( s.sweepPrompt )
-    s.prompt_timer.setInterval( s.PROMPT_TIMEOUT )
+    self.prompt_timer = SingleShotTimer( self.sweepPrompt )
+    self.prompt_timer.setInterval( self.PROMPT_TIMEOUT )
 
 
-  def feedBytes( s, packet, blocksize=2048 ):
+  def feedBytes( self, packet, blocksize=2048 ):
 
     ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
     ## and feed that to the real chunk sink.
@@ -61,109 +61,109 @@ class Pipeline( QObject ):
 
       bytes, packet = packet[ :blocksize ], packet[ blocksize: ]
 
-      s.feedChunk( ChunkData.thePacketStartChunk, autoflush=False )
-      s.feedChunk( ( ChunkData.BYTES, bytes ), autoflush=False )
-      s.feedChunk( ChunkData.thePacketEndChunk )
+      self.feedChunk( ChunkData.thePacketStartChunk, autoflush=False )
+      self.feedChunk( ( ChunkData.BYTES, bytes ), autoflush=False )
+      self.feedChunk( ChunkData.thePacketEndChunk )
 
-    s.prompt_timer.start()
-
-
-  def sweepPrompt( s ):
-
-    s.feedChunk( ChunkData.thePromptSweepChunk )
+    self.prompt_timer.start()
 
 
-  def feedChunk( s, chunk, autoflush=True ):
+  def sweepPrompt( self ):
 
-    if not s.filters:
+    self.feedChunk( ChunkData.thePromptSweepChunk )
+
+
+  def feedChunk( self, chunk, autoflush=True ):
+
+    if not self.filters:
       return
 
-    s.filters[0].feedChunk( chunk )
+    self.filters[0].feedChunk( chunk )
 
     ## When the above call returns, the chunk as been fully processed through
     ## the chain of filters, and the resulting chunks are waiting in the
     ## output bucket. So we can flush it.
 
     if autoflush:
-      s.flushOutputBuffer()
+      self.flushOutputBuffer()
 
 
-  def appendToOutputBuffer( s, chunk ):
+  def appendToOutputBuffer( self, chunk ):
 
-    s.outputBuffer.append( chunk )
+    self.outputBuffer.append( chunk )
 
 
-  def flushOutputBuffer( s ):
+  def flushOutputBuffer( self ):
 
-    s.flushBegin.emit()
+    self.flushBegin.emit()
 
-    for chunk in s.outputBuffer:
+    for chunk in self.outputBuffer:
 
       chunk_type, _ = chunk
-      s.sinks[ chunk_type ].triggerAll( chunk )
+      self.sinks[ chunk_type ].triggerAll( chunk )
 
-    s.flushEnd.emit()
+    self.flushEnd.emit()
 
-    s.outputBuffer = []
+    self.outputBuffer = []
 
 
-  def addFilter( s, filterclass, **kwargs ):
+  def addFilter( self, filterclass, **kwargs ):
 
-    kwargs.setdefault( 'context', s ) ## Set up context if not already present.
+    kwargs.setdefault( 'context', self ) ## Set up context if needed.
 
     filter = filterclass( **kwargs )
 
-    filter.setSink( s.appendToOutputBuffer )
+    filter.setSink( self.appendToOutputBuffer )
 
-    if s.filters:
-      s.filters[-1].setSink( filter.feedChunk )
+    if self.filters:
+      self.filters[-1].setSink( filter.feedChunk )
 
-    s.filters.append( filter )
+    self.filters.append( filter )
 
 
-  def addSink( s, callback, types=ChunkData.ALL_TYPES ):
+  def addSink( self, callback, types=ChunkData.ALL_TYPES ):
 
     ## 'callback' should be a callable that accepts and handles a chunk.
 
     for type in ChunkData.chunk_type_list():
 
       if type & types:
-        s.sinks[ type ].add( callback )
+        self.sinks[ type ].add( callback )
 
 
-  def formatForSending( s, data ):
+  def formatForSending( self, data ):
 
-   for filter in reversed( s.filters ):
+   for filter in reversed( self.filters ):
       data = filter.formatForSending( data )
 
    return data
 
 
-  def resetInternalState( s ):
+  def resetInternalState( self ):
 
-    for f in s.filters:
+    for f in self.filters:
       f.resetInternalState()
 
 
-  def notify( s, notification, *args ):
+  def notify( self, notification, *args ):
 
-    callbacks = s.notification_registry.get( notification )
+    callbacks = self.notification_registry.get( notification )
 
     if callbacks:
       callbacks.triggerAll( *args )
 
 
-  def bindNotificationListener( s, notification, callback ):
+  def bindNotificationListener( self, notification, callback ):
 
-    if notification not in s.notification_registry:
-      s.notification_registry[ notification ] = CallbackRegistry()
+    if notification not in self.notification_registry:
+      self.notification_registry[ notification ] = CallbackRegistry()
 
-    s.notification_registry[ notification ].add( callback )
+    self.notification_registry[ notification ].add( callback )
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.filters = None
-    s.sinks   = None
+    self.filters = None
+    self.sinks   = None
 
-    s.notification_registry = None
+    self.notification_registry = None

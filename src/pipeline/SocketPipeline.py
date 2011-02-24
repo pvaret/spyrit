@@ -45,130 +45,130 @@ import ChunkData
 
 class SocketPipeline:
 
-  def __init__( s, conf ):
+  def __init__( self, conf ):
 
     triggersmanager = QApplication.instance().core.triggers
 
-    s.pipeline = Pipeline()
+    self.pipeline = Pipeline()
 
-    s.pipeline.addFilter( TelnetFilter )
-    s.pipeline.addFilter( AnsiFilter )
-    s.pipeline.addFilter( UnicodeTextFilter, encoding=conf._world_encoding )
-    s.pipeline.addFilter( FlowControlFilter )
-    s.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
+    self.pipeline.addFilter( TelnetFilter )
+    self.pipeline.addFilter( AnsiFilter )
+    self.pipeline.addFilter( UnicodeTextFilter, encoding=conf._world_encoding )
+    self.pipeline.addFilter( FlowControlFilter )
+    self.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
 
-    s.using_ssl = False
-    s.socket    = None
-    s.conf      = conf
-    s.buffer    = []
+    self.using_ssl = False
+    self.socket    = None
+    self.conf      = conf
+    self.buffer    = []
 
-    s.flush_timer = SingleShotTimer( s.flushBuffer )
+    self.flush_timer = SingleShotTimer( self.flushBuffer )
 
-    s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback( "world_encoding", s.setStreamEncoding )
-
-
-  def setStreamEncoding( s ):
-
-    if s.pipeline:
-      s.pipeline.notify( "encoding_changed", s.conf._world_encoding )
+    self.observer = ConfigObserver( self.conf )
+    self.observer.addCallback( "world_encoding", self.setStreamEncoding )
 
 
-  def setupSocket( s ):
+  def setStreamEncoding( self ):
 
-    if s.conf._ssl and check_ssl_is_available():
+    if self.pipeline:
+      self.pipeline.notify( "encoding_changed", self.conf._world_encoding )
 
-      s.using_ssl = True
-      s.socket    = QSslSocket()
 
-      s.socket.encrypted.connect( s.reportEncrypted )
-      s.socket.sslErrors.connect( s.handleSslErrors )
+  def setupSocket( self ):
+
+    if self.conf._ssl and check_ssl_is_available():
+
+      self.using_ssl = True
+      self.socket    = QSslSocket()
+
+      self.socket.encrypted.connect( self.reportEncrypted )
+      self.socket.sslErrors.connect( self.handleSslErrors )
 
     else:
-      s.socket = QTcpSocket()
+      self.socket = QTcpSocket()
 
-      if s.conf._ssl:  ## SSL was requested but is not available...
+      if self.conf._ssl:  ## SSL was requested but is not available...
         messages.warn( u"SSL functions not available; attempting" \
                        u"unencrypted connection instead..." )
 
-    s.socket.stateChanged.connect( s.reportStateChange )
-    s.socket.error.connect( s.reportError )
-    s.socket.readyRead.connect( s.readSocket )
+    self.socket.stateChanged.connect( self.reportStateChange )
+    self.socket.error.connect( self.reportError )
+    self.socket.readyRead.connect( self.readSocket )
 
 
-  def connectToHost( s ):
+  def connectToHost( self ):
 
-    if not s.socket:
-      s.setupSocket()
+    if not self.socket:
+      self.setupSocket()
 
-    s.pipeline.resetInternalState()
+    self.pipeline.resetInternalState()
 
-    if s.using_ssl:
-      s.socket.connectToHostEncrypted( s.conf._host, s.conf._port )
+    if self.using_ssl:
+      self.socket.connectToHostEncrypted( self.conf._host, self.conf._port )
 
     else:
-      s.socket.connectToHost( s.conf._host, s.conf._port )
+      self.socket.connectToHost( self.conf._host, self.conf._port )
 
 
-  def disconnectFromHost( s ):
+  def disconnectFromHost( self ):
 
-    s.socket.disconnectFromHost()
+    self.socket.disconnectFromHost()
 
 
-  def abort( s ):
+  def abort( self ):
 
-    s.socket.abort()
-    s.socket.close()
+    self.socket.abort()
+    self.socket.close()
 
 
   @pyqtSlot( "QAbstractSocket::SocketState" )
-  def reportStateChange( s, state ):
+  def reportStateChange( self, state ):
 
-    s.flushBuffer()
+    self.flushBuffer()
 
     if   state == QAbstractSocket.HostLookupState:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.RESOLVING ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.RESOLVING ) )
 
     elif state == QAbstractSocket.ConnectingState:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTING ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTING ) )
 
     elif state == QAbstractSocket.ConnectedState:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTED ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTED ) )
 
     elif state == QAbstractSocket.UnconnectedState:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.DISCONNECTED ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.DISCONNECTED ) )
 
 
   @pyqtSlot()
-  def reportEncrypted( s ):
+  def reportEncrypted( self ):
 
-    s.flushBuffer()
-    s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
+    self.flushBuffer()
+    self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
 
 
   @pyqtSlot( "QAbstractSocket::SocketError" )
-  def reportError( s, error ):
+  def reportError( self, error ):
 
-    s.flushBuffer()
+    self.flushBuffer()
 
     if   error == QAbstractSocket.ConnectionRefusedError:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTIONREFUSED ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTIONREFUSED ) )
 
     elif error == QAbstractSocket.HostNotFoundError:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.HOSTNOTFOUND ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.HOSTNOTFOUND ) )
 
     elif error == QAbstractSocket.SocketTimeoutError:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.TIMEOUT ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.TIMEOUT ) )
 
     elif error == QAbstractSocket.RemoteHostClosedError:
       pass  ## It's okay, we handle it as a disconnect.
 
     else:
-      s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.OTHERERROR ) )
+      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.OTHERERROR ) )
 
 
   @pyqtSlot( "const QList<QSslError> &" )
-  def handleSslErrors( s, errors ):
+  def handleSslErrors( self, errors ):
 
     ## We take note of the errors... and then discard them.
     ## SSL validation errors are very common because many legitimate servers
@@ -178,41 +178,41 @@ class SocketPipeline:
     for err in errors:
       messages.warn( u"SSL Error: " + err.errorString() )
 
-    s.socket.ignoreSslErrors()
+    self.socket.ignoreSslErrors()
 
 
   @pyqtSlot()
-  def readSocket( s ):
+  def readSocket( self ):
 
-    data = str( s.socket.readAll() )
-    s.buffer.append( data )
+    data = str( self.socket.readAll() )
+    self.buffer.append( data )
 
-    s.flush_timer.start()
-
-
-  def flushBuffer( s ):
-
-    data = ''.join( s.buffer )
-    del s.buffer[:]
-    s.pipeline.feedBytes( data )
+    self.flush_timer.start()
 
 
-  def send( s, data ):
+  def flushBuffer( self ):
+
+    data = ''.join( self.buffer )
+    del self.buffer[:]
+    self.pipeline.feedBytes( data )
+
+
+  def send( self, data ):
 
     assert type( data ) is type( u'' )
-    data = s.pipeline.formatForSending( data )
+    data = self.pipeline.formatForSending( data )
 
-    s.socket.write( data )
-    s.socket.flush()
-
-
-  def addSink( s, sink, types=ChunkData.ALL_TYPES ):
-
-    s.pipeline.addSink( sink, types )
+    self.socket.write( data )
+    self.socket.flush()
 
 
-  def __del__( s ):
+  def addSink( self, sink, types=ChunkData.ALL_TYPES ):
 
-    s.socket   = None
-    s.pipeline = None
-    s.observer = None
+    self.pipeline.addSink( sink, types )
+
+
+  def __del__( self ):
+
+    self.socket   = None
+    self.pipeline = None
+    self.observer = None

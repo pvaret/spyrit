@@ -43,7 +43,7 @@ class FlowControlFilter( BaseFilter ):
   }
 
 
-  def processChunk( s, chunk ):
+  def processChunk( self, chunk ):
 
     _, text = chunk
 
@@ -52,7 +52,7 @@ class FlowControlFilter( BaseFilter ):
 
     while len( text ) > 0:
 
-      fc = s.match.search( text )
+      fc = self.match.search( text )
 
       if fc:
         head = text[ :fc.start() ]
@@ -63,7 +63,7 @@ class FlowControlFilter( BaseFilter ):
         if head:
           yield ( ChunkData.TEXT, head )
 
-        yield s.chunkmapping[ fc.group() ]
+        yield self.chunkmapping[ fc.group() ]
 
       else:
         ## The remaining text doesn't contain any flow control character that
@@ -74,7 +74,7 @@ class FlowControlFilter( BaseFilter ):
       yield ( ChunkData.TEXT, text )
 
 
-  def formatForSending( s, data ):
+  def formatForSending( self, data ):
 
     ## Transform UNIX-like CR into telnet-like CRLF.
-    return s.unix_like_cr.sub( u"\r\n", data )
+    return self.unix_like_cr.sub( u"\r\n", data )

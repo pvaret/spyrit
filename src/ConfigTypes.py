@@ -85,20 +85,20 @@ class INTLIST:
     return u",".join ( unicode( i ) for i in l )
 
 
-def str_escape( s ):
+def str_escape( string ):
 
   ESC = u'\\'
   ESC_CHARS = u'"' + u"'"
 
   result = []
 
-  for c in s:
+  for c in string:
     result.append ( ( c == ESC or c in ESC_CHARS ) and ESC + c or c )
 
   return u"".join( result )
 
 
-def split_on_unescaped_commas( s ):
+def split_on_unescaped_commas( string ):
 
   ESC    = u'\\'
   QUOTES = u'"' + u"'"
@@ -108,7 +108,7 @@ def split_on_unescaped_commas( s ):
   in_escaped = False
   in_quotes  = u""  ## Evaluates as False.
 
-  for c in s:
+  for c in string:
 
     if in_escaped:
 

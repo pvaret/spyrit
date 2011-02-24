@@ -22,6 +22,8 @@
 ##
 
 
+import sip
+
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QRect
 from PyQt4.QtCore import QSize
@@ -50,65 +52,65 @@ from PlatformSpecific import platformSpecific
 
 class LineCount( QLabel ):
 
-  def __init__( s, parent ):
+  def __init__( self, parent ):
 
-    QLabel.__init__( s, parent )
+    QLabel.__init__( self, parent )
 
-    s.setAutoFillBackground( True )
-    s.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
-    s.setMargin( 1 )
-    s.hide()
+    self.setAutoFillBackground( True )
+    self.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
+    self.setMargin( 1 )
+    self.hide()
 
-    s.anchor_x   = 0
-    s.anchor_y   = 0
-    s.line_count = 0
+    self.anchor_x   = 0
+    self.anchor_y   = 0
+    self.line_count = 0
 
-    s.previous_size = QSize()
+    self.previous_size = QSize()
 
-    s.update_timer = SingleShotTimer( s.applyChanges )
-
-
-  def setAnchor( s, x, y ):
-
-    s.anchor_x = x
-    s.anchor_y = y
-
-    s.reposition()
+    self.update_timer = SingleShotTimer( self.applyChanges )
 
 
-  def setLineCount( s, count ):
+  def setAnchor( self, x, y ):
 
-    s.line_count = count
+    self.anchor_x = x
+    self.anchor_y = y
 
-    if not s.update_timer.isActive():
-      s.update_timer.start()
+    self.reposition()
 
 
-  def applyChanges( s ):
+  def setLineCount( self, count ):
 
-    if s.isVisible() and s.line_count == 0:
-      s.hide()
+    self.line_count = count
 
-    elif not s.isVisible() and s.line_count > 0:
-      s.show()
+    if not self.update_timer.isActive():
+      self.update_timer.start()
 
-    count = s.line_count
+
+  def applyChanges( self ):
+
+    if self.isVisible() and self.line_count == 0:
+      self.hide()
+
+    elif not self.isVisible() and self.line_count > 0:
+      self.show()
+
+    count = self.line_count
     txt = ( count < 2 ) and " %d more line " or " %d more lines "
-    s.setText( txt % count )
+    self.setText( txt % count )
 
-    new_size = s.sizeHint()
+    new_size = self.sizeHint()
 
-    if new_size != s.previous_size:
+    if new_size != self.previous_size:
 
-      s.resize( new_size )
-      s.previous_size = new_size
-      s.reposition()
+      self.resize( new_size )
+      self.previous_size = new_size
+      self.reposition()
 
 
-  def reposition( s ):
+  def reposition( self ):
 
-    size = s.size()
-    s.move( s.anchor_x - size.width(), s.anchor_y - size.height() )
+    size = self.size()
+    self.move( self.anchor_x - size.width(), self.anchor_y - size.height() )
 
 
 
@@ -122,86 +124,86 @@ class SplittableTextView( QTextEdit ):
   SPLIT_FACTOR = 0.84  ## Corresponds to 1/6th of the height.
 
 
-  def __init__( s, parent=None ):
+  def __init__( self, parent=None ):
 
-    QTextEdit.__init__( s, parent )
+    QTextEdit.__init__( self, parent )
 
-    s.setReadOnly( True )
-    s.setUndoRedoEnabled( False )
-    s.setAutoFormatting( QTextEdit.AutoNone )
-    s.viewport().setCursor( Qt.ArrowCursor )
+    self.setReadOnly( True )
+    self.setUndoRedoEnabled( False )
+    self.setAutoFormatting( QTextEdit.AutoNone )
+    self.viewport().setCursor( Qt.ArrowCursor )
 
-    s.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
-    s.setVerticalScrollBarPolicy(   Qt.ScrollBarAlwaysOn )
+    self.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
+    self.setVerticalScrollBarPolicy(   Qt.ScrollBarAlwaysOn )
 
-    s.atbottom  = True
-    s.scrollbar = s.verticalScrollBar()
+    self.atbottom  = True
+    self.scrollbar = self.verticalScrollBar()
 
-    s.split_scrollback   = True
-    s.paging             = True
-    s.next_page_position = 0
-    s.previous_selection = -1, -1
+    self.split_scrollback   = True
+    self.paging             = True
+    self.next_page_position = 0
+    self.previous_selection = -1, -1
 
-    s.scrollbar.valueChanged.connect( s.onScroll )
-    s.scrollbar.rangeChanged.connect( s.onRangeChanged )
+    self.scrollbar.valueChanged.connect( self.onScroll )
+    self.scrollbar.rangeChanged.connect( self.onRangeChanged )
 
-    s.textChanged.connect( s.perhapsRepaintText )
-    s.selectionChanged.connect( s.perhapsRepaintSelection )
+    self.textChanged.connect( self.perhapsRepaintText )
+    self.selectionChanged.connect( self.perhapsRepaintSelection )
 
-    s.computeLineStep()
-    s.more = LineCount( s )
-    s.setMoreAnchor()
+    self.computeLineStep()
+    self.more = LineCount( self )
+    self.setMoreAnchor()
 
 
   @pyqtSlot()
-  def perhapsRepaintText( s ):
+  def perhapsRepaintText( self ):
 
     ## Right, so we've got a problem: when the text changes but the scrollbar
     ## is not to the bottom, Qt cleverly optimizes things by not repainting
     ## the contents. Only, due to our split screen thingie, we need to
     ## override that behavior. Hence this function.
 
-    if s.atbottom:             return
-    if not s.split_scrollback: return
+    if self.atbottom:             return
+    if not self.split_scrollback: return
 
     ## Right, the scrollbar is not at bottom, and the screen is split. So
     ## we repaint indeed, although only the bottom part, since the screen is
     ## split and the top part doesn't change.
 
-    s.update( s.splitBottomRect() )
+    self.update( self.splitBottomRect() )
 
 
   @pyqtSlot()
-  def perhapsRepaintSelection( s ):
+  def perhapsRepaintSelection( self ):
 
-    if s.atbottom:             return
-    if not s.split_scrollback: return
+    if self.atbottom:             return
+    if not self.split_scrollback: return
 
     ## We force a repaint of the bottom area in two cases: when the mouse
     ## pointer is in there, and thus may be updating the selection; and
     ## when the selection is all new, in case there was a former selection
     ## to be cleared. Hackish, but functional.
 
-    cursor_pos = s.viewport().mapFromGlobal( QCursor.pos() )
+    cursor_pos = self.viewport().mapFromGlobal( QCursor.pos() )
 
-    if s.splitBottomRect().contains( cursor_pos ):
-      s.update( s.splitBottomRect() )
+    if self.splitBottomRect().contains( cursor_pos ):
+      self.update( self.splitBottomRect() )
 
-    prev_pos, prev_anchor = s.previous_selection
+    prev_pos, prev_anchor = self.previous_selection
 
-    sel = s.textCursor()
+    sel = self.textCursor()
 
     if sel.position() != prev_pos and sel.anchor() != prev_anchor:
-      s.update( s.splitBottomRect() )
+      self.update( self.splitBottomRect() )
 
-    s.previous_selection = sel.position(), sel.anchor()
+    self.previous_selection = sel.position(), sel.anchor()
 
 
-  def setConfiguration( s, font_name, font_size, background_color ):
+  def setConfiguration( self, font_name, font_size, background_color ):
 
     if background_color:
       stylesheet = u"QTextEdit { background-color: %s }" % background_color
-      s.setStyleSheet( stylesheet )
+      self.setStyleSheet( stylesheet )
 
     font = QFont( font_name )
 
@@ -214,31 +216,31 @@ class SplittableTextView( QTextEdit ):
     font.setStyleHint( font.TypeWriter )
     font.setStyleStrategy( font.PreferOutline | font.PreferMatch )
 
-    s.setFont( font )
+    self.setFont( font )
 
-    s.computeLineStep()
-
-
-  def computeLineStep( s ):
-
-    s.scrollbar.setSingleStep( s.lineHeight() )
-    s.computePageStep()
+    self.computeLineStep()
 
 
-  def computePageStep( s ):
+  def computeLineStep( self ):
 
-    if s.split_scrollback:
-      pagestep = s.splitY()            - s.scrollbar.singleStep()
+    self.scrollbar.setSingleStep( self.lineHeight() )
+    self.computePageStep()
+
+
+  def computePageStep( self ):
+
+    if self.split_scrollback:
+      pagestep = self.splitY()            - self.scrollbar.singleStep()
 
     else:
-      pagestep = s.viewport().height() - s.scrollbar.singleStep()
+      pagestep = self.viewport().height() - self.scrollbar.singleStep()
 
-    s.scrollbar.setPageStep( pagestep )
+    self.scrollbar.setPageStep( pagestep )
 
 
-  def lineHeight( s ):
+  def lineHeight( self ):
 
-    font = s.font()
+    font = self.font()
 
     ## Generate the layout for one line of text using this font:
     layout = QTextLayout( u"---", font )
@@ -260,87 +262,87 @@ class SplittableTextView( QTextEdit ):
     return int( line.height() + leading )
 
 
-  def setPaging( s, is_paging ):
+  def setPaging( self, is_paging ):
 
-    s.paging = is_paging
+    self.paging = is_paging
 
 
-  def setSplitScrollback( s, split_scrollback ):
+  def setSplitScrollback( self, split_scrollback ):
 
-    s.split_scrollback = split_scrollback
+    self.split_scrollback = split_scrollback
 
-    s.computePageStep()
-    s.setMoreAnchor()
+    self.computePageStep()
+    self.setMoreAnchor()
 
-    if not s.atbottom:
-      s.update()
+    if not self.atbottom:
+      self.update()
 
 
   @pyqtSlot( int )
-  def onScroll( s, pos ):
+  def onScroll( self, pos ):
 
-    s.atbottom = ( pos == s.scrollbar.maximum() )
+    self.atbottom = ( pos == self.scrollbar.maximum() )
 
     ## When the user moves back to the bottom of the view, paging is reset:
 
-    if s.atbottom:
+    if self.atbottom:
 
-      if s.next_page_position == -1:
-        s.next_page_position = s.nextPageForPos( pos )
+      if self.next_page_position == -1:
+        self.next_page_position = self.nextPageForPos( pos )
 
     else:
-      s.next_page_position = -1
+      self.next_page_position = -1
 
     if platformSpecific.should_repaint_on_scroll:
-      s.update()
+      self.update()
 
-    s.more.setLineCount( s.linesRemaining() )
+    self.more.setLineCount( self.linesRemaining() )
 
 
-  def nextPageForPos( s, pos ):
+  def nextPageForPos( self, pos ):
 
     if pos == 0:
-      height = int( s.document().documentLayout().documentSize().height() )
+      height = int( self.document().documentLayout().documentSize().height() )
 
     else:
-      height = pos + s.viewport().height()
+      height = pos + self.viewport().height()
 
-    l, t, r, b = s.getContentsMargins()
+    l, t, r, b = self.getContentsMargins()
 
-    return height - s.scrollbar.singleStep() - t - b - 1
+    return height - self.scrollbar.singleStep() - t - b - 1
 
 
-  def linesRemaining( s ):
+  def linesRemaining( self ):
 
-    sb = s.scrollbar
+    sb = self.scrollbar
     max, val, step = sb.maximum(), sb.value(), sb.singleStep()
 
     return ( max - val + step - 1 ) / step
 
 
-  def remapMouseEvent( s, e ):
+  def remapMouseEvent( self, e ):
 
-    if s.atbottom or not s.split_scrollback:
+    if self.atbottom or not self.split_scrollback:
       return e
 
-    if e.y() <= s.splitY():
+    if e.y() <= self.splitY():
       return e
 
-    height  = s.viewport().height()
+    height  = self.viewport().height()
 
-    y = e.y() + s.document().size().height() - height - s.scrollbar.value()
+    y = e.y() + self.document().size().height() - height - self.scrollbar.value()
 
     e = QMouseEvent( e.type(), QPoint( e.x(), y ), e.globalPos(),
                            e.button(), e.buttons(), e.modifiers() )
     return e
 
 
-  def mouseMoveEvent( s, e ):
+  def mouseMoveEvent( self, e ):
 
-    return QTextEdit.mouseMoveEvent( s, s.remapMouseEvent( e ) )
+    return QTextEdit.mouseMoveEvent( self, self.remapMouseEvent( e ) )
 
 
-  def mousePressEvent( s, e ):
+  def mousePressEvent( self, e ):
 
     ## WORKAROUND: We need to clear the selection before the click, so the
     ## drag and drop event that may otherwise follow doesn't get confused
@@ -350,91 +352,91 @@ class SplittableTextView( QTextEdit ):
     ## viewport by saving the scrollbar's value and then restoring it, while
     ## blocking its signals.
 
-    block = s.scrollbar.blockSignals( True )
-    val   = s.scrollbar.value()
+    block = self.scrollbar.blockSignals( True )
+    val   = self.scrollbar.value()
 
-    cur = s.textCursor()
+    cur = self.textCursor()
 
     if cur.hasSelection() and e.buttons() & Qt.LeftButton:
 
-      cur = s.cursorForPosition( e.pos() )
-      s.setTextCursor( cur )
+      cur = self.cursorForPosition( e.pos() )
+      self.setTextCursor( cur )
 
-    res = QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
+    res = QTextEdit.mousePressEvent( self, self.remapMouseEvent( e ) )
 
-    s.scrollbar.setValue( val )
-    s.scrollbar.blockSignals( block )
+    self.scrollbar.setValue( val )
+    self.scrollbar.blockSignals( block )
 
     return res
 
 
-  def mouseReleaseEvent( s, e ):
+  def mouseReleaseEvent( self, e ):
 
     ## WORKAROUND: The same workaround as above is used here. Without it, Qt's
     ## calling of ensureCursorVisible() while handling the mouse release event
     ## causes the viewport to scroll if the mouse is released in the split
     ## area.
 
-    block = s.scrollbar.blockSignals( True )
-    val   = s.scrollbar.value()
+    block = self.scrollbar.blockSignals( True )
+    val   = self.scrollbar.value()
 
-    res = QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
+    res = QTextEdit.mouseReleaseEvent( self, self.remapMouseEvent( e ) )
 
-    s.scrollbar.setValue( val )
-    s.scrollbar.blockSignals( block )
+    self.scrollbar.setValue( val )
+    self.scrollbar.blockSignals( block )
 
     return res
 
 
-  def mouseDoubleClickEvent( s, e ):
+  def mouseDoubleClickEvent( self, e ):
 
-    return QTextEdit.mouseDoubleClickEvent( s, s.remapMouseEvent( e ) )
-
-
-  def splitY( s ):
-
-    return int( s.viewport().height() * s.SPLIT_FACTOR )
+    return QTextEdit.mouseDoubleClickEvent( self, self.remapMouseEvent( e ) )
 
 
-  def splitTopRect( s ):
+  def splitY( self ):
 
-    w = s.viewport().width()
-
-    return QRect( 0, 0, w, s.splitY() )
+    return int( self.viewport().height() * self.SPLIT_FACTOR )
 
 
-  def splitBottomRect( s ):
+  def splitTopRect( self ):
 
-    w = s.viewport().width()
-    h = s.viewport().height()
+    w = self.viewport().width()
 
-    return QRect( 0, s.splitY() + 1, w, h )
+    return QRect( 0, 0, w, self.splitY() )
 
 
-  def paintEvent( s, e ):
+  def splitBottomRect( self ):
 
-    if s.atbottom or not s.split_scrollback:
+    w = self.viewport().width()
+    h = self.viewport().height()
 
-      QTextEdit.paintEvent( s, e )
+    return QRect( 0, self.splitY() + 1, w, h )
+
+
+  def paintEvent( self, e ):
+
+    if self.atbottom or not self.split_scrollback:
+
+      QTextEdit.paintEvent( self, e )
       return
 
     ## Draw the top half of the viewport if necessary.
 
-    top_r = e.rect().intersected( s.splitTopRect() )
+    top_r = e.rect().intersected( self.splitTopRect() )
 
     if not top_r.isEmpty():
-      QTextEdit.paintEvent( s, QPaintEvent( top_r ) )
+      QTextEdit.paintEvent( self, QPaintEvent( top_r ) )
 
     ## Likewise the bottom half.
     ## Create painter.
 
-    p = QPainter( s.viewport() )
+    p = QPainter( self.viewport() )
 
     ## Draw separation line.
 
-    split_y = s.splitY()
-    width   = s.viewport().width()
-    height  = s.viewport().height()
+    split_y = self.splitY()
+    width   = self.viewport().width()
+    height  = self.viewport().height()
 
     if e.rect().contains( e.rect().left(), split_y ):
 
@@ -443,12 +445,12 @@ class SplittableTextView( QTextEdit ):
 
     ## Clip painter.
 
-    clip_r = e.rect().intersected( s.splitBottomRect() )
+    clip_r = e.rect().intersected( self.splitBottomRect() )
 
     if clip_r.isEmpty():
       return
 
-    doc        = s.document()
+    doc        = self.document()
     doc_height = doc.size().height()
 
     p.setClipRect( clip_r )
@@ -459,11 +461,11 @@ class SplittableTextView( QTextEdit ):
     ctx      = QAbstractTextDocumentLayout.PaintContext()
     ctx.clip = QRectF( clip_r.translated( 0, doc_height - height ) )
 
-    cur = s.textCursor()
+    cur = self.textCursor()
 
-    palette = s.palette()
+    palette = self.palette()
 
-    focus  = ( QApplication.instance().focusWidget() is s )
+    focus  = ( QApplication.instance().focusWidget() is self )
     cgroup = not focus and QPalette.Inactive or QPalette.Active
 
     if cur.hasSelection():
@@ -480,39 +482,39 @@ class SplittableTextView( QTextEdit ):
 
 
   @pyqtSlot()
-  def pingPage( s ):
+  def pingPage( self ):
 
     ## Paging implementation:
 
-    if s.atbottom and s.paging:
-      s.next_page_position = s.nextPageForPos( s.scrollbar.value() )
+    if self.atbottom and self.paging:
+      self.next_page_position = self.nextPageForPos( self.scrollbar.value() )
 
 
-  def moveScrollbarToBottom( s ):
+  def moveScrollbarToBottom( self ):
 
-    max = s.scrollbar.maximum()
+    max = self.scrollbar.maximum()
 
-    if s.scrollbar.value() == max:
+    if self.scrollbar.value() == max:
 
       ## Trigger onScroll event even if not moving:
-      s.onScroll( max )
+      self.onScroll( max )
 
     else:
-      s.scrollbar.setValue( max )
+      self.scrollbar.setValue( max )
 
 
-  def moveScrollbarToTop( s ):
+  def moveScrollbarToTop( self ):
 
-    s.scrollbar.setValue( s.scrollbar.minimum() )
+    self.scrollbar.setValue( self.scrollbar.minimum() )
 
 
   @pyqtSlot( int, int )
-  def onRangeChanged( s, min, max ):
+  def onRangeChanged( self, min, max ):
 
     ## 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'
     ## signal.
 
-    pos = s.scrollbar.value()
+    pos = self.scrollbar.value()
 
     ## Handle rare case where the view got smaller, for instance if the user
     ## switches to a smaller font:
@@ -520,75 +522,75 @@ class SplittableTextView( QTextEdit ):
     if pos > max:
       return
 
-    if s.next_page_position > s.nextPageForPos( max ):
-      s.next_page_position = -1
+    if self.next_page_position > self.nextPageForPos( max ):
+      self.next_page_position = -1
 
-    if pos != max and s.atbottom:  ## Do we need to scroll?
+    if pos != max and self.atbottom:  ## Do we need to scroll?
 
-      if s.paging and s.next_page_position != -1:
+      if self.paging and self.next_page_position != -1:
         ## Case 1: We are paging and have a valid next page break.
 
-        if max > s.next_page_position:
+        if max > self.next_page_position:
           ## Case 1.1: Scrolling would move us past the next page break.
 
-          if pos != s.next_page_position:
-            s.scrollbar.setValue( s.next_page_position )
+          if pos != self.next_page_position:
+            self.scrollbar.setValue( self.next_page_position )
 
           else:  ## If the scrollbar value shouldn't change even though we
                  ## switched to paging mode, trigger scroll event manually.
-            s.onScroll( pos )
+            self.onScroll( pos )
 
         else:
           ## Case 1.2: Not at page break yet. Proceed as usual for now.
-          s.moveScrollbarToBottom()
+          self.moveScrollbarToBottom()
 
       else:
         ## Case 2: We are not paging. Proceed as usual.
-        s.moveScrollbarToBottom()
+        self.moveScrollbarToBottom()
 
-    s.more.setLineCount( s.linesRemaining() )
+    self.more.setLineCount( self.linesRemaining() )
 
 
-  def contextMenuEvent( s, e ):
+  def contextMenuEvent( self, e ):
 
-    menu = s.createStandardContextMenu()
+    menu = self.createStandardContextMenu()
     menu.exec_( e.globalPos() )
     sip.delete( menu )
 
 
-  def stepUp( s ):
+  def stepUp( self ):
 
-    s.scrollbar.triggerAction( QScrollBar.SliderSingleStepSub )
-
-
-  def stepDown( s ):
-
-    s.scrollbar.triggerAction( QScrollBar.SliderSingleStepAdd )
+    self.scrollbar.triggerAction( QScrollBar.SliderSingleStepSub )
 
 
-  def pageUp( s ):
+  def stepDown( self ):
 
-    s.computePageStep()
-    s.scrollbar.triggerAction( QScrollBar.SliderPageStepSub )
-
-
-  def pageDown( s ):
-
-    s.computePageStep()
-    s.scrollbar.triggerAction( QScrollBar.SliderPageStepAdd )
+    self.scrollbar.triggerAction( QScrollBar.SliderSingleStepAdd )
 
 
-  def resizeEvent( s, e ):
+  def pageUp( self ):
 
-    res = QTextEdit.resizeEvent( s, e )
+    self.computePageStep()
+    self.scrollbar.triggerAction( QScrollBar.SliderPageStepSub )
 
-    s.onRangeChanged( s.scrollbar.minimum(), s.scrollbar.maximum() )
-    s.setMoreAnchor()
+
+  def pageDown( self ):
+
+    self.computePageStep()
+    self.scrollbar.triggerAction( QScrollBar.SliderPageStepAdd )
+
+
+  def resizeEvent( self, e ):
+
+    res = QTextEdit.resizeEvent( self, e )
+
+    self.onRangeChanged( self.scrollbar.minimum(), self.scrollbar.maximum() )
+    self.setMoreAnchor()
 
     return res
 
 
-  def ensureCursorVisible( s ):
+  def ensureCursorVisible( self ):
 
     ## Note: this method is never called from inside Qt, for instance during
     ## the mousePressEvent above, because in the underlying QTextEdit this
@@ -596,37 +598,37 @@ class SplittableTextView( QTextEdit ):
     ## It is only used in our own code to ensure cursor visibility in case of
     ## split scrollback.
 
-    QTextEdit.ensureCursorVisible( s )
+    QTextEdit.ensureCursorVisible( self )
 
-    if s.split_scrollback and not s.atbottom:
+    if self.split_scrollback and not self.atbottom:
 
-      rect  = s.cursorRect()
-      cur_y = s.viewport().mapToParent( rect.bottomLeft() ).y()
+      rect  = self.cursorRect()
+      cur_y = self.viewport().mapToParent( rect.bottomLeft() ).y()
 
-      split_y = s.splitY()
+      split_y = self.splitY()
 
       if cur_y > split_y:
 
         ## Okay, the cursor is hidden by our scrollback overlay. Let us scroll
         ## some more so it is visible.
 
-        y = s.scrollbar.value()
-        s.scrollbar.setValue( y + cur_y - split_y - 1 )
+        y = self.scrollbar.value()
+        self.scrollbar.setValue( y + cur_y - split_y - 1 )
 
 
-  def setMoreAnchor( s ):
+  def setMoreAnchor( self ):
 
-    x = s.viewport().width()
+    x = self.viewport().width()
 
-    if s.split_scrollback:
-      y = s.splitY()
+    if self.split_scrollback:
+      y = self.splitY()
 
     else:
-      y = s.viewport().height()
+      y = self.viewport().height()
 
-    s.more.setAnchor( x, y )
+    self.more.setAnchor( x, y )
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.scrollbar = None
+    self.scrollbar = None

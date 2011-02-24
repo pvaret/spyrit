@@ -41,26 +41,26 @@ pyqtRemoveInputHook()
 
 class Application( QApplication ):
 
-  def __init__( s, args ):
+  def __init__( self, args ):
 
-    QApplication.__init__( s, args )
+    QApplication.__init__( self, args )
 
-    s.args           = args
-    s.bootstrapped   = False
-    s.local_encoding = locale.getpreferredencoding()  ## Try to guess the
-                                                      ## local encoding.
-    s.core = None
+    self.args           = args
+    self.bootstrapped   = False
+    self.local_encoding = locale.getpreferredencoding()  ## Try to guess the
+                                                         ## local encoding.
+    self.core = None
 
-    s.aboutToQuit.connect( s.beforeStop )
+    self.aboutToQuit.connect( self.beforeStop )
 
 
-  def bootstrap( s ):
+  def bootstrap( self ):
 
     ## Check that we aren't already bootstrapped.
-    if s.bootstrapped:
+    if self.bootstrapped:
       return
 
-    s.bootstrapped = True
+    self.bootstrapped = True
 
     ## Attempt to load resources. Log error if resources not found.
     try:
@@ -73,23 +73,23 @@ class Application( QApplication ):
     QFontDatabase.addApplicationFont( ":/app/symbols" )
 
     ## Setup icon.
-    s.setWindowIcon( QIcon( ":/app/icon" ) )
+    self.setWindowIcon( QIcon( ":/app/icon" ) )
 
     ## And create the core object for Spyrit:
-    s.core = construct_spyrit_core( s )
+    self.core = construct_spyrit_core( self )
 
 
-  def exec_( s ):
+  def exec_( self ):
 
-    if not s.bootstrapped:
-      s.bootstrap()
+    if not self.bootstrapped:
+      self.bootstrap()
 
-    QTimer.singleShot( 0, s.afterStart )
+    QTimer.singleShot( 0, self.afterStart )
 
     return QApplication.exec_()
 
 
-  def afterStart( s ):
+  def afterStart( self ):
 
     ## This method is called once, right after the start of the event loop.
     ## It is used to set up things that we only want done after the event loop
@@ -97,14 +97,14 @@ class Application( QApplication ):
 
     sys.excepthook = handle_exception
 
-    s.core.constructMainWindow()
+    self.core.constructMainWindow()
 
     ## At this point, the arguments that Qt uses have already been filtered
     ## by Qt itself.
 
-    for arg in s.args[ 1: ]:
+    for arg in self.args[ 1: ]:
 
-      arg = arg.decode( s.local_encoding, "replace" )
+      arg = arg.decode( self.local_encoding, "replace" )
 
       if u":" in arg:  ## This is probably a 'server:port' argument.
 
@@ -119,14 +119,14 @@ class Application( QApplication ):
           messages.warn( u"Invalid <server>:<port> command line: %s" % arg )
 
         else:
-          s.core.openWorldByHostPort( server, port )
+          self.core.openWorldByHostPort( server, port )
 
       else:
 
-        s.core.openWorldByName( arg )
+        self.core.openWorldByName( arg )
 
 
   @pyqtSlot()
-  def beforeStop( s ):
+  def beforeStop( self ):
 
     sys.excepthook = sys.__excepthook__

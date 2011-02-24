@@ -44,23 +44,23 @@ from SmartTabWidget import SmartTabWidget
 
 class MainWindow( QMainWindow ):
 
-  def __init__( s, config ):
+  def __init__( self, config ):
 
-    QMainWindow.__init__( s )
+    QMainWindow.__init__( self )
 
     ## Set up main window according to its configuration.
 
-    s.setWindowTitle( config._app_name )
+    self.setWindowTitle( config._app_name )
 
     min_size = config._mainwindow_min_size
     if min_size and len( min_size ) >= 2:
-      s.setMinimumSize( QSize( min_size[0], min_size[1] ) )
+      self.setMinimumSize( QSize( min_size[0], min_size[1] ) )
 
     size = config._mainwindow_size
-    if size and len( size ) >= 2: s.resize( QSize( size[0], size[1] ) )
+    if size and len( size ) >= 2: self.resize( QSize( size[0], size[1] ) )
 
     pos = config._mainwindow_pos
-    if pos and len( pos ) >= 2: s.move( QPoint( pos[0], pos[1] ) )
+    if pos and len( pos ) >= 2: self.move( QPoint( pos[0], pos[1] ) )
 
 
     ## Create the central widget.
@@ -69,219 +69,219 @@ class MainWindow( QMainWindow ):
     default_pane.setAlignment( Qt.AlignCenter )
     default_pane.setPixmap( QPixmap( ":/app/logo" ) )
 
-    s.setCentralWidget( SmartTabWidget( s, default_pane ) )
-    s.tabwidget = s.centralWidget().tabwidget
+    self.setCentralWidget( SmartTabWidget( self, default_pane ) )
+    self.tabwidget = self.centralWidget().tabwidget
 
-    s.tabwidget.currentChanged.connect( s.setCurrentWorldToolbar )
+    self.tabwidget.currentChanged.connect( self.setCurrentWorldToolbar )
 
 
     ## Create all the actions.
 
-    s.actionset = ActionSet( s )
+    self.actionset = ActionSet( self )
 
-    s.action_about        = s.actionset.bindAction( "about",   s.actionAbout )
-    s.action_aboutqt      = s.actionset.bindAction( "aboutqt", QApplication.instance().aboutQt )
-    s.action_newworld     = s.actionset.bindAction( "newworld",
-                                                     s.actionNewWorld )
-    s.action_quickconnect = s.actionset.bindAction( "quickconnect",
-                                                     s.actionQuickConnect )
-    s.action_quit         = s.actionset.bindAction( "quit", s.close )
+    self.action_about        = self.actionset.bindAction( "about",   self.actionAbout )
+    self.action_aboutqt      = self.actionset.bindAction( "aboutqt", QApplication.instance().aboutQt )
+    self.action_newworld     = self.actionset.bindAction( "newworld",
+                                                          self.actionNewWorld )
+    self.action_quickconnect = self.actionset.bindAction( "quickconnect",
+                                                          self.actionQuickConnect )
+    self.action_quit         = self.actionset.bindAction( "quit", self.close )
 
-    s.actionset.bindAction( "nexttab",     s.tabwidget.tabbar.nextTab )
-    s.actionset.bindAction( "previoustab", s.tabwidget.tabbar.previousTab )
+    self.actionset.bindAction( "nexttab",     self.tabwidget.tabbar.nextTab )
+    self.actionset.bindAction( "previoustab", self.tabwidget.tabbar.previousTab )
 
 
     ## Create menus.
 
-    menubar = s.menuBar()
+    menubar = self.menuBar()
     menubar.setContextMenuPolicy( Qt.PreventContextMenu )
 
-    s.menu_file = menubar.addMenu( u"File" )
-    s.menu_file.addAction( s.action_quit )
+    self.menu_file = menubar.addMenu( u"File" )
+    self.menu_file.addAction( self.action_quit )
 
-    s.menu_worlds = menubar.addMenu( u"Worlds" )
+    self.menu_worlds = menubar.addMenu( u"Worlds" )
 
-    s.menu_connect = QMenu()
-    s.menu_connect.setTitle( u"Connect to..." )
-    s.menu_connect.setIcon( QIcon( ":/icon/worlds" ) )
+    self.menu_connect = QMenu()
+    self.menu_connect.setTitle( u"Connect to..." )
+    self.menu_connect.setIcon( QIcon( ":/icon/worlds" ) )
 
-    s.menu_help = menubar.addMenu( u"Help" )
-    s.menu_help.addAction( s.action_about )
-    s.menu_help.addAction( s.action_aboutqt )
+    self.menu_help = menubar.addMenu( u"Help" )
+    self.menu_help.addAction( self.action_about )
+    self.menu_help.addAction( self.action_aboutqt )
 
 
     ## Create toolbars.
 
-    s.toolbar_main = QToolBar( u"Main Toolbar", s )
-    s.toolbar_main.setMovable( False )
-    s.toolbar_main.setFloatable( False )
-    s.toolbar_main.setContextMenuPolicy( Qt.PreventContextMenu )
-    s.toolbar_main.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
+    self.toolbar_main = QToolBar( u"Main Toolbar", self )
+    self.toolbar_main.setMovable( False )
+    self.toolbar_main.setFloatable( False )
+    self.toolbar_main.setContextMenuPolicy( Qt.PreventContextMenu )
+    self.toolbar_main.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
 
-    s.addToolBar( s.toolbar_main )
+    self.addToolBar( self.toolbar_main )
 
     ## Create and add dynamic world list action.
 
-    connectaction = s.menu_connect.menuAction()
-    s.toolbar_main.addAction( connectaction )
+    connectaction = self.menu_connect.menuAction()
+    self.toolbar_main.addAction( connectaction )
 
     ## ... And don't forget to set the button for that action to the correct
     ## menu popup mode.
 
-    connectbutton = s.toolbar_main.widgetForAction( connectaction )
+    connectbutton = self.toolbar_main.widgetForAction( connectaction )
     connectbutton.setPopupMode( QToolButton.InstantPopup )
 
     ## Add remaining toolbar actions.
 
-    s.toolbar_main.addAction( s.action_newworld )
-    s.toolbar_main.addSeparator()
-    s.toolbar_main.addAction( s.action_quit )
-    s.toolbar_main.addSeparator()
+    self.toolbar_main.addAction( self.action_newworld )
+    self.toolbar_main.addSeparator()
+    self.toolbar_main.addAction( self.action_quit )
+    self.toolbar_main.addSeparator()
 
-    s.toolbar_world = None  ## This will be populated when Worlds are created.
+    self.toolbar_world = None  ## This will be populated when Worlds are created.
 
 
     ## Link configuration changes to the appropriate updaters.
 
-    s.initial_style = QApplication.style().objectName()
+    self.initial_style = QApplication.style().objectName()
 
     ## Apply configuration:
 
-    s.refreshStyle()
-    s.refreshIcons()
+    self.refreshStyle()
+    self.refreshIcons()
 
     ## And bind it to the appropriate configuration keys:
 
-    s.observer = ConfigObserver( config )
-    s.observer.addCallback( "widget_style", s.refreshStyle )
-    s.observer.addCallback( "toolbar_icon_size", s.refreshIcons )
+    self.observer = ConfigObserver( config )
+    self.observer.addCallback( "widget_style", self.refreshStyle )
+    self.observer.addCallback( "toolbar_icon_size", self.refreshIcons )
 
-    s.refreshMenuWorlds()
+    self.refreshMenuWorlds()
 
     worldsmanager = QApplication.instance().core.worlds
-    worldsmanager.worldListChanged.connect( s.refreshMenuWorlds )
+    worldsmanager.worldListChanged.connect( self.refreshMenuWorlds )
 
     ## And with this, our Main Window is created, whee!
 
 
-  def refreshStyle( s ):
+  def refreshStyle( self ):
 
     style = QApplication.instance().core.config._widget_style
 
     if not style:
-      style = s.initial_style
+      style = self.initial_style
 
-    s.setUpdatesEnabled( False )
+    self.setUpdatesEnabled( False )
     QApplication.setStyle( style )
-    s.refreshIcons()
-    s.setUpdatesEnabled( True )
+    self.refreshIcons()
+    self.setUpdatesEnabled( True )
 
 
-  def refreshIcons( s ):
+  def refreshIcons( self ):
 
     size = QApplication.instance().core.config._toolbar_icon_size
 
     if not size:
       size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
 
-    s.toolbar_main.setIconSize( QSize( size, size ) )
+    self.toolbar_main.setIconSize( QSize( size, size ) )
 
 
   @pyqtSlot()
-  def refreshMenuWorlds( s ):
+  def refreshMenuWorlds( self ):
 
-    s.setUpdatesEnabled( False )
+    self.setUpdatesEnabled( False )
 
-    s.menu_worlds.clear()
+    self.menu_worlds.clear()
 
-    s.menu_worlds.addAction( s.action_quickconnect )
-    s.menu_worlds.addAction( s.action_newworld )
+    self.menu_worlds.addAction( self.action_quickconnect )
+    self.menu_worlds.addAction( self.action_newworld )
 
-    s.menu_worlds.addSeparator()
+    self.menu_worlds.addSeparator()
 
-    s.menu_connect.clear()
+    self.menu_connect.clear()
 
     worldsmanager = QApplication.instance().core.worlds
     worlds = worldsmanager.knownWorldList()
 
     if not worlds:
 
-      s.menu_connect.setEnabled( False )
-      s.menu_worlds.addAction( s.disabledMenuText( u"(No world created)" ) )
+      self.menu_connect.setEnabled( False )
+      self.menu_worlds.addAction( self.disabledMenuText( u"(No world created)" ) )
 
     else:
 
-      s.menu_connect.setEnabled( True )
+      self.menu_connect.setEnabled( True )
 
       for world in worlds:
-        s.menu_connect.addAction( s.makeConnectToWorldAction( world ) )
+        self.menu_connect.addAction( self.makeConnectToWorldAction( world ) )
 
-      s.menu_worlds.addMenu( s.menu_connect )
+      self.menu_worlds.addMenu( self.menu_connect )
 
-    s.setUpdatesEnabled( True )
+    self.setUpdatesEnabled( True )
 
 
   @pyqtSlot( int )
-  def setCurrentWorldToolbar( s, i ):
+  def setCurrentWorldToolbar( self, i ):
 
-    s.setUpdatesEnabled( False )
+    self.setUpdatesEnabled( False )
 
-    if s.toolbar_world:
-      s.removeToolBar( s.toolbar_world )
+    if self.toolbar_world:
+      self.removeToolBar( self.toolbar_world )
 
     try:
-      toolbar = s.tabwidget.widget( i ).toolbar
+      toolbar = self.tabwidget.widget( i ).toolbar
 
     except AttributeError:
       toolbar = None
 
-    s.toolbar_world = toolbar
+    self.toolbar_world = toolbar
 
     if toolbar:
-      s.addToolBar( toolbar )
+      self.addToolBar( toolbar )
       toolbar.show()
 
-    s.setUpdatesEnabled( True )
+    self.setUpdatesEnabled( True )
 
 
-  def disabledMenuText( s, text ):
+  def disabledMenuText( self, text ):
 
-    dummy = QAction( text, s )
+    dummy = QAction( text, self )
     dummy.setEnabled( False )
 
     return dummy
 
 
-  def iterateOnOpenWorlds( s ):
+  def iterateOnOpenWorlds( self ):
 
-    for i in range( s.tabwidget.count() ):
-      yield s.tabwidget.widget( i )
+    for i in range( self.tabwidget.count() ):
+      yield self.tabwidget.widget( i )
 
 
-  def newWorldUI( s, world ):
+  def newWorldUI( self, world ):
 
-    s.setUpdatesEnabled( False )
+    self.setUpdatesEnabled( False )
 
-    worldui = WorldUI( s.tabwidget, world )
+    worldui = WorldUI( self.tabwidget, world )
 
-    pos = s.tabwidget.addTab( worldui, world.title() )
-    s.tabwidget.setCurrentIndex( pos )
+    pos = self.tabwidget.addTab( worldui, world.title() )
+    self.tabwidget.setCurrentIndex( pos )
 
-    s.setUpdatesEnabled( True )
+    self.setUpdatesEnabled( True )
 
     return pos
 
 
-  def closeEvent( s, event ):
+  def closeEvent( self, event ):
 
     ## Confirm close if some worlds are still connected.
 
-    connectedworlds = [ w for w in s.iterateOnOpenWorlds()
+    connectedworlds = [ w for w in self.iterateOnOpenWorlds()
                           if  w.world.isConnected() ]
 
     if len( connectedworlds ) > 0:
 
-      messagebox = QMessageBox( s )
+      messagebox = QMessageBox( self )
 
       messagebox.setWindowTitle( u"Confirm quit" )
       messagebox.setIcon( QMessageBox.Question )
@@ -301,7 +301,7 @@ class MainWindow( QMainWindow ):
 
     ## Ensure all the current worlds cut their connections.
 
-    for w in s.iterateOnOpenWorlds():
+    for w in self.iterateOnOpenWorlds():
 
       if w:
         w.world.ensureWorldDisconnected()
@@ -311,10 +311,10 @@ class MainWindow( QMainWindow ):
 
     config = QApplication.instance().core.config
 
-    size = ( s.size().width(), s.size().height() )
+    size = ( self.size().width(), self.size().height() )
     config._mainwindow_size = size
 
-    pos = ( s.pos().x(), s.pos().y() )
+    pos = ( self.pos().x(), self.pos().y() )
     config._mainwindow_pos = pos
 
     ## WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
@@ -322,8 +322,8 @@ class MainWindow( QMainWindow ):
     ## around the bug by removing the menu bar from the main window's widget
     ## hierarchy and deleting it ourselves.
 
-    s.hide()
-    mb = s.menuBar()
+    self.hide()
+    mb = self.menuBar()
     mb.setParent( None )
     mb.deleteLater()
 
@@ -331,13 +331,13 @@ class MainWindow( QMainWindow ):
     event.accept()
 
 
-  def actionNewWorld( s ):
+  def actionNewWorld( self ):
 
     from NewWorldDialog import NewWorldDialog
 
     worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
-    dialog = NewWorldDialog( world.conf, s )
+    dialog = NewWorldDialog( world.conf, self )
 
     if dialog.exec_():
 
@@ -345,31 +345,31 @@ class MainWindow( QMainWindow ):
       QApplication.instance().core.openWorld( world )
 
 
-  def actionQuickConnect( s ):
+  def actionQuickConnect( self ):
 
     from QuickConnectDialog import QuickConnectDialog
 
     worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
-    dialog = QuickConnectDialog( world.conf, s )
+    dialog = QuickConnectDialog( world.conf, self )
 
     if dialog.exec_():
       QApplication.instance().core.openWorld( world )
 
 
-  def makeConnectToWorldAction( s, worldname ):
+  def makeConnectToWorldAction( self, worldname ):
 
-    action = QAction( worldname.replace( u"&", u"&&" ), s )
+    action = QAction( worldname.replace( u"&", u"&&" ), self )
     action.setData( QVariant( worldname ) )
-    action.triggered.connect( s.actionConnectToWorld )
+    action.triggered.connect( self.actionConnectToWorld )
 
     return action
 
 
   @pyqtSlot()
-  def actionConnectToWorld( s ):
+  def actionConnectToWorld( self ):
 
-    action = s.sender()
+    action = self.sender()
 
     if not action: return
 
@@ -377,9 +377,9 @@ class MainWindow( QMainWindow ):
     QApplication.instance().core.openWorldByName( worldname )
 
 
-  def actionAbout( s ):
+  def actionAbout( self ):
 
     from AboutDialog import AboutDialog
 
     config = QApplication.instance().core.config
-    AboutDialog( config, s ).exec_()
+    AboutDialog( config, self ).exec_()

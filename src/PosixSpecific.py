@@ -31,19 +31,19 @@ class PosixSpecific:
   should_repaint_on_scroll = False
   default_font             = u"Nimbus Mono L"
 
-  def get_homedir( s ):
+  def get_homedir( self ):
     return os.path.expanduser( "~" )
 
 
-  def get_configuration_dir( s ):
+  def get_configuration_dir( self ):
 
     home_dir = os.path.expanduser( "~" )
-    return os.path.join( s.get_homedir(), s.CONFIG_DIR )
+    return os.path.join( self.get_homedir(), self.CONFIG_DIR )
 
 
-  def get_configuration_file( s ):
-    return os.path.join( s.get_configuration_dir(), s.CONFIG_FILE )
+  def get_configuration_file( self ):
+    return os.path.join( self.get_configuration_dir(), self.CONFIG_FILE )
 
 
-  def get_sound_backends( s ):
+  def get_sound_backends( self ):
     return [ "pygame" ]

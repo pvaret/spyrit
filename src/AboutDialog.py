@@ -84,22 +84,22 @@ AUTHORS = u"""\
 
 class AboutDialog( QDialog ):
 
-  def __init__( s, config, parent=None ):
+  def __init__( self, config, parent=None ):
 
-    QDialog.__init__( s, parent )
+    QDialog.__init__( self, parent )
 
-    s.setLayout( QVBoxLayout( s ) )
+    self.setLayout( QVBoxLayout( self ) )
 
     min_size = config._mainwindow_min_size
     if len( min_size ) >= 2:
-      s.setMinimumSize( min_size[0], min_size[1] )
+      self.setMinimumSize( min_size[0], min_size[1] )
 
     title = u"About %s" % config._app_name
 
-    s.setWindowTitle( title )
+    self.setWindowTitle( title )
 
     header = PrettyPanelHeader( title, QPixmap( ":/app/icon" ) )
-    s.layout().addWidget( header )
+    self.layout().addWidget( header )
 
     about = QLabel( ABOUT % config )
     about.setContentsMargins( 20, 20, 20, 20 )
@@ -114,10 +114,10 @@ class AboutDialog( QDialog ):
     tabwidget = QTabWidget()
     tabwidget.addTab( about, u"About" )
     tabwidget.addTab( authors, u"Credits" )
-    s.layout().addWidget( tabwidget )
+    self.layout().addWidget( tabwidget )
 
     button = QPushButton( u"Ok" )
-    s.layout().addWidget( button )
-    s.layout().setAlignment( button, Qt.AlignHCenter )
+    self.layout().addWidget( button )
+    self.layout().setAlignment( button, Qt.AlignHCenter )
 
-    button.clicked.connect( s.accept )
+    button.clicked.connect( self.accept )

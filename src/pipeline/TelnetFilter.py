@@ -74,13 +74,13 @@ class TelnetFilter( BaseFilter ):
   )
 
 
-  def processChunk( s, chunk ):
+  def processChunk( self, chunk ):
 
     _, text = chunk
 
     while len( text ) > 0:
 
-      telnet = s.match.search( text )
+      telnet = self.match.search( text )
 
       if telnet:
 
@@ -95,14 +95,14 @@ class TelnetFilter( BaseFilter ):
         command = parameters[ "cmd" ] or parameters[ "cmdopt" ]
         option  = parameters[ "opt" ]
 
-        if   command == s.IAC:
+        if   command == self.IAC:
           ## This is an escaped IAC. Yield it as such.
-          yield ( ChunkData.BYTES, s.IAC )
+          yield ( ChunkData.BYTES, self.IAC )
           continue
 
         ## TODO: Implement other commands?
 
-        elif command in ( s.WILL, s.WONT, s.DO, s.DONT ):
+        elif command in ( self.WILL, self.WONT, self.DO, self.DONT ):
           pass ## TODO: Implement option negociation.
 
       else:
@@ -112,16 +112,16 @@ class TelnetFilter( BaseFilter ):
 
 
     if text:
-      if s.unfinished.search( text ): ## Remaining text contains an unfinished
-                                      ## Telnet sequence!
-        s.postpone( ( ChunkData.BYTES, text ) )
+      if self.unfinished.search( text ): ## Remaining text contains an
+                                         ## unfinished Telnet sequence!
+        self.postpone( ( ChunkData.BYTES, text ) )
 
       else:
         yield ( ChunkData.BYTES, text )
 
 
-  def formatForSending( s, data ):
+  def formatForSending( self, data ):
 
     ## Escape the character 0xff in accordance with the telnet specification.
-    return data.replace( s.IAC, s.IAC * 2 )
+    return data.replace( self.IAC, self.IAC * 2 )
 

@@ -36,48 +36,49 @@ class PrettyOptionDialog( QDialog ):
 
   HEADER_SPACING = 20
 
-  def __init__( s, mapper, header=None, oklabel=None, title=None, parent=None ):
+  def __init__( self, mapper, header=None, oklabel=None, title=None, parent=None ):
 
-    QDialog.__init__( s, parent )
+    QDialog.__init__( self, parent )
 
-    s.header    = header
-    s.panel     = PrettyOptionPanel( mapper )
-    s.buttonbox = QDialogButtonBox( QDialogButtonBox.Ok
-                                        | QDialogButtonBox.Cancel )
+    self.header    = header
+    self.panel     = PrettyOptionPanel( mapper )
+    self.buttonbox = QDialogButtonBox( QDialogButtonBox.Ok
+                                     | QDialogButtonBox.Cancel )
 
-    s.okbutton = s.buttonbox.button( QDialogButtonBox.Ok )
+    self.okbutton = self.buttonbox.button( QDialogButtonBox.Ok )
 
     if oklabel:
-      s.okbutton.setText( oklabel )
+      self.okbutton.setText( oklabel )
 
     if title:
-      s.setWindowTitle( title )
+      self.setWindowTitle( title )
 
-    mapper.isValid.connect( s.okbutton.setEnabled )
+    mapper.isValid.connect( self.okbutton.setEnabled )
 
-    s.buttonbox.accepted.connect( s.accept )
-    s.buttonbox.rejected.connect( s.reject )
+    self.buttonbox.accepted.connect( self.accept )
+    self.buttonbox.rejected.connect( self.reject )
 
     mapper.refreshState()
 
-    s.relayout()
+    self.relayout()
 
 
-  def relayout( s ):
+  def relayout( self ):
 
-    if s.layout():
-      sip.delete( s.layout() )
+    if self.layout():
+      sip.delete( self.layout() )
 
-    s.setLayout( QVBoxLayout( s ) )
+    self.setLayout( QVBoxLayout( self ) )
 
-    if s.header:
-      s.layout().addWidget( s.header )
+    if self.header:
+      self.layout().addWidget( self.header )
 
-    if s.panel.layout():
+    if self.panel.layout():
 
-      l, t, r, b = s.panel.layout().getContentsMargins()
-      s.panel.layout().setContentsMargins( 0, max( t, s.HEADER_SPACING ), 0, b )
+      l, t, r, b = self.panel.layout().getContentsMargins()
+      self.panel.layout().setContentsMargins( 0, max( t, self.HEADER_SPACING ),
+                                              0, b )
 
-    s.layout().addWidget( s.panel )
-    s.layout().addWidget( Separator( s ) )
-    s.layout().addWidget( s.buttonbox )
+    self.layout().addWidget( self.panel )
+    self.layout().addWidget( Separator( self ) )
+    self.layout().addWidget( self.buttonbox )

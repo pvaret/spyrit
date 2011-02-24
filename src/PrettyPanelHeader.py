@@ -44,53 +44,53 @@ class PrettyPanelHeader( QFrame ):
     }
   """
 
-  def __init__( s, title, icon=None, desc=None, parent=None ):
+  def __init__( self, title, icon=None, desc=None, parent=None ):
 
-    QFrame.__init__( s, parent )
+    QFrame.__init__( self, parent )
 
     ## The object gets a name so that we can apply the stylesheet to it
     ## specifically.
 
-    s.setObjectName( "header" )
+    self.setObjectName( "header" )
 
     ## The colors that are used in the stylesheet are retrieved from the
     ## currently configured palette.
 
-    dark = s.palette().dark().color().name()
+    dark = self.palette().dark().color().name()
 
-    s.setStyleSheet( s.STYLESHEET % dark )
+    self.setStyleSheet( self.STYLESHEET % dark )
 
     ## Legacy setup for platforms that don't support stylesheets (yet).
 
-    s.setFrameShape(  QFrame.StyledPanel )
-    s.setFrameShadow( QFrame.Plain )
+    self.setFrameShape(  QFrame.StyledPanel )
+    self.setFrameShadow( QFrame.Plain )
 
     ## Layout stuff.
 
-    s.setSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed )
+    self.setSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed )
 
-    layout = QHBoxLayout( s )
+    layout = QHBoxLayout( self )
 
-    layout.setSpacing( s.SPACING )
-    layout.setContentsMargins( s.MARGIN, s.MARGIN, s.MARGIN, s.MARGIN )
+    layout.setSpacing( self.SPACING )
+    layout.setContentsMargins( self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN )
 
     ## And creation of the header's contents.
 
     if icon:
-      i = QLabel( s )
+      i = QLabel( self )
       i.setPixmap( icon )
       layout.addWidget( i, 0, Qt.AlignLeft | Qt.AlignVCenter )
 
     label = '<font size="+2"><b>%s</b></font>' % title
-    
+
     if desc:
       label += '<br><font size="-1"><i>%s</i></font>' % desc
 
-    text = QLabel( label, s )
+    text = QLabel( label, self )
     text.setAlignment( Qt.AlignRight )
-    
+
     text.setTextFormat( Qt.RichText )
     layout.addWidget( text, 0, Qt.AlignRight | Qt.AlignVCenter )
 
-    s.setLayout( layout )
-    
+    self.setLayout( layout )
+

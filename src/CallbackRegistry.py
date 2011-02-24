@@ -55,7 +55,7 @@ class WeakCallableRef:
   ...   pass
 
   >>> class TestClass:
-  ...   def test2( s ):
+  ...   def test2( self ):
   ...     pass
 
   >>> test_obj = TestClass()
@@ -97,77 +97,77 @@ class WeakCallableRef:
 
   """
 
-  def __init__( s, fn, callback=None ):
+  def __init__( self, fn, callback=None ):
 
     assert callable( fn )
 
-    s._objref   = None
-    s._fnref    = None
-    s._class    = None
-    s._dead     = False
-    s._callback = callback
-    s._fnname   = ""
+    self._objref   = None
+    self._fnref    = None
+    self._class    = None
+    self._dead     = False
+    self._callback = callback
+    self._fnname   = ""
 
     obj = getattr( fn, "im_self", None )
 
     if obj is not None:  ## fn is a bound method
-      s._objref = ref( obj,        s.markDead )
-      s._fnref  = ref( fn.im_func, s.markDead )
-      s._class  = fn.im_class
-      s._fnname = fn.im_func.func_name
+      self._objref = ref( obj,        self.markDead )
+      self._fnref  = ref( fn.im_func, self.markDead )
+      self._class  = fn.im_class
+      self._fnname = fn.im_func.func_name
 
     else:  ## fn is a static method or a plain function
-      s._fnref  = ref( fn, s.markDead )
-      s._fnname = fn.func_name
+      self._fnref  = ref( fn, self.markDead )
+      self._fnname = fn.func_name
 
 
-  def markDead( s, objref ):
+  def markDead( self, objref ):
 
-    if not s._dead:
+    if not self._dead:
 
-      callback = s._callback
+      callback = self._callback
 
-      s._dead     = True
-      s._objref   = None
-      s._fnref    = None
-      s._class    = None
-      s._callback = None
+      self._dead     = True
+      self._objref   = None
+      self._fnref    = None
+      self._class    = None
+      self._callback = None
 
       if callback:
-        return callback( s )
+        return callback( self )
 
 
-  def __call__( s ):
+  def __call__( self ):
 
-    if s._objref:  ## bound method
+    if self._objref:  ## bound method
 
-      fn  = s._fnref()
-      obj = s._objref()
+      fn  = self._fnref()
+      obj = self._objref()
 
       if None not in ( fn, obj ):
-        return new.instancemethod( fn, obj, s._class )
+        return new.instancemethod( fn, obj, self._class )
 
-    elif s._fnref:
-      return s._fnref()
+    elif self._fnref:
+      return self._fnref()
 
 
-  def __repr__( s ):
+  def __repr__( self ):
 
     return "<%s instance at %s (%s)%s>" % (
-             s.__class__,
-             hex( id( s ) ),
-             s._fnname,
-             s._dead and "; dead" or ""
+             self.__class__,
+             hex( id( self ) ),
+             self._fnname,
+             self._dead and "; dead" or ""
            )
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    del s._dead
-    del s._objref
-    del s._fnref
-    del s._class
-    del s._callback
+    del self._dead
+    del self._objref
+    del self._fnref
+    del self._class
+    del self._callback
 
 
 
@@ -194,32 +194,32 @@ class WeakCallable:
 
   """
 
-  def __init__( s, fn ):
+  def __init__( self, fn ):
 
-    s._ref = WeakCallableRef( fn )
+    self._ref = WeakCallableRef( fn )
 
 
-  def __call__( s, *args, **kwargs ):
+  def __call__( self, *args, **kwargs ):
 
-    fn = s._ref()
+    fn = self._ref()
     if fn is not None:
       return fn( *args, **kwargs )
 
-    raise ReferenceError( "Attempted to call dead WeakCallable %s!" % s )
+    raise ReferenceError( "Attempted to call dead WeakCallable %s!" % self )
 
 
-  def __repr__( s ):
+  def __repr__( self ):
 
     return "<%s instance at %s%s>" % (
-             s.__class__,
-             hex( id( s ) ),
-             ( s._ref() is None ) and "; dead" or ""
+             self.__class__,
+             hex( id( self ) ),
+             ( self._ref() is None ) and "; dead" or ""
            )
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    del s._ref
+    del self._ref
 
 
 class CallbackRegistry:
@@ -261,34 +261,34 @@ class CallbackRegistry:
 
   """
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.__registry = {}
-
-
-  def add( s, callback ):
-
-    fnref = WeakCallableRef( callback, s.purgeDeadCallback )
-    s.__registry[ id( fnref ) ] = fnref
+    self.__registry = {}
 
 
-  def purgeDeadCallback( s, fnref ):
+  def add( self, callback ):
+
+    fnref = WeakCallableRef( callback, self.purgeDeadCallback )
+    self.__registry[ id( fnref ) ] = fnref
+
+
+  def purgeDeadCallback( self, fnref ):
 
     try:
-      del s.__registry[ id( fnref ) ]
+      del self.__registry[ id( fnref ) ]
 
     except KeyError:
       pass
 
 
-  def __len__( s ):
+  def __len__( self ):
 
-    return len( s.__registry )
+    return len( self.__registry )
 
 
-  def triggerAll( s, *args, **kwargs ):
+  def triggerAll( self, *args, **kwargs ):
 
-    for fnref in s.__registry.itervalues():
+    for fnref in self.__registry.itervalues():
 
       fn = fnref()
       if fn is not None:

@@ -26,8 +26,8 @@ from PyQt4.QtCore import QTimer
 
 class SingleShotTimer( QTimer ):
 
-  def __init__( s, slot ):
+  def __init__( self, slot ):
 
-    QTimer.__init__( s )
-    s.setSingleShot( True )
-    s.timeout.connect( slot )
+    QTimer.__init__( self )
+    self.setSingleShot( True )
+    self.timeout.connect( slot )

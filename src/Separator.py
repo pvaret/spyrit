@@ -26,12 +26,12 @@ from PyQt4.QtGui import QFrame
 
 class Separator( QFrame ):
 
-  def __init__( s, parent=None ):
+  def __init__( self, parent=None ):
 
-    QFrame.__init__( s, parent )
+    QFrame.__init__( self, parent )
 
-    s.setLineWidth( 1 );
-    s.setMidLineWidth( 0 );
-    s.setFrameShape ( QFrame.HLine )
-    s.setFrameShadow( QFrame.Sunken )
-    s.setMinimumSize( 0, 2 );
+    self.setLineWidth( 1 );
+    self.setMidLineWidth( 0 );
+    self.setFrameShape ( QFrame.HLine )
+    self.setFrameShadow( QFrame.Sunken )
+    self.setMinimumSize( 0, 2 );

@@ -22,14 +22,13 @@
 
 from Matches     import MatchCreationError
 from BaseCommand import BaseCommand
-from Globals     import LEFTARROW
 
 
 class MatchCommand( BaseCommand ):
 
   u"""Create, list, delete match patterns."""
 
-  def cmd_add( s, world, pattern, group=None, type=u"smart" ):
+  def cmd_add( self, world, pattern, group=None, type=u"smart" ):
 
     u"""\
     Add a new match pattern.
@@ -82,7 +81,7 @@ class MatchCommand( BaseCommand ):
     world.info( u"Match added." )
 
 
-  def cmd_del( s, world, group, number=None ):
+  def cmd_del( self, world, group, number=None ):
 
     u"""\
     Delete a match pattern or group of match patterns.
@@ -150,7 +149,7 @@ class MatchCommand( BaseCommand ):
                     % group )
 
 
-  def cmd_action( s, world, group, action, *args, **kwargs ):
+  def cmd_action( self, world, group, action, *args, **kwargs ):
 
     u"""\
     Add a match action to the provided group.
@@ -221,7 +220,7 @@ class MatchCommand( BaseCommand ):
                 % ( action, group ) )
 
 
-  def cmd_delaction( s, world, group, number ):
+  def cmd_delaction( self, world, group, number ):
 
     u"""\
     Delete an action from the given match pattern group.
@@ -266,7 +265,7 @@ class MatchCommand( BaseCommand ):
                 % ( number + 1, group ) )
 
 
-  def cmd_test( s, world, line ):
+  def cmd_test( self, world, line ):
 
     u"""\
     Test an input line against every match pattern group.
@@ -319,7 +318,7 @@ class MatchCommand( BaseCommand ):
     world.info( u'\n'.join( msg ) )
 
 
-  def cmd_list( s, world ):
+  def cmd_list( self, world ):
 
     u"""\
     List all match groups with their match patterns and related actions.

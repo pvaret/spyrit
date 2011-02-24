@@ -33,7 +33,7 @@ class SoundCommand( BaseCommand ):
 
   u"Sound-related operations."
 
-  def cmd_play( s, world, filename=":/sound/pop" ):
+  def cmd_play( self, world, filename=":/sound/pop" ):
 
     u"""\
     Play a sound.
@@ -54,7 +54,7 @@ class SoundCommand( BaseCommand ):
       world.info( msg )
 
 
-  def cmd_engines( s, world, all=None ):
+  def cmd_engines( self, world, all=None ):
 
     u"""\
     List supported sound engines and their status.

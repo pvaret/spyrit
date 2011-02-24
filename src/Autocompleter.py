@@ -39,65 +39,65 @@ MAX_WORD_LIST_LENGTH = 1000
 
 class CompletionList:
 
-  def __init__( s, words=[] ):
+  def __init__( self, words=[] ):
 
-    s.words = []
+    self.words = []
 
     ## Keep track of words, so we can remove the oldest ones from the list.
     ## Useful in order to avoid having completions 'polluted' by entries from
     ## 20 screens back that you no longer care about.
 
-    s.wordcount = {}
-    s.wordpipe  = deque()
+    self.wordcount = {}
+    self.wordpipe  = deque()
 
     for word in words:
-      s.addWord( word )
+      self.addWord( word )
 
 
-  def addWord( s, word ):
+  def addWord( self, word ):
 
     key = normalize_text( word )
 
-    s.wordpipe.appendleft( word )
-    s.wordcount[ word ] = s.wordcount.setdefault( word, 0 ) + 1
+    self.wordpipe.appendleft( word )
+    self.wordcount[ word ] = self.wordcount.setdefault( word, 0 ) + 1
 
-    l = len( s.words )
-    i = bisect.bisect_left( s.words, ( key, word ) )
+    l = len( self.words )
+    i = bisect.bisect_left( self.words, ( key, word ) )
 
-    if not( i < l and s.words[ i ] == ( key, word ) ):
+    if not( i < l and self.words[ i ] == ( key, word ) ):
 
       ## Only add this word to the list if it's not already there.
-      bisect.insort( s.words, ( key, word ), i, i )
+      bisect.insort( self.words, ( key, word ), i, i )
 
     ## And now, cull the word list if it's grown too big.
 
-    while len( s.words ) > MAX_WORD_LIST_LENGTH:
+    while len( self.words ) > MAX_WORD_LIST_LENGTH:
 
-      oldword = s.wordpipe.pop()
-      s.wordcount[ oldword ] -= 1
+      oldword = self.wordpipe.pop()
+      self.wordcount[ oldword ] -= 1
 
-      if s.wordcount[ oldword ] == 0:
+      if self.wordcount[ oldword ] == 0:
 
-        i = bisect.bisect_left( s.words,
+        i = bisect.bisect_left( self.words,
                                 ( normalize_text( oldword ), oldword ) )
-        del s.words[ i ]
-        del s.wordcount[ oldword ]
+        del self.words[ i ]
+        del self.wordcount[ oldword ]
 
 
-  def lookup( s, prefix ):
+  def lookup( self, prefix ):
 
     key = normalize_text( prefix )
 
-    i = bisect.bisect_left( s.words, ( key, prefix ) )
+    i = bisect.bisect_left( self.words, ( key, prefix ) )
 
     j = i
     k = i-1
-    l = len( s.words )
+    l = len( self.words )
 
-    while j < l and s.words[ j ][ 0 ].startswith( key ): j += 1
-    while k > 0 and s.words[ k ][ 0 ].startswith( key ): k -= 1
+    while j < l and self.words[ j ][ 0 ].startswith( key ): j += 1
+    while k > 0 and self.words[ k ][ 0 ].startswith( key ): k -= 1
 
-    return [ w[ 1 ] for w in s.words[ k+1:j ] ]
+    return [ w[ 1 ] for w in self.words[ k+1:j ] ]
 
 
 
@@ -113,15 +113,15 @@ class Autocompleter:
   endwordmatch   = re.compile( "^[\w:`'.-]*" ,  re.U )
 
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.completionlist = CompletionList()
-    s.textedit       = None
-    s.buffer         = []
-    s.matchstate     = None
+    self.completionlist = CompletionList()
+    self.textedit       = None
+    self.buffer         = []
+    self.matchstate     = None
 
 
-  def selectCurrentWord( s, tc ):
+  def selectCurrentWord( self, tc ):
 
     ## Alright. Our problem here is that we'd like to select the current word,
     ## but Qt's idea of what makes up a word is, it seems, inconsistent across
@@ -142,7 +142,7 @@ class Autocompleter:
                      QTextCursor.KeepAnchor )
     line_end = unicode( tc.selectedText() )
 
-    m = s.endwordmatch.findall( line_end )
+    m = self.endwordmatch.findall( line_end )
     if m: word_after = m[ 0 ]
     else: word_after = ""
 
@@ -154,7 +154,7 @@ class Autocompleter:
                      QTextCursor.KeepAnchor )
     line_start = unicode( tc.selectedText() )
 
-    m = s.startwordmatch.findall( line_start )
+    m = self.startwordmatch.findall( line_start )
     if m: word_before = m[ 0 ]
     else: word_before = ""
 
@@ -171,9 +171,9 @@ class Autocompleter:
                        len( word ) )
 
 
-  def finalize( s ):
+  def finalize( self ):
 
-    tc = s.textedit.textCursor()
+    tc = self.textedit.textCursor()
 
     pos = tc.position()
     tc.movePosition( QTextCursor.EndOfLine )
@@ -185,25 +185,25 @@ class Autocompleter:
       tc.setPosition( pos )
       tc.movePosition( QTextCursor.Right )
 
-    s.textedit.setTextCursor( tc )
+    self.textedit.setTextCursor( tc )
 
-    s.matchstate = None
-    s.textedit   = None
+    self.matchstate = None
+    self.textedit   = None
 
 
-  def complete( s, textedit ):
+  def complete( self, textedit ):
 
-    s.textedit = textedit
+    self.textedit = textedit
 
     tc = textedit.textCursor()
 
-    s.selectCurrentWord( tc )
+    self.selectCurrentWord( tc )
     prefix = tc.selectedText()
 
     if prefix.isEmpty():
 
-      s.textedit   = None
-      s.matchstate = None
+      self.textedit   = None
+      self.matchstate = None
 
       return
 
@@ -218,9 +218,9 @@ class Autocompleter:
 
     currently_cycling = False
 
-    if s.matchstate: ## If a previous ongoing completion exists...
+    if self.matchstate: ## If a previous ongoing completion exists...
 
-      lastcursor, lastresult = s.matchstate
+      lastcursor, lastresult = self.matchstate
 
       if lastcursor.isCopyOf( textedit.textCursor() ): ## Is it still relevant?
 
@@ -228,17 +228,17 @@ class Autocompleter:
         result            = lastresult
 
       else:  ## This is a new completion after all.
-        s.matchstate = None
+        self.matchstate = None
 
     if not currently_cycling:
-      result = s.completionlist.lookup( prefix )
+      result = self.completionlist.lookup( prefix )
 
     ## Case one: no match. Do nothing.
 
     if len( result ) == 0:
 
-      s.textedit   = None
-      s.matchstate = None
+      self.textedit   = None
+      self.matchstate = None
 
       return
 
@@ -253,8 +253,8 @@ class Autocompleter:
 
       if len( result ) == 1:
 
-        s.insertResult( result[ 0 ] )
-        s.finalize()
+        self.insertResult( result[ 0 ] )
+        self.finalize()
 
         return
 
@@ -265,50 +265,50 @@ class Autocompleter:
 
       if len( set( suffixes ) ) == 1:  ## All matches have the same suffix.
 
-        s.insertResult( prefix + suffixes.pop() )
-        s.finalize()
+        self.insertResult( prefix + suffixes.pop() )
+        self.finalize()
 
         return
 
     ## Case four: several entirely distinct matches. Cycle through the list.
 
     result = result[ 1: ] + result[ :1 ]  ## Cycle matches.
-    s.insertResult( result[ -1 ] )
+    self.insertResult( result[ -1 ] )
 
     ## And save the state of the completion cycle.
 
-    s.matchstate = ( textedit.textCursor(), result )
-    s.textedit   = None
+    self.matchstate = ( textedit.textCursor(), result )
+    self.textedit   = None
 
     ## And done!
 
 
-  def insertResult( s, result ):
+  def insertResult( self, result ):
 
-    if not s.textedit:
+    if not self.textedit:
       return
 
-    tc = s.textedit.textCursor()
+    tc = self.textedit.textCursor()
     tc.insertText( result )
-    s.textedit.setTextCursor( tc )
+    self.textedit.setTextCursor( tc )
 
 
-  def sink( s, chunk ):
+  def sink( self, chunk ):
 
     chunk_type, payload = chunk
 
     if chunk_type == ChunkData.TEXT:
-      s.buffer.append( payload )
+      self.buffer.append( payload )
 
     elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
 
-      data     = u"".join( s.buffer )
-      s.buffer = []
+      data     = u"".join( self.buffer )
+      self.buffer = []
 
-      for word in s.split( data ):
-        s.completionlist.addWord( word )
+      for word in self.split( data ):
+        self.completionlist.addWord( word )
 
 
-  def split( s, line ):
+  def split( self, line ):
 
-    return s.wordmatch.findall( line )
+    return self.wordmatch.findall( line )

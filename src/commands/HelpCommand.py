@@ -32,7 +32,7 @@ from Globals     import HELP
 
 class HelpCommand( BaseCommand ):
 
-  def cmd( s, world, cmdname=None, subcmdname=None ):
+  def cmd( self, world, cmdname=None, subcmdname=None ):
 
     commands = QApplication.instance().core.commands
 
@@ -41,22 +41,22 @@ class HelpCommand( BaseCommand ):
       cmd = commands.lookupCommand( cmdname )
 
       if not cmd:
-        return s.helpNoSuchCommand( world, cmdname )
+        return self.helpNoSuchCommand( world, cmdname )
 
       if subcmdname:
         subcmd = cmd.getCallableForName( cmdname, subcmdname )
 
         if not subcmd:
-          return s.helpNoSuchCommand( world, cmdname, subcmdname )
+          return self.helpNoSuchCommand( world, cmdname, subcmdname )
 
-        return s.helpCommand( world, subcmd, cmdname, subcmdname )
+        return self.helpCommand( world, subcmd, cmdname, subcmdname )
 
-      return s.helpCommand( world, cmd, cmdname )
+      return self.helpCommand( world, cmd, cmdname )
 
-    return s.helpAll( world )
+    return self.helpAll( world )
 
 
-  def helpNoSuchCommand( s, world, cmdname, subcmdname=None ):
+  def helpNoSuchCommand( self, world, cmdname, subcmdname=None ):
 
     if subcmdname:
       cmdname += " " + subcmdname
@@ -72,12 +72,12 @@ class HelpCommand( BaseCommand ):
     world.info( dedent( help_txt ) % ctx )
 
 
-  def helpCommand( s, world, cmd, cmdname, subcmdname=None ):
+  def helpCommand( self, world, cmd, cmdname, subcmdname=None ):
 
     if subcmdname:
       cmdname += " " + subcmdname
 
-    help_txt = s.get_help( cmd )
+    help_txt = self.get_help( cmd )
 
     if not help_txt:
       world.info( u"No help on command '%s'." % cmdname  )
@@ -94,7 +94,7 @@ class HelpCommand( BaseCommand ):
     world.info( help_txt % ctx )
 
 
-  def get_short_help( s, cmd ):
+  def get_short_help( self, cmd ):
 
     if cmd.__doc__:
       return cmd.__doc__.split( u"\n" )[0].strip()
@@ -102,7 +102,7 @@ class HelpCommand( BaseCommand ):
     return None
 
 
-  def get_help( s, cmd ):
+  def get_help( self, cmd ):
 
     if not cmd.__doc__:
       return None
@@ -134,7 +134,7 @@ class HelpCommand( BaseCommand ):
     return u"\n".join( helptxt )
 
 
-  def helpAll( s, world ):
+  def helpAll( self, world ):
 
     helptxt = [ "Available commands:\n" ]
 
@@ -145,7 +145,7 @@ class HelpCommand( BaseCommand ):
     for cmdname in sorted( cmd_registry.commands.keys() ):
 
       cmd  = cmd_registry.lookupCommand( cmdname )
-      help = s.get_short_help( cmd )
+      help = self.get_short_help( cmd )
 
       if help:
         helptxt.append( CMDCHAR + u"%s" % cmdname.ljust( ljust ) + help )

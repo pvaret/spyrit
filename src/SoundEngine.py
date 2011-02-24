@@ -37,17 +37,17 @@ class SoundBackendRegistry:
     "pygame": PygameBackend,
   }
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.preferred_backends = platformSpecific.get_sound_backends()
-    s.backend_cache = {}
+    self.preferred_backends = platformSpecific.get_sound_backends()
+    self.backend_cache = {}
 
 
-  def pollForBackend( s ):
+  def pollForBackend( self ):
 
-    for backend_name in s.preferred_backends:
+    for backend_name in self.preferred_backends:
 
-      backend = s.lookupBackend( backend_name )
+      backend = self.lookupBackend( backend_name )
 
       if backend.isAvailable():
         return backend
@@ -55,40 +55,40 @@ class SoundBackendRegistry:
     return None
 
 
-  def lookupBackend( s, backend_name ):
+  def lookupBackend( self, backend_name ):
 
-    if backend_name not in s.backend_cache:
-      s.backend_cache[ backend_name ] = s.SOUNDBACKENDS[ backend_name ]()
+    if backend_name not in self.backend_cache:
+      self.backend_cache[ backend_name ] = self.SOUNDBACKENDS[ backend_name ]()
 
-    return s.backend_cache[ backend_name ]
+    return self.backend_cache[ backend_name ]
 
 
-  def listBackends( s, also_list_unsupported=False ):
+  def listBackends( self, also_list_unsupported=False ):
 
       if also_list_unsupported:
-        backend_list = s.SOUNDBACKENDS.keys()
+        backend_list = self.SOUNDBACKENDS.keys()
       else:
-        backend_list = s.preferred_backends
+        backend_list = self.preferred_backends
 
-      return [ s.lookupBackend( backend_name )
+      return [ self.lookupBackend( backend_name )
                for backend_name in backend_list ]
 
 
 class SoundEngine:
 
-  def __init__( s, tmprc ):
+  def __init__( self, tmprc ):
 
-    s.tmprc    = tmprc
-    s.registry = SoundBackendRegistry()
-    s.backend  = s.registry.pollForBackend()
+    self.tmprc    = tmprc
+    self.registry = SoundBackendRegistry()
+    self.backend  = self.registry.pollForBackend()
 
 
-  def play( s, soundfile ):
+  def play( self, soundfile ):
 
-    if not s.backend:
+    if not self.backend:
       return False, u"No sound engine available."
 
-    filename = s.tmprc.get( soundfile )
+    filename = self.tmprc.get( soundfile )
 
     if not os.path.exists( filename ):
       return False, u"%s: file not found." % soundfile
@@ -98,5 +98,5 @@ class SoundEngine:
 
     ## TODO: Check that filename is a valid WAV file.
 
-    s.backend.play( filename )
+    self.backend.play( filename )
     return True, None

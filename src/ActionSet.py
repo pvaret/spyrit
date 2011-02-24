@@ -31,15 +31,15 @@ from ConfigObserver import ConfigObserver
 
 class ActionSet:
 
-  def __init__( s, parent ):
+  def __init__( self, parent ):
 
-    s.parent = parent
+    self.parent = parent
 
     config = QApplication.instance().core.config
-    s.observer = ConfigObserver( config )
-    s.closures = []
+    self.observer = ConfigObserver( config )
+    self.closures = []
 
-    s.actions = {
+    self.actions = {
 
       ## Global actions
 
@@ -76,7 +76,7 @@ class ActionSet:
     ## Very few actions have a specific role, so it's more effective to put
     ## roles in their own structure rather than in the one above.
 
-    s.roles = {
+    self.roles = {
       "about":   QAction.AboutRole,
       "aboutqt": QAction.AboutQtRole,
       "quit":    QAction.QuitRole,
@@ -84,18 +84,18 @@ class ActionSet:
 
     ## Likewise, custom shortcut contexts.
 
-    s.contexts = {
+    self.contexts = {
       "historyup":    Qt.WidgetShortcut,
       "historydown":  Qt.WidgetShortcut,
       "autocomplete": Qt.WidgetShortcut,
     }
 
 
-  def bindAction( s, action, slot ):
+  def bindAction( self, action, slot ):
 
-    text, icon = s.actions[ action ]
+    text, icon = self.actions[ action ]
 
-    a = QAction( text, s.parent )
+    a = QAction( text, self.parent )
 
     if icon: a.setIcon( QIcon( icon ) )
 
@@ -115,18 +115,18 @@ class ActionSet:
     ## Call it once:
     set_action_shortcut()
 
-    s.observer.addCallback( shortcutname, set_action_shortcut )
+    self.observer.addCallback( shortcutname, set_action_shortcut )
 
     ## Keep a reference to the closure, so it's not garbage-collected
     ## right away.
-    s.closures.append( set_action_shortcut )
+    self.closures.append( set_action_shortcut )
 
-    role = s.roles.get( action )
+    role = self.roles.get( action )
 
     if role is not None:
       a.setMenuRole( role )
 
-    context = s.contexts.get( action )
+    context = self.contexts.get( action )
 
     if context is not None:
       a.setShortcutContext( context )
@@ -135,12 +135,12 @@ class ActionSet:
 
     ## It is necessary to add the action to a widget before its shortcuts will
     ## work.
-    s.parent.addAction( a )
+    self.parent.addAction( a )
 
     return a
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.observer = None
-    s.closures = None
+    self.observer = None
+    self.closures = None

@@ -28,75 +28,75 @@ from PyQt4.QtGui import QFont
 
 class QTextFormatFormatter:
 
-  def __init__( s, qtextformat ):
+  def __init__( self, qtextformat ):
 
-    s.qtextformat = qtextformat
-    s.color_cache = {}
+    self.qtextformat = qtextformat
+    self.color_cache = {}
 
-    s.property_setter_mapping = {}
+    self.property_setter_mapping = {}
 
-    s._setupPropertyMapping()
+    self._setupPropertyMapping()
 
 
-  def _setupPropertyMapping( s ):
+  def _setupPropertyMapping( self ):
 
     for property, setter in (
-      ( FORMAT_PROPERTIES.COLOR     , s._setForegroundProperty ),
-      ( FORMAT_PROPERTIES.BACKGROUND, s._setBackgroundProperty ),
-      ( FORMAT_PROPERTIES.ITALIC    , s._setItalicProperty     ),
-      ( FORMAT_PROPERTIES.UNDERLINE , s._setUnderlineProperty  ),
-      ( FORMAT_PROPERTIES.BOLD      , s._setFontWeightProperty ),
+      ( FORMAT_PROPERTIES.COLOR     , self._setForegroundProperty ),
+      ( FORMAT_PROPERTIES.BACKGROUND, self._setBackgroundProperty ),
+      ( FORMAT_PROPERTIES.ITALIC    , self._setItalicProperty     ),
+      ( FORMAT_PROPERTIES.UNDERLINE , self._setUnderlineProperty  ),
+      ( FORMAT_PROPERTIES.BOLD      , self._setFontWeightProperty ),
     ):
-      s.property_setter_mapping[ property ] = setter
+      self.property_setter_mapping[ property ] = setter
 
 
-  def _setForegroundProperty( s, property, value ):
-
-    value = value.lower()
-
-    color = s.color_cache.get( value )
-
-    if color is None:
-      color = s.color_cache.setdefault( value, QColor( value ) )
-
-    s.qtextformat.setForeground( color )
-
-
-  def _setBackgroundProperty( s, property, value ):
+  def _setForegroundProperty( self, property, value ):
 
     value = value.lower()
 
-    color = s.color_cache.get( value )
+    color = self.color_cache.get( value )
 
     if color is None:
-      color = s.color_cache.setdefault( value, QColor( value ) )
+      color = self.color_cache.setdefault( value, QColor( value ) )
 
-    s.qtextformat.setBackground( color )
-
-
-  def _setUnderlineProperty( s, property, value ):
-
-    s.qtextformat.setFontUnderline( True )
+    self.qtextformat.setForeground( color )
 
 
-  def _setItalicProperty( s, property, value ):
+  def _setBackgroundProperty( self, property, value ):
 
-    s.qtextformat.setFontItalic( True )
+    value = value.lower()
 
+    color = self.color_cache.get( value )
 
-  def _setFontWeightProperty( s, property, value ):
+    if color is None:
+      color = self.color_cache.setdefault( value, QColor( value ) )
 
-    s.qtextformat.setFontWeight( QFont.Black )
-
-
-  def clearProperty( s, property ):
-
-    s.qtextformat.clearProperty( property )
+    self.qtextformat.setBackground( color )
 
 
-  def setProperty( s, property, value ):
+  def _setUnderlineProperty( self, property, value ):
 
-    setter = s.property_setter_mapping.get( property )
+    self.qtextformat.setFontUnderline( True )
+
+
+  def _setItalicProperty( self, property, value ):
+
+    self.qtextformat.setFontItalic( True )
+
+
+  def _setFontWeightProperty( self, property, value ):
+
+    self.qtextformat.setFontWeight( QFont.Black )
+
+
+  def clearProperty( self, property ):
+
+    self.qtextformat.clearProperty( property )
+
+
+  def setProperty( self, property, value ):
+
+    setter = self.property_setter_mapping.get( property )
 
     if setter:
       setter( property, value )

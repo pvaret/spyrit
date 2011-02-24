@@ -40,6 +40,6 @@ class FindCommand( BaseCommand ):
 
   """
 
-  def cmd( s, world, text=None ):
+  def cmd( self, world, text=None ):
 
     world.worldui.output_manager.findInHistory( text )

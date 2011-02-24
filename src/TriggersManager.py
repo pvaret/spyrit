@@ -106,30 +106,30 @@ class HighlightAction:
     return cls( format, token ), None
 
 
-  def __init__( s, format, token=None ):
+  def __init__( self, format, token=None ):
 
-    s.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
+    self.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
 
-    s.highlight = format
-    s.token     = token
+    self.highlight = format
+    self.token     = token
 
 
-  def __call__( s, match, chunkbuffer ):
+  def __call__( self, match, chunkbuffer ):
 
-    if not s.token:
+    if not self.token:
       start, end = match.span()
 
     else:
 
-      if s.token not in match.groupdict():
+      if self.token not in match.groupdict():
         return
 
-      start, end = match.span( s.token )
+      start, end = match.span( self.token )
 
     if start == end:
       return
 
-    hl = s.highlight
+    hl = self.highlight
 
     new_chunks = [
       ( start, ( ChunkData.HIGHLIGHT, ( id( hl ), hl ) ) ),
@@ -139,15 +139,15 @@ class HighlightAction:
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
-  def __repr__( s ):
+  def __repr__( self ):
 
-    return ConfigTypes.FORMAT.to_string( s.highlight )
+    return ConfigTypes.FORMAT.to_string( self.highlight )
 
 
-  def __unicode__( s ):
+  def __unicode__( self ):
 
-    return u"highlight" + ( u" (%s)" % s.token if s.token else u"" ) + u": " \
-           + ConfigTypes.FORMAT.to_string( s.highlight )
+    return u"highlight" + ( u" (%s)" % self.token if self.token else u"" ) \
+           + u": " + ConfigTypes.FORMAT.to_string( self.highlight )
 
 
 
@@ -168,24 +168,24 @@ class PlayAction:
     return cls( soundfile ), None
 
 
-  def __init__( s, soundfile=None ):
+  def __init__( self, soundfile=None ):
 
-    s.soundfile = soundfile
-
-
-  def __call__( s, match, chunkbuffer ):
-
-    QApplication.instance().core.sound.play( s.soundfile or ":/sound/pop" )
+    self.soundfile = soundfile
 
 
-  def __repr__( s ):
+  def __call__( self, match, chunkbuffer ):
 
-    return s.soundfile or ""
+    QApplication.instance().core.sound.play( self.soundfile or ":/sound/pop" )
 
 
-  def __unicode__( s ):
+  def __repr__( self ):
 
-    return s.name + u": " + ( s.soundfile or "pop" )
+    return self.soundfile or ""
+
+
+  def __unicode__( self ):
+
+    return self.name + u": " + ( self.soundfile or "pop" )
 
 
 
@@ -199,7 +199,7 @@ class GagAction:
     return cls(), None
 
 
-  def __call__( s, match, chunkbuffer ):
+  def __call__( self, match, chunkbuffer ):
 
     for i in reversed( range( len( chunkbuffer ) ) ):
 
@@ -213,12 +213,12 @@ class GagAction:
         del chunkbuffer[ i ]
 
 
-  def __repr__( s ):
+  def __repr__( self ):
 
     return u""
 
 
-  def __unicode__( s ):
+  def __unicode__( self ):
 
     return u"gag"
 
@@ -245,40 +245,40 @@ def get_matches_configuration( conf ):
 
 class MatchGroup:
 
-  def __init__( s, name ):
+  def __init__( self, name ):
 
-    s.name    = name.strip()
-    s.matches = []
-    s.actions = OrderedDict()
-
-
-  def addMatch( s, match ):
-
-    s.matches.append( match )
+    self.name    = name.strip()
+    self.matches = []
+    self.actions = OrderedDict()
 
 
-  def addAction( s, action ):
+  def addMatch( self, match ):
 
-    s.actions[ action.name ] = action
+    self.matches.append( match )
 
 
-  def __len__( s ):
+  def addAction( self, action ):
 
-    return len( s.matches )
+    self.actions[ action.name ] = action
+
+
+  def __len__( self ):
+
+    return len( self.matches )
 
 
 
 class TriggersManager:
 
-  def __init__( s, config ):
+  def __init__( self, config ):
 
-    s.groups = {}
+    self.groups = {}
 
-    s.load( config )
-    config.registerSaveCallback( s.confSaveCallback )
+    self.load( config )
+    config.registerSaveCallback( self.confSaveCallback )
 
 
-  def load( s, conf ):
+  def load( self, conf ):
 
     all_groups = get_matches_configuration( conf )
 
@@ -297,16 +297,16 @@ class TriggersManager:
           ## TODO: Should this method have to know about match types?
           if type in ( u"smart", u"regex" ):
             pattern = match[ len( type )+1: ]
-            m = s.createMatch( pattern, type )
+            m = self.createMatch( pattern, type )
 
           else:
-            m = s.createMatch( match )
+            m = self.createMatch( match )
 
         except MatchCreationError:
           continue
 
         if not matchgroup:
-          matchgroup = s.createOrGetMatchGroup( groupname )
+          matchgroup = self.createOrGetMatchGroup( groupname )
 
         matchgroup.addMatch( m )
 
@@ -342,14 +342,14 @@ class TriggersManager:
           matchgroup.addAction( action )
 
 
-  def save( s, conf ):
+  def save( self, conf ):
 
     ## Configuration is about to be saved. Serialize our current setup into the
     ## configuration.
 
     conf_dict = {}
 
-    for matchgroup in s.groups.itervalues():
+    for matchgroup in self.groups.itervalues():
 
       group_dict = {}
       group_dict[ 'match' ] = [ repr( m ) for m in matchgroup.matches ]
@@ -370,30 +370,30 @@ class TriggersManager:
       conf.saveSection( new_match_conf, conf._matches_section )
 
 
-  def createMatch( s, pattern, type=u"smart" ):
+  def createMatch( self, pattern, type=u"smart" ):
 
     return load_match_by_type( pattern, type )
 
 
-  def createOrGetMatchGroup( s, group=None ):
+  def createOrGetMatchGroup( self, group=None ):
 
     if group is None:
 
       ## If no group name is given: use the smallest available number as the
       ## group name.
 
-      existing_number_groups = [ int( g ) for g in s.groups.keys()
+      existing_number_groups = [ int( g ) for g in self.groups.keys()
                                  if g.isdigit() ]
-      new_group_number = min( i for i in range( 1, len( s.groups ) + 2 )
+      new_group_number = min( i for i in range( 1, len( self.groups ) + 2 )
                               if i not in existing_number_groups )
       group = unicode( new_group_number )
 
     key = normalize_text( group.strip() )
 
-    return s.groups.setdefault( key, MatchGroup( group ) )
+    return self.groups.setdefault( key, MatchGroup( group ) )
 
 
-  def loadAction( s, actionname, args, kwargs ):
+  def loadAction( self, actionname, args, kwargs ):
 
     ## TODO: Make this less hardcody. We can do it. We have the technology.
 
@@ -420,40 +420,40 @@ class TriggersManager:
     return factory( *args, **kwargs )
 
 
-  def hasGroup( s, group ):
+  def hasGroup( self, group ):
 
-    return normalize_text( group.strip() ) in s.groups
+    return normalize_text( group.strip() ) in self.groups
 
 
-  def sizeOfGroup( s, group ):
+  def sizeOfGroup( self, group ):
 
     key = normalize_text( group.strip() )
 
-    return len( s.groups.get( key, [] ) )
+    return len( self.groups.get( key, [] ) )
 
 
-  def delGroup( s, group ):
+  def delGroup( self, group ):
 
     try:
-      del s.groups[ normalize_text( group.strip() ) ]
+      del self.groups[ normalize_text( group.strip() ) ]
 
     except KeyError:
       pass
 
 
-  def delMatch( s, group, index ):
+  def delMatch( self, group, index ):
 
     try:
-      s.groups[ normalize_text( group.strip() ) ].matches.pop( index )
+      self.groups[ normalize_text( group.strip() ) ].matches.pop( index )
 
     except ( KeyError, IndexError ):
       pass
 
 
-  def delAction( s, group, index ):
+  def delAction( self, group, index ):
 
     try:
-      actions = s.groups[ normalize_text( group.strip() ) ].actions
+      actions = self.groups[ normalize_text( group.strip() ) ].actions
 
       key = list( k for k in actions )[ index ]
       del actions[ key ]
@@ -462,9 +462,9 @@ class TriggersManager:
       pass
 
 
-  def findMatches( s, line ):
+  def findMatches( self, line ):
 
-    for matchgroup in sorted( s.groups.itervalues() ):
+    for matchgroup in sorted( self.groups.itervalues() ):
       for match in matchgroup.matches:
 
         result = match.match( line )
@@ -473,20 +473,20 @@ class TriggersManager:
           yield matchgroup, result
 
 
-  def performMatchingActions( s, line, chunkbuffer ):
+  def performMatchingActions( self, line, chunkbuffer ):
 
-    for matchgroup, matchresult in s.findMatches( line ):
+    for matchgroup, matchresult in self.findMatches( line ):
       for action in matchgroup.actions.itervalues():
 
         action( matchresult, chunkbuffer )
 
 
-  def isEmpty( s ):
+  def isEmpty( self ):
 
-    return len( s.groups ) == 0
+    return len( self.groups ) == 0
 
 
-  def confSaveCallback( s ):
+  def confSaveCallback( self ):
 
     config = QApplication.instance().core.config
-    s.save( config )
+    self.save( config )

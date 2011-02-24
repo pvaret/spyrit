@@ -42,31 +42,31 @@ class PygameBackend:
 
   name = u"SDL"
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.mixer = None
+    self.mixer = None
 
 
-  def isAvailable( s ):
+  def isAvailable( self ):
 
     if not HAS_PYGAME:
       return False
 
-    s.mixer = pygame.mixer
-    s.mixer.init( FREQUENCY, SIZE, CHANNELS, BUFFER )
+    self.mixer = pygame.mixer
+    self.mixer.init( FREQUENCY, SIZE, CHANNELS, BUFFER )
 
     return True
 
 
-  def play( s, soundfile ):
+  def play( self, soundfile ):
 
-    if s.mixer:
-      sound = s.mixer.Sound( soundfile )
+    if self.mixer:
+      sound = self.mixer.Sound( soundfile )
       sound.play()
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    if s.mixer:
-      s.mixer.quit()
-      s.mixer = None
+    if self.mixer:
+      self.mixer.quit()
+      self.mixer = None

@@ -25,16 +25,16 @@ from PyQt4.QtGui import QTextCursor
 
 class InputHistory:
 
-  def __init__( s, inputwidget, shouldsave=True ):
+  def __init__( self, inputwidget, shouldsave=True ):
 
-    s.inputwidget = inputwidget
-    s.cursor      = -1
-    s.currenttext = ""
-    s.shouldsave  = shouldsave
+    self.inputwidget = inputwidget
+    self.cursor      = -1
+    self.currenttext = ""
+    self.shouldsave  = shouldsave
 
     conf = inputwidget.world.conf
 
-    if s.shouldsave and conf._save_input_history:
+    if self.shouldsave and conf._save_input_history:
 
       try:
         count = int( conf._save_input_history )
@@ -42,60 +42,60 @@ class InputHistory:
       except ValueError:
         count = 0
 
-      s.history = conf._input_history[ :count ]
+      self.history = conf._input_history[ :count ]
 
     else:
-      s.history = []
+      self.history = []
 
 
-  def historyUp( s ):
+  def historyUp( self ):
 
-    if len ( s.history ) == 0 or s.cursor >= len( s.history ) - 1:
+    if len ( self.history ) == 0 or self.cursor >= len( self.history ) - 1:
       return
 
-    s.cursor += 1
+    self.cursor += 1
 
-    if s.cursor == 0:
-      s.currenttext = s.inputwidget.toPlainText()
+    if self.cursor == 0:
+      self.currenttext = self.inputwidget.toPlainText()
 
-    s.inputwidget.setPlainText( s.history[ s.cursor ] )
-    s.inputwidget.moveCursor( QTextCursor.End )
+    self.inputwidget.setPlainText( self.history[ self.cursor ] )
+    self.inputwidget.moveCursor( QTextCursor.End )
 
 
-  def historyDown( s ):
+  def historyDown( self ):
 
-    if s.cursor < 0:
+    if self.cursor < 0:
       return
 
-    s.cursor -= 1
+    self.cursor -= 1
 
-    if s.cursor == -1:
-      s.inputwidget.setPlainText( s.currenttext )
+    if self.cursor == -1:
+      self.inputwidget.setPlainText( self.currenttext )
 
     else:
-      s.inputwidget.setPlainText( s.history[ s.cursor ] )
+      self.inputwidget.setPlainText( self.history[ self.cursor ] )
 
-    s.inputwidget.moveCursor( QTextCursor.End )
+    self.inputwidget.moveCursor( QTextCursor.End )
 
 
-  def update( s, text ):
+  def update( self, text ):
 
-    s.currenttext = ""
-    s.cursor      = -1
+    self.currenttext = ""
+    self.cursor      = -1
 
     ## Don't update if text hasn't changed:
 
-    if s.history and s.history[0] == text:
+    if self.history and self.history[0] == text:
       return
 
-    s.history.insert( 0, text )
+    self.history.insert( 0, text )
 
-    conf = s.inputwidget.world.conf
+    conf = self.inputwidget.world.conf
 
     maxlength = conf._max_history_length
 
-    if maxlength and len( s.history ) > maxlength:
-      s.history.pop()
+    if maxlength and len( self.history ) > maxlength:
+      self.history.pop()
 
     count = int( conf._save_input_history )
-    if s.shouldsave and count: conf._input_history = s.history[ :count ]
+    if self.shouldsave and count: conf._input_history = self.history[ :count ]

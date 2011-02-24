@@ -40,44 +40,44 @@ class WorldInputUI( QTextEdit ):
   returnPressed = pyqtSignal()
   focusChanged  = pyqtSignal( 'QWidget' )
 
-  def __init__( s, parent, world, shouldsavehistory=True ):
+  def __init__( self, parent, world, shouldsavehistory=True ):
 
-    QTextEdit.__init__( s, parent )
+    QTextEdit.__init__( self, parent )
 
-    s.setTabChangesFocus( True )
-    s.setAcceptRichText( False )
+    self.setTabChangesFocus( True )
+    self.setAcceptRichText( False )
 
-    s.world    = world
-    s.conf     = world.conf
-    s.history  = InputHistory( s, shouldsavehistory )
+    self.world    = world
+    self.conf     = world.conf
+    self.history  = InputHistory( self, shouldsavehistory )
 
-    s.actionset = ActionSet( s )
+    self.actionset = ActionSet( self )
 
-    s.actionset.bindAction( "historyup",    s.historyUp )
-    s.actionset.bindAction( "historydown",  s.historyDown )
-    s.actionset.bindAction( "autocomplete", s.autocomplete )
+    self.actionset.bindAction( "historyup",    self.historyUp )
+    self.actionset.bindAction( "historydown",  self.historyDown )
+    self.actionset.bindAction( "autocomplete", self.autocomplete )
 
     ## Apply configuration:
 
-    s.refresh()
+    self.refresh()
 
     ## And bind it to key changes:
 
-    s.observer = ConfigObserver( s.conf )
-    s.observer.addCallback(
+    self.observer = ConfigObserver( self.conf )
+    self.observer.addCallback(
                             [
                               "input_font_color",
                               "input_font_name",
                               "input_font_size",
-                              "input_background_color" 
+                              "input_background_color",
                             ],
-                            s.refresh
+                            self.refresh
                           )
 
-    s.returnPressed.connect( s.clearAndSend )
+    self.returnPressed.connect( self.clearAndSend )
 
 
-  def refresh( s ):
+  def refresh( self ):
 
     ## Unlike the output UI, which is very specific to the problem domain --
     ## i.e. MU*s, the input box should be whatever's convenient to the
@@ -86,34 +86,34 @@ class WorldInputUI( QTextEdit ):
 
     style_elements = []
 
-    if s.conf._input_font_color:
+    if self.conf._input_font_color:
 
       style_elements.append( u"color: %s" \
-                             % s.conf._input_font_color )
+                             % self.conf._input_font_color )
 
-    if s.conf._input_font_name:
+    if self.conf._input_font_name:
 
       style_elements.append( u"font-family: %s" \
-                             % s.conf._input_font_name )
+                             % self.conf._input_font_name )
 
-    if s.conf._input_font_size:
+    if self.conf._input_font_size:
 
       style_elements.append( u"font-size: %dpt" \
-                             % s.conf._input_font_size )
+                             % self.conf._input_font_size )
 
-    if s.conf._input_background_color:
+    if self.conf._input_background_color:
 
       style_elements.append( u"background-color: %s" \
-                             % s.conf._input_background_color )
+                             % self.conf._input_background_color )
 
     if style_elements:
-      s.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
+      self.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
 
-    font_height = QFontMetrics( s.font() ).height()
-    s.setMinimumHeight( font_height*3 )
+    font_height = QFontMetrics( self.font() ).height()
+    self.setMinimumHeight( font_height*3 )
 
 
-  def keyPressEvent( s, e ):
+  def keyPressEvent( self, e ):
 
     ## Custom key sequence handler: since all our shortcuts are configurable,
     ## and are allowed to override the default QTextEdit shortcuts, we have to
@@ -123,7 +123,7 @@ class WorldInputUI( QTextEdit ):
 
     key = QKeySequence( int( e.modifiers() ) + e.key() )
 
-    for a in s.actions() + s.parentWidget().actions():
+    for a in self.actions() + self.parentWidget().actions():
       for shortcut in a.shortcuts():
 
         if key.matches( shortcut ) == QKeySequence.ExactMatch:
@@ -140,56 +140,56 @@ class WorldInputUI( QTextEdit ):
     if e.key() in ( Qt.Key_Return, Qt.Key_Enter ) \
       and alt_ctrl_shift == Qt.NoModifier:
 
-      s.returnPressed.emit()
+      self.returnPressed.emit()
       e.accept()
 
     else:
-      QTextEdit.keyPressEvent( s, e )
+      QTextEdit.keyPressEvent( self, e )
 
 
   @pyqtSlot()
-  def clearAndSend( s ):
+  def clearAndSend( self ):
 
-    text = unicode( s.toPlainText() )
+    text = unicode( self.toPlainText() )
 
-    s.clear()
+    self.clear()
 
     if text:
-      s.history.update( text )
+      self.history.update( text )
 
-    s.world.processInput( text )
-
-
-  def historyUp( s ):
-
-    s.history.historyUp()
+    self.world.processInput( text )
 
 
-  def historyDown( s ):
+  def historyUp( self ):
 
-    s.history.historyDown()
-
-
-  def autocomplete( s ):
-
-    s.world.worldui.autocompleter.complete( s )
+    self.history.historyUp()
 
 
-  def focusInEvent( s, e ):
+  def historyDown( self ):
 
-    QTextEdit.focusInEvent( s, e )
+    self.history.historyDown()
+
+
+  def autocomplete( self ):
+
+    self.world.worldui.autocompleter.complete( self )
+
+
+  def focusInEvent( self, e ):
+
+    QTextEdit.focusInEvent( self, e )
 
     ## Notify other possible interested parties that this widget now has the
     ## focus.
 
-    s.focusChanged.emit( s )
+    self.focusChanged.emit( self )
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.world     = None
-    s.conf      = None
-    s.history   = None
-    s.commands  = None
-    s.observer  = None
-    s.actionset = None
+    self.world     = None
+    self.conf      = None
+    self.history   = None
+    self.commands  = None
+    self.observer  = None
+    self.actionset = None

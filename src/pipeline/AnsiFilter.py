@@ -49,25 +49,25 @@ class AnsiFilter( BaseFilter ):
                          ] ) )
 
 
-  def resetInternalState( s ):
+  def resetInternalState( self ):
 
     ## Note: this method is called by the base class's __init__, so we're
-    ## sure that s.highlighted and s.current_colors are defined.
+    ## sure that self.highlighted and self.current_colors are defined.
 
-    s.highlighted, s.current_colors = s.defaultColors()
-    BaseFilter.resetInternalState( s )
+    self.highlighted, self.current_colors = self.defaultColors()
+    BaseFilter.resetInternalState( self )
 
 
-  def defaultColors( s ):
+  def defaultColors( self ):
 
     return ( False,  ## highlight
              ChunkData.ANSI_TO_FORMAT.get( "39" )[1] ) ## default colors
 
 
-  def processChunk( s, chunk ):
+  def processChunk( self, chunk ):
 
-    current_colors = s.current_colors
-    highlighted    = s.highlighted
+    current_colors = self.current_colors
+    highlighted    = self.highlighted
 
     chunk_type, text = chunk
 
@@ -75,7 +75,7 @@ class AnsiFilter( BaseFilter ):
 
     while True:
 
-      ansi = s.match.search( text, currentpos )
+      ansi = self.match.search( text, currentpos )
 
       if not ansi:
 
@@ -94,7 +94,7 @@ class AnsiFilter( BaseFilter ):
 
         yield ( ChunkData.ANSI, {} )
 
-        highlighted, current_colors = s.defaultColors()
+        highlighted, current_colors = self.defaultColors()
         continue
 
       format = {}
@@ -105,7 +105,7 @@ class AnsiFilter( BaseFilter ):
 
           yield ( ChunkData.ANSI, {} )
 
-          highlighted, current_colors = s.defaultColors()
+          highlighted, current_colors = self.defaultColors()
           format = {}
 
           continue
@@ -153,12 +153,12 @@ class AnsiFilter( BaseFilter ):
 
     ## Done searching for complete ANSI sequences.
 
-    s.current_colors = current_colors
-    s.highlighted    = highlighted
+    self.current_colors = current_colors
+    self.highlighted    = highlighted
 
     if currentpos < len( text ):
 
-      possible_unfinished = s.unfinished.search( text, currentpos )
+      possible_unfinished = self.unfinished.search( text, currentpos )
 
       if possible_unfinished:
 
@@ -171,7 +171,7 @@ class AnsiFilter( BaseFilter ):
         if startmatch > currentpos:
           yield ( ChunkData.BYTES, text[ currentpos:startmatch ] )
 
-        s.postpone( ( ChunkData.BYTES, text[ startmatch: ] ) )
+        self.postpone( ( ChunkData.BYTES, text[ startmatch: ] ) )
 
       else:
         yield ( ChunkData.BYTES, text[ currentpos: ] )

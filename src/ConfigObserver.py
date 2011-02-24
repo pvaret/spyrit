@@ -74,33 +74,33 @@ def slotify( fn ):
 
 class ConfigObserver:
 
-  def __init__( s, conf ):
+  def __init__( self, conf ):
 
-    s.callbacks = {}
+    self.callbacks = {}
 
-    conf.registerNotifier( s.notify )
+    conf.registerNotifier( self.notify )
 
 
-  def notify( s, key, value ):
+  def notify( self, key, value ):
 
-    callbacks = s.callbacks.get( key, None )
+    callbacks = self.callbacks.get( key, None )
 
     if callbacks:
       callbacks.triggerAll( key, value )
 
 
-  def addCallback( s, keys, callback ):
+  def addCallback( self, keys, callback ):
 
     if type( keys ) not in ( type( [] ), type( () ) ): keys = [ keys ]
 
     callback = slotify( callback )
 
     for key in keys:
-      s.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
+      self.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
 
-    return s  ## Return self, so as to make it possible to chain calls.
+    return self  ## Return self, so as to make it possible to chain calls.
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.callbacks = None
+    self.callbacks = None

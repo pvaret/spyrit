@@ -29,11 +29,11 @@ class QSoundBackend:
 
   name = u"Native (Qt)"
 
-  def isAvailable( s ):
+  def isAvailable( self ):
 
     return QSound.isAvailable()
 
 
-  def play( s, soundfile ):
+  def play( self, soundfile ):
 
     QSound.play( soundfile )

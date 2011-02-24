@@ -27,7 +27,7 @@ class DebugCommand( BaseCommand ):
 
   ## No docstring. This is not a user-visible command.
 
-  def cmd_raise( s, world, *args ):
+  def cmd_raise( self, world, *args ):
 
     ## No docstring. This is not a user-visible subcommand.
 
@@ -52,7 +52,7 @@ class DebugCommand( BaseCommand ):
     raise e
 
 
-  def cmd_execute( s, world, filename ):
+  def cmd_execute( self, world, filename ):
 
     ## No docstring. This is not a user-visible subcommand.
 
@@ -64,7 +64,7 @@ class DebugCommand( BaseCommand ):
     exec f.read()
 
 
-  def cmd_load( s, world, filename=None, blocksize=None ):
+  def cmd_load( self, world, filename=None, blocksize=None ):
 
     ## No docstring. This is not a user-visible subcommand.
 

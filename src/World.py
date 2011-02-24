@@ -61,80 +61,80 @@ class World( QObject ):
   disconnected = pyqtSignal( bool )
   nowLogging   = pyqtSignal( bool )
 
-  def __init__( s, conf=None ):
+  def __init__( self, conf=None ):
 
-    QObject.__init__( s )
+    QObject.__init__( self )
 
     worldsmanager = QApplication.instance().core.worlds
     if not conf:
       conf = worldsmanager.newWorldConf()
 
-    s.conf    = conf
-    s.worldui = None
-    s.logger  = None
+    self.conf    = conf
+    self.worldui = None
+    self.logger  = None
 
-    s.input = []
-    s.input_flush = SingleShotTimer( s.flushPendingInput )
+    self.input = []
+    self.input_flush = SingleShotTimer( self.flushPendingInput )
 
-    s.was_logging       = False
-    s.last_log_filename = None
+    self.was_logging       = False
+    self.last_log_filename = None
 
-    s.connected.connect( s.connectionStatusChanged )
+    self.connected.connect( self.connectionStatusChanged )
 
-    s.status = Status.DISCONNECTED
+    self.status = Status.DISCONNECTED
 
-    s.socketpipeline = SocketPipeline( conf )
-    s.socketpipeline.addSink( s.sink, ChunkData.NETWORK )
+    self.socketpipeline = SocketPipeline( conf )
+    self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
 
-    s.conf_observer = ConfigObserver( s.conf )
+    self.conf_observer = ConfigObserver( self.conf )
 
 
-  def title( s ):
+  def title( self ):
 
-    conf = s.conf
+    conf = self.conf
     return conf._name or u"(%s:%d)" % ( conf._host, conf._port )
 
 
-  def host( s ):
+  def host( self ):
 
-    return s.conf._host
-
-
-  def save( s ):
-
-    QApplication.instance().core.worlds.saveWorld( s )
+    return self.conf._host
 
 
-  def setUI( s, worldui ):
+  def save( self ):
 
-    s.worldui = worldui
-    s.worldui.updateToolBarIcons( s.conf._toolbar_icon_size )
-    s.conf_observer.addCallback( "toolbar_icon_size",
-                                 s.worldui.updateToolBarIcons )
+    QApplication.instance().core.worlds.saveWorld( self )
 
 
-  def isAnonymous( s ):
+  def setUI( self, worldui ):
 
-    return s.conf.isAnonymous()
-
-
-  def info( s, text ):
-
-    if s.worldui:
-      s.worldui.output_manager.insertInfoText( text )
+    self.worldui = worldui
+    self.worldui.updateToolBarIcons( self.conf._toolbar_icon_size )
+    self.conf_observer.addCallback( "toolbar_icon_size",
+                                    self.worldui.updateToolBarIcons )
 
 
-  def connectToWorld( s ):
+  def isAnonymous( self ):
 
-    if not s.isConnected():
-      s.socketpipeline.connectToHost()
+    return self.conf.isAnonymous()
 
 
-  def disconnectFromWorld( s ):
+  def info( self, text ):
 
-    if s.isConnected():
+    if self.worldui:
+      self.worldui.output_manager.insertInfoText( text )
 
-      messagebox = QMessageBox( s.worldui.window() )
+
+  def connectToWorld( self ):
+
+    if not self.isConnected():
+      self.socketpipeline.connectToHost()
+
+
+  def disconnectFromWorld( self ):
+
+    if self.isConnected():
+
+      messagebox = QMessageBox( self.worldui.window() )
       messagebox.setWindowTitle( u"Confirm disconnect" )
       messagebox.setIcon( QMessageBox.Question )
       messagebox.setText( u"Really disconnect from this world?" )
@@ -144,41 +144,41 @@ class World( QObject ):
       if messagebox.exec_() == QMessageBox.Cancel:
         return
 
-    s.ensureWorldDisconnected()
+    self.ensureWorldDisconnected()
 
 
-  def ensureWorldDisconnected( s ):
+  def ensureWorldDisconnected( self ):
 
     ## TODO: Is this really necessary anymore?
 
-    if s.isConnected():
-      s.socketpipeline.disconnectFromHost()
+    if self.isConnected():
+      self.socketpipeline.disconnectFromHost()
 
     else:
-      s.socketpipeline.abort()
+      self.socketpipeline.abort()
 
 
   #@pyqtSlot()
-  def connectionStatusChanged( s ):
+  def connectionStatusChanged( self ):
 
-    if s.status == Status.CONNECTED:
+    if self.status == Status.CONNECTED:
 
-      if s.conf._autolog or s.was_logging:
-        s.startLogging()
+      if self.conf._autolog or self.was_logging:
+        self.startLogging()
 
-    elif s.status == Status.DISCONNECTED:
+    elif self.status == Status.DISCONNECTED:
 
-      s.was_logging = ( s.logger is not None )
-      s.stopLogging()
+      self.was_logging = ( self.logger is not None )
+      self.stopLogging()
 
 
-  def computeLogFileName( s ):
+  def computeLogFileName( self ):
 
-    logfile = s.conf._logfile_name
-    logdir  = s.conf._logfile_dir
+    logfile = self.conf._logfile_name
+    logdir  = self.conf._logfile_dir
 
     logfile = time.strftime( logfile )
-    logfile = logfile.replace( u"[WORLDNAME]", s.title() )
+    logfile = logfile.replace( u"[WORLDNAME]", self.title() )
     logfile = ensure_valid_filename( logfile )
     logfile = os.path.join( logdir, logfile )
 
@@ -188,10 +188,10 @@ class World( QObject ):
 
     base, ext = os.path.splitext( logfile )
 
-    if s.last_log_filename and s.last_log_filename.startswith( base ):
+    if self.last_log_filename and self.last_log_filename.startswith( base ):
       ## File exists but already seems to belong to this session. Keep using
       ## it.
-      return s.last_log_filename
+      return self.last_log_filename
 
     ## File exists. Compute an available variant in the form "filename_X.ext".
     candidate = base + u"_%d" + ext
@@ -206,53 +206,53 @@ class World( QObject ):
     return logfile
 
 
-  def startLogging( s ):
+  def startLogging( self ):
 
     ## TODO: Prompt for a logfile name if none is recorded in config
 
-    logfile = s.computeLogFileName()
+    logfile = self.computeLogFileName()
 
-    if s.logger:
+    if self.logger:
 
-      if logfile == s.last_log_filename:
+      if logfile == self.last_log_filename:
         ## We're already logging to the correct file! Good.
         return
 
-      s.logger.stop()
-      del s.logger
+      self.logger.stop()
+      del self.logger
 
-    s.logger = create_logger_for_world( s, logfile )
-    s.last_log_filename = logfile
+    self.logger = create_logger_for_world( self, logfile )
+    self.last_log_filename = logfile
 
-    if s.logger:
-      s.nowLogging.emit( True )
-      s.logger.start()
+    if self.logger:
+      self.nowLogging.emit( True )
+      self.logger.start()
 
 
-  def stopLogging( s ):
+  def stopLogging( self ):
 
-    if not s.logger:
+    if not self.logger:
       return
 
-    s.nowLogging.emit( False )
-    s.logger.stop()
-    s.logger = None
+    self.nowLogging.emit( False )
+    self.logger.stop()
+    self.logger = None
 
 
-  def sink( s, chunk ):
+  def sink( self, chunk ):
 
-    previous_status = s.status
+    previous_status = self.status
 
     _, payload = chunk
 
     if   payload in ( ChunkData.RESOLVING, ChunkData.CONNECTING ):
-      s.status = Status.CONNECTING
+      self.status = Status.CONNECTING
 
     elif payload == ChunkData.CONNECTED:
-      s.status = Status.CONNECTED
+      self.status = Status.CONNECTED
 
     elif payload == ChunkData.DISCONNECTING:
-      s.status = Status.DISCONNECTING
+      self.status = Status.DISCONNECTING
 
     elif payload in (
                       ChunkData.DISCONNECTED,
@@ -262,33 +262,33 @@ class World( QObject ):
                       ChunkData.OTHERERROR,
                     ):
 
-      s.status = Status.DISCONNECTED
+      self.status = Status.DISCONNECTED
 
 
-    if s.status != previous_status:
-      s.connected.emit( s.isConnected() )
-      s.disconnected.emit( s.isDisconnected() )
+    if self.status != previous_status:
+      self.connected.emit( self.isConnected() )
+      self.disconnected.emit( self.isDisconnected() )
 
 
-  def isConnected( s ):
+  def isConnected( self ):
 
-    return s.status == Status.CONNECTED
-
-
-  def isDisconnected( s ):
-
-    return s.status == Status.DISCONNECTED
+    return self.status == Status.CONNECTED
 
 
-  def selectFile( s, caption=u"Select file", dir=u"", filter=u"" ):
+  def isDisconnected( self ):
+
+    return self.status == Status.DISCONNECTED
+
+
+  def selectFile( self, caption=u"Select file", dir=u"", filter=u"" ):
 
     if not dir:
       dir = platformSpecific.get_homedir()
 
-    return QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
+    return QFileDialog.getOpenFileName( self.worldui, caption, dir, filter )
 
 
-  def openFileOrErr( s, filename, mode='r' ):
+  def openFileOrErr( self, filename, mode='r' ):
 
     local_encoding = QApplication.instance().local_encoding
     filename = os.path.expanduser( filename )
@@ -300,31 +300,31 @@ class World( QObject ):
     except ( IOError, OSError ), e:
 
       errormsg = str( e ).decode( local_encoding, "replace" )
-      s.info( u"Error: %s: %s" % ( basename, errormsg ) )
+      self.info( u"Error: %s: %s" % ( basename, errormsg ) )
       return None
 
 
-  def loadFile( s, filename=None, blocksize=2048 ):
+  def loadFile( self, filename=None, blocksize=2048 ):
 
     if filename is None:
 
-      filename = s.selectFile(
-                               caption = u"Select the file to load",
-                               filter  = u"Text files (*.log *.txt)" \
-                                         u";;All files (*)"
-                             )
+      filename = self.selectFile(
+                                  caption = u"Select the file to load",
+                                  filter  = u"Text files (*.log *.txt)" \
+                                            u";;All files (*)"
+                                )
 
       filename = unicode( filename )  ## QString -> unicode
 
     if not filename:
       return
 
-    f = s.openFileOrErr( filename )
+    f = self.openFileOrErr( filename )
 
     if not f:
       return
 
-    s.info( u"Loading %s..." % os.path.basename( filename ) )
+    self.info( u"Loading %s..." % os.path.basename( filename ) )
 
     t1 = time.time()
 
@@ -335,38 +335,38 @@ class World( QObject ):
       if not data:
         break
 
-      s.socketpipeline.pipeline.feedBytes( data, blocksize )
+      self.socketpipeline.pipeline.feedBytes( data, blocksize )
 
     t2 = time.time()
 
     f.close()
 
-    s.info( u"File loaded in %.2fs." % ( t2 - t1 ) )
+    self.info( u"File loaded in %.2fs." % ( t2 - t1 ) )
 
 
-  def flushPendingInput( s ):
+  def flushPendingInput( self ):
 
-    while s.input:
+    while self.input:
 
-      text = s.input.pop( 0 )
+      text = self.input.pop( 0 )
 
       if text.startswith( CMDCHAR ):
-        QApplication.instance().core.commands.runCmdLine( s, text[ len( CMDCHAR ): ] )
+        QApplication.instance().core.commands.runCmdLine( self, text[ len( CMDCHAR ): ] )
 
       else:
-        s.socketpipeline.send( text + u"\r\n" )
+        self.socketpipeline.send( text + u"\r\n" )
 
 
-  def processInput( s, input ):
+  def processInput( self, input ):
 
     for line in input.split( u'\n' ):
-      s.input.append( line )
+      self.input.append( line )
 
-    s.input_flush.start()
+    self.input_flush.start()
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.worldui        = None
-    s.socketpipeline = None
-    s.logger         = None
+    self.worldui        = None
+    self.socketpipeline = None
+    self.logger         = None

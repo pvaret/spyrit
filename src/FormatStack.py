@@ -35,43 +35,43 @@ ANSI = 1
 
 class FormatStack:
 
-  def __init__( s, formatter ):
+  def __init__( self, formatter ):
 
-    s.formatter = formatter
-    s.stacks    = defaultdict( OrderedDict )
+    self.formatter = formatter
+    self.stacks    = defaultdict( OrderedDict )
 
 
-  def processChunk( s, chunk ):
+  def processChunk( self, chunk ):
 
     chunk_type, payload = chunk
 
     if chunk_type == ChunkData.ANSI:
-      s._applyFormat( ANSI, payload )
+      self._applyFormat( ANSI, payload )
 
     elif chunk_type == ChunkData.HIGHLIGHT:
 
       id, format = payload
-      s._applyFormat( id, format )
+      self._applyFormat( id, format )
 
 
-  def setBaseFormat( s, format ):
+  def setBaseFormat( self, format ):
 
-    actual_format = dict( ( k, None ) for k in s.stacks )
+    actual_format = dict( ( k, None ) for k in self.stacks )
     actual_format.update( format )
 
-    s._applyFormat( BASE, actual_format )
+    self._applyFormat( BASE, actual_format )
 
 
-  def _applyFormat( s, id, format ):
+  def _applyFormat( self, id, format ):
 
     if not format:
 
-      s._clearFormat( id )
+      self._clearFormat( id )
       return
 
     for property, value in format.iteritems():
 
-      stack = s.stacks[ property ]
+      stack = self.stacks[ property ]
 
       old_end_value = stack.last()
 
@@ -97,15 +97,15 @@ class FormatStack:
         continue
 
       if new_end_value:
-        s.formatter.setProperty( property, new_end_value )
+        self.formatter.setProperty( property, new_end_value )
 
       else:
-        s.formatter.clearProperty( property )
+        self.formatter.clearProperty( property )
 
 
-  def _clearFormat( s, id ):
+  def _clearFormat( self, id ):
 
-    for property, stack in s.stacks.iteritems():
+    for property, stack in self.stacks.iteritems():
 
       if id in stack:
 
@@ -117,7 +117,7 @@ class FormatStack:
           continue
 
         if new_end_value:
-          s.formatter.setProperty( property, new_end_value )
+          self.formatter.setProperty( property, new_end_value )
 
         else:
-          s.formatter.clearProperty( property )
+          self.formatter.clearProperty( property )

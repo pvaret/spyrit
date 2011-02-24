@@ -21,7 +21,6 @@
 ##
 
 
-import re
 import codecs
 
 from Messages       import messages
@@ -37,18 +36,18 @@ class UnicodeTextFilter( BaseFilter ):
   relevant_types = ChunkData.BYTES
 
 
-  def __init__( s, context, encoding ):
+  def __init__( self, context, encoding ):
 
-    s.decoder  = None
-    s.encoding = "ascii"
+    self.decoder  = None
+    self.encoding = "ascii"
 
-    BaseFilter.__init__( s, context )
+    BaseFilter.__init__( self, context )
 
-    s.setEncoding( encoding )
-    s.bindNotificationListener( "encoding_changed", s.setEncoding )
+    self.setEncoding( encoding )
+    self.bindNotificationListener( "encoding_changed", self.setEncoding )
 
 
-  def setEncoding( s, encoding ):
+  def setEncoding( self, encoding ):
 
     encoding = encoding.encode( "ascii", "ignore" )  ## unicode -> str
 
@@ -61,28 +60,28 @@ class UnicodeTextFilter( BaseFilter ):
                      % encoding )
       encoding = "latin1"
 
-    s.encoding = encoding
-    s.decoder  = codecs.getincrementaldecoder( s.encoding ) ( "replace" )
+    self.encoding = encoding
+    self.decoder  = codecs.getincrementaldecoder( self.encoding ) ( "replace" )
 
 
-  def resetInternalState( s ):
+  def resetInternalState( self ):
 
-    BaseFilter.resetInternalState( s )
+    BaseFilter.resetInternalState( self )
 
-    if s.decoder:
-      s.decoder.reset()
+    if self.decoder:
+      self.decoder.reset()
 
 
-  def processChunk( s, chunk ):
+  def processChunk( self, chunk ):
 
     _, payload = chunk
 
-    text = s.decoder.decode( payload )
+    text = self.decoder.decode( payload )
 
     if text:
       yield ( ChunkData.TEXT, text )
 
 
-  def formatForSending( s, data ):
+  def formatForSending( self, data ):
 
-    return data.encode( s.encoding, "replace" )
+    return data.encode( self.encoding, "replace" )

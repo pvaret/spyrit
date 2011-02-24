@@ -61,9 +61,9 @@ class DictAttrProxy( object ):
     return None
 
 
-  def __getattr__( s, attr ):
+  def __getattr__( self, attr ):
 
-    vattr = s.validatedAttr( attr )
+    vattr = self.validatedAttr( attr )
 
     if vattr is None:
       ## This is neither an existing native attribute, nor a 'special'
@@ -72,37 +72,37 @@ class DictAttrProxy( object ):
       raise AttributeError( attr )
 
     try:
-      return s[ vattr ]
+      return self[ vattr ]
 
     except KeyError:
       raise AttributeError( attr )
 
 
-  def __setattr__( s, attr, value ):
+  def __setattr__( self, attr, value ):
 
-    vattr = s.validatedAttr( attr )
+    vattr = self.validatedAttr( attr )
 
     if vattr:
-      s[ vattr ] = value
+      self[ vattr ] = value
 
     else:
       ## If this is a 'normal' attribute, treat it the normal way.
-      object.__setattr__( s, attr, value )
+      object.__setattr__( self, attr, value )
 
 
-  def __delattr__( s, attr ):
+  def __delattr__( self, attr ):
 
-    vattr = s.validatedAttr( attr )
+    vattr = self.validatedAttr( attr )
 
     if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
-      object.__delattr__( s, attr )
+      object.__delattr__( self, attr )
 
       return
 
     try:
-      del s[ vattr ]
+      del self[ vattr ]
 
     except KeyError:
       raise AttributeError( attr )
@@ -115,9 +115,9 @@ class WeakList( WeakValueDictionary ):
 
   __iter__ = WeakValueDictionary.itervalues
 
-  def append( s, val ):
+  def append( self, val ):
 
-    s[ id( val ) ] = val
+    self[ id( val ) ] = val
 
 
 ## ---[ Class ConfigBasket ]---------------------------------------
@@ -130,39 +130,39 @@ class ConfigBasket( DictAttrProxy ):
   SECTION_CHAR = "@"
 
 
-  def __init__( s, parent=None ):
+  def __init__( self, parent=None ):
 
-    s.name        = None
-    s.basket      = {}
-    s.sections    = {}
-    s.children    = WeakList()
-    s.notifiers   = CallbackRegistry()
-    s.type_getter = None
+    self.name        = None
+    self.basket      = {}
+    self.sections    = {}
+    self.children    = WeakList()
+    self.notifiers   = CallbackRegistry()
+    self.type_getter = None
 
-    s.type_getter_for_subsection = {}
+    self.type_getter_for_subsection = {}
 
-    s.setParent( parent )
+    self.setParent( parent )
 
 
-  def isValidKeyName( s, key ):
+  def isValidKeyName( self, key ):
 
     return all( c in VALID_KEY_CHARACTER for c in key )
 
 
-  def __getitem__( s, key ):
+  def __getitem__( self, key ):
 
-    if key in s.basket: return s.basket[ key ]
-    if s.parent:        return s.parent[ key ]
+    if key in self.basket: return self.basket[ key ]
+    if self.parent:        return self.parent[ key ]
 
     raise KeyError( key )
 
 
-  def __setitem__( s, key, value ):
+  def __setitem__( self, key, value ):
 
-    if not s.isValidKeyName( key ):
+    if not self.isValidKeyName( key ):
       raise KeyError( "Invalid key name '%s'" % key )
 
-    if s.existsInParent( key ) and s.parent[ key ] == value:
+    if self.existsInParent( key ) and self.parent[ key ] == value:
 
       ## If the parent's value is already set to the new value, we delete
       ## the attribute on this object instead so we'll inherit that of its
@@ -170,16 +170,16 @@ class ConfigBasket( DictAttrProxy ):
 
       try:
         ## Note: this calls __delitem__, which takes care of notifications.
-        del s[ key ]
+        del self[ key ]
 
       except KeyError:
         pass
 
       return
 
-    if s.exists( key ):
+    if self.exists( key ):
 
-      old_value = s[ key ]
+      old_value = self[ key ]
 
       if old_value == value:
         ## If the value hasn't changed, we quit right away.
@@ -188,153 +188,153 @@ class ConfigBasket( DictAttrProxy ):
     else:
       old_value = None
 
-    s.basket[ key ] = value
+    self.basket[ key ] = value
 
     if old_value != value:
-      s.notifyKeyChanged( key, value )
+      self.notifyKeyChanged( key, value )
 
 
-  def __delitem__( s, key ):
+  def __delitem__( self, key ):
 
-    if not s.owns( key ):
+    if not self.owns( key ):
       raise KeyError( key )
 
-    old_value = s[ key ]
+    old_value = self[ key ]
 
-    del s.basket[ key ]
+    del self.basket[ key ]
 
-    if s.exists( key ):
+    if self.exists( key ):
 
-      value = s[ key ]
+      value = self[ key ]
 
       if old_value != value:
-        s.notifyKeyChanged( key, value )
+        self.notifyKeyChanged( key, value )
 
 
-  def setParent( s, parent ):
+  def setParent( self, parent ):
 
-    s.parent = parent
+    self.parent = parent
 
     if parent:
-      parent.children.append( s )
+      parent.children.append( self )
 
 
-  def setTypeGetter( s, type_getter ):
+  def setTypeGetter( self, type_getter ):
 
-    s.type_getter = type_getter
+    self.type_getter = type_getter
 
 
-  def setTypeGetterForFutureSections( s, type_getter_map ):
+  def setTypeGetterForFutureSections( self, type_getter_map ):
 
     ## Sometimes, you need to tell a ConfigBasket ahead of time that it will
     ## need a specific type getter for some future subsection or other.
     ## If so, you can set it with this method.
 
-    s.type_getter_for_subsection = type_getter_map
+    self.type_getter_for_subsection = type_getter_map
 
 
-  def getType( s, key ):
+  def getType( self, key ):
 
-    if s.type_getter:
+    if self.type_getter:
 
-      t = s.type_getter( key )
+      t = self.type_getter( key )
 
       if t:
         return t
 
-    if s.parent:
-      return s.parent.getType( key )
+    if self.parent:
+      return self.parent.getType( key )
 
     else:
       return None
 
 
-  def reset( s ):
+  def reset( self ):
 
-    keys = s.basket.keys()
+    keys = self.basket.keys()
 
     for key in keys:
-      del s[ key ]
+      del self[ key ]
 
 
-  def resetSections( s ):
+  def resetSections( self ):
 
-    s.sections.clear()
-
-
-  def owns( s, key ):
-
-    return key in s.basket
+    self.sections.clear()
 
 
-  def existsInParent( s, key ):
+  def owns( self, key ):
 
-    if s.parent:
-      return s.parent.exists( key )
+    return key in self.basket
+
+
+  def existsInParent( self, key ):
+
+    if self.parent:
+      return self.parent.exists( key )
 
     return False
 
 
-  def exists( s, key ):
+  def exists( self, key ):
 
-    return s.owns( key ) or s.existsInParent( key )
+    return self.owns( key ) or self.existsInParent( key )
 
 
-  def updateFromDict( s, d ):
+  def updateFromDict( self, d ):
 
     for k, v in d.iteritems():
 
-      if not k.startswith( s.SECTION_CHAR ):
-        s[ k ] = v
+      if not k.startswith( self.SECTION_CHAR ):
+        self[ k ] = v
 
 
-  def isEmpty( s ):
+  def isEmpty( self ):
 
-    return len( s.basket ) == 0 and len( s.sections ) == 0
-
-
-  def hasSection( s, section ):
-
-    return s.sections.has_key( section )
+    return len( self.basket ) == 0 and len( self.sections ) == 0
 
 
-  def getSection( s, section ):
+  def hasSection( self, section ):
+
+    return self.sections.has_key( section )
+
+
+  def getSection( self, section ):
 
     try:
-      return s.sections[ section ]
+      return self.sections[ section ]
 
     except KeyError:
       raise KeyError( "This configuration object doesn't have a section "
                     + "called %s." % section )
 
 
-  def getSectionList( s ):
+  def getSectionList( self ):
 
-    return list( s.sections.iterkeys() )
+    return list( self.sections.iterkeys() )
 
 
-  def saveSection( s, section, name ):
+  def saveSection( self, section, name ):
 
     section.name = name
-    section.setParent( s )
+    section.setParent( self )
 
-    s.sections[ name ] = section
+    self.sections[ name ] = section
 
-    type_getter = s.type_getter_for_subsection.get( name )
+    type_getter = self.type_getter_for_subsection.get( name )
 
     if type_getter:
       section.setTypeGetter( type_getter )
 
 
-  def saveAsSection( s, name ):
+  def saveAsSection( self, name ):
 
     ## Watch the difference with the above method: here, THIS object is being
     ## saved into its PARENT as a new section.
 
-    s.parent.saveSection( s, name )
+    self.parent.saveSection( self, name )
 
 
-  def renameSection( s, oldname, newname ):
+  def renameSection( self, oldname, newname ):
 
     ## Warning: this function doesn't check whether the new section name is
     ## already in use -- if so, that section will be overridden. In other
@@ -342,50 +342,50 @@ class ConfigBasket( DictAttrProxy ):
     ## Code that makes use of this method should check that 'newname' is free,
     ## if it thinks it matters.
 
-    section = s.getSection( oldname )  ## Raises KeyError if no such section.
-    s.deleteSection( oldname )
+    section = self.getSection( oldname )  ## Raises KeyError if no such section.
+    self.deleteSection( oldname )
     section.saveAsSection( newname )
 
 
-  def deleteSection( s, name ):
+  def deleteSection( self, name ):
 
     try:
-      del s.sections[ name ]
+      del self.sections[ name ]
 
     except KeyError:
       raise KeyError( "This configuration object doesn't have a section "
                     + "called %s." % name )
 
 
-  def createAnonymousSection( s ):
+  def createAnonymousSection( self ):
 
-    return ConfigBasket( s )
+    return ConfigBasket( self )
 
 
-  def createSection( s, name ):
+  def createSection( self, name ):
 
-    c = s.createAnonymousSection()
+    c = self.createAnonymousSection()
     c.saveAsSection( name )
 
     return c
 
 
-  def isAnonymous( s ):
+  def isAnonymous( self ):
 
-    return s.name is None
-
-
-  def getOwnDict( s ):
-
-    return s.basket
+    return self.name is None
 
 
-  def dumpAsDict( s ):
+  def getOwnDict( self ):
 
-    d = s.getOwnDict().copy()
+    return self.basket
 
-    d.update( dict( ( s.SECTION_CHAR + name, section.dumpAsDict() )
-                      for name, section in s.sections.iteritems() ) )
+
+  def dumpAsDict( self ):
+
+    d = self.getOwnDict().copy()
+
+    d.update( dict( ( self.SECTION_CHAR + name, section.dumpAsDict() )
+                      for name, section in self.sections.iteritems() ) )
 
     return d
 
@@ -399,33 +399,33 @@ class ConfigBasket( DictAttrProxy ):
     return c
 
 
-  def updateFromDictTree( s, d ):
+  def updateFromDictTree( self, d ):
 
     for name, section in d.iteritems():
 
-      if name.startswith( s.SECTION_CHAR ):
-        s.saveSection( ConfigBasket.buildFromDict( section ), name[1:] )
+      if name.startswith( self.SECTION_CHAR ):
+        self.saveSection( ConfigBasket.buildFromDict( section ), name[1:] )
 
-    s.updateFromDict( d )
+    self.updateFromDict( d )
 
 
-  def notifyKeyChanged( s, key, value ):
+  def notifyKeyChanged( self, key, value ):
 
-    s.notifiers.triggerAll( key, value )
+    self.notifiers.triggerAll( key, value )
 
     ## TODO: Only propagate to childrens if the new value of the parent is
     ## also new to them.
 
-    for child in s.children:
+    for child in self.children:
       child.notifyKeyChanged( key, value )
 
 
-  def registerNotifier( s, notifier ):
+  def registerNotifier( self, notifier ):
 
-    s.notifiers.add( notifier )
+    self.notifiers.add( notifier )
 
 
-  def commit( s ):
+  def commit( self ):
 
-    s.parent.updateFromDict( s.basket )
-    s.reset()
+    self.parent.updateFromDict( self.basket )
+    self.reset()

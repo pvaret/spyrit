@@ -33,36 +33,36 @@ from textwrap import dedent
 
 class CommandRegistry:
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.commands = {}
+    self.commands = {}
 
 
-  def registerCommand( s, cmdname, command_class ):
+  def registerCommand( self, cmdname, command_class ):
 
     cmdname = cmdname.strip().lower()
-    s.commands[ cmdname ] = command_class()
+    self.commands[ cmdname ] = command_class()
 
 
   ## TODO: rename this to lookup(), implement it on BaseCommand too.
-  def lookupCommand( s, command ):
+  def lookupCommand( self, command ):
 
-    return s.commands.get( command.strip().lower() )
+    return self.commands.get( command.strip().lower() )
 
 
-  def parseCommand( s, cmdline ):
+  def parseCommand( self, cmdline ):
 
     cmdname, remainder = parse_command( cmdline )
 
-    if cmdname in s.commands:
+    if cmdname in self.commands:
       return cmdname, cmdname, remainder
 
     return None, cmdname, cmdline
 
 
-  def runCmdLine( s, world, cmdline ):
+  def runCmdLine( self, world, cmdline ):
 
-    cmdname, possible_cmdname, remainder = s.parseCommand( cmdline )
+    cmdname, possible_cmdname, remainder = self.parseCommand( cmdline )
 
     if not possible_cmdname:  ## Empty command line. Do nothing.
       return
@@ -79,7 +79,7 @@ class CommandRegistry:
       world.info( dedent( help_txt ) % ctx )
       return
 
-    command = s.lookupCommand( cmdname )
+    command = self.lookupCommand( cmdname )
 
     subcmdname, possible_subcmdname, remainder = command.parseSubCommand( remainder )
 
@@ -114,9 +114,9 @@ class CommandRegistry:
       world.info( msg % e )
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.commands = None
+    self.commands = None
 
 
 

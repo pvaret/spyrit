@@ -26,21 +26,21 @@ from PyQt4.QtGui import QTextDocument
 
 class SearchManager:
 
-  def __init__( s, textedit, conf ):
+  def __init__( self, textedit, conf ):
 
-    s.textedit = textedit
-    s.conf     = conf
+    self.textedit = textedit
+    self.conf     = conf
 
-    s.cursor          = None
-    s.previous_search = None
+    self.cursor          = None
+    self.previous_search = None
 
 
-  def find( s, string=None ):
+  def find( self, string=None ):
 
     ## An empty search string means repeating the last search.
 
     if not string:
-      string = s.previous_search
+      string = self.previous_search
 
     ## Unless the last search was empty, in which case we bail out.
 
@@ -49,14 +49,14 @@ class SearchManager:
 
     ## Reset the search cursor if this is a new search.
 
-    if string != s.previous_search:
-      s.cursor = None
+    if string != self.previous_search:
+      self.cursor = None
 
-    cursor   = s.cursor
-    textedit = s.textedit
+    cursor   = self.cursor
+    textedit = self.textedit
     document = textedit.document()
 
-    s.previous_search = string
+    self.previous_search = string
 
     ## Create new cursor at end of document if this is a new search.
 
@@ -75,7 +75,7 @@ class SearchManager:
       textedit.setTextCursor( cursor )
       textedit.moveScrollbarToBottom()
 
-      s.cursor = None
+      self.cursor = None
 
       return False
 
@@ -84,13 +84,13 @@ class SearchManager:
       textedit.setTextCursor( cursor )
       textedit.ensureCursorVisible()
 
-      s.cursor = cursor
+      self.cursor = cursor
 
       return True
 
 
-  def __del__( s ):
+  def __del__( self ):
 
-    s.conf     = None
-    s.cursor   = None
-    s.textedit = None
+    self.conf     = None
+    self.cursor   = None
+    self.textedit = None

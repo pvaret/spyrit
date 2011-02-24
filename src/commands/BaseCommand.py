@@ -32,19 +32,19 @@ class BaseCommand( object ):
 
   CMD = "cmd"
 
-  def __init__( s ):
+  def __init__( self ):
 
-    s.subcmds = {}
+    self.subcmds = {}
 
-    for name in dir( s ):
+    for name in dir( self ):
 
-      attr = getattr( s, name )
+      attr = getattr( self, name )
 
-      if callable( attr ) and name.startswith( s.CMD + "_" ):
-        s.subcmds[ name[ len( s.CMD + "_" ): ].lower() ] = attr
+      if callable( attr ) and name.startswith( self.CMD + "_" ):
+        self.subcmds[ name[ len( self.CMD + "_" ): ].lower() ] = attr
 
 
-  def cmd( s, world, *args, **kwargs ):
+  def cmd( self, world, *args, **kwargs ):
 
     ## Default implementation that only displays help. Overload this in
     ## subclasses.
@@ -53,7 +53,7 @@ class BaseCommand( object ):
 
     ## TODO: Clean this up; store cmd name when registering it.
     cmdname = [ k for k, v in commands.commands.iteritems()
-                if v is s ][0]
+                if v is self ][0]
 
     if args or kwargs:
         arg1 = ( list( args ) + kwargs.keys() )[0]
@@ -64,26 +64,26 @@ class BaseCommand( object ):
                 % ( CMDCHAR, HELP, cmdname ) )
 
 
-  def parseSubCommand( s, cmdline ):
+  def parseSubCommand( self, cmdline ):
 
     subcmdname, remainder = parse_command( cmdline )
 
-    if subcmdname in s.subcmds:
+    if subcmdname in self.subcmds:
       return subcmdname, subcmdname, remainder
 
     return None, subcmdname, cmdline
 
 
-  def parseArgs( s, cmdline ):
+  def parseArgs( self, cmdline ):
 
     args, kwargs = parse_arguments( cmdline )
 
     return args, kwargs
 
 
-  def getCallableForName( s, cmdname, subcmdname ):
+  def getCallableForName( self, cmdname, subcmdname ):
 
     if subcmdname is None:
-      return getattr( s, s.CMD, None )
+      return getattr( self, self.CMD, None )
 
-    return s.subcmds.get( subcmdname.lower() )
+    return self.subcmds.get( subcmdname.lower() )

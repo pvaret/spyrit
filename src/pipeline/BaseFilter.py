@@ -32,30 +32,30 @@ class BaseFilter:
   relevant_types = ChunkData.ALL_TYPES
 
 
-  def __init__( s, context=None ):
+  def __init__( self, context=None ):
 
-    s.sink           = None
-    s.context        = context
-    s.postponedChunk = []
+    self.sink           = None
+    self.context        = context
+    self.postponedChunk = []
 
-    s.resetInternalState()
-
-
-  def setSink( s, sink ):
-
-    s.sink = sink
+    self.resetInternalState()
 
 
-  def postpone( s, chunk ):
+  def setSink( self, sink ):
 
-    if s.postponedChunk:
+    self.sink = sink
+
+
+  def postpone( self, chunk ):
+
+    if self.postponedChunk:
       raise Exception( u"Duplicate postponed chunk!" )
 
     else:
-      s.postponedChunk = chunk
+      self.postponedChunk = chunk
 
 
-  def processChunk( s, chunk ):
+  def processChunk( self, chunk ):
 
     ## This is the default implementation, which does nothing.
     ## Override this to implement your filter.
@@ -64,7 +64,7 @@ class BaseFilter:
     yield chunk
 
 
-  def resetInternalState( s ):
+  def resetInternalState( self ):
 
     ## Initialize the filter at the beginning of a connection (or when
     ## reconnecting). For instance the Telnet filter would drop all negociated
@@ -72,12 +72,12 @@ class BaseFilter:
     ## Override this when implementing your filter if your filter uses any
     ## internal data.
 
-    s.postponedChunk = []
+    self.postponedChunk = []
 
 
-  def concatPostponed( s, chunk ):
+  def concatPostponed( self, chunk ):
 
-    if not s.postponedChunk:
+    if not self.postponedChunk:
       return chunk
 
     chunk_type, _ = chunk
@@ -88,46 +88,46 @@ class BaseFilter:
       return chunk
 
     ## If there was some bit of chunk that we postponed earlier...
-    postponed = s.postponedChunk
-    s.postponedChunk = None
+    postponed = self.postponedChunk
+    self.postponedChunk = None
     ## We retrieve it...
 
     try:
       ## And try to merge it with the new chunk.
       chunk = ChunkData.concat_chunks( postponed, chunk )
 
-    except ChunkTypeMismatch:
+    except ChunkData.ChunkTypeMismatch:
       ## If they're incompatible, it means the postponed chunk was really
       ## complete, so we send it downstream.
-      s.sink( postponed )
+      self.sink( postponed )
 
     return chunk
 
 
-  def feedChunk( s, chunk ):
+  def feedChunk( self, chunk ):
 
     chunk_type, _ = chunk
 
-    if chunk_type & s.relevant_types:
+    if chunk_type & self.relevant_types:
 
-      if s.postponedChunk:
-        chunk = s.concatPostponed( chunk )
+      if self.postponedChunk:
+        chunk = self.concatPostponed( chunk )
 
       ## At this point, the postponed chunk has either been merged with
       ## the new one, or been sent downstream. At any rate, it's been dealt
-      ## with, and s.postponedChunk is empty.
+      ## with, and self.postponedChunk is empty.
       ## This mean that the postponed chunk should ALWAYS have been cleared
       ## when processChunk() is called. If not, there's something shifty
       ## going on...
 
-      for chunk in s.processChunk( chunk ):
-        s.sink( chunk )
+      for chunk in self.processChunk( chunk ):
+        self.sink( chunk )
 
     else:
-      s.sink( chunk )
+      self.sink( chunk )
 
 
-  def formatForSending( s, data ):
+  def formatForSending( self, data ):
 
     ## Reimplement this function if the filter inherently requires the data
     ## sent to the world to be modified. I.e., the telnet filter would escape
@@ -136,17 +136,17 @@ class BaseFilter:
     return data
 
 
-  def notifify( s, notification, *args ):
+  def notifify( self, notification, *args ):
 
-    if not s.context:
+    if not self.context:
       return
 
-    s.context.notify( notification, *args )
+    self.context.notify( notification, *args )
 
 
-  def bindNotificationListener( s, notification, callback ):
+  def bindNotificationListener( self, notification, callback ):
 
-    if not s.context:
+    if not self.context:
       return
 
-    s.context.bindNotificationListener( notification, callback )
+    self.context.bindNotificationListener( notification, callback )

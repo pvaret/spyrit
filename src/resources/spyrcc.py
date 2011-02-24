@@ -81,47 +81,47 @@ qInitResources()
 
 class RCCFileInfo:
 
-  def __init__( s, name, fDesc, locale, flags, opts={} ):
+  def __init__( self, name, fDesc, locale, flags, opts={} ):
 
     ## Store resource data.
 
-    s.flags  = flags
-    s.name   = name
-    s.fDesc  = fDesc
-    s.locale = locale
+    self.flags  = flags
+    self.name   = name
+    self.fDesc  = fDesc
+    self.locale = locale
 
-    s.opts   = opts
+    self.opts   = opts
 
-    s.parent      = None
-    s.children    = {}
-    s.nameOffset  = 0
-    s.dataOffset  = 0
-    s.childOffset = 0
+    self.parent      = None
+    self.children    = {}
+    self.nameOffset  = 0
+    self.dataOffset  = 0
+    self.childOffset = 0
 
 
-  def copy( s ):
+  def copy( self ):
 
     ## Return a deep copy of the object.
 
-    c = RCCFileInfo( s.name, s.fDesc, s.locale, s.flags, s.opts )
+    c = RCCFileInfo( self.name, self.fDesc, self.locale, self.flags, self.opts )
 
-    c.parent      = s.parent
-    c.children    = s.children.copy()
-    c.nameOffset  = s.nameOffset
-    c.dataOffset  = s.dataOffset
-    c.childOffset = s.childOffset
+    c.parent      = self.parent
+    c.children    = self.children.copy()
+    c.nameOffset  = self.nameOffset
+    c.dataOffset  = self.dataOffset
+    c.childOffset = self.childOffset
 
     return c
 
 
-  def numberToStr( s, num, width ):
+  def numberToStr( self, num, width ):
 
     ## Print out a number to a string in a binary format
 
     stg = ""
     div = 2 ** ( 8 * ( width - 1 ) )
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       fmt = "\\x%02x"
 
     else:
@@ -137,34 +137,34 @@ class RCCFileInfo:
     return stg
 
 
-  def writeDataBlob( s, offset ):
+  def writeDataBlob( self, offset ):
 
     ## Write file content and metadata
 
-    s.dataOffset = offset
+    self.dataOffset = offset
 
     try:
-      data = s.fDesc.read()
+      data = self.fDesc.read()
 
     except:
-      print "Couldn't read %s" % s.fDesc.name
+      print "Couldn't read %s" % self.fDesc.name
       return False, ""
 
     ## TODO: compression stuff
 
     ## Length
 
-    blob    = [ s.numberToStr( len( data ), 4 ) ]
+    blob    = [ self.numberToStr( len( data ), 4 ) ]
     offset += 4
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       blob.append( "\\\n" )
 
     ## Binary data
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       for idx in range( len( data ) ):
-        blob.append( s.numberToStr( ord( data[idx] ), 1 ) )
+        blob.append( self.numberToStr( ord( data[idx] ), 1 ) )
 
         ## This test should be done earlier as it produces an inelegant single
         ## first byte, but I want the exact same behavior as pyrcc.
@@ -176,7 +176,7 @@ class RCCFileInfo:
 
     else:
       for byte in data:
-        blob.append( s.numberToStr( ord( byte ), 1 ) )
+        blob.append( self.numberToStr( ord( byte ), 1 ) )
 
     offset += len( data )
     blob    = "".join( blob )
@@ -184,33 +184,33 @@ class RCCFileInfo:
     return offset, blob
 
 
-  def writeDataName( s, offset ):
+  def writeDataName( self, offset ):
 
-    s.nameOffset = offset
+    self.nameOffset = offset
 
     ## Length
 
-    outName = [ s.numberToStr( len( s.name ), 2 ) ]
+    outName = [ self.numberToStr( len( self.name ), 2 ) ]
     offset += 2
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       outName.append( "\\\n" )
 
     ## Hash, we have no choice but to use a QString here
 
-    outName.append( s.numberToStr( hash( QtCore.QString( s.name ) ), 4 ) )
+    outName.append( self.numberToStr( hash( QtCore.QString( self.name ) ), 4 ) )
     offset += 4
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       outName.append( "\\\n" )
 
     ## Name unicode string
 
-    if s.opts.get( "legacy" ):
-      uname = unicode( s.name )
+    if self.opts.get( "legacy" ):
+      uname = unicode( self.name )
 
       for idx in range( len( uname ) ):
-        outName.append( s.numberToStr( ord( uname[idx] ), 2 ) )
+        outName.append( self.numberToStr( ord( uname[idx] ), 2 ) )
 
         ## This test should be done earlier and use modulo 8 to avoid an
         ## inelegant single first word and unclean wrapping,
@@ -222,48 +222,48 @@ class RCCFileInfo:
       outName.append( "\\\n" )
 
     else:
-      outName += [ s.numberToStr( ord( c ), 2 ) for c in unicode( s.name ) ]
+      outName += [ self.numberToStr( ord( c ), 2 ) for c in unicode( self.name ) ]
 
-    offset  += len( s.name ) * 2
+    offset  += len( self.name ) * 2
 
     outName  = "".join( outName )
 
     return offset, outName
 
 
-  def writeDataInfo( s ):
+  def writeDataInfo( self ):
 
     ## Pointer data
     ## Name offset
 
-    info = [ s.numberToStr( s.nameOffset, 4 ) ]
+    info = [ self.numberToStr( self.nameOffset, 4 ) ]
 
     ## Flags
 
-    info.append( s.numberToStr( s.flags, 2 ) )
+    info.append( self.numberToStr( self.flags, 2 ) )
 
-    if s.flags & F_DIRECTORY:
+    if self.flags & F_DIRECTORY:
 
       ## Child count
 
-      info.append( s.numberToStr( len( s.children ), 4 ) )
+      info.append( self.numberToStr( len( self.children ), 4 ) )
 
       ## First child offset
 
-      info.append( s.numberToStr( s.childOffset, 4 ) )
+      info.append( self.numberToStr( self.childOffset, 4 ) )
 
     else:
 
       ## Locale
 
-      info.append( s.numberToStr( s.locale.country(), 2 ) )
-      info.append( s.numberToStr( s.locale.language(), 2 ) )
+      info.append( self.numberToStr( self.locale.country(), 2 ) )
+      info.append( self.numberToStr( self.locale.language(), 2 ) )
 
       ## Data offset
 
-      info.append( s.numberToStr( s.dataOffset, 4 ) )
+      info.append( self.numberToStr( self.dataOffset, 4 ) )
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       info.append( "\\\n" )
 
     return "".join( info )
@@ -273,21 +273,21 @@ class RCCResourceLibrary:
 
   ## Python version of PyRCC resource library object
 
-  def __init__( s, qrcFiles, opts ):
+  def __init__( self, qrcFiles, opts ):
 
-    s.qrcFiles  = qrcFiles
-    s.opts      = opts
+    self.qrcFiles  = qrcFiles
+    self.opts      = opts
 
-    s.root      = None
+    self.root      = None
 
-    s.parseResourceFiles()
+    self.parseResourceFiles()
 
 
-  def parseResourceFiles( s ):
+  def parseResourceFiles( self ):
 
     ## Open .qrc files and build the list of resources to compile
 
-    for qrc in s.qrcFiles:
+    for qrc in self.qrcFiles:
 
       ## Figure out file type and working directory
 
@@ -369,14 +369,14 @@ class RCCResourceLibrary:
             ## Handle next file for this resource path until we run out
             ## TODO: handle directories
 
-            s.addFile( alias, RCCFileInfo( alias.split( '/' )[-1], f,
-                       QtCore.QLocale( lang ), F_NOFLAGS, s.opts ) )
+            self.addFile( alias, RCCFileInfo( alias.split( '/' )[-1], f,
+                       QtCore.QLocale( lang ), F_NOFLAGS, self.opts ) )
             res = res.nextSibling
 
         child = child.nextSibling
 
 
-  def addFile( s, alias, rccFile ):
+  def addFile( self, alias, rccFile ):
 
     ## Adds RCC file to our resource tree. We just need to add our provided
     ## rccFile node to that tree, creating intermediate 'directory' nodes in
@@ -388,10 +388,10 @@ class RCCResourceLibrary:
       print >> sys.stderr, "File too big: %s" % rccFile.fDesc.name
       return False
 
-    if not s.root:
-      s.root = RCCFileInfo( "", None, None, F_DIRECTORY, s.opts )
+    if not self.root:
+      self.root = RCCFileInfo( "", None, None, F_DIRECTORY, self.opts )
 
-    parent = s.root
+    parent = self.root
     nodes  = alias.split( "/" )
 
     ## Traverse our resource tree to the last leaf of alias and create
@@ -401,7 +401,7 @@ class RCCResourceLibrary:
 
       if node not in parent.children:
 
-        nodeInfo = RCCFileInfo( node, None, None, F_DIRECTORY, s.opts )
+        nodeInfo = RCCFileInfo( node, None, None, F_DIRECTORY, self.opts )
         nodeInfo.parent = parent
         parent.children[node] = nodeInfo
         parent = nodeInfo
@@ -418,7 +418,7 @@ class RCCResourceLibrary:
     return True
 
 
-  def writeHeader( s, out = sys.stdout ):
+  def writeHeader( self, out = sys.stdout ):
 
     ## Print python header
 
@@ -431,14 +431,14 @@ class RCCResourceLibrary:
     return True
 
 
-  def writeDataBlobs( s, out = sys.stdout ):
+  def writeDataBlobs( self, out = sys.stdout ):
 
     ## Print data structure
 
-    if not s.root:
+    if not self.root:
       return False
 
-    pending = [ s.root ]
+    pending = [ self.root ]
     offset  = 0
     blobs   = []
 
@@ -460,7 +460,7 @@ class RCCResourceLibrary:
 
     blobs = "".join( blobs )
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       print >> out, 'qt_resource_data = "\\\n%s"\n' % blobs
 
     else:
@@ -471,15 +471,15 @@ class RCCResourceLibrary:
     return True
 
 
-  def writeDataNames( s, out = sys.stdout ):
+  def writeDataNames( self, out = sys.stdout ):
 
     ## Print names structure
 
-    if not s.root:
+    if not self.root:
       return False
 
     names    = {}
-    pending  = [ s.root ]
+    pending  = [ self.root ]
     offset   = 0
     strNames = []
 
@@ -505,7 +505,7 @@ class RCCResourceLibrary:
 
     strNames = "".join( strNames )
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       print >> out, 'qt_resource_name = "\\\n%s"\n' % strNames
 
     else:
@@ -515,7 +515,7 @@ class RCCResourceLibrary:
     return True
 
 
-  def cmpHashName( s, left, right ):
+  def cmpHashName( self, left, right ):
 
     ## Comparison function actually comparing the hash of two nodes' names
 
@@ -525,14 +525,14 @@ class RCCResourceLibrary:
     return leftName < rightName and -1 or leftName > rightName
 
 
-  def writeDataStructure( s, out = sys.stdout ):
+  def writeDataStructure( self, out = sys.stdout ):
 
     ## Print final Qt data  structure
 
-    if not s.root:
+    if not self.root:
       return False
 
-    pending  = [ s.root ]
+    pending  = [ self.root ]
     offset   = 1
     structs  = []
 
@@ -546,7 +546,7 @@ class RCCResourceLibrary:
       ## Sort children by hash before adding them to the structure
 
       children = fileInfo.children.values()
-      children.sort( s.cmpHashName )
+      children.sort( self.cmpHashName )
 
       ## Keep looping until we get to leaf nodes, and update offsets
 
@@ -559,8 +559,8 @@ class RCCResourceLibrary:
 
     ## Now write out the structure (iterate with our new offsets)
 
-    pending = [ s.root ]
-    structs.append( s.root.writeDataInfo() )
+    pending = [ self.root ]
+    structs.append( self.root.writeDataInfo() )
 
     while pending:
 
@@ -569,7 +569,7 @@ class RCCResourceLibrary:
       ## Sort children by hash before adding them to the structure
 
       children = fileInfo.children.values()
-      children.sort( s.cmpHashName )
+      children.sort( self.cmpHashName )
 
       ## Write out actual data now
 
@@ -582,7 +582,7 @@ class RCCResourceLibrary:
 
     structs = "".join( structs )
 
-    if s.opts.get( "legacy" ):
+    if self.opts.get( "legacy" ):
       print >> out, 'qt_resource_struct = "\\\n%s"\n' % structs
 
     else:
@@ -592,12 +592,12 @@ class RCCResourceLibrary:
     return True
 
 
-  def writeInitializer( s, out = sys.stdout ):
+  def writeInitializer( self, out = sys.stdout ):
 
     ## Print python header
 
     try:
-      if s.opts.get( "legacy" ):
+      if self.opts.get( "legacy" ):
         print >> out, INIT_FUNCTIONS_LEGACY
 
       else:
@@ -609,30 +609,30 @@ class RCCResourceLibrary:
     return True
 
 
-  def output( s, out = sys.stdout ):
+  def output( self, out = sys.stdout ):
 
     ## Print out compiled resource file
 
-    if s.opts.get( "verbose" ):
+    if self.opts.get( "verbose" ):
         print >> sys.stderr, "Outputting code."
 
-    if not s.writeHeader( out ):
+    if not self.writeHeader( out ):
         print >> sys.stderr, "Couldn't write header!"
         return False
 
-    if not s.writeDataBlobs( out ):
+    if not self.writeDataBlobs( out ):
         print >> sys.stderr, "Couldn't write data blob!"
         return False
 
-    if not s.writeDataNames( out ):
+    if not self.writeDataNames( out ):
         print >> sys.stderr, "Couldn't write file names!"
         return False
 
-    if not s.writeDataStructure( out ):
+    if not self.writeDataStructure( out ):
         print >> sys.stderr, "Couldn't write data tree!"
         return False
 
-    if not s.writeInitializer( out ):
+    if not self.writeInitializer( out ):
         print >> sys.stderr, "Couldn't write footer!"
         return False
 

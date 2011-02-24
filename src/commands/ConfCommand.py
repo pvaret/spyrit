@@ -31,7 +31,7 @@ class ConfCommand( BaseCommand ):
 
   u"Configure the application."
 
-  def cmd_set( s, world, key, *args ):
+  def cmd_set( self, world, key, *args ):
 
     u"""\
     Sets the given configuration key to the given value.
@@ -65,7 +65,7 @@ class ConfCommand( BaseCommand ):
     world.info( u"%s set to value %s" % ( key, value ) )
 
 
-  def cmd_worldset( s, world, key, *args ):
+  def cmd_worldset( self, world, key, *args ):
 
     u"""\
     Sets given configuration key to the given value, for this world only.
@@ -99,7 +99,7 @@ class ConfCommand( BaseCommand ):
                 % ( key, value, world.title() ) )
 
 
-  def cmd_reset( s, world, key ):
+  def cmd_reset( self, world, key ):
 
     u"""\
     Resets the given configuration key to its default value.
@@ -135,7 +135,7 @@ class ConfCommand( BaseCommand ):
     world.info( u"%s reset to value %s" % ( key, value ) )
 
 
-  def cmd_worldreset( s, world, key ):
+  def cmd_worldreset( self, world, key ):
 
     u"""\
     Resets the given configuration key for this world to its global value.
@@ -170,7 +170,7 @@ class ConfCommand( BaseCommand ):
                 % ( key, value, world.title() ) )
 
 
-  def cmd_keys( s, world ):
+  def cmd_keys( self, world ):
 
     u"""\
     Lists all available configuration keys.

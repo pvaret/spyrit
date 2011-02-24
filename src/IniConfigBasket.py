@@ -69,32 +69,32 @@ class IniConfigBasket( ConfigBasket ):
   INDENT   = u"  "
 
 
-  def __init__( s, defaults, types ):
+  def __init__( self, defaults, types ):
 
-    ConfigBasket.__init__( s )
+    ConfigBasket.__init__( self )
 
     d = ConfigBasket.buildFromDict( defaults )
     d.setTypeGetter( types.get )
 
-    s.setParent( d )
+    self.setParent( d )
 
-    s.aboutToSave = CallbackRegistry()
+    self.aboutToSave = CallbackRegistry()
 
 
-  def load( s, filename ):
+  def load( self, filename ):
 
     try:
-      f = codecs.getreader( s.ENCODING ) ( open( filename ), "ignore" )
+      f = codecs.getreader( self.ENCODING ) ( open( filename ), "ignore" )
 
     except IOError:
       ## Unable to load configuration. Aborting.
       #messages.debug( u"Unable to load configuration file %s!" % filename )
       return
 
-    s.reset()
-    s.resetSections()
+    self.reset()
+    self.resetSections()
 
-    currentconf  = s
+    currentconf  = self
     currentdepth = 0
     skipsection  = False
 
@@ -145,9 +145,9 @@ class IniConfigBasket( ConfigBasket ):
     f.close()
 
 
-  def save( s, filename ):
+  def save( self, filename ):
 
-    s.aboutToSave.triggerAll()
+    self.aboutToSave.triggerAll()
 
     config_txt = []
     config_txt.append( u"## version: 1\n" )
@@ -163,7 +163,7 @@ class IniConfigBasket( ConfigBasket ):
 
         v = t.to_string( v )
 
-        config_txt.append( s.INDENT * indent_level )
+        config_txt.append( self.INDENT * indent_level )
         config_txt.append( u"%s = %s\n" % ( k, v ) )
 
       for sectionname, section in sorted( configobj.sections.iteritems() ):
@@ -172,7 +172,7 @@ class IniConfigBasket( ConfigBasket ):
           continue
 
         config_txt.append( u"\n" )
-        config_txt.append( s.INDENT * indent_level )
+        config_txt.append( self.INDENT * indent_level )
         config_txt.append( u"[" * ( indent_level + 1 ) )
         config_txt.append( u" %s " % sectionname.strip() )
         config_txt.append( u"]" * ( indent_level + 1 ) )
@@ -180,10 +180,10 @@ class IniConfigBasket( ConfigBasket ):
 
         save_section( section, indent_level+1 )
 
-    save_section( s )
+    save_section( self )
 
     try:
-      f = codecs.getwriter( s.ENCODING ) ( open( filename, "w" ), "ignore" )
+      f = codecs.getwriter( self.ENCODING ) ( open( filename, "w" ), "ignore" )
 
     except IOError:
       ## Unable to save configuration. Aborting.
@@ -195,6 +195,6 @@ class IniConfigBasket( ConfigBasket ):
     f.close()
 
 
-  def registerSaveCallback( s, callback ):
+  def registerSaveCallback( self, callback ):
 
-    s.aboutToSave.add( callback )
+    self.aboutToSave.add( callback )

@@ -37,69 +37,69 @@ class RegexMatch:
 
   matchtype = u"regex"
 
-  def __init__( s, pattern=None ):
+  def __init__( self, pattern=None ):
 
-    s.pattern   = pattern
-    s.regex     = None
-    s.error     = None
-    s.name      = None
+    self.pattern = pattern
+    self.regex   = None
+    self.error   = None
+    self.name    = None
 
     if pattern:
-      s.setPattern( pattern )
+      self.setPattern( pattern )
 
 
-  def compileRegex( s, regex ):
+  def compileRegex( self, regex ):
 
-    s.error  = None
+    self.error = None
 
     try:
-      s.regex = re.compile( regex )
+      self.regex = re.compile( regex )
 
     except re.error, e:
-      s.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
-      s.error = unicode( e )
+      self.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
+      self.error = unicode( e )
 
 
-  def setPattern( s, pattern ):
+  def setPattern( self, pattern ):
 
-    s.pattern     = pattern
-    regex_pattern = s.patternToRegex( pattern )
+    self.pattern = pattern
+    regex_pattern = self.patternToRegex( pattern )
 
-    s.compileRegex( regex_pattern )
+    self.compileRegex( regex_pattern )
 
 
-  def patternToRegex( s, pattern ):
+  def patternToRegex( self, pattern ):
 
     ## This is a regex match, so the regex IS the pattern.
     return pattern
 
 
-  def match( s, string ):
+  def match( self, string ):
 
-    if not s.regex:
+    if not self.regex:
       return None
 
-    return s.regex.search( string )
+    return self.regex.search( string )
 
 
-  def matchtokens( s ):
+  def matchtokens( self ):
 
-    if not s.regex:
+    if not self.regex:
       return None
 
-    tokens = sorted( [ ( v, k ) for k, v in s.regex.groupindex.iteritems() ] )
+    tokens = sorted( [ ( v, k ) for k, v in self.regex.groupindex.iteritems() ] )
 
     return [ tok[1] for tok in tokens ]
 
 
-  def __repr__( s ):
+  def __repr__( self ):
 
-    return s.matchtype + u':' + s.pattern
+    return self.matchtype + u':' + self.pattern
 
 
-  def __unicode__( s ):
+  def __unicode__( self ):
 
-    return u"'" + s.pattern + u"' (regex)"
+    return u"'" + self.pattern + u"' (regex)"
 
 
 
@@ -141,7 +141,7 @@ class SmartMatch( RegexMatch ):
 
   matchtype = u"smart"
 
-  def patternToRegex( s, pattern ):
+  def patternToRegex( self, pattern ):
 
     regex  = []
     tokens = set()
@@ -152,14 +152,14 @@ class SmartMatch( RegexMatch ):
 
       if not m:
 
-        regex.append( s.unescape_then_escape( pattern ) )
+        regex.append( self.unescape_then_escape( pattern ) )
         break
 
       start, end = m.span( 1 )
       before, pattern = pattern[ :start ], pattern[ end: ]
 
       if before:
-        regex.append( s.unescape_then_escape( before ) )
+        regex.append( self.unescape_then_escape( before ) )
 
       token = m.group( 1 ).lower().lstrip( u'[ ' ).rstrip( u' ]' )
 
@@ -181,7 +181,7 @@ class SmartMatch( RegexMatch ):
     return u''.join( regex )
 
 
-  def unescape_then_escape( s, string ):
+  def unescape_then_escape( self, string ):
 
     ## Unescape string according to the SmartMatch parser's rules, then
     ## re-escape according to the rules of Python's re module.
@@ -199,9 +199,9 @@ class SmartMatch( RegexMatch ):
     return re.escape( string )
 
 
-  def __unicode__( s ):
+  def __unicode__( self ):
 
-    return u"'" + s.pattern + u"'"
+    return u"'" + self.pattern + u"'"
 
 
 

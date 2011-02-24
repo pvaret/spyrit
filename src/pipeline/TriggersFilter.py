@@ -23,9 +23,7 @@
 ##
 
 
-import re
-
-from BaseFilter     import BaseFilter
+from BaseFilter import BaseFilter
 
 import ChunkData
 
@@ -33,39 +31,39 @@ import ChunkData
 
 class TriggersFilter( BaseFilter ):
 
-  def __init__( s, context=None, manager=None ):
+  def __init__( self, context=None, manager=None ):
 
-    s.buffer  = []
-    s.setManager( manager )
+    self.buffer  = []
+    self.setManager( manager )
 
-    BaseFilter.__init__( s, context )
+    BaseFilter.__init__( self, context )
 
 
-  def setManager( s, manager ):
+  def setManager( self, manager ):
 
-    s.manager = manager
+    self.manager = manager
 
     if manager is None:
-      s.processChunk = s.defaultProcessChunk
+      self.processChunk = self.defaultProcessChunk
 
     else:
-      s.processChunk = s.activatedProcessChunk
+      self.processChunk = self.activatedProcessChunk
 
 
-  def resetInternalState( s ):
+  def resetInternalState( self ):
 
-    s.buffer = []
-    BaseFilter.resetInternalState( s )
+    self.buffer = []
+    BaseFilter.resetInternalState( self )
 
 
-  def defaultProcessChunk( s, chunk ):
+  def defaultProcessChunk( self, chunk ):
 
     yield chunk
 
 
-  def activatedProcessChunk( s, chunk ):
+  def activatedProcessChunk( self, chunk ):
 
-    s.buffer.append( chunk )
+    self.buffer.append( chunk )
 
     chunk_type, _ = chunk
 
@@ -73,14 +71,14 @@ class TriggersFilter( BaseFilter ):
        or chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
 
       line = u"".join( chunk[1]
-                       for chunk in s.buffer
+                       for chunk in self.buffer
                        if chunk[0] == ChunkData.TEXT )
 
 
       if line:
-        s.manager.performMatchingActions( line, s.buffer )
+        self.manager.performMatchingActions( line, self.buffer )
 
-      for chunk in s.buffer:
+      for chunk in self.buffer:
         yield chunk
 
-      s.buffer = []
+      self.buffer = []

@@ -23,6 +23,7 @@
 ## The file also contains all the classes for the mappers in question.
 ##
 
+import sip
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QObject
@@ -42,65 +43,65 @@ class ConfigMapperWidget:
   ## implements the boilerplate code that will be common to all its subclasses,
   ## i.e. the actual widget mappers.
 
-  def __init__( s, mapper, option, label=None ):
+  def __init__( self, mapper, option, label=None ):
 
-    s.mapper = mapper
-    s.conf   = mapper.conf  ## For convenience.
-    s.option = option
-    s.label  = label
+    self.mapper = mapper
+    self.conf   = mapper.conf  ## For convenience.
+    self.option = option
+    self.label  = label
 
-    mapper.widgets.append( s )
+    mapper.widgets.append( self )
 
 
   #@pyqtSlot()
-  def updateConfFromWidget( s ):
+  def updateConfFromWidget( self ):
 
     ## This is the slot that updates the configuration object based on the
     ## widget contents. Since all subclasses map different widgets with
     ## different data access methods, the data retrieval is delegated to
     ## the method obtainValueFromWidget(), which every mapper must overload.
 
-    value = s.obtainValueFromWidget()
+    value = self.obtainValueFromWidget()
 
-    if value != s.conf[ s.option ]:
+    if value != self.conf[ self.option ]:
 
-      s.conf[ s.option ] = value
-      s.mapper.refreshState()
+      self.conf[ self.option ] = value
+      self.mapper.refreshState()
 
 
-  def obtainValueFromWidget( s ):
+  def obtainValueFromWidget( self ):
 
     raise NotImplemented( "The obtainValueFromWidget method must be " \
                         + "reimplemented in children widgets!" )
 
 
-  def updateWidgetFromConf( s ):
+  def updateWidgetFromConf( self ):
 
     ## This is the slot that updates the widget based on the configuration
     ## object's contents. Since all subclasses map different widgets with
     ## different data access methods, the data retrieval is delegated to
     ## the method applyValueToWidget(), which every mapper must overload.
 
-    value = s.obtainValueFromWidget()
+    value = self.obtainValueFromWidget()
 
-    if value != s.conf[ s.option ]:
-      s.applyValueToWidget( s.conf[ s.option ] )
+    if value != self.conf[ self.option ]:
+      self.applyValueToWidget( self.conf[ self.option ] )
 
 
-  def applyValueToWidget( s, value ):
+  def applyValueToWidget( self, value ):
 
     raise NotImplemented( "The applyValueToWidget method must be " \
                         + "reimplemented in children widgets!" )
 
 
-  def isValid( s ):
+  def isValid( self ):
 
     ## Indicates whether the widget mapper's contents is a suitable
     ## configuration value. This is typically used to disable the 'Ok' button
     ## of the dialog if it isn't.
     ## This method should be reimplemented by widget mappers that need to.
 
-    if s.conf[ s.option ]:
+    if self.conf[ self.option ]:
       return True
 
     else:
@@ -112,52 +113,52 @@ class LineEditMapper( ConfigMapperWidget, QLineEdit ):
 
   MINIMUM_WIDTH = 250
 
-  def __init__( s, mapper, option, label=None ):
+  def __init__( self, mapper, option, label=None ):
 
-    ConfigMapperWidget.__init__( s, mapper, option, label )
-    QLineEdit.__init__( s )
+    ConfigMapperWidget.__init__( self, mapper, option, label )
+    QLineEdit.__init__( self )
 
-    s.setMinimumWidth( s.MINIMUM_WIDTH )
+    self.setMinimumWidth( self.MINIMUM_WIDTH )
 
-    s.textEdited.connect( s.updateConfFromWidget )
+    self.textEdited.connect( self.updateConfFromWidget )
 
-    s.updateWidgetFromConf()
-
-
-  def obtainValueFromWidget( s ):
-
-    return unicode( s.text() )
+    self.updateWidgetFromConf()
 
 
-  def applyValueToWidget( s, value ):
+  def obtainValueFromWidget( self ):
 
-    s.setText( value )
+    return unicode( self.text() )
+
+
+  def applyValueToWidget( self, value ):
+
+    self.setText( value )
 
 
 
 class SpinBoxMapper( ConfigMapperWidget, QSpinBox ):
 
-  def __init__( s, mapper, option, label=None ):
+  def __init__( self, mapper, option, label=None ):
 
-    ConfigMapperWidget.__init__( s, mapper, option, label )
-    QSpinBox.__init__( s )
+    ConfigMapperWidget.__init__( self, mapper, option, label )
+    QSpinBox.__init__( self )
 
-    s.setRange( 1, 65535 )
-    s.setAlignment( Qt.AlignRight )
+    self.setRange( 1, 65535 )
+    self.setAlignment( Qt.AlignRight )
 
-    s.valueChanged.connect( s.updateConfFromWidget )
+    self.valueChanged.connect( self.updateConfFromWidget )
 
-    s.updateWidgetFromConf()
-
-
-  def obtainValueFromWidget( s ):
-
-    return s.value()
+    self.updateWidgetFromConf()
 
 
-  def applyValueToWidget( s, value ):
+  def obtainValueFromWidget( self ):
 
-    s.setValue( value )
+    return self.value()
+
+
+  def applyValueToWidget( self, value ):
+
+    self.setValue( value )
 
 
 
@@ -165,35 +166,35 @@ class SpinBoxMapper( ConfigMapperWidget, QSpinBox ):
 
 class CheckBoxMapper( ConfigMapperWidget, QCheckBox ):
 
-  def __init__( s, mapper, option, label=None ):
+  def __init__( self, mapper, option, label=None ):
 
-    ConfigMapperWidget.__init__( s, mapper, option, label )
-    QCheckBox.__init__( s )
+    ConfigMapperWidget.__init__( self, mapper, option, label )
+    QCheckBox.__init__( self )
 
-    text    = s.label.rstrip( u":" )
-    s.label = None
-    s.setText( text )
+    text = self.label.rstrip( u":" )
+    self.label = None
+    self.setText( text )
 
-    s.stateChanged.connect( s.updateConfFromWidget )
+    self.stateChanged.connect( self.updateConfFromWidget )
 
-    s.updateWidgetFromConf()
-
-
-  def obtainValueFromWidget( s ):
-
-    return ( s.checkState() == Qt.Checked ) and True or False
+    self.updateWidgetFromConf()
 
 
-  def applyValueToWidget( s, value ):
+  def obtainValueFromWidget( self ):
+
+    return ( self.checkState() == Qt.Checked ) and True or False
+
+
+  def applyValueToWidget( self, value ):
 
     if value:
-      s.setCheckState( Qt.Checked )
+      self.setCheckState( Qt.Checked )
 
     else:
-      s.setCheckState( Qt.Unchecked )
+      self.setCheckState( Qt.Unchecked )
 
 
-  def isValid( s ):
+  def isValid( self ):
     return True  ## A checkbox is always valid.
 
 
@@ -212,46 +213,46 @@ class ConfigMapper( QObject ):
   isValid    = pyqtSignal( bool )
   hasChanges = pyqtSignal( bool )
 
-  def __init__( s, conf ):
+  def __init__( self, conf ):
 
-    QObject.__init__( s )
+    QObject.__init__( self )
 
-    s.conf     = conf
-    s.widgets  = []
-    s.contents = []
-
-
-  def addGroup( s, group, items ):
-
-    s.contents.append( ( group, items ) )
+    self.conf     = conf
+    self.widgets  = []
+    self.contents = []
 
 
-  def refreshState( s ):
+  def addGroup( self, group, items ):
 
-    valid = all( w.isValid() for w in s.widgets )
-
-    s.hasChanges.emit( not s.conf.isEmpty() )
-    s.isValid.emit( valid )
+    self.contents.append( ( group, items ) )
 
 
-  def lineedit( s, option, label=None ):
+  def refreshState( self ):
 
-    return LineEditMapper( s, option, label )
+    valid = all( w.isValid() for w in self.widgets )
 
-
-  def spinbox( s, option, label=None ):
-
-    return SpinBoxMapper( s, option, label )
+    self.hasChanges.emit( not self.conf.isEmpty() )
+    self.isValid.emit( valid )
 
 
-  def checkbox( s, option, label=None ):
+  def lineedit( self, option, label=None ):
 
-    return CheckBoxMapper( s, option, label )
+    return LineEditMapper( self, option, label )
 
 
-  def updateWidgetsFromConf( s ):
+  def spinbox( self, option, label=None ):
 
-    for w in s.widgets:
+    return SpinBoxMapper( self, option, label )
+
+
+  def checkbox( self, option, label=None ):
+
+    return CheckBoxMapper( self, option, label )
+
+
+  def updateWidgetsFromConf( self ):
+
+    for w in self.widgets:
       w.updateWidgetFromConf()
 
 
@@ -261,89 +262,89 @@ class PrettyOptionPanel( QWidget ):
   MIN_LEFT_MARGIN                = 20
   MAX_LABEL_WIDTH_UNTIL_WORDWRAP = 100
 
-  def __init__( s, mapper, parent=None ):
+  def __init__( self, mapper, parent=None ):
 
-    QWidget.__init__( s, parent )
+    QWidget.__init__( self, parent )
 
-    s.mapper = mapper
+    self.mapper = mapper
 
-    s.relayout()
+    self.relayout()
 
 
-  def relayout( s ):
+  def relayout( self ):
 
-    layout = s.layout()
+    layout = self.layout()
 
     if layout:
       sip.delete( layout )
 
-    s.setLayout( QGridLayout( s ) )
-    s.layout().setColumnMinimumWidth( 0, s.MIN_LEFT_MARGIN )
-    s.layout().setColumnStretch( 0, 0 )
-    s.layout().setColumnStretch( 1, 0 )
-    s.layout().setColumnStretch( 2, 1 )
+    self.setLayout( QGridLayout( self ) )
+    self.layout().setColumnMinimumWidth( 0, self.MIN_LEFT_MARGIN )
+    self.layout().setColumnStretch( 0, 0 )
+    self.layout().setColumnStretch( 1, 0 )
+    self.layout().setColumnStretch( 2, 1 )
 
-    s.currentrow = 0
+    self.currentrow = 0
 
-    for group, items in s.mapper.contents:
+    for group, items in self.mapper.contents:
 
-      s.addGroupRow( group )
+      self.addGroupRow( group )
 
       for item in items:
-        s.addItemRow( item )
+        self.addItemRow( item )
 
-      s.addStretchRow()
+      self.addStretchRow()
 
 
-  def addGroupRow( s, name ):
+  def addGroupRow( self, name ):
 
-    label = QLabel( u"<b>" + name + u"</b>", s )
+    label = QLabel( u"<b>" + name + u"</b>", self )
     label.setAlignment( Qt.AlignLeft | Qt.AlignBottom )
 
-    s.layout().addWidget( label, s.currentrow, 0, 1, -1 )
+    self.layout().addWidget( label, self.currentrow, 0, 1, -1 )
 
-    if s.currentrow > 0:
-      s.layout().setRowMinimumHeight( s.currentrow,
-                                      label.sizeHint().height() * 1.5 )
+    if self.currentrow > 0:
+      self.layout().setRowMinimumHeight( self.currentrow,
+                                         label.sizeHint().height() * 1.5 )
 
-    s.currentrow += 1
+    self.currentrow += 1
 
 
-  def addItemRow( s, widget ):
+  def addItemRow( self, widget ):
 
     label = widget.label
 
     if label:
 
-      l = QLabel( label, s )
+      l = QLabel( label, self )
       l.setAlignment( Qt.AlignRight | Qt.AlignVCenter )
       l.setBuddy( widget )
 
-      if l.sizeHint().width() >= s.MAX_LABEL_WIDTH_UNTIL_WORDWRAP:
+      if l.sizeHint().width() >= self.MAX_LABEL_WIDTH_UNTIL_WORDWRAP:
         l.setWordWrap( True )
 
-      s.layout().addWidget( l, s.currentrow, 1 )
+      self.layout().addWidget( l, self.currentrow, 1 )
 
-    s.layout().addWidget( widget, s.currentrow, 2 )
+    self.layout().addWidget( widget, self.currentrow, 2 )
 
-    s.currentrow += 1
-
-
-  def addStretchRow( s ):
-
-    s.layout().setRowStretch( s.currentrow, 1 )
-    s.currentrow += 1
+    self.currentrow += 1
 
 
-  def defaults( s ):
+  def addStretchRow( self ):
 
-    s.mapper.conf.reset()
-    s.mapper.updateWidgetsFromConf()
+    self.layout().setRowStretch( self.currentrow, 1 )
+    self.currentrow += 1
 
 
-  def apply( s ):
+  def defaults( self ):
 
-    s.mapper.conf.commit()
-    s.mapper.updateWidgetsFromConf()
+    self.mapper.conf.reset()
+    self.mapper.updateWidgetsFromConf()
+
+
+  def apply( self ):
+
+    self.mapper.conf.commit()
+    self.mapper.updateWidgetsFromConf()
 
 

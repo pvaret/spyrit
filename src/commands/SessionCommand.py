@@ -32,7 +32,7 @@ class SessionCommand( BaseCommand ):
   ## will remain hidden in the help.
   #u"""Connect, disconnect, close, quit."""
 
-  def cmd_reconnect( s, world ):
+  def cmd_reconnect( self, world ):
 
     u"""\
     Reconnect to the current world if it is currently disconnected.
@@ -44,7 +44,7 @@ class SessionCommand( BaseCommand ):
     world.connectToWorld()
 
 
-  def cmd_disconnect( s, world ):
+  def cmd_disconnect( self, world ):
 
     u"""\
     Disconnect from the current world.
@@ -56,7 +56,7 @@ class SessionCommand( BaseCommand ):
     world.disconnectFromWorld()
 
 
-  def cmd_quit( s, world ):
+  def cmd_quit( self, world ):
 
     u"""\
     Quit the application.
@@ -68,7 +68,7 @@ class SessionCommand( BaseCommand ):
     QApplication.instance().closeAllWindows()
 
 
-  def cmd_close( s, world ):
+  def cmd_close( self, world ):
 
     u"""\
     Closes the current tab.

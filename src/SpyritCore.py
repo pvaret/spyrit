@@ -39,15 +39,15 @@ from Messages   import messages
 
 class SpyritCore:
 
-  def __init__( s, config, worlds, commands, triggers, tmprc, sound ):
+  def __init__( self, config, worlds, commands, triggers, tmprc, sound ):
 
-    s.config   = config
-    s.worlds   = worlds
-    s.commands = commands
-    s.triggers = triggers
-    s.tmprc    = tmprc
-    s.sound    = sound
-    s.mw       = None
+    self.config   = config
+    self.worlds   = worlds
+    self.commands = commands
+    self.triggers = triggers
+    self.tmprc    = tmprc
+    self.sound    = sound
+    self.mw       = None
 
     ## Set up a MOTD to properly welcome our user:
 
@@ -58,52 +58,52 @@ class SpyritCore:
 
     ## Note the use of iter(), so the MOTD is only displayed once for the whole
     ## application.
-    s.motd = iter( MOTD )
+    self.motd = iter( MOTD )
 
 
   @pyqtSlot()
-  def atExit( s ):
+  def atExit( self ):
 
-    s.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.
-    s.tmprc.cleanup()
+    self.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.
+    self.tmprc.cleanup()
 
 
-  def constructMainWindow( s ):
+  def constructMainWindow( self ):
 
-    if s.mw:
+    if self.mw:
       return
 
-    s.mw = MainWindow( s.config )
-    s.mw.show()
+    self.mw = MainWindow( self.config )
+    self.mw.show()
 
 
-  def openWorldByName( s, worldname ):
+  def openWorldByName( self, worldname ):
 
-    world = s.worlds.lookupWorldByName( worldname )
+    world = self.worlds.lookupWorldByName( worldname )
 
     if world:
-      s.openWorld( world )
+      self.openWorld( world )
 
     else:
       messages.warn( u"No such world: %s" % worldname )
 
 
-  def openWorldByHostPort( s, host, port, ssl=False ):
+  def openWorldByHostPort( self, host, port, ssl=False ):
 
-    world = s.worlds.lookupWorldByHostPort( host, port )
+    world = self.worlds.lookupWorldByHostPort( host, port )
 
     if world:
-      s.openWorld( world )
+      self.openWorld( world )
 
     else:
-      s.openWorld(
-        s.worlds.newAnonymousWorld( host, port, ssl )
+      self.openWorld(
+        self.worlds.newAnonymousWorld( host, port, ssl )
       )
 
 
-  def openWorld( s, world ):
+  def openWorld( self, world ):
 
-    s.mw.newWorldUI( world )
+    self.mw.newWorldUI( world )
     world.connectToWorld()
 
 

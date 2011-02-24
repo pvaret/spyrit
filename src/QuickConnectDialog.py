@@ -19,7 +19,8 @@
 ## This file holds the Quick Connect dialog. Y'know.
 ##
 
-from localqt import *
+
+from PyQt4.QtGui import QPixmap
 
 from Utilities          import check_ssl_is_available
 
@@ -31,7 +32,7 @@ from PrettyOptionDialog import PrettyOptionDialog
 def QuickConnectDialog( conf, parent=None ):
 
     header = PrettyPanelHeader( u"Quick connect",
-                                  QtGui.QPixmap( ":/icon/connect" ) )
+                                  QPixmap( ":/icon/connect" ) )
 
     mapper = ConfigMapper( conf )
 

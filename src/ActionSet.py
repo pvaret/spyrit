@@ -20,7 +20,11 @@
 ## software.
 ##
 
-from localqt    import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui  import QIcon
+from PyQt4.QtGui  import QAction
+from PyQt4.QtGui  import QKeySequence
+from PyQt4.QtGui  import QApplication
 
 from ConfigObserver import ConfigObserver
 
@@ -31,7 +35,7 @@ class ActionSet:
 
     s.parent = parent
 
-    config = qApp().core.config
+    config = QApplication.instance().core.config
     s.observer = ConfigObserver( config )
     s.closures = []
 
@@ -73,9 +77,9 @@ class ActionSet:
     ## roles in their own structure rather than in the one above.
 
     s.roles = {
-      "about":   QtGui.QAction.AboutRole,
-      "aboutqt": QtGui.QAction.AboutQtRole,
-      "quit":    QtGui.QAction.QuitRole,
+      "about":   QAction.AboutRole,
+      "aboutqt": QAction.AboutQtRole,
+      "quit":    QAction.QuitRole,
     }
 
     ## Likewise, custom shortcut contexts.
@@ -91,12 +95,12 @@ class ActionSet:
 
     text, icon = s.actions[ action ]
 
-    a = QtGui.QAction( text, s.parent )
+    a = QAction( text, s.parent )
 
-    if icon: a.setIcon( QtGui.QIcon( icon ) )
+    if icon: a.setIcon( QIcon( icon ) )
 
     shortcutname = "shortcut_" + action
-    config = qApp().core.config
+    config = QApplication.instance().core.config
 
     def set_action_shortcut():
 
@@ -105,8 +109,8 @@ class ActionSet:
 
       shortcut = config[ shortcutname ]
 
-      if shortcut: a.setShortcut( QtGui.QKeySequence( shortcut ) )
-      else:        a.setShortcut( QtGui.QKeySequence() )
+      if shortcut: a.setShortcut( QKeySequence( shortcut ) )
+      else:        a.setShortcut( QKeySequence() )
 
     ## Call it once:
     set_action_shortcut()

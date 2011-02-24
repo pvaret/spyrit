@@ -19,7 +19,7 @@
 ## This class holds the dialog that lets the user create a new world.
 ##
 
-from localqt import *
+from PyQt4.QtGui        import QPixmap
 
 from Utilities          import check_ssl_is_available
 
@@ -31,7 +31,7 @@ from PrettyOptionDialog import PrettyOptionDialog
 def NewWorldDialog( conf, parent=None ):
 
     header = PrettyPanelHeader( u"New world",
-                                  QtGui.QPixmap( ":/icon/new_world" ) )
+                                  QPixmap( ":/icon/new_world" ) )
 
     mapper = ConfigMapper( conf )
 

@@ -22,7 +22,7 @@
 
 import os.path
 
-from localqt import *
+from PyQt4.QtGui import QApplication
 
 from BaseCommand import BaseCommand
 from Utilities   import format_as_table
@@ -45,7 +45,7 @@ class SoundCommand( BaseCommand ):
 
     """
 
-    sound = qApp().core.sound
+    sound = QApplication.instance().core.sound
 
     filename = os.path.expanduser( filename )
     ok, msg = sound.play( filename )
@@ -70,7 +70,7 @@ class SoundCommand( BaseCommand ):
 
     """
 
-    sound = qApp().core.sound
+    sound = QApplication.instance().core.sound
 
     registry        = sound.registry
     current_backend = sound.backend

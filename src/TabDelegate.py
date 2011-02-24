@@ -21,10 +21,13 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtCore import QObject
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui  import QTabWidget
 
 
-class TabDelegate( QtCore.QObject ):
+class TabDelegate( QObject ):
 
   DELEGATES = set([
                 "removeTab",
@@ -36,23 +39,23 @@ class TabDelegate( QtCore.QObject ):
               ])
 
 
-  tabChanged = QtCore.pyqtSignal( bool )
+  tabChanged = pyqtSignal( bool )
 
   def __init__( s, widget ):
 
-    QtCore.QObject.__init__( s )
+    QObject.__init__( s )
 
     s.widget    = widget
     s.tabwidget = widget.parent()
 
-    assert isinstance( s.tabwidget, QtGui.QTabWidget )
+    assert isinstance( s.tabwidget, QTabWidget )
 
     s.is_current_tab = False
 
     s.tabwidget.currentChanged.connect( s.onTabChanged )
 
 
-  @QtCore.pyqtSlot( int )
+  @pyqtSlot( int )
   def onTabChanged( s, i ):
 
     tabindex = s.tabwidget.indexOf( s.widget )

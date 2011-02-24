@@ -21,15 +21,21 @@
 ## when no tab have been created yet.
 ##
 
+from PyQt4.QtCore import QEvent
+from PyQt4.QtCore import QObject
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui  import QTabBar
+from PyQt4.QtGui  import QWidget
+from PyQt4.QtGui  import QTabWidget
+from PyQt4.QtGui  import QStackedWidget
 
-from localqt import *
 
-
-class TabBarWheelEventHandler( QtCore.QObject ):
+class TabBarWheelEventHandler( QObject ):
 
   def eventFilter( s, tabbar, event ):
 
-    if event.type() == QtCore.QEvent.Wheel:
+    if event.type() == QEvent.Wheel:
 
       if event.delta() < 0:
         tabbar.nextTab()
@@ -40,14 +46,14 @@ class TabBarWheelEventHandler( QtCore.QObject ):
       return True
 
     else:
-      return QtCore.QObject.eventFilter( s, tabbar, event )
+      return QObject.eventFilter( s, tabbar, event )
 
 
-class ScrollableTabBar( QtGui.QTabBar ):
+class ScrollableTabBar( QTabBar ):
 
   def __init__( s, parent=None ):
 
-    QtGui.QTabBar.__init__( s, parent )
+    QTabBar.__init__( s, parent )
     s.installEventFilter( TabBarWheelEventHandler( s ) )
 
 
@@ -65,13 +71,13 @@ class ScrollableTabBar( QtGui.QTabBar ):
     s.setCurrentIndex( ( s.currentIndex() - 1 ) % s.count() )
 
 
-class ScrollableTabWidget( QtGui.QTabWidget ):
+class ScrollableTabWidget( QTabWidget ):
 
-  numberOfTabChanged = QtCore.pyqtSignal( int )
+  numberOfTabChanged = pyqtSignal( int )
 
   def __init__( s, parent=None ):
 
-    QtGui.QTabWidget.__init__( s, parent )
+    QTabWidget.__init__( s, parent )
 
     s.tabbar = ScrollableTabBar( s )
     s.setTabBar( s.tabbar )
@@ -96,14 +102,14 @@ class ScrollableTabWidget( QtGui.QTabWidget ):
 
 
 
-class SmartTabWidget( QtGui.QStackedWidget ):
+class SmartTabWidget( QStackedWidget ):
 
   def __init__( s, parent=None, fallback=None ):
 
-    QtGui.QStackedWidget.__init__( s, parent )
+    QStackedWidget.__init__( s, parent )
 
     s.tabwidget = ScrollableTabWidget( s )
-    s.fallback  = fallback and fallback or QtGui.QWidget( s )
+    s.fallback  = fallback and fallback or QWidget( s )
 
     s.addWidget( s.tabwidget )
     s.addWidget( s.fallback )
@@ -114,7 +120,7 @@ class SmartTabWidget( QtGui.QStackedWidget ):
     s.tabwidget.numberOfTabChanged.connect( s.switchView )
 
 
-  @QtCore.pyqtSlot( int )
+  @pyqtSlot( int )
   def switchView( s, tabcount ):
 
     current = s.tabwidget if tabcount > 0 else s.fallback

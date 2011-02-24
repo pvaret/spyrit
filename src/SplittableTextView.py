@@ -22,18 +22,37 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import QRect
+from PyQt4.QtCore import QSize
+from PyQt4.QtCore import QPoint
+from PyQt4.QtCore import QRectF
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtGui  import QFont
+from PyQt4.QtGui  import QLabel
+from PyQt4.QtGui  import QCursor
+from PyQt4.QtGui  import QPainter
+from PyQt4.QtGui  import QPalette
+from PyQt4.QtGui  import QTextEdit
+from PyQt4.QtGui  import QScrollBar
+from PyQt4.QtGui  import QTextLayout
+from PyQt4.QtGui  import QMouseEvent
+from PyQt4.QtGui  import QPaintEvent
+from PyQt4.QtGui  import QApplication
+from PyQt4.QtGui  import QFontMetrics
+from PyQt4.QtGui  import QAbstractTextDocumentLayout
+
 
 from Utilities        import qt_version
 from SingleShotTimer  import SingleShotTimer
 from PlatformSpecific import platformSpecific
 
 
-class LineCount( QtGui.QLabel ):
+class LineCount( QLabel ):
 
   def __init__( s, parent ):
 
-    QtGui.QLabel.__init__( s, parent )
+    QLabel.__init__( s, parent )
 
     s.setAutoFillBackground( True )
     s.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
@@ -44,7 +63,7 @@ class LineCount( QtGui.QLabel ):
     s.anchor_y   = 0
     s.line_count = 0
 
-    s.previous_size = QtCore.QSize()
+    s.previous_size = QSize()
 
     s.update_timer = SingleShotTimer( s.applyChanges )
 
@@ -98,18 +117,18 @@ class LineCount( QtGui.QLabel ):
 
 
 
-class SplittableTextView( QtGui.QTextEdit ):
+class SplittableTextView( QTextEdit ):
 
   SPLIT_FACTOR = 0.84  ## Corresponds to 1/6th of the height.
 
 
   def __init__( s, parent=None ):
 
-    QtGui.QTextEdit.__init__( s, parent )
+    QTextEdit.__init__( s, parent )
 
     s.setReadOnly( True )
     s.setUndoRedoEnabled( False )
-    s.setAutoFormatting( QtGui.QTextEdit.AutoNone )
+    s.setAutoFormatting( QTextEdit.AutoNone )
     s.viewport().setCursor( Qt.ArrowCursor )
 
     s.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
@@ -134,7 +153,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.setMoreAnchor()
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def perhapsRepaintText( s ):
 
     ## Right, so we've got a problem: when the text changes but the scrollbar
@@ -152,7 +171,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.update( s.splitBottomRect() )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def perhapsRepaintSelection( s ):
 
     if s.atbottom:             return
@@ -163,7 +182,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     ## when the selection is all new, in case there was a former selection
     ## to be cleared. Hackish, but functional.
 
-    cursor_pos = s.viewport().mapFromGlobal( QtGui.QCursor.pos() )
+    cursor_pos = s.viewport().mapFromGlobal( QCursor.pos() )
 
     if s.splitBottomRect().contains( cursor_pos ):
       s.update( s.splitBottomRect() )
@@ -184,7 +203,7 @@ class SplittableTextView( QtGui.QTextEdit ):
       stylesheet = u"QTextEdit { background-color: %s }" % background_color
       s.setStyleSheet( stylesheet )
 
-    font = QtGui.QFont( font_name )
+    font = QFont( font_name )
 
     if font_size:
       font.setPointSize( font_size )
@@ -222,14 +241,14 @@ class SplittableTextView( QtGui.QTextEdit ):
     font = s.font()
 
     ## Generate the layout for one line of text using this font:
-    layout = QtGui.QTextLayout( u"---", font )
+    layout = QTextLayout( u"---", font )
     layout.beginLayout()
     line = layout.createLine()
     layout.endLayout()
 
     ## Obtain the font's leading metric, if positive. (Qt ignores the leading
     ## if it's negative at this point in time.)
-    fm = QtGui.QFontMetrics( font )
+    fm = QFontMetrics( font )
     leading = max( fm.leading(), 0 )
 
     ## WORKAROUND: Qt versions < 4.6 omitted the leading altogether in line
@@ -257,7 +276,7 @@ class SplittableTextView( QtGui.QTextEdit ):
       s.update()
 
 
-  @QtCore.pyqtSlot( int )
+  @pyqtSlot( int )
   def onScroll( s, pos ):
 
     s.atbottom = ( pos == s.scrollbar.maximum() )
@@ -311,14 +330,14 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     y = e.y() + s.document().size().height() - height - s.scrollbar.value()
 
-    e = QtGui.QMouseEvent( e.type(), QtCore.QPoint( e.x(), y ), e.globalPos(),
+    e = QMouseEvent( e.type(), QPoint( e.x(), y ), e.globalPos(),
                            e.button(), e.buttons(), e.modifiers() )
     return e
 
 
   def mouseMoveEvent( s, e ):
 
-    return QtGui.QTextEdit.mouseMoveEvent( s, s.remapMouseEvent( e ) )
+    return QTextEdit.mouseMoveEvent( s, s.remapMouseEvent( e ) )
 
 
   def mousePressEvent( s, e ):
@@ -341,7 +360,7 @@ class SplittableTextView( QtGui.QTextEdit ):
       cur = s.cursorForPosition( e.pos() )
       s.setTextCursor( cur )
 
-    res = QtGui.QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
+    res = QTextEdit.mousePressEvent( s, s.remapMouseEvent( e ) )
 
     s.scrollbar.setValue( val )
     s.scrollbar.blockSignals( block )
@@ -359,7 +378,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     block = s.scrollbar.blockSignals( True )
     val   = s.scrollbar.value()
 
-    res = QtGui.QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
+    res = QTextEdit.mouseReleaseEvent( s, s.remapMouseEvent( e ) )
 
     s.scrollbar.setValue( val )
     s.scrollbar.blockSignals( block )
@@ -369,7 +388,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def mouseDoubleClickEvent( s, e ):
 
-    return QtGui.QTextEdit.mouseDoubleClickEvent( s, s.remapMouseEvent( e ) )
+    return QTextEdit.mouseDoubleClickEvent( s, s.remapMouseEvent( e ) )
 
 
   def splitY( s ):
@@ -381,7 +400,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     w = s.viewport().width()
 
-    return QtCore.QRect( 0, 0, w, s.splitY() )
+    return QRect( 0, 0, w, s.splitY() )
 
 
   def splitBottomRect( s ):
@@ -389,14 +408,14 @@ class SplittableTextView( QtGui.QTextEdit ):
     w = s.viewport().width()
     h = s.viewport().height()
 
-    return QtCore.QRect( 0, s.splitY() + 1, w, h )
+    return QRect( 0, s.splitY() + 1, w, h )
 
 
   def paintEvent( s, e ):
 
     if s.atbottom or not s.split_scrollback:
 
-      QtGui.QTextEdit.paintEvent( s, e )
+      QTextEdit.paintEvent( s, e )
       return
 
     ## Draw the top half of the viewport if necessary.
@@ -404,12 +423,12 @@ class SplittableTextView( QtGui.QTextEdit ):
     top_r = e.rect().intersected( s.splitTopRect() )
 
     if not top_r.isEmpty():
-      QtGui.QTextEdit.paintEvent( s, QtGui.QPaintEvent( top_r ) )
+      QTextEdit.paintEvent( s, QPaintEvent( top_r ) )
 
     ## Likewise the bottom half.
     ## Create painter.
 
-    p = QtGui.QPainter( s.viewport() )
+    p = QPainter( s.viewport() )
 
     ## Draw separation line.
 
@@ -419,7 +438,7 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     if e.rect().contains( e.rect().left(), split_y ):
 
-      p.setPen( qApp().palette().color( QtGui.QPalette.Window ) )
+      p.setPen( QApplication.instance().palette().color( QPalette.Window ) )
       p.drawLine( 0, split_y, width, split_y )
 
     ## Clip painter.
@@ -437,21 +456,19 @@ class SplittableTextView( QtGui.QTextEdit ):
 
     ## Draw the bottom of the document on the bottom half of the viewport.
 
-    ctx      = QtGui.QAbstractTextDocumentLayout.PaintContext()
-    ctx.clip = QtCore.QRectF( clip_r.translated( 0, doc_height - height ) )
+    ctx      = QAbstractTextDocumentLayout.PaintContext()
+    ctx.clip = QRectF( clip_r.translated( 0, doc_height - height ) )
 
     cur = s.textCursor()
 
     palette = s.palette()
 
-    QPalette = QtGui.QPalette
-
-    focus  = ( qApp().focusWidget() is s )
+    focus  = ( QApplication.instance().focusWidget() is s )
     cgroup = not focus and QPalette.Inactive or QPalette.Active
 
     if cur.hasSelection():
 
-      sel        = QtGui.QAbstractTextDocumentLayout.Selection()
+      sel        = QAbstractTextDocumentLayout.Selection()
       sel.cursor = cur
       sel.format.setBackground( palette.brush( cgroup, QPalette.Highlight) )
       sel.format.setForeground( palette.brush( cgroup, \
@@ -462,7 +479,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     doc.documentLayout().draw( p, ctx )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def pingPage( s ):
 
     ## Paging implementation:
@@ -489,7 +506,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     s.scrollbar.setValue( s.scrollbar.minimum() )
 
 
-  @QtCore.pyqtSlot( int, int )
+  @pyqtSlot( int, int )
   def onRangeChanged( s, min, max ):
 
     ## 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'
@@ -541,29 +558,29 @@ class SplittableTextView( QtGui.QTextEdit ):
 
   def stepUp( s ):
 
-    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderSingleStepSub )
+    s.scrollbar.triggerAction( QScrollBar.SliderSingleStepSub )
 
 
   def stepDown( s ):
 
-    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderSingleStepAdd )
+    s.scrollbar.triggerAction( QScrollBar.SliderSingleStepAdd )
 
 
   def pageUp( s ):
 
     s.computePageStep()
-    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepSub )
+    s.scrollbar.triggerAction( QScrollBar.SliderPageStepSub )
 
 
   def pageDown( s ):
 
     s.computePageStep()
-    s.scrollbar.triggerAction( QtGui.QScrollBar.SliderPageStepAdd )
+    s.scrollbar.triggerAction( QScrollBar.SliderPageStepAdd )
 
 
   def resizeEvent( s, e ):
 
-    res = QtGui.QTextEdit.resizeEvent( s, e )
+    res = QTextEdit.resizeEvent( s, e )
 
     s.onRangeChanged( s.scrollbar.minimum(), s.scrollbar.maximum() )
     s.setMoreAnchor()
@@ -579,7 +596,7 @@ class SplittableTextView( QtGui.QTextEdit ):
     ## It is only used in our own code to ensure cursor visibility in case of
     ## split scrollback.
 
-    QtGui.QTextEdit.ensureCursorVisible( s )
+    QTextEdit.ensureCursorVisible( s )
 
     if s.split_scrollback and not s.atbottom:
 

@@ -21,23 +21,31 @@
 ##
 
 
-from localqt import *
-from PrettyOptionPanel import *
+import sip
 
-class PrettyOptionDialog( QtGui.QDialog ):
+from PyQt4.QtGui import QDialog
+from PyQt4.QtGui import QVBoxLayout
+from PyQt4.QtGui import QDialogButtonBox
+
+
+from Separator         import Separator
+from PrettyOptionPanel import PrettyOptionPanel
+
+
+class PrettyOptionDialog( QDialog ):
 
   HEADER_SPACING = 20
 
   def __init__( s, mapper, header=None, oklabel=None, title=None, parent=None ):
 
-    QtGui.QDialog.__init__( s, parent )
+    QDialog.__init__( s, parent )
 
     s.header    = header
     s.panel     = PrettyOptionPanel( mapper )
-    s.buttonbox = QtGui.QDialogButtonBox( QtGui.QDialogButtonBox.Ok
-                                        | QtGui.QDialogButtonBox.Cancel )
+    s.buttonbox = QDialogButtonBox( QDialogButtonBox.Ok
+                                        | QDialogButtonBox.Cancel )
 
-    s.okbutton = s.buttonbox.button( QtGui.QDialogButtonBox.Ok )
+    s.okbutton = s.buttonbox.button( QDialogButtonBox.Ok )
 
     if oklabel:
       s.okbutton.setText( oklabel )
@@ -57,10 +65,10 @@ class PrettyOptionDialog( QtGui.QDialog ):
 
   def relayout( s ):
 
-    if s.layout(): 
+    if s.layout():
       sip.delete( s.layout() )
 
-    s.setLayout( QtGui.QVBoxLayout( s ) )
+    s.setLayout( QVBoxLayout( s ) )
 
     if s.header:
       s.layout().addWidget( s.header )

@@ -19,7 +19,8 @@
 ## Commands to manage the session's state.
 ##
 
-from localqt import *
+
+from PyQt4.QtGui import QApplication
 
 from BaseCommand import BaseCommand
 
@@ -64,7 +65,7 @@ class SessionCommand( BaseCommand ):
 
     """
 
-    qApp().closeAllWindows()
+    QApplication.instance().closeAllWindows()
 
 
   def cmd_close( s, world ):

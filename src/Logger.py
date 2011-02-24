@@ -25,7 +25,6 @@ import time
 
 from os.path import basename, dirname, isdir
 
-from localqt     import *
 from FormatStack import FormatStack
 from Globals     import FORMAT_PROPERTIES
 from Globals     import ESC

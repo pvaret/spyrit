@@ -20,7 +20,9 @@
 ## aspects of searching the contents of a QTextEdit such as WorldOutputUI.
 ##
 
-from localqt           import *
+from PyQt4.QtGui import QTextCursor
+from PyQt4.QtGui import QTextDocument
+
 
 class SearchManager:
 
@@ -59,17 +61,17 @@ class SearchManager:
     ## Create new cursor at end of document if this is a new search.
 
     if not cursor:
-      cursor = QtGui.QTextCursor( document )
-      cursor.movePosition( QtGui.QTextCursor.End )
+      cursor = QTextCursor( document )
+      cursor.movePosition( QTextCursor.End )
 
-    cursor = document.find( string, cursor, QtGui.QTextDocument.FindBackward )
+    cursor = document.find( string, cursor, QTextDocument.FindBackward )
 
     if cursor.isNull():  ## String was not found!
 
       ## Clear selection by setting an empty cursor, and scroll back to bottom
       ## of window.
 
-      cursor = QtGui.QTextCursor( document )
+      cursor = QTextCursor( document )
       textedit.setTextCursor( cursor )
       textedit.moveScrollbarToBottom()
 

@@ -21,8 +21,8 @@
 ## It works by assembling a series of Filters.
 ##
 
-
-from localqt import *
+from PyQt4.QtCore import QObject
+from PyQt4.QtCore import pyqtSignal
 
 import ChunkData
 
@@ -30,16 +30,16 @@ from SingleShotTimer  import SingleShotTimer
 from CallbackRegistry import CallbackRegistry
 
 
-class Pipeline( QtCore.QObject ):
+class Pipeline( QObject ):
 
   PROMPT_TIMEOUT = 700 ## ms
 
-  flushBegin = QtCore.pyqtSignal()
-  flushEnd   = QtCore.pyqtSignal()
+  flushBegin = pyqtSignal()
+  flushEnd   = pyqtSignal()
 
   def __init__( s ):
 
-    QtCore.QObject.__init__( s )
+    QObject.__init__( s )
 
     s.filters      = []
     s.outputBuffer = []

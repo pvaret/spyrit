@@ -22,16 +22,16 @@
 ##
 
 
-from localqt        import *
-
-from pipeline       import ChunkData
-
-from Utilities      import normalize_text
-
-from collections    import deque
-
 import re
 import bisect
+
+from collections import deque
+
+from PyQt4.QtGui import QTextCursor
+
+from pipeline    import ChunkData
+from Utilities   import normalize_text
+
 
 
 MAX_WORD_LIST_LENGTH = 1000
@@ -138,8 +138,8 @@ class Autocompleter:
 
     ## Determine right half of word.
 
-    tc.movePosition( QtGui.QTextCursor.EndOfLine,
-                     QtGui.QTextCursor.KeepAnchor )
+    tc.movePosition( QTextCursor.EndOfLine,
+                     QTextCursor.KeepAnchor )
     line_end = unicode( tc.selectedText() )
 
     m = s.endwordmatch.findall( line_end )
@@ -150,8 +150,8 @@ class Autocompleter:
 
     tc.setPosition( pos )
 
-    tc.movePosition( QtGui.QTextCursor.StartOfLine,
-                     QtGui.QTextCursor.KeepAnchor )
+    tc.movePosition( QTextCursor.StartOfLine,
+                     QTextCursor.KeepAnchor )
     line_start = unicode( tc.selectedText() )
 
     m = s.startwordmatch.findall( line_start )
@@ -166,8 +166,8 @@ class Autocompleter:
 
     if len( word ) > 0:
 
-      tc.movePosition( QtGui.QTextCursor.Right,
-                       QtGui.QTextCursor.KeepAnchor,
+      tc.movePosition( QTextCursor.Right,
+                       QTextCursor.KeepAnchor,
                        len( word ) )
 
 
@@ -176,14 +176,14 @@ class Autocompleter:
     tc = s.textedit.textCursor()
 
     pos = tc.position()
-    tc.movePosition( QtGui.QTextCursor.EndOfLine )
+    tc.movePosition( QTextCursor.EndOfLine )
 
     if tc.position() == pos:  ## Cursor was at end of line.
       tc.insertText( u" " )
 
     else:
       tc.setPosition( pos )
-      tc.movePosition( QtGui.QTextCursor.Right )
+      tc.movePosition( QTextCursor.Right )
 
     s.textedit.setTextCursor( tc )
 

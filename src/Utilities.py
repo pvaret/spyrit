@@ -58,7 +58,11 @@ def check_pyqt4_installed():
 
 def check_sip_version():
 
-  import sip
+  try:
+    import sip
+
+  except ImportError:
+    return False, u"SIP v%d.%d required!" % REQUIRED_SIP_VERSION
 
   v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." )[:2] )
 
@@ -73,10 +77,10 @@ def check_sip_version():
 
 def qt_version():
 
-  from PyQt4 import QtCore
+  from PyQt4.QtCore import qVersion
 
   ## Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
-  return tuple( int( c ) for c in QtCore.qVersion().split( "." )[ 0:2 ] )
+  return tuple( int( c ) for c in qVersion().split( "." )[ 0:2 ] )
 
 
 
@@ -211,14 +215,17 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   import os.path
   import traceback
 
-  from localqt import qApp, QtGui
+  from PyQt4.QtGui import QMessageBox
+  from PyQt4.QtGui import QApplication
+
+  app = QApplication.instance()
 
   ## KeyboardInterrupt is a special case.
   ## We don't raise the error dialog when it occurs.
   if issubclass( exc_type, KeyboardInterrupt ):
 
-    if qApp():
-      qApp().quit()
+    if app:
+      app.quit()
 
     return
 
@@ -226,24 +233,24 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   filename = os.path.basename( filename )
   error    = u"%s: %s" % ( exc_type.__name__, exc_value )
 
-  if qApp():
-    window = qApp().activeWindow()
+  if app:
+    window = app.activeWindow()
   else:
     window = None
 
   args = dict( filename=filename, line=line, error=error )
 
-  QtGui.QMessageBox.critical( window, "Oh dear...",
-                              CRASH_MSG % args,
-                              buttons=QtGui.QMessageBox.Close )
+  QMessageBox.critical( window, "Oh dear...",
+                        CRASH_MSG % args,
+                        buttons=QMessageBox.Close )
 
   print "Spyrit has closed due to an error. This is the full error report:"
   print
   print "".join( traceback.format_exception( exc_type,
                                              exc_value,
                                              exc_traceback ) )
-  if qApp():
-    qApp().core.atExit()
+  if app:
+    app.core.atExit()
 
   sys.exit( 1 )
 

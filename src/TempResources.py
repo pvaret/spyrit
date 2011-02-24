@@ -23,7 +23,8 @@
 
 import os
 
-from localqt import *
+from PyQt4.QtCore import QFile
+from PyQt4.QtCore import QTemporaryFile
 
 
 class TempResources:
@@ -49,10 +50,10 @@ class TempResources:
     ## This creates the temp file if fname is a resource, but not if it
     ## doesn't exist or is a real file.
 
-    if not QtCore.QFile.exists( fname ):
+    if not QFile.exists( fname ):
       return None
 
-    tmp = QtCore.QTemporaryFile.createLocalFile( fname )
+    tmp = QTemporaryFile.createLocalFile( fname )
 
     if not tmp:
       return None

@@ -26,8 +26,8 @@ u"""
 
 """
 
-
-from localqt import *
+from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QTextFormat
 
 
 class FORMAT_PROPERTIES:
@@ -35,11 +35,11 @@ class FORMAT_PROPERTIES:
   ## Format property identifiers are defined on the basis of Qt properties.
   ## This saves us time when we apply them during the rendering process.
 
-  BOLD       = QtGui.QTextFormat.FontWeight
-  ITALIC     = QtGui.QTextFormat.FontItalic
-  UNDERLINE  = QtGui.QTextFormat.TextUnderlineStyle
-  COLOR      = QtGui.QTextFormat.ForegroundBrush
-  BACKGROUND = QtGui.QTextFormat.BackgroundBrush
+  BOLD       = QTextFormat.FontWeight
+  ITALIC     = QTextFormat.FontItalic
+  UNDERLINE  = QTextFormat.TextUnderlineStyle
+  COLOR      = QTextFormat.ForegroundBrush
+  BACKGROUND = QTextFormat.BackgroundBrush
 
 
 class ANSI_COLORS:
@@ -361,14 +361,14 @@ def compute_closest_ansi_color( rgb ):
 
   """
 
-  r, g, b, _ = QtGui.QColor( rgb ).getRgb()
+  r, g, b, _ = QColor( rgb ).getRgb()
 
   curr_index = -1
   curr_dist = 3 * 256^2 + 1
 
   for i in range( 256 ):
 
-    r2, g2, b2, _ = QtGui.QColor( ANSI_COLORS_EXTENDED[ i ] ).getRgb()
+    r2, g2, b2, _ = QColor( ANSI_COLORS_EXTENDED[ i ] ).getRgb()
     dist = (r-r2)**2 + (g-g2)**2 + (b-b2)**2
 
     if dist < curr_dist:

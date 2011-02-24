@@ -21,7 +21,7 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtCore import pyqtSlot
 
 from Config          import Config
 from MainWindow      import MainWindow
@@ -61,7 +61,7 @@ class SpyritCore:
     s.motd = iter( MOTD )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def atExit( s ):
 
     s.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.

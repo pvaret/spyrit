@@ -22,8 +22,7 @@
 ##
 
 
-from localqt import *
-
+from PyQt4.QtGui import QSound
 
 
 class QSoundBackend:
@@ -32,9 +31,9 @@ class QSoundBackend:
 
   def isAvailable( s ):
 
-    return QtGui.QSound.isAvailable()
+    return QSound.isAvailable()
 
 
   def play( s, soundfile ):
 
-    QtGui.QSound.play( soundfile )
+    QSound.play( soundfile )

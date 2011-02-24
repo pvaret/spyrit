@@ -18,19 +18,20 @@
 ## looks up, creates or deletes world configuration objects.
 ##
 
-from localqt import *
+from PyQt4.QtCore import QObject
+from PyQt4.QtCore import pyqtSignal
 
 from World      import World
 from Utilities  import normalize_text
 
 
-class WorldsManager( QtCore.QObject ):
+class WorldsManager( QObject ):
 
-  worldListChanged = QtCore.pyqtSignal()
+  worldListChanged = pyqtSignal()
 
   def __init__( s, config ):
 
-    QtCore.QObject.__init__( s )
+    QObject.__init__( s )
 
     ## Create the section for worlds in the configuration if it doesn't exist
     ## already.

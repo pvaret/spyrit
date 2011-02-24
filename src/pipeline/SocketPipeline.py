@@ -20,8 +20,11 @@
 ## socket and manages connection/disconnection and everything.
 ##
 
-
-from localqt import *
+from PyQt4.QtCore    import pyqtSlot
+from PyQt4.QtGui     import QApplication
+from PyQt4.QtNetwork import QSslSocket
+from PyQt4.QtNetwork import QTcpSocket
+from PyQt4.QtNetwork import QAbstractSocket
 
 from Pipeline          import Pipeline
 from AnsiFilter        import AnsiFilter
@@ -44,7 +47,7 @@ class SocketPipeline:
 
   def __init__( s, conf ):
 
-    triggersmanager = qApp().core.triggers
+    triggersmanager = QApplication.instance().core.triggers
 
     s.pipeline = Pipeline()
 
@@ -76,13 +79,13 @@ class SocketPipeline:
     if s.conf._ssl and check_ssl_is_available():
 
       s.using_ssl = True
-      s.socket    = QtNetwork.QSslSocket()
+      s.socket    = QSslSocket()
 
       s.socket.encrypted.connect( s.reportEncrypted )
       s.socket.sslErrors.connect( s.handleSslErrors )
 
     else:
-      s.socket = QtNetwork.QTcpSocket()
+      s.socket = QTcpSocket()
 
       if s.conf._ssl:  ## SSL was requested but is not available...
         messages.warn( u"SSL functions not available; attempting" \
@@ -118,53 +121,53 @@ class SocketPipeline:
     s.socket.close()
 
 
-  @QtCore.pyqtSlot( "QAbstractSocket::SocketState" )
+  @pyqtSlot( "QAbstractSocket::SocketState" )
   def reportStateChange( s, state ):
 
     s.flushBuffer()
 
-    if   state == QtNetwork.QAbstractSocket.HostLookupState:
+    if   state == QAbstractSocket.HostLookupState:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.RESOLVING ) )
 
-    elif state == QtNetwork.QAbstractSocket.ConnectingState:
+    elif state == QAbstractSocket.ConnectingState:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTING ) )
 
-    elif state == QtNetwork.QAbstractSocket.ConnectedState:
+    elif state == QAbstractSocket.ConnectedState:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTED ) )
 
-    elif state == QtNetwork.QAbstractSocket.UnconnectedState:
+    elif state == QAbstractSocket.UnconnectedState:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.DISCONNECTED ) )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def reportEncrypted( s ):
 
     s.flushBuffer()
     s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
 
 
-  @QtCore.pyqtSlot( "QAbstractSocket::SocketError" )
+  @pyqtSlot( "QAbstractSocket::SocketError" )
   def reportError( s, error ):
 
     s.flushBuffer()
 
-    if   error == QtNetwork.QAbstractSocket.ConnectionRefusedError:
+    if   error == QAbstractSocket.ConnectionRefusedError:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTIONREFUSED ) )
 
-    elif error == QtNetwork.QAbstractSocket.HostNotFoundError:
+    elif error == QAbstractSocket.HostNotFoundError:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.HOSTNOTFOUND ) )
 
-    elif error == QtNetwork.QAbstractSocket.SocketTimeoutError:
+    elif error == QAbstractSocket.SocketTimeoutError:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.TIMEOUT ) )
 
-    elif error == QtNetwork.QAbstractSocket.RemoteHostClosedError:
+    elif error == QAbstractSocket.RemoteHostClosedError:
       pass  ## It's okay, we handle it as a disconnect.
 
     else:
       s.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.OTHERERROR ) )
 
 
-  @QtCore.pyqtSlot( "const QList<QSslError> &" )
+  @pyqtSlot( "const QList<QSslError> &" )
   def handleSslErrors( s, errors ):
 
     ## We take note of the errors... and then discard them.
@@ -178,7 +181,7 @@ class SocketPipeline:
     s.socket.ignoreSslErrors()
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def readSocket( s ):
 
     data = str( s.socket.readAll() )

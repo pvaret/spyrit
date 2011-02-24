@@ -24,18 +24,26 @@
 import sys
 import locale
 
-from localqt    import *
+from PyQt4.QtCore import QTimer
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtRemoveInputHook
+from PyQt4.QtGui  import QIcon
+from PyQt4.QtGui  import QApplication
+from PyQt4.QtGui  import QFontDatabase
+
 
 from Messages   import messages
 from Utilities  import handle_exception
 from SpyritCore import construct_spyrit_core
 
+## Make it easier to use PDB:
+pyqtRemoveInputHook()
 
-class Application( QtGui.QApplication ):
+class Application( QApplication ):
 
   def __init__( s, args ):
 
-    QtGui.QApplication.__init__( s, args )
+    QApplication.__init__( s, args )
 
     s.args           = args
     s.bootstrapped   = False
@@ -62,10 +70,10 @@ class Application( QtGui.QApplication ):
       messages.warn( u"Resource file not found. No graphics will be loaded." )
 
     ## Load up the dingbat symbols font.
-    QtGui.QFontDatabase.addApplicationFont( ":/app/symbols" )
+    QFontDatabase.addApplicationFont( ":/app/symbols" )
 
     ## Setup icon.
-    s.setWindowIcon( QtGui.QIcon( ":/app/icon" ) )
+    s.setWindowIcon( QIcon( ":/app/icon" ) )
 
     ## And create the core object for Spyrit:
     s.core = construct_spyrit_core( s )
@@ -76,9 +84,9 @@ class Application( QtGui.QApplication ):
     if not s.bootstrapped:
       s.bootstrap()
 
-    QtCore.QTimer.singleShot( 0, s.afterStart )
+    QTimer.singleShot( 0, s.afterStart )
 
-    return QtGui.QApplication.exec_()
+    return QApplication.exec_()
 
 
   def afterStart( s ):
@@ -118,7 +126,7 @@ class Application( QtGui.QApplication ):
         s.core.openWorldByName( arg )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def beforeStop( s ):
 
     sys.excepthook = sys.__excepthook__

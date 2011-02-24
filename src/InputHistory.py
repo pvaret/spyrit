@@ -20,7 +20,7 @@
 ## typed in the input widget.
 ##
 
-from localqt import *
+from PyQt4.QtGui import QTextCursor
 
 
 class InputHistory:
@@ -59,7 +59,7 @@ class InputHistory:
       s.currenttext = s.inputwidget.toPlainText()
 
     s.inputwidget.setPlainText( s.history[ s.cursor ] )
-    s.inputwidget.moveCursor( QtGui.QTextCursor.End )
+    s.inputwidget.moveCursor( QTextCursor.End )
 
 
   def historyDown( s ):
@@ -75,7 +75,7 @@ class InputHistory:
     else:
       s.inputwidget.setPlainText( s.history[ s.cursor ] )
 
-    s.inputwidget.moveCursor( QtGui.QTextCursor.End )
+    s.inputwidget.moveCursor( QTextCursor.End )
 
 
   def update( s, text ):

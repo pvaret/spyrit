@@ -21,7 +21,13 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui  import QTextEdit
+from PyQt4.QtGui  import QFontMetrics
+from PyQt4.QtGui  import QKeySequence
+
 
 from ActionSet        import ActionSet
 from InputHistory     import InputHistory
@@ -29,14 +35,14 @@ from ConfigObserver   import ConfigObserver
 
 
 
-class WorldInputUI( QtGui.QTextEdit ):
+class WorldInputUI( QTextEdit ):
 
-  returnPressed = QtCore.pyqtSignal()
-  focusChanged  = QtCore.pyqtSignal( 'QWidget' )
+  returnPressed = pyqtSignal()
+  focusChanged  = pyqtSignal( 'QWidget' )
 
   def __init__( s, parent, world, shouldsavehistory=True ):
 
-    QtGui.QTextEdit.__init__( s, parent )
+    QTextEdit.__init__( s, parent )
 
     s.setTabChangesFocus( True )
     s.setAcceptRichText( False )
@@ -103,7 +109,7 @@ class WorldInputUI( QtGui.QTextEdit ):
     if style_elements:
       s.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
 
-    font_height = QtGui.QFontMetrics( s.font() ).height()
+    font_height = QFontMetrics( s.font() ).height()
     s.setMinimumHeight( font_height*3 )
 
 
@@ -115,12 +121,12 @@ class WorldInputUI( QtGui.QTextEdit ):
     ## Note: This still doesn't work for Tab & Shift+Tab, which are handled
     ## straight in QWidget.event() by Qt.
 
-    key = QtGui.QKeySequence( int( e.modifiers() ) + e.key() )
+    key = QKeySequence( int( e.modifiers() ) + e.key() )
 
     for a in s.actions() + s.parentWidget().actions():
       for shortcut in a.shortcuts():
 
-        if key.matches( shortcut ) == QtGui.QKeySequence.ExactMatch:
+        if key.matches( shortcut ) == QKeySequence.ExactMatch:
 
           a.trigger()
           e.accept()
@@ -138,10 +144,10 @@ class WorldInputUI( QtGui.QTextEdit ):
       e.accept()
 
     else:
-      QtGui.QTextEdit.keyPressEvent( s, e )
+      QTextEdit.keyPressEvent( s, e )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def clearAndSend( s ):
 
     text = unicode( s.toPlainText() )
@@ -171,7 +177,7 @@ class WorldInputUI( QtGui.QTextEdit ):
 
   def focusInEvent( s, e ):
 
-    QtGui.QTextEdit.focusInEvent( s, e )
+    QTextEdit.focusInEvent( s, e )
 
     ## Notify other possible interested parties that this widget now has the
     ## focus.

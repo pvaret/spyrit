@@ -20,7 +20,7 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtGui import QApplication
 
 from BaseCommand import BaseCommand
 from Utilities   import format_as_table
@@ -51,7 +51,7 @@ class ConfCommand( BaseCommand ):
       return
 
     args = t.from_string( args )
-    qApp().core.config[ key ] = args
+    QApplication.instance().core.config[ key ] = args
 
     ## TODO: Factorize display between this, worldset, reset and worldreset.
     value = t.to_string( args )
@@ -116,7 +116,7 @@ class ConfCommand( BaseCommand ):
       world.info( u"Unknown configuration key: %s" % key )
       return
 
-    config = qApp().core.config
+    config = QApplication.instance().core.config
 
     try:
       del config[ key ]
@@ -212,7 +212,7 @@ class ConfCommand( BaseCommand ):
     """
 
     worldconf  = world.conf
-    globalconf = qApp().core.config
+    globalconf = QApplication.instance().core.config
     defaults   = globalconf.parent
 
     ## 1/ Retrieve list of keys to list, based on the argument given by the

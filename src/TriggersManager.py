@@ -21,9 +21,10 @@
 ##
 
 import os.path
-import ConfigTypes
 
-from localqt import *
+from PyQt4.QtGui  import QApplication
+
+import ConfigTypes
 
 from ConfigBasket import ConfigBasket
 from Matches      import MatchCreationError
@@ -174,7 +175,7 @@ class PlayAction:
 
   def __call__( s, match, chunkbuffer ):
 
-    qApp().core.sound.play( s.soundfile or ":/sound/pop" )
+    QApplication.instance().core.sound.play( s.soundfile or ":/sound/pop" )
 
 
   def __repr__( s ):
@@ -487,5 +488,5 @@ class TriggersManager:
 
   def confSaveCallback( s ):
 
-    config = qApp().core.config
+    config = QApplication.instance().core.config
     s.save( config )

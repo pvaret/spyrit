@@ -24,9 +24,16 @@
 ##
 
 
-from localqt import *
-
-from Separator import Separator
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import QObject
+#from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui  import QLabel
+from PyQt4.QtGui  import QWidget
+from PyQt4.QtGui  import QSpinBox
+from PyQt4.QtGui  import QLineEdit
+from PyQt4.QtGui  import QCheckBox
+from PyQt4.QtGui  import QGridLayout
 
 
 class ConfigMapperWidget:
@@ -45,7 +52,7 @@ class ConfigMapperWidget:
     mapper.widgets.append( s )
 
 
-  #@QtCore.pyqtSlot()
+  #@pyqtSlot()
   def updateConfFromWidget( s ):
 
     ## This is the slot that updates the configuration object based on the
@@ -101,14 +108,14 @@ class ConfigMapperWidget:
 
 
 
-class LineEditMapper( ConfigMapperWidget, QtGui.QLineEdit ):
+class LineEditMapper( ConfigMapperWidget, QLineEdit ):
 
   MINIMUM_WIDTH = 250
 
   def __init__( s, mapper, option, label=None ):
 
     ConfigMapperWidget.__init__( s, mapper, option, label )
-    QtGui.QLineEdit.__init__( s )
+    QLineEdit.__init__( s )
 
     s.setMinimumWidth( s.MINIMUM_WIDTH )
 
@@ -128,12 +135,12 @@ class LineEditMapper( ConfigMapperWidget, QtGui.QLineEdit ):
 
 
 
-class SpinBoxMapper( ConfigMapperWidget, QtGui.QSpinBox ):
+class SpinBoxMapper( ConfigMapperWidget, QSpinBox ):
 
   def __init__( s, mapper, option, label=None ):
 
     ConfigMapperWidget.__init__( s, mapper, option, label )
-    QtGui.QSpinBox.__init__( s )
+    QSpinBox.__init__( s )
 
     s.setRange( 1, 65535 )
     s.setAlignment( Qt.AlignRight )
@@ -156,12 +163,12 @@ class SpinBoxMapper( ConfigMapperWidget, QtGui.QSpinBox ):
 
 
 
-class CheckBoxMapper( ConfigMapperWidget, QtGui.QCheckBox ):
+class CheckBoxMapper( ConfigMapperWidget, QCheckBox ):
 
   def __init__( s, mapper, option, label=None ):
 
     ConfigMapperWidget.__init__( s, mapper, option, label )
-    QtGui.QCheckBox.__init__( s )
+    QCheckBox.__init__( s )
 
     text    = s.label.rstrip( u":" )
     s.label = None
@@ -194,7 +201,7 @@ class CheckBoxMapper( ConfigMapperWidget, QtGui.QCheckBox ):
 
 
 
-class ConfigMapper( QtCore.QObject ):
+class ConfigMapper( QObject ):
 
   ## This class aggregates all the mapper widgets, so that the actual option
   ## panel widget only has to know about this.
@@ -202,12 +209,12 @@ class ConfigMapper( QtCore.QObject ):
   ## configuration mapper widgets and automatically bind them to this mapper
   ## instance.
 
-  isValid    = QtCore.pyqtSignal( bool )
-  hasChanges = QtCore.pyqtSignal( bool )
+  isValid    = pyqtSignal( bool )
+  hasChanges = pyqtSignal( bool )
 
   def __init__( s, conf ):
 
-    QtCore.QObject.__init__( s )
+    QObject.__init__( s )
 
     s.conf     = conf
     s.widgets  = []
@@ -249,14 +256,14 @@ class ConfigMapper( QtCore.QObject ):
 
 
 
-class PrettyOptionPanel( QtGui.QWidget ):
+class PrettyOptionPanel( QWidget ):
 
   MIN_LEFT_MARGIN                = 20
   MAX_LABEL_WIDTH_UNTIL_WORDWRAP = 100
 
   def __init__( s, mapper, parent=None ):
 
-    QtGui.QWidget.__init__( s, parent )
+    QWidget.__init__( s, parent )
 
     s.mapper = mapper
 
@@ -270,7 +277,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
     if layout:
       sip.delete( layout )
 
-    s.setLayout( QtGui.QGridLayout( s ) )
+    s.setLayout( QGridLayout( s ) )
     s.layout().setColumnMinimumWidth( 0, s.MIN_LEFT_MARGIN )
     s.layout().setColumnStretch( 0, 0 )
     s.layout().setColumnStretch( 1, 0 )
@@ -290,7 +297,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
 
   def addGroupRow( s, name ):
 
-    label = QtGui.QLabel( u"<b>" + name + u"</b>", s )
+    label = QLabel( u"<b>" + name + u"</b>", s )
     label.setAlignment( Qt.AlignLeft | Qt.AlignBottom )
 
     s.layout().addWidget( label, s.currentrow, 0, 1, -1 )
@@ -308,7 +315,7 @@ class PrettyOptionPanel( QtGui.QWidget ):
 
     if label:
 
-      l = QtGui.QLabel( label, s )
+      l = QLabel( label, s )
       l.setAlignment( Qt.AlignRight | Qt.AlignVCenter )
       l.setBuddy( widget )
 

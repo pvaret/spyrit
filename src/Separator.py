@@ -21,16 +21,17 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtGui import QFrame
 
-class Separator( QtGui.QFrame ):
+
+class Separator( QFrame ):
 
   def __init__( s, parent=None ):
 
-    QtGui.QFrame.__init__( s, parent )
+    QFrame.__init__( s, parent )
 
     s.setLineWidth( 1 );
     s.setMidLineWidth( 0 );
-    s.setFrameShape ( QtGui.QFrame.HLine )
-    s.setFrameShadow( QtGui.QFrame.Sunken )
+    s.setFrameShape ( QFrame.HLine )
+    s.setFrameShadow( QFrame.Sunken )
     s.setMinimumSize( 0, 2 );

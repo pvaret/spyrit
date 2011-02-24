@@ -19,9 +19,22 @@
 ## Holds the MainWindow class, which contains all the core GUI of the program.
 ##
 
-
-
-from localqt        import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import QSize
+from PyQt4.QtCore import QPoint
+from PyQt4.QtCore import QVariant
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtGui  import QIcon
+from PyQt4.QtGui  import QMenu
+from PyQt4.QtGui  import QLabel
+from PyQt4.QtGui  import QStyle
+from PyQt4.QtGui  import QAction
+from PyQt4.QtGui  import QPixmap
+from PyQt4.QtGui  import QToolBar
+from PyQt4.QtGui  import QToolButton
+from PyQt4.QtGui  import QMainWindow
+from PyQt4.QtGui  import QMessageBox
+from PyQt4.QtGui  import QApplication
 
 from WorldUI        import WorldUI
 from ActionSet      import ActionSet
@@ -29,11 +42,11 @@ from ConfigObserver import ConfigObserver
 from SmartTabWidget import SmartTabWidget
 
 
-class MainWindow( QtGui.QMainWindow ):
+class MainWindow( QMainWindow ):
 
   def __init__( s, config ):
 
-    QtGui.QMainWindow.__init__( s )
+    QMainWindow.__init__( s )
 
     ## Set up main window according to its configuration.
 
@@ -41,20 +54,20 @@ class MainWindow( QtGui.QMainWindow ):
 
     min_size = config._mainwindow_min_size
     if min_size and len( min_size ) >= 2:
-      s.setMinimumSize( QtCore.QSize( min_size[0], min_size[1] ) )
+      s.setMinimumSize( QSize( min_size[0], min_size[1] ) )
 
     size = config._mainwindow_size
-    if size and len( size ) >= 2: s.resize( QtCore.QSize( size[0], size[1] ) )
+    if size and len( size ) >= 2: s.resize( QSize( size[0], size[1] ) )
 
     pos = config._mainwindow_pos
-    if pos and len( pos ) >= 2: s.move( QtCore.QPoint( pos[0], pos[1] ) )
+    if pos and len( pos ) >= 2: s.move( QPoint( pos[0], pos[1] ) )
 
 
     ## Create the central widget.
 
-    default_pane = QtGui.QLabel()
+    default_pane = QLabel()
     default_pane.setAlignment( Qt.AlignCenter )
-    default_pane.setPixmap( QtGui.QPixmap( ":/app/logo" ) )
+    default_pane.setPixmap( QPixmap( ":/app/logo" ) )
 
     s.setCentralWidget( SmartTabWidget( s, default_pane ) )
     s.tabwidget = s.centralWidget().tabwidget
@@ -67,7 +80,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.actionset = ActionSet( s )
 
     s.action_about        = s.actionset.bindAction( "about",   s.actionAbout )
-    s.action_aboutqt      = s.actionset.bindAction( "aboutqt", qApp().aboutQt )
+    s.action_aboutqt      = s.actionset.bindAction( "aboutqt", QApplication.instance().aboutQt )
     s.action_newworld     = s.actionset.bindAction( "newworld",
                                                      s.actionNewWorld )
     s.action_quickconnect = s.actionset.bindAction( "quickconnect",
@@ -88,9 +101,9 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.menu_worlds = menubar.addMenu( u"Worlds" )
 
-    s.menu_connect = QtGui.QMenu()
+    s.menu_connect = QMenu()
     s.menu_connect.setTitle( u"Connect to..." )
-    s.menu_connect.setIcon( QtGui.QIcon( ":/icon/worlds" ) )
+    s.menu_connect.setIcon( QIcon( ":/icon/worlds" ) )
 
     s.menu_help = menubar.addMenu( u"Help" )
     s.menu_help.addAction( s.action_about )
@@ -99,7 +112,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Create toolbars.
 
-    s.toolbar_main = QtGui.QToolBar( u"Main Toolbar", s )
+    s.toolbar_main = QToolBar( u"Main Toolbar", s )
     s.toolbar_main.setMovable( False )
     s.toolbar_main.setFloatable( False )
     s.toolbar_main.setContextMenuPolicy( Qt.PreventContextMenu )
@@ -116,7 +129,7 @@ class MainWindow( QtGui.QMainWindow ):
     ## menu popup mode.
 
     connectbutton = s.toolbar_main.widgetForAction( connectaction )
-    connectbutton.setPopupMode( QtGui.QToolButton.InstantPopup )
+    connectbutton.setPopupMode( QToolButton.InstantPopup )
 
     ## Add remaining toolbar actions.
 
@@ -130,7 +143,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Link configuration changes to the appropriate updaters.
 
-    s.initial_style = QtGui.QApplication.style().objectName()
+    s.initial_style = QApplication.style().objectName()
 
     ## Apply configuration:
 
@@ -145,7 +158,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.refreshMenuWorlds()
 
-    worldsmanager = qApp().core.worlds
+    worldsmanager = QApplication.instance().core.worlds
     worldsmanager.worldListChanged.connect( s.refreshMenuWorlds )
 
     ## And with this, our Main Window is created, whee!
@@ -153,29 +166,28 @@ class MainWindow( QtGui.QMainWindow ):
 
   def refreshStyle( s ):
 
-    style = qApp().core.config._widget_style
+    style = QApplication.instance().core.config._widget_style
 
     if not style:
       style = s.initial_style
 
     s.setUpdatesEnabled( False )
-    QtGui.QApplication.setStyle( style )
+    QApplication.setStyle( style )
     s.refreshIcons()
     s.setUpdatesEnabled( True )
 
 
   def refreshIcons( s ):
 
-    size = qApp().core.config._toolbar_icon_size
+    size = QApplication.instance().core.config._toolbar_icon_size
 
     if not size:
-      size = QtGui.QApplication.style() \
-                  .pixelMetric( QtGui.QStyle.PM_ToolBarIconSize )
+      size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
 
-    s.toolbar_main.setIconSize( QtCore.QSize( size, size ) )
+    s.toolbar_main.setIconSize( QSize( size, size ) )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def refreshMenuWorlds( s ):
 
     s.setUpdatesEnabled( False )
@@ -189,7 +201,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     s.menu_connect.clear()
 
-    worldsmanager = qApp().core.worlds
+    worldsmanager = QApplication.instance().core.worlds
     worlds = worldsmanager.knownWorldList()
 
     if not worlds:
@@ -209,7 +221,7 @@ class MainWindow( QtGui.QMainWindow ):
     s.setUpdatesEnabled( True )
 
 
-  @QtCore.pyqtSlot( int )
+  @pyqtSlot( int )
   def setCurrentWorldToolbar( s, i ):
 
     s.setUpdatesEnabled( False )
@@ -234,7 +246,7 @@ class MainWindow( QtGui.QMainWindow ):
 
   def disabledMenuText( s, text ):
 
-    dummy = QtGui.QAction( text, s )
+    dummy = QAction( text, s )
     dummy.setEnabled( False )
 
     return dummy
@@ -269,20 +281,20 @@ class MainWindow( QtGui.QMainWindow ):
 
     if len( connectedworlds ) > 0:
 
-      messagebox = QtGui.QMessageBox( s )
+      messagebox = QMessageBox( s )
 
       messagebox.setWindowTitle( u"Confirm quit" )
-      messagebox.setIcon( QtGui.QMessageBox.Question )
+      messagebox.setIcon( QMessageBox.Question )
 
       messagebox.setText( ( u"You are still connected to <b>%s</b> world(s). "
                             u"Close them and quit?" ) % len( connectedworlds ) )
 
-      messagebox.addButton( u"Quit", QtGui.QMessageBox.AcceptRole )
-      messagebox.addButton( QtGui.QMessageBox.Cancel )
+      messagebox.addButton( u"Quit", QMessageBox.AcceptRole )
+      messagebox.addButton( QMessageBox.Cancel )
 
       result = messagebox.exec_()
 
-      if result == QtGui.QMessageBox.Cancel:
+      if result == QMessageBox.Cancel:
 
         event.ignore()
         return
@@ -297,7 +309,7 @@ class MainWindow( QtGui.QMainWindow ):
 
     ## Save the main window's geometry when it's about to be closed.
 
-    config = qApp().core.config
+    config = QApplication.instance().core.config
 
     size = ( s.size().width(), s.size().height() )
     config._mainwindow_size = size
@@ -323,38 +335,38 @@ class MainWindow( QtGui.QMainWindow ):
 
     from NewWorldDialog import NewWorldDialog
 
-    worldsmanager = qApp().core.worlds
+    worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
     dialog = NewWorldDialog( world.conf, s )
 
     if dialog.exec_():
 
       world.save()
-      qApp().core.openWorld( world )
+      QApplication.instance().core.openWorld( world )
 
 
   def actionQuickConnect( s ):
 
     from QuickConnectDialog import QuickConnectDialog
 
-    worldsmanager = qApp().core.worlds
+    worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
     dialog = QuickConnectDialog( world.conf, s )
 
     if dialog.exec_():
-      qApp().core.openWorld( world )
+      QApplication.instance().core.openWorld( world )
 
 
   def makeConnectToWorldAction( s, worldname ):
 
-    action = QtGui.QAction( worldname.replace( u"&", u"&&" ), s )
-    action.setData( QtCore.QVariant( worldname ) )
+    action = QAction( worldname.replace( u"&", u"&&" ), s )
+    action.setData( QVariant( worldname ) )
     action.triggered.connect( s.actionConnectToWorld )
 
     return action
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def actionConnectToWorld( s ):
 
     action = s.sender()
@@ -362,12 +374,12 @@ class MainWindow( QtGui.QMainWindow ):
     if not action: return
 
     worldname = unicode( action.data().toString() )
-    qApp().core.openWorldByName( worldname )
+    QApplication.instance().core.openWorldByName( worldname )
 
 
   def actionAbout( s ):
 
     from AboutDialog import AboutDialog
 
-    config = qApp().core.config
+    config = QApplication.instance().core.config
     AboutDialog( config, s ).exec_()

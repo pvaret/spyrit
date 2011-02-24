@@ -20,7 +20,14 @@
 ## it later.
 ##
 
-from localqt           import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui  import QLabel
+from PyQt4.QtGui  import QPixmap
+from PyQt4.QtGui  import QDialog
+from PyQt4.QtGui  import QPushButton
+from PyQt4.QtGui  import QTabWidget
+from PyQt4.QtGui  import QVBoxLayout
+
 from PrettyPanelHeader import PrettyPanelHeader
 
 
@@ -75,13 +82,13 @@ AUTHORS = u"""\
 """
 
 
-class AboutDialog( QtGui.QDialog ):
+class AboutDialog( QDialog ):
 
   def __init__( s, config, parent=None ):
 
-    QtGui.QDialog.__init__( s, parent )
+    QDialog.__init__( s, parent )
 
-    s.setLayout( QtGui.QVBoxLayout( s ) )
+    s.setLayout( QVBoxLayout( s ) )
 
     min_size = config._mainwindow_min_size
     if len( min_size ) >= 2:
@@ -91,25 +98,25 @@ class AboutDialog( QtGui.QDialog ):
 
     s.setWindowTitle( title )
 
-    header = PrettyPanelHeader( title, QtGui.QPixmap( ":/app/icon" ) )
+    header = PrettyPanelHeader( title, QPixmap( ":/app/icon" ) )
     s.layout().addWidget( header )
 
-    about = QtGui.QLabel( ABOUT % config )
+    about = QLabel( ABOUT % config )
     about.setContentsMargins( 20, 20, 20, 20 )
     about.setWordWrap( True )
     about.setOpenExternalLinks( True )
 
-    authors = QtGui.QLabel( AUTHORS % config )
+    authors = QLabel( AUTHORS % config )
     authors.setContentsMargins( 20, 20, 20, 20 )
     authors.setWordWrap( True )
     authors.setOpenExternalLinks( True )
 
-    tabwidget = QtGui.QTabWidget()
+    tabwidget = QTabWidget()
     tabwidget.addTab( about, u"About" )
     tabwidget.addTab( authors, u"Credits" )
     s.layout().addWidget( tabwidget )
 
-    button = QtGui.QPushButton( u"Ok" )
+    button = QPushButton( u"Ok" )
     s.layout().addWidget( button )
     s.layout().setAlignment( button, Qt.AlignHCenter )
 

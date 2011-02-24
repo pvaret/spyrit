@@ -20,10 +20,10 @@
 ## specifically, a QTextFormat, as used in our output UI.
 ##
 
-from localqt import *
-
 from Globals import FORMAT_PROPERTIES
 
+from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QFont
 
 
 class QTextFormatFormatter:
@@ -57,7 +57,7 @@ class QTextFormatFormatter:
     color = s.color_cache.get( value )
 
     if color is None:
-      color = s.color_cache.setdefault( value, QtGui.QColor( value ) )
+      color = s.color_cache.setdefault( value, QColor( value ) )
 
     s.qtextformat.setForeground( color )
 
@@ -69,7 +69,7 @@ class QTextFormatFormatter:
     color = s.color_cache.get( value )
 
     if color is None:
-      color = s.color_cache.setdefault( value, QtGui.QColor( value ) )
+      color = s.color_cache.setdefault( value, QColor( value ) )
 
     s.qtextformat.setBackground( color )
 
@@ -86,7 +86,7 @@ class QTextFormatFormatter:
 
   def _setFontWeightProperty( s, property, value ):
 
-    s.qtextformat.setFontWeight( QtGui.QFont.Black )
+    s.qtextformat.setFontWeight( QFont.Black )
 
 
   def clearProperty( s, property ):

@@ -26,7 +26,13 @@ import time
 
 from glob import glob
 
-from localqt          import *
+from PyQt4.QtCore import QObject
+#from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui  import QFileDialog
+from PyQt4.QtGui  import QMessageBox
+from PyQt4.QtGui  import QApplication
+
 
 from ConfigObserver   import ConfigObserver
 from PlatformSpecific import platformSpecific
@@ -49,17 +55,17 @@ class Status:
   DISCONNECTING = 3
 
 
-class World( QtCore.QObject ):
+class World( QObject ):
 
-  connected    = QtCore.pyqtSignal( bool )
-  disconnected = QtCore.pyqtSignal( bool )
-  nowLogging   = QtCore.pyqtSignal( bool )
+  connected    = pyqtSignal( bool )
+  disconnected = pyqtSignal( bool )
+  nowLogging   = pyqtSignal( bool )
 
   def __init__( s, conf=None ):
 
-    QtCore.QObject.__init__( s )
+    QObject.__init__( s )
 
-    worldsmanager = qApp().core.worlds
+    worldsmanager = QApplication.instance().core.worlds
     if not conf:
       conf = worldsmanager.newWorldConf()
 
@@ -96,7 +102,7 @@ class World( QtCore.QObject ):
 
   def save( s ):
 
-    qApp().core.worlds.saveWorld( s )
+    QApplication.instance().core.worlds.saveWorld( s )
 
 
   def setUI( s, worldui ):
@@ -128,14 +134,14 @@ class World( QtCore.QObject ):
 
     if s.isConnected():
 
-      messagebox = QtGui.QMessageBox( s.worldui.window() )
+      messagebox = QMessageBox( s.worldui.window() )
       messagebox.setWindowTitle( u"Confirm disconnect" )
-      messagebox.setIcon( QtGui.QMessageBox.Question )
+      messagebox.setIcon( QMessageBox.Question )
       messagebox.setText( u"Really disconnect from this world?" )
-      messagebox.addButton( u"Disconnect", QtGui.QMessageBox.AcceptRole )
-      messagebox.addButton( QtGui.QMessageBox.Cancel )
+      messagebox.addButton( u"Disconnect", QMessageBox.AcceptRole )
+      messagebox.addButton( QMessageBox.Cancel )
 
-      if messagebox.exec_() == QtGui.QMessageBox.Cancel:
+      if messagebox.exec_() == QMessageBox.Cancel:
         return
 
     s.ensureWorldDisconnected()
@@ -152,7 +158,7 @@ class World( QtCore.QObject ):
       s.socketpipeline.abort()
 
 
-  #@QtCore.pyqtSlot()
+  #@pyqtSlot()
   def connectionStatusChanged( s ):
 
     if s.status == Status.CONNECTED:
@@ -279,12 +285,12 @@ class World( QtCore.QObject ):
     if not dir:
       dir = platformSpecific.get_homedir()
 
-    return QtGui.QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
+    return QFileDialog.getOpenFileName( s.worldui, caption, dir, filter )
 
 
   def openFileOrErr( s, filename, mode='r' ):
 
-    local_encoding = qApp().local_encoding
+    local_encoding = QApplication.instance().local_encoding
     filename = os.path.expanduser( filename )
     basename = os.path.basename( filename )
 
@@ -345,7 +351,7 @@ class World( QtCore.QObject ):
       text = s.input.pop( 0 )
 
       if text.startswith( CMDCHAR ):
-        qApp().core.commands.runCmdLine( s, text[ len( CMDCHAR ): ] )
+        QApplication.instance().core.commands.runCmdLine( s, text[ len( CMDCHAR ): ] )
 
       else:
         s.socketpipeline.send( text + u"\r\n" )

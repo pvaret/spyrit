@@ -21,13 +21,13 @@
 ## timers used once.
 ##
 
+from PyQt4.QtCore import QTimer
 
-from localqt import *
 
-class SingleShotTimer( QtCore.QTimer ):
+class SingleShotTimer( QTimer ):
 
   def __init__( s, slot ):
 
-    QtCore.QTimer.__init__( s )
+    QTimer.__init__( s )
     s.setSingleShot( True )
     s.timeout.connect( slot )

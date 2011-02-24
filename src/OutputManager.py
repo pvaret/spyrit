@@ -21,7 +21,9 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtGui import QTextCursor
+from PyQt4.QtGui import QTextCharFormat
+
 
 from SearchManager        import SearchManager
 from FormatStack          import FormatStack
@@ -47,12 +49,12 @@ class OutputManager:
 
     s.textview = textview
 
-    s.textcursor = QtGui.QTextCursor( textview.document() )
+    s.textcursor = QTextCursor( textview.document() )
 
     s.observer = ConfigObserver( s.conf )
 
-    s.textformat = QtGui.QTextCharFormat()
-    s.infoformat = QtGui.QTextCharFormat()
+    s.textformat = QTextCharFormat()
+    s.infoformat = QTextCharFormat()
 
     s.textformatmanager = FormatStack( QTextFormatFormatter( s.textformat ) )
     s.infoformatmanager = FormatStack( QTextFormatFormatter( s.infoformat ) )

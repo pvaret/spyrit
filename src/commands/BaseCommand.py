@@ -19,7 +19,7 @@
 ## Abstract base class for commands.
 ##
 
-from localqt import *
+from PyQt4.QtGui import QApplication
 
 from CommandParsing import parse_command
 from CommandParsing import parse_arguments
@@ -49,7 +49,7 @@ class BaseCommand( object ):
     ## Default implementation that only displays help. Overload this in
     ## subclasses.
 
-    commands = qApp().core.commands
+    commands = QApplication.instance().core.commands
 
     ## TODO: Clean this up; store cmd name when registering it.
     cmdname = [ k for k, v in commands.commands.iteritems()

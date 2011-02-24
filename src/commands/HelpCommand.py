@@ -20,9 +20,9 @@
 ##
 
 
-from textwrap import dedent
+from textwrap    import dedent
 
-from localqt import *
+from PyQt4.QtGui import QApplication
 
 from BaseCommand import BaseCommand
 from Globals     import CMDCHAR
@@ -34,7 +34,7 @@ class HelpCommand( BaseCommand ):
 
   def cmd( s, world, cmdname=None, subcmdname=None ):
 
-    commands = qApp().core.command
+    commands = QApplication.instance().core.commands
 
     if cmdname:
 
@@ -138,7 +138,7 @@ class HelpCommand( BaseCommand ):
 
     helptxt = [ "Available commands:\n" ]
 
-    cmd_registry = qApp().core.commands
+    cmd_registry = QApplication.instance().core.commands
 
     ljust = max( len( c ) for c in cmd_registry.commands.keys() ) + 2
 

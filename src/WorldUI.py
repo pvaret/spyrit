@@ -21,7 +21,18 @@
 ##
 
 
-from localqt import *
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import QSize
+from PyQt4.QtCore import QTimer
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import QTimeLine
+from PyQt4.QtGui  import QIcon
+from PyQt4.QtGui  import QStyle
+from PyQt4.QtGui  import QToolBar
+from PyQt4.QtGui  import QSplitter
+from PyQt4.QtGui  import QTabWidget
+from PyQt4.QtGui  import QMessageBox
+from PyQt4.QtGui  import QApplication
 
 from ActionSet          import ActionSet
 from TabDelegate        import TabDelegate
@@ -32,17 +43,14 @@ from SingleShotTimer    import SingleShotTimer
 from SplittableTextView import SplittableTextView
 from pipeline           import ChunkData
 
-
-
-
 class LED:
 
   def __init__( s ):
 
-    s.CONNECTED_UNLIT    = QtGui.QIcon( ":/icon/unlit_green_led" )
-    s.CONNECTED_LIT      = QtGui.QIcon( ":/icon/lit_green_led" )
-    s.DISCONNECTED_UNLIT = QtGui.QIcon( ":/icon/unlit_red_led" )
-    s.DISCONNECTED_LIT   = QtGui.QIcon( ":/icon/lit_red_led" )
+    s.CONNECTED_UNLIT    = QIcon( ":/icon/unlit_green_led" )
+    s.CONNECTED_LIT      = QIcon( ":/icon/lit_green_led" )
+    s.DISCONNECTED_UNLIT = QIcon( ":/icon/unlit_red_led" )
+    s.DISCONNECTED_LIT   = QIcon( ":/icon/lit_red_led" )
 
 
   def select( s, connected, lit ):
@@ -55,13 +63,13 @@ class LED:
 
 
 
-class WorldUI( QtGui.QSplitter ):
+class WorldUI( QSplitter ):
 
   def __init__( s, tabwidget, world ):
 
-    QtGui.QSplitter.__init__( s, Qt.Vertical, tabwidget )
+    QSplitter.__init__( s, Qt.Vertical, tabwidget )
 
-    assert isinstance( tabwidget, QtGui.QTabWidget )
+    assert isinstance( tabwidget, QTabWidget )
 
     s.world = world
     s.led   = LED()
@@ -70,7 +78,7 @@ class WorldUI( QtGui.QSplitter ):
 
     s.tab.tabChanged.connect( s.onTabChanged )
 
-    s.blinker = QtCore.QTimeLine( 200, s ) ## ms
+    s.blinker = QTimeLine( 200, s ) ## ms
     s.blinker.setFrameRange( 0, 3 )
     s.blinker.frameChanged.connect( s.iconBlink )
     s.blinker.finished.connect( s.steadyIcon )
@@ -135,7 +143,7 @@ class WorldUI( QtGui.QSplitter ):
 
     ## Create toolbar and bind World-related actions.
 
-    s.toolbar = QtGui.QToolBar()
+    s.toolbar = QToolBar()
     s.toolbar.setMovable( False )
     s.toolbar.setFloatable( False )
     s.toolbar.setContextMenuPolicy( Qt.PreventContextMenu )
@@ -196,17 +204,16 @@ class WorldUI( QtGui.QSplitter ):
 
     s.world.setUI( s )
 
-    for line in qApp().core.motd:
+    for line in QApplication.instance().core.motd:
       s.world.info( line )
 
 
   def updateToolBarIcons( s, size ):
 
     if not size:
-      size = QtGui.QApplication.style() \
-                  .pixelMetric( QtGui.QStyle.PM_ToolBarIconSize )
+      size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
 
-    new_size = QtCore.QSize( size, size )
+    new_size = QSize( size, size )
     s.toolbar.setIconSize( new_size )
 
 
@@ -221,7 +228,7 @@ class WorldUI( QtGui.QSplitter ):
       s.inputui.setFocus()
 
 
-  @QtCore.pyqtSlot( bool )
+  @pyqtSlot( bool )
   def onTabChanged( s, is_now_visible ):
 
     if is_now_visible:
@@ -235,14 +242,14 @@ class WorldUI( QtGui.QSplitter ):
 
     ## Don't blink if already blinking:
 
-    if s.blinker.state() != QtCore.QTimeLine.NotRunning:
+    if s.blinker.state() != QTimeLine.NotRunning:
       return
 
     s.blinker.start()
     s.alert_timer.start()
 
 
-  @QtCore.pyqtSlot( int )
+  @pyqtSlot( int )
   def iconBlink( s, frame ):
 
     if not s.world:
@@ -253,10 +260,10 @@ class WorldUI( QtGui.QSplitter ):
     s.tab.setTabIcon( led )
 
 
-  @QtCore.pyqtSlot()
+  @pyqtSlot()
   def steadyIcon( s ):
 
-    if s.blinker.state() == QtCore.QTimeLine.Running:
+    if s.blinker.state() == QTimeLine.Running:
       return
 
     if not s.world:
@@ -273,10 +280,10 @@ class WorldUI( QtGui.QSplitter ):
       return
 
     if s.world.conf._alert_on_activity:
-      qApp().alert( s.window() )
+      QApplication.instance().alert( s.window() )
 
 
-  #@QtCore.pyqtSlot()
+  #@pyqtSlot()
   def saveSplitterPosition( s ):
 
     s.world.conf._splitter_sizes = s.sizes()
@@ -286,20 +293,20 @@ class WorldUI( QtGui.QSplitter ):
 
     if s.world.isConnected():
 
-      messagebox = QtGui.QMessageBox( s.window() )
+      messagebox = QMessageBox( s.window() )
 
       messagebox.setWindowTitle( u"Confirm close" )
-      messagebox.setIcon( QtGui.QMessageBox.Question )
+      messagebox.setIcon( QMessageBox.Question )
 
       messagebox.setText( u"You are still connected to this world. " \
                           u"Disconnect and close this tab?" )
 
-      messagebox.addButton( u"Close tab", QtGui.QMessageBox.AcceptRole )
-      messagebox.addButton( QtGui.QMessageBox.Cancel )
+      messagebox.addButton( u"Close tab", QMessageBox.AcceptRole )
+      messagebox.addButton( QMessageBox.Cancel )
 
       result = messagebox.exec_()
 
-      if result == QtGui.QMessageBox.Cancel:
+      if result == QMessageBox.Cancel:
         return
 
     ## The call to ensureWorldDisconnected below is done outside the above
@@ -311,7 +318,7 @@ class WorldUI( QtGui.QSplitter ):
     s.world.ensureWorldDisconnected()
 
     ## Then, schedule the closing of the world.
-    QtCore.QTimer.singleShot( 0, s.doClose )
+    QTimer.singleShot( 0, s.doClose )
 
 
   def doClose( s ):
@@ -336,6 +343,15 @@ class WorldUI( QtGui.QSplitter ):
 
     s.world = None
     s.deleteLater()
+
+
+  @pyqtSlot( 'QWidget' )
+  def setFocusProxy( s, widget ):
+
+    ## WORKAROUND: PyQt doesn't seem to properly declare the slot for this
+    ## method, so we must override it. :/
+
+    QSplitter.setFocusProxy( s, widget )
 
 
   def __del__( s ):

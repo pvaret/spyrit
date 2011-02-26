@@ -199,7 +199,13 @@ class SocketPipeline:
 
   def send( self, data ):
 
-    assert type( data ) is type( u'' )
+    assert isinstance( data, unicode )
+
+    if not self.socket.state() == self.socket.ConnectedState:
+
+      ## Don't write anything if the socket is not connected.
+      return
+
     data = self.pipeline.formatForSending( data )
 
     self.socket.write( data )

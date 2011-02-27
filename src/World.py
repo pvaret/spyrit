@@ -27,7 +27,7 @@ import time
 from glob import glob
 
 from PyQt4.QtCore import QObject
-#from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui  import QFileDialog
 from PyQt4.QtGui  import QMessageBox
@@ -158,7 +158,7 @@ class World( QObject ):
       self.socketpipeline.abort()
 
 
-  #@pyqtSlot()
+  @pyqtSlot()
   def connectionStatusChanged( self ):
 
     if self.status == Status.CONNECTED:

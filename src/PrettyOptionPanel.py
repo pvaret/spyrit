@@ -27,7 +27,6 @@ import sip
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QObject
-#from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui  import QLabel
 from PyQt4.QtGui  import QWidget
@@ -53,7 +52,7 @@ class ConfigMapperWidget:
     mapper.widgets.append( self )
 
 
-  #@pyqtSlot()
+  #@pyqtSlot()  ## Not a QObject, can't make it an official slot.
   def updateConfFromWidget( self ):
 
     ## This is the slot that updates the configuration object based on the

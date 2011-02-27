@@ -283,7 +283,7 @@ class WorldUI( QSplitter ):
       QApplication.instance().alert( self.window() )
 
 
-  #@pyqtSlot()
+  @pyqtSlot()
   def saveSplitterPosition( self ):
 
     self.world.conf._splitter_sizes = self.sizes()

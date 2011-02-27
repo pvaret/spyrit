@@ -86,16 +86,34 @@ class INTLIST:
 
 
 def str_escape( string ):
+  u"""\
+  Escapes quote, backslashes, tabs, line feeds and carriage returns.
+
+  >>> print str_escape( u'''It's wonderful.
+  ... ''' )
+  It\\'s wonderful.\\n
+
+  """
 
   ESC = u'\\'
-  ESC_CHARS = u'"' + u"'"
 
-  result = []
+  ESCAPES = {
+      u'"':  u'"',
+      u"'":  u"'",
+      u'\n': u'n',
+      u'\r': u'r',
+      u'\t': u't',
+  }
 
-  for c in string:
-    result.append ( ( c == ESC or c in ESC_CHARS ) and ESC + c or c )
 
-  return u"".join( result )
+  ## Escape the escape character itself:
+  string = string.replace( ESC, ESC + ESC )
+
+  ## Then escape the rest:
+  for from_, to in ESCAPES.iteritems():
+    string = string.replace( from_, ESC + to )
+
+  return string
 
 
 def split_on_unescaped_commas( string ):
@@ -103,6 +121,12 @@ def split_on_unescaped_commas( string ):
   ESC    = u'\\'
   QUOTES = u'"' + u"'"
   COMMA  = u','
+
+  ESCAPES = {
+      u'n': u'\n',
+      u'r': u'\r',
+      u't': u'\t',
+  }
 
   current     = []
   in_escaped = False
@@ -113,7 +137,7 @@ def split_on_unescaped_commas( string ):
     if in_escaped:
 
       in_escaped = False
-      current.append( c )
+      current.append( ESCAPES.get( c, c ) )
 
     else:
 

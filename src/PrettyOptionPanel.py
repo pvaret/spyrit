@@ -343,7 +343,7 @@ class PrettyOptionPanel( QWidget ):
 
   def apply( self ):
 
-    self.mapper.conf.commit()
+    self.mapper.conf.apply()
     self.mapper.updateWidgetsFromConf()
 
 

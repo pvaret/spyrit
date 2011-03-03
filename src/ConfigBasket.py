@@ -31,7 +31,7 @@ VALID_KEY_CHARACTER = string.ascii_letters + string.digits + "_"
 ## ---[ Class DictAttrProxy ]------------------------------------------
 
 class DictAttrProxy( object ):
-  """
+  u"""
   This class is meant to be inherited from by dict-like subclasses, and makes
   the dict's keys accessible as attributes. Use it as a parent class, and you
   can then access:
@@ -40,16 +40,18 @@ class DictAttrProxy( object ):
     d._somekey
   It requires the child class to have the __{set|get|del}item__ methods of a
   dictionary.
+
   """
 
 
   @staticmethod
   def validatedAttr( attr ):
-    """
+    u"""
     Static method. Determines whether the parameter begins with one
     underscore '_' but not two. Returns None otherwise.
     Attributes beginning with one underscore will be looked up as items on
     self.
+
     """
 
     if len( attr ) >= 2 \
@@ -109,13 +111,13 @@ class DictAttrProxy( object ):
 
 
 
-## ---[ Class WeakList ]-------------------------------------------
+## ---[ Class WeakSet ]--------------------------------------------
 
-class WeakList( WeakValueDictionary ):
+class WeakSet( WeakValueDictionary ):
 
   __iter__ = WeakValueDictionary.itervalues
 
-  def append( self, val ):
+  def add( self, val ):
 
     self[ id( val ) ] = val
 
@@ -132,14 +134,11 @@ class ConfigBasket( DictAttrProxy ):
 
   def __init__( self, parent=None ):
 
-    self.name        = None
-    self.basket      = {}
-    self.sections    = {}
-    self.children    = WeakList()
-    self.notifiers   = CallbackRegistry()
-    self.type_getter = None
-
-    self.type_getter_for_subsection = {}
+    self.name      = None
+    self.basket    = {}
+    self.sections  = {}
+    self.children  = WeakSet()
+    self.notifiers = CallbackRegistry()
 
     self.setParent( parent )
 
@@ -151,8 +150,11 @@ class ConfigBasket( DictAttrProxy ):
 
   def __getitem__( self, key ):
 
-    if key in self.basket: return self.basket[ key ]
-    if self.parent:        return self.parent[ key ]
+    if key in self.basket:
+        return self.basket[ key ]
+
+    if self.parent:
+        return self.parent[ key ]
 
     raise KeyError( key )
 
@@ -162,7 +164,7 @@ class ConfigBasket( DictAttrProxy ):
     if not self.isValidKeyName( key ):
       raise KeyError( "Invalid key name '%s'" % key )
 
-    if self.existsInParent( key ) and self.parent[ key ] == value:
+    if self.parent and key in self.parent and self.parent[ key ] == value:
 
       ## If the parent's value is already set to the new value, we delete
       ## the attribute on this object instead so we'll inherit that of its
@@ -177,16 +179,13 @@ class ConfigBasket( DictAttrProxy ):
 
       return
 
-    if self.exists( key ):
+    marker = object()
 
-      old_value = self[ key ]
+    old_value = self.get( key, marker )
 
-      if old_value == value:
-        ## If the value hasn't changed, we quit right away.
-        return
-
-    else:
-      old_value = None
+    if old_value == value:  ## Always False if old_value == marker.
+      ## If the value hasn't changed, we quit right away.
+      return
 
     self.basket[ key ] = value
 
@@ -196,16 +195,15 @@ class ConfigBasket( DictAttrProxy ):
 
   def __delitem__( self, key ):
 
-    if not self.owns( key ):
+    if key not in self.basket:
       raise KeyError( key )
 
     old_value = self[ key ]
 
     del self.basket[ key ]
 
-    if self.exists( key ):
-
-      value = self[ key ]
+    if self.parent and key in self.parent:
+      value = self.parent[ key ]
 
       if old_value != value:
         self.notifyKeyChanged( key, value )
@@ -216,76 +214,14 @@ class ConfigBasket( DictAttrProxy ):
     self.parent = parent
 
     if parent:
-      parent.children.append( self )
+      parent.children.add( self )
 
 
-  def setTypeGetter( self, type_getter ):
+  def clear( self ):
 
-    self.type_getter = type_getter
-
-
-  def setTypeGetterForFutureSections( self, type_getter_map ):
-
-    ## Sometimes, you need to tell a ConfigBasket ahead of time that it will
-    ## need a specific type getter for some future subsection or other.
-    ## If so, you can set it with this method.
-
-    self.type_getter_for_subsection = type_getter_map
-
-
-  def getType( self, key ):
-
-    if self.type_getter:
-
-      t = self.type_getter( key )
-
-      if t:
-        return t
-
-    if self.parent:
-      return self.parent.getType( key )
-
-    else:
-      return None
-
-
-  def reset( self ):
-
-    keys = self.basket.keys()
-
-    for key in keys:
+    ## We do this by hand, so notifications are emitted appropriately.
+    for key in self.basket:
       del self[ key ]
-
-
-  def resetSections( self ):
-
-    self.sections.clear()
-
-
-  def owns( self, key ):
-
-    return key in self.basket
-
-
-  def existsInParent( self, key ):
-
-    if self.parent:
-      return self.parent.exists( key )
-
-    return False
-
-
-  def exists( self, key ):
-
-    return self.owns( key ) or self.existsInParent( key )
-
-
-  def updateFromDict( self, d ):
-
-    for k, v in d.iteritems():
-
-      if not k.startswith( self.SECTION_CHAR ):
-        self[ k ] = v
 
 
   def isEmpty( self ):
@@ -319,11 +255,6 @@ class ConfigBasket( DictAttrProxy ):
     section.setParent( self )
 
     self.sections[ name ] = section
-
-    type_getter = self.type_getter_for_subsection.get( name )
-
-    if type_getter:
-      section.setTypeGetter( type_getter )
 
 
   def saveAsSection( self, name ):
@@ -375,40 +306,6 @@ class ConfigBasket( DictAttrProxy ):
     return self.name is None
 
 
-  def getOwnDict( self ):
-
-    return self.basket
-
-
-  def dumpAsDict( self ):
-
-    d = self.getOwnDict().copy()
-
-    d.update( dict( ( self.SECTION_CHAR + name, section.dumpAsDict() )
-                      for name, section in self.sections.iteritems() ) )
-
-    return d
-
-
-  @staticmethod
-  def buildFromDict( d ):
-
-    c=ConfigBasket()
-    c.updateFromDictTree( d )
-
-    return c
-
-
-  def updateFromDictTree( self, d ):
-
-    for name, section in d.iteritems():
-
-      if name.startswith( self.SECTION_CHAR ):
-        self.saveSection( ConfigBasket.buildFromDict( section ), name[1:] )
-
-    self.updateFromDict( d )
-
-
   def notifyKeyChanged( self, key, value ):
 
     self.notifiers.triggerAll( key, value )
@@ -425,7 +322,7 @@ class ConfigBasket( DictAttrProxy ):
     self.notifiers.add( notifier )
 
 
-  def commit( self ):
+  def apply( self ):
 
     self.parent.updateFromDict( self.basket )
-    self.reset()
+    self.clear()

@@ -1,0 +1,324 @@
+# -*- coding: utf-8 -*-
+
+## Copyright (c) 2007-2011 Pascal Varet <p.varet@gmail.com>
+##
+## This file is part of Spyrit.
+##
+## Spyrit is free software; you can redistribute it and/or modify it under the
+## terms of the GNU General Public License version 2 as published by the Free
+## Software Foundation.
+##
+## You should have received a copy of the GNU General Public License along with
+## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+## Fifth Floor, Boston, MA  02110-1301  USA
+##
+
+##
+## Serializers.py
+##
+## Serializers are small classes that know how to serialize and deserialize
+## configuration values to and from strings, and can also compute and retain a
+## sane default for each given configuration key.
+##
+
+u"""
+:doctest:
+
+>>> from Serializers import *
+
+"""
+
+
+from Globals import FORMAT_PROPERTIES
+
+
+
+
+
+DEFAULT_ESCAPES = {
+  u'\n': u'n',
+  u'\r': u'r',
+  u'\t': u't',
+}
+
+BS = u"\\"
+
+
+def quote( string, esc=BS, quote=u'"' ):
+  ur"""
+  Quotes the given string and escapes typical control characters.
+
+  >>> STR = u'''It's "wonderful".
+  ... '''
+  >>> print quote( STR )
+  "It's \"wonderful\".\n"
+
+  Can also escape without quoting:
+
+  >>> STR = u'''No
+  ... quote.'''
+  >>> print quote( STR, quote=None )
+  No\nquote.
+
+  """
+
+  escapes = DEFAULT_ESCAPES.copy()
+  if quote:
+    escapes[ quote ] = quote
+
+  ## Escape the escape character itself:
+  string = string.replace( esc, esc + esc )
+
+  ## Then escape the rest:
+  for from_, to in escapes.iteritems():
+    string = string.replace( from_, esc + to )
+
+  if quote:
+    string = quote + string + quote
+
+  return string
+
+
+def unquote( string, esc=BS, quotes=u'"'+u"'" ):
+  ur"""
+  Unquote a string. Reverse operation to quote().
+
+  >>> print unquote( ur'"It\'s okay.\nYes."' )
+  It's okay.
+  Yes.
+
+  >>> STR = u'''This 'is'
+  ... a "test".'''
+  >>> unquote( quote( STR ) ) == STR
+  True
+
+  Single characters are returned unmodified.
+
+  >>> print unquote( u'"' )
+  "
+
+  """
+
+  ## Special case: single chars should be returned as such.
+  if len( string ) <= 1:
+    return string
+
+  result = []
+
+  if string[0] == string[-1] and string[0] in quotes:
+    string = string[1:-1]
+
+  escapes = dict( ( v, k ) for ( k, v ) in DEFAULT_ESCAPES.iteritems() )
+
+  in_escape = False
+
+  for c in string:
+
+    if in_escape:
+      result.append( escapes.get( c, c ) )
+      in_escape = False
+      continue
+
+    if c == esc:
+      in_escape = True
+      continue
+
+    result.append( c )
+
+  return u''.join( result )
+
+
+
+def split( string, sep=u',', esc=BS, quotes=u'"'+u"'" ):
+  ur"""
+  Splits a string along the given single-character separator (by default, a
+  comma).
+
+  Only split if the separator is not escaped or inside a quoted section.
+
+  >>> print len( list( split( u' "A", "B" ' ) ) )
+  2
+
+  >>> print len( list( split( ur' "A"\, "B" ') ) )
+  1
+
+  >>> print len( list( split( u' "A, B" ') ) )
+  1
+
+  """
+
+  last_pos      = 0
+  in_escape     = False
+  current_quote = None
+
+  for pos, c in enumerate( string ):
+
+    if in_escape:
+      ## Current character is escaped. Move on.
+      in_escape = False
+      continue
+
+    if c == esc:
+      ## Next character will be escaped.
+      in_escape = True
+      continue
+
+    if current_quote is None:
+      ## Not in a quoted section.
+
+      if c == sep:
+        ## Found an unquoted separator! Split.
+        yield string[ last_pos:pos ]
+        last_pos = pos + 1  ## Skip the separator itself.
+
+      elif c in quotes:
+        ## This is the start of a quoted section.
+        current_quote = c
+
+      continue
+
+    ## In a quoted section. Do nothing until the section ends.
+
+    if c == current_quote:
+      ## This is the end of the quoted section.
+      current_quote = None
+
+  yield string[ last_pos:len( string ) ]
+
+
+
+
+
+class BaseSerializer:
+
+  def __init__( self, default=None ):
+
+    self.default = self.deserialize( default ) if default is not None else None
+
+
+  def serialize( self, value ):
+
+    raise NotImplemented( "Serializers must implement the serialize method." )
+
+
+  def deserialize( self, string ):
+
+    raise NotImplemented( "Serializers must implement the deserialize method." )
+
+
+class Int( BaseSerializer ):
+
+  def deserialize( self, string ):
+
+    try:
+      return int( string )
+
+    except ValueError:
+      return 0
+
+
+  def serialize( self, i ):
+
+    return unicode( i )
+
+
+class Str( BaseSerializer ):
+
+  def deserialize( self, string ):
+
+    return unquote( string )
+
+
+  def serialize( self, string ):
+
+    return quote( string )
+
+
+
+class Bool( BaseSerializer ):
+
+  def deserialize( self, string ):
+
+    return string.strip().lower() in ( u"1", u"y", u"yes", u"on", u"true" )
+
+
+  def serialize( self, bool_ ):
+
+    return u"True" if bool_ else u"False"
+
+
+class List( BaseSerializer ):
+
+  sep = u","
+
+  def __init__( self, sub_serializer, default=None ):
+
+    self.sub_serializer = sub_serializer
+    BaseSerializer.__init__( self, default )
+
+
+  def serialize( self, list_ ):
+
+    sep
+
+
+class Format( BaseSerializer ):
+
+  ## FORMAT describes the formatting for a given piece of text: color,
+  ## italic, underlined...
+  ## Its string serialization is a semicolon-separated list of tokens and
+  ## looks like this: 'color:#ffffff; italic; bold'.
+  ## Its deserialized form is a dictionary.
+  ## We also store format-related constants on it.
+
+  def serialize( self, d ):
+
+    l = []
+
+    for k, v in d.iteritems():
+
+      if   k == FORMAT_PROPERTIES.COLOR:
+        l.insert( 0, u"color: %s" % v )
+
+      elif k == FORMAT_PROPERTIES.ITALIC:
+        l.append( u"italic" )
+
+      elif k == FORMAT_PROPERTIES.BOLD:
+        l.append( u"bold" )
+
+      elif k == FORMAT_PROPERTIES.UNDERLINE:
+        l.append( u"underlined" )
+
+    return u" ; ".join( l )
+
+
+  def deserialize( self, l ):
+
+    d = {}
+
+    for item in l.split( u";" ):
+
+      item  = item.strip().lower()
+      value = None
+
+      if u":" in item:
+
+        item, value = item.split( u":", 1 )
+        item  = item.strip()
+        value = value.strip()
+
+      if   item.startswith( u"i" ):
+        d[ FORMAT_PROPERTIES.ITALIC ] = True
+
+      elif item.startswith( u"b" ):
+        d[ FORMAT_PROPERTIES.BOLD ] = True
+
+      elif item.startswith( u"u" ):
+        d[ FORMAT_PROPERTIES.UNDERLINE ] = True
+
+      elif item.startswith( u"c" ):
+
+        if value:
+          d[ FORMAT_PROPERTIES.COLOR ] = value
+
+    return d

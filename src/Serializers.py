@@ -206,6 +206,7 @@ class BaseSerializer:
     raise NotImplemented( "Serializers must implement the deserialize method." )
 
 
+
 class Int( BaseSerializer ):
 
   def deserialize( self, string ):
@@ -217,9 +218,12 @@ class Int( BaseSerializer ):
       return 0
 
 
-  def serialize( self, i ):
+  def serialize( self, int_ ):
 
-    return unicode( i )
+    if isinstance( int_, int ):
+      return unicode( int_ )
+
+    return u''
 
 
 class Str( BaseSerializer ):
@@ -259,7 +263,14 @@ class List( BaseSerializer ):
 
   def serialize( self, list_ ):
 
-    sep
+    return self.sep.join( self.sub_serializer.serialize( item )
+                          for item in list_ )
+
+  def deserialize( self, string ):
+
+    return list( self.sub_serializer.deserialize( item )
+                 for item in split( string, sep=self.sep ) )
+
 
 
 class Format( BaseSerializer ):

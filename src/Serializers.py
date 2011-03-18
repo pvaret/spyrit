@@ -31,7 +31,7 @@ u"""
 
 from Globals import FORMAT_PROPERTIES
 
-
+from PyQt4.QtGui import QKeySequence
 
 
 
@@ -333,3 +333,18 @@ class Format( BaseSerializer ):
           d[ FORMAT_PROPERTIES.COLOR ] = value
 
     return d
+
+
+
+class KeySequence( BaseSerializer ):
+
+  def serialize( self, seq ):
+
+    ## QKeySequence.toString() uses PortableText format by default.
+    return unicode( seq.toString() )
+
+
+  def deserialize( self, string ):
+
+    ## QKeySequence.fromString() uses PortableText format by default.
+    return QKeySequence.fromString( string )

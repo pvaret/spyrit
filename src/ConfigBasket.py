@@ -28,7 +28,6 @@ import string
 VALID_KEY_CHARACTER = string.ascii_letters + string.digits + "_"
 
 
-## ---[ Class DictAttrProxy ]------------------------------------------
 
 class DictAttrProxy( object ):
   u"""
@@ -111,25 +110,36 @@ class DictAttrProxy( object ):
 
 
 
-## ---[ Class WeakSet ]--------------------------------------------
 
 class WeakSet( WeakValueDictionary ):
 
+  """
+  Provides a set that doesn't keep references to its contents.
+
+  >>> ws = WeakSet()
+  >>> a = object() ; b = object()
+  >>> ws.add( a ) ; ws.add( b )
+  >>> len( ws )
+  2
+  >>> del b
+  >>> len( ws )
+  1
+
+  """
+
   __iter__ = WeakValueDictionary.itervalues
+  __len__ = WeakValueDictionary.__len__
 
   def add( self, val ):
 
     self[ id( val ) ] = val
 
 
-## ---[ Class ConfigBasket ]---------------------------------------
 
 class ConfigBasket( DictAttrProxy ):
   """
   Holds the core behavior for a set of configuration keys.
   """
-
-  SECTION_CHAR = "@"
 
 
   def __init__( self, parent=None ):
@@ -224,86 +234,92 @@ class ConfigBasket( DictAttrProxy ):
       del self[ key ]
 
 
+  def apply( self ):
+
+    self.parent.updateFromDict( self.basket )
+    self.clear()
+
+
   def isEmpty( self ):
 
     return len( self.basket ) == 0 and len( self.sections ) == 0
 
 
-  def hasSection( self, section ):
+  #def hasSection( self, section ):
 
-    return self.sections.has_key( section )
-
-
-  def getSection( self, section ):
-
-    try:
-      return self.sections[ section ]
-
-    except KeyError:
-      raise KeyError( "This configuration object doesn't have a section "
-                    + "called %s." % section )
+  #  return self.sections.has_key( section )
 
 
-  def getSectionList( self ):
+  #def getSection( self, section ):
 
-    return list( self.sections.iterkeys() )
+  #  try:
+  #    return self.sections[ section ]
 
-
-  def saveSection( self, section, name ):
-
-    section.name = name
-    section.setParent( self )
-
-    self.sections[ name ] = section
+  #  except KeyError:
+  #    raise KeyError( "This configuration object doesn't have a section "
+  #                  + "called %s." % section )
 
 
-  def saveAsSection( self, name ):
+  #def getSectionList( self ):
 
-    ## Watch the difference with the above method: here, THIS object is being
-    ## saved into its PARENT as a new section.
-
-    self.parent.saveSection( self, name )
+  #  return list( self.sections.iterkeys() )
 
 
-  def renameSection( self, oldname, newname ):
+  #def saveSection( self, section, name ):
 
-    ## Warning: this function doesn't check whether the new section name is
-    ## already in use -- if so, that section will be overridden. In other
-    ## words, this is an 'mv' and not 'mv -i'.
-    ## Code that makes use of this method should check that 'newname' is free,
-    ## if it thinks it matters.
+  #  section.name = name
+  #  section.setParent( self )
 
-    section = self.getSection( oldname )  ## Raises KeyError if no such section.
-    self.deleteSection( oldname )
-    section.saveAsSection( newname )
+  #  self.sections[ name ] = section
 
 
-  def deleteSection( self, name ):
+  #def saveAsSection( self, name ):
 
-    try:
-      del self.sections[ name ]
+  #  ## Watch the difference with the above method: here, THIS object is being
+  #  ## saved into its PARENT as a new section.
 
-    except KeyError:
-      raise KeyError( "This configuration object doesn't have a section "
-                    + "called %s." % name )
+  #  self.parent.saveSection( self, name )
 
 
-  def createAnonymousSection( self ):
+  #def renameSection( self, oldname, newname ):
 
-    return ConfigBasket( self )
+  #  ## Warning: this function doesn't check whether the new section name is
+  #  ## already in use -- if so, that section will be overridden. In other
+  #  ## words, this is an 'mv' and not 'mv -i'.
+  #  ## Code that makes use of this method should check that 'newname' is free,
+  #  ## if it thinks it matters.
+
+  #  section = self.getSection( oldname )  ## Raises KeyError if no such section.
+  #  self.deleteSection( oldname )
+  #  section.saveAsSection( newname )
 
 
-  def createSection( self, name ):
+  #def deleteSection( self, name ):
 
-    c = self.createAnonymousSection()
-    c.saveAsSection( name )
+  #  try:
+  #    del self.sections[ name ]
 
-    return c
+  #  except KeyError:
+  #    raise KeyError( "This configuration object doesn't have a section "
+  #                  + "called %s." % name )
 
 
-  def isAnonymous( self ):
+  #def createAnonymousSection( self ):
 
-    return self.name is None
+  #  return ConfigBasket( self )
+
+
+  #def createSection( self, name ):
+
+  #  c = self.createAnonymousSection()
+  #  c.saveAsSection( name )
+
+  #  return c
+
+
+  #def isAnonymous( self ):
+
+  #  return self.name is None
 
 
   def notifyKeyChanged( self, key, value ):
@@ -322,7 +338,3 @@ class ConfigBasket( DictAttrProxy ):
     self.notifiers.add( notifier )
 
 
-  def apply( self ):
-
-    self.parent.updateFromDict( self.basket )
-    self.clear()

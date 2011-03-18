@@ -24,7 +24,7 @@ from ConfigBasket import ConfigBasket
 
 class Settings:
 
-  def __init__( self, schema, defaults ):
+  def __init__( self, schema ):
 
     self.schema = schema
     self.basket = ConfigBasket()
@@ -34,7 +34,7 @@ class Settings:
     pass
 
 
-  def getSectionByPath( self, autocreate=False ):
+  def getSection( self, path, autocreate=False ):
     pass
 
   def toDict( self ):

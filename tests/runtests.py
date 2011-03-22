@@ -70,7 +70,12 @@ def find_all_tests():
 
 if __name__ == "__main__":
 
+  include_list = sys.argv[ 1: ]
+
   for f in find_all_tests():
+
+    if include_list and not any( pattern in f for pattern in include_list ):
+      continue
 
     failed, run = doctest.testfile( f, report=True,
                                     optionflags=OPTIONS, encoding="utf-8" )

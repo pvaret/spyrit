@@ -19,6 +19,13 @@
 ## Holds the classes that handle the configuration subsystem.
 ##
 
+u"""
+:doctest:
+
+>>> from ConfigBasket import *
+
+"""
+
 
 from CallbackRegistry import CallbackRegistry
 from weakref          import WeakValueDictionary
@@ -161,31 +168,32 @@ class ConfigBasket( DictAttrProxy ):
   def __getitem__( self, key ):
 
     ## Attempt to resolve key as local value:
+
     if key in self.basket:
       return self.basket[ key ]
 
-    ## Attempt to resolve key as local section, possibly reparented to this
-    ## object's parent's similarly named subsection:
+    ## Attempt to resolve key as section:
+
     if key in self.sections:
+      return self.sections[ key ]
 
-      section = self.sections[ key ]
+    ## If the key exists as a section on a parent, use that to create a new
+    ## subsection on this object:
 
-      if self.parent:
-
-        try:
-          parent_section = self.parent[ key ]
-
-        except KeyError:
-          parent_section = None
-
-      section.setParent( parent_section )
-      return section
-
-    ## Attempt to resolve key as value or section on parent:
     if self.parent:
-      return self.parent[ key ]
 
-    ## Abort:
+      try:
+        parent_section = self.parent.section( key )
+        subsection = self.section( key, create=True )
+        subsection.setParent( parent_section )
+        return subsection
+
+      except KeyError:
+
+        ## Last ditch effort: get key value on parent.
+        return self.parent[ key ]
+
+    ## No parent. Abort.
     raise KeyError( key )
 
 
@@ -272,6 +280,30 @@ class ConfigBasket( DictAttrProxy ):
     return self.basket.get( key, default )
 
 
+  def section( self, name, create=False ):
+    """
+    Returns the first subsection with the given name in the parent hierarchy.
+
+    Raises KeyError if none exist.
+
+    If the create parameter is True, create the section on this object and
+    return it.
+
+    """
+
+    if name in self.sections:
+      return self.sections[ name ]
+
+    if create:
+      subsection = self.sections[ name ] = ConfigBasket( self )
+      return subsection
+
+    if self.parent:
+      return self.parent.section( name )
+
+    raise KeyError( u"No such section", name )
+
+
   def setParent( self, parent ):
 
     self.parent = parent
@@ -283,6 +315,7 @@ class ConfigBasket( DictAttrProxy ):
   def clear( self ):
 
     ## We do this by hand, so notifications are emitted appropriately.
+
     for key in list( self.basket.keys() ):  ## Wrapped in a list because we'll
       del self[ key ]                       ## be deleting items on the fly.
 

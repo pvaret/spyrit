@@ -85,7 +85,23 @@ This tests the object alone, not its whole hierarchy:
 >>> print 'key1' in cc
 False
 
+Subsections can be created with an explicit name:
 
+>>> subsection = c.section( 'subsection', create=True )
+
+They can then be accessed as keys on their parent object:
+
+>>> c[ 'subsection' ] is subsection
+True
+
+>>> c[ 'subsection' ][ 'key1' ] = 'YET ANOTHER TEST'
+>>> print subsection[ 'key1' ]
+YET ANOTHER TEST
+
+But subsections are also automatically inherited by children:
+
+>>> print cc[ 'subsection' ][ 'key1' ]
+YET ANOTHER TEST
 
 Lastly, a configuration object can notify a callback when a key changes.
 

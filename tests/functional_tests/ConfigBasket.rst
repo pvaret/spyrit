@@ -1,4 +1,4 @@
-.. :doctest:
+. :doctest:
 
 This module provides the ``ConfigBasket`` class for easy storage and retrieval
 of hierarchal configuration keys.
@@ -21,9 +21,8 @@ Configuration objects are hierarchal: an object can have children, and they
 inherit its keys. Children of a base configuration object are considered as
 *sections* of the configuration.
 
->>> cc = c.createAnonymousSection()
->>> type( cc ) is ConfigBasket
-True
+>>> cc = ConfigBasket()
+>>> cc.setParent( c )
 >>> print cc[ 'key1' ]
 TEST
 
@@ -35,85 +34,58 @@ OTHER TEST
 >>> print c[ 'key1' ]
 TEST
 
+A configuration object's own keys can be obtained without inheritance using the
+get() method:
+
+>>> c[ 'key2' ] = 'SECOND TEST'
+>>> print c.get( 'key2' )
+SECOND TEST
+>>> print cc.get( 'key2' )
+None
+
+get() also takes a default argument:
+
+>>> print c.get( 'missing_key', 'THIS KEY IS MISSING' )
+THIS KEY IS MISSING
+
 If a key is set on the child with the same value as propagated by the parent,
 then the child forgets its instance of the key and uses that of the parent
 instead.
 
->>> print cc.owns( 'key1' )
-True
 >>> cc[ 'key1' ] = 'TEST'  ## Same value as in parent.
->>> print cc.owns( 'key1' )
-False
+>>> print cc.get( 'key1' )
+None
 
-A section created with ``createAnonymousSection`` is part of the configuration
-hierarchy as far as key propagation goes, but is otherwise detached from the
-tree, and won't be saved. An anonymous section can thus, for instance, be
-bound to a configuration dialog, and then applied on its parent when the
-dialog is okay'ed.
+For the sake of easing the creation of configuration dialogs, the values of a
+configuration object can be applied to its parent:
 
->>> cc[ 'key1' ] = 'NEW TEST'
->>> print cc.isEmpty()
+>>> temp_config = ConfigBasket( c )  ## This is the same as creating it without
+...                                  ## arguments and calling
+...                                  ## temp_config.setParent( c ) later.
+
+>>> temp_config[ 'key1' ] = 'NEW TEST'
+>>> print temp_config.isEmpty()
 False
 >>> print c[ 'key1' ]
 TEST
 
->>> cc.commit()
+>>> temp_config.apply()
 >>> print c[ 'key1' ]
 NEW TEST
->>> print cc.isEmpty()
+>>> print temp_config.isEmpty()
 True
 
-A section created with ``createAnonymousSection`` can be attached into the
-hierarchy later on:
+You can test whether a key exists within a given object.
 
->>> cc.saveAsSection( 'subsection' )
->>> print c.getSectionList()
-['subsection']
->>> print c.getSection( 'subsection' ) is cc
+>>> print 'key1' in c
 True
 
-This is equivalent to creating a named section right away:
+This tests the object alone, not its whole hierarchy:
 
->>> cc2 = c.createSection( 'subsection2' )
->>> print sorted( c.getSectionList() )
-['subsection', 'subsection2']
-
-You can test whether a key exists within a given hierachy. This is true if the
-key is held by this object or any of its parents.
-
->>> print cc2.exists( 'key1' )
-True
->>> print cc2.owns( 'key1' )
+>>> print 'key1' in cc
 False
 
-Sections can be renamed:
 
->>> c.renameSection( 'subsection2', 'testsection' )
->>> print sorted( c.getSectionList() )
-['subsection', 'testsection']
-
-And they can be deleted:
-
->>> c.deleteSection( 'testsection' )
->>> print 'testsection' in c.getSectionList()
-False
-
-Configuration trees can be imported and exported as dicts.
-
->>> c.getSection( 'subsection' )[ 'key2' ] = 'TEST 2'
->>> print c.dumpAsDict()
-{'key1': 'NEW TEST', '@subsection': {'key2': 'TEST 2'}}
-
->>> del c, cc
->>> c = ConfigBasket.buildFromDict(
-...   {'key': 'TEST 1', '@section1': {'key': 'TEST 2'}}
-... )
-
->>> print c[ 'key' ]
-TEST 1
->>> cc = c.getSection( 'section1' )
->>> print cc[ 'key' ]
-TEST 2
 
 Lastly, a configuration object can notify a callback when a key changes.
 
@@ -130,29 +102,18 @@ Notifications are also propagated from parent to children:
 >>> c[ 'otherkey' ] = 'OTHER VALUE'
 Notified: otherkey=OTHER VALUE
 
-This happens even if the child is anonymous:
-
->>> c.deleteSection( 'section1' )
->>> del cc
->>> c2 = c.createAnonymousSection()
->>> c2.registerNotifier( notifier )
->>> c[ 'newkey' ] = 'TEST'
-Notified: newkey=TEST
-
 Notifications are not emitted when the assigned value of a key doesn't change:
 
->>> c[ 'newkey' ] = 'TEST'
-
-## Nothing happens -- the new value is identical to the old!
+>>> c[ 'otherkey' ] = 'OTHER VALUE'
+>>> ## Nothing happens -- the new value is identical to the old!
 
 The callbacks are linked to with weak references, to ease garbage collection.
 
 >>> del notifier
->>> c['key'] = 'YET ANOTHER VALUE'
+>>> c[ 'key' ] = 'YET ANOTHER VALUE'
+>>> ## Nothing happens -- the notifier has been recycled!
 
-## Nothing happens -- the notifier has been recycled!
-
->>> del c, c2
+>>> del c, cc, temp_config
 
 
 
@@ -184,26 +145,3 @@ True
 False
 
 >>> del DictAttrProxy, MyDictClass, m
-
-
-WeakList
---------
-
-The ``WeakList`` class functions as the usual WeakDictionary class from the
-weakref module, only with a list. It is used internally in the implementation
-of ``ConfigBasket``.
-
->>> from ConfigBasket import WeakList
->>> wl = WeakList()
-
->>> class Dummy: pass
->>> o = Dummy()
->>> wl.append( o )
->>> print len( wl )
-1
-
->>> del o
->>> print len( wl )
-0
-
->>> del wl, WeakList

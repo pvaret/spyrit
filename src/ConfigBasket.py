@@ -25,7 +25,7 @@ from weakref          import WeakValueDictionary
 
 import string
 
-VALID_KEY_CHARACTER = string.ascii_letters + string.digits + "_"
+VALID_KEY_CHARACTER = set( string.ascii_letters + string.digits + "_" )
 
 
 
@@ -116,8 +116,9 @@ class WeakSet( WeakValueDictionary ):
   """
   Provides a set that doesn't keep references to its contents.
 
+  >>> class Class( object ): pass
   >>> ws = WeakSet()
-  >>> a = object() ; b = object()
+  >>> a = Class() ; b = Class()
   >>> ws.add( a ) ; ws.add( b )
   >>> len( ws )
   2
@@ -144,7 +145,6 @@ class ConfigBasket( DictAttrProxy ):
 
   def __init__( self, parent=None ):
 
-    self.name      = None
     self.basket    = {}
     self.sections  = {}
     self.children  = WeakSet()
@@ -160,12 +160,32 @@ class ConfigBasket( DictAttrProxy ):
 
   def __getitem__( self, key ):
 
+    ## Attempt to resolve key as local value:
     if key in self.basket:
-        return self.basket[ key ]
+      return self.basket[ key ]
 
+    ## Attempt to resolve key as local section, possibly reparented to this
+    ## object's parent's similarly named subsection:
+    if key in self.sections:
+
+      section = self.sections[ key ]
+
+      if self.parent:
+
+        try:
+          parent_section = self.parent[ key ]
+
+        except KeyError:
+          parent_section = None
+
+      section.setParent( parent_section )
+      return section
+
+    ## Attempt to resolve key as value or section on parent:
     if self.parent:
-        return self.parent[ key ]
+      return self.parent[ key ]
 
+    ## Abort:
     raise KeyError( key )
 
 
@@ -174,7 +194,14 @@ class ConfigBasket( DictAttrProxy ):
     if not self.isValidKeyName( key ):
       raise KeyError( "Invalid key name '%s'" % key )
 
-    if self.parent and key in self.parent and self.parent[ key ] == value:
+    old_value = object()
+
+    try:
+      old_value = self.parent[ key ] if self.parent else old_value
+    except KeyError:
+      pass
+
+    if value == old_value:  ## Always fails if old_value is a new object().
 
       ## If the parent's value is already set to the new value, we delete
       ## the attribute on this object instead so we'll inherit that of its
@@ -199,8 +226,7 @@ class ConfigBasket( DictAttrProxy ):
 
     self.basket[ key ] = value
 
-    if old_value != value:
-      self.notifyKeyChanged( key, value )
+    self.notifyKeyChanged( key, value )
 
 
   def __delitem__( self, key ):
@@ -208,15 +234,42 @@ class ConfigBasket( DictAttrProxy ):
     if key not in self.basket:
       raise KeyError( key )
 
-    old_value = self[ key ]
+    old_value = self.basket[ key ]
 
     del self.basket[ key ]
 
-    if self.parent and key in self.parent:
-      value = self.parent[ key ]
+    value = object()
 
-      if old_value != value:
-        self.notifyKeyChanged( key, value )
+    if self.parent:
+      try:
+        value = self.parent[ key ]
+      except KeyError:
+        pass
+
+    if old_value != value:  ## Always true if value is object() from above.
+      self.notifyKeyChanged( key, value )
+
+
+  def __contains__( self, key ):
+
+    return key in self.basket
+
+
+  def get( self, key, default=None ):
+    """
+    Returns the value for the given key from this object if it exists, or the
+    given default otherwise.
+
+    >>> c = ConfigBasket()
+    >>> c[ 'a' ] = 1
+    >>> c.get( 'a', 2 )
+    1
+    >>> c.get( 'b', 2 )
+    2
+
+    """
+
+    return self.basket.get( key, default )
 
 
   def setParent( self, parent ):
@@ -230,103 +283,28 @@ class ConfigBasket( DictAttrProxy ):
   def clear( self ):
 
     ## We do this by hand, so notifications are emitted appropriately.
-    for key in self.basket:
-      del self[ key ]
+    for key in list( self.basket.keys() ):  ## Wrapped in a list because we'll
+      del self[ key ]                       ## be deleting items on the fly.
 
 
   def apply( self ):
 
-    self.parent.updateFromDict( self.basket )
+    for k, v in self.basket.iteritems():
+      self.parent[ k ] = v
+
     self.clear()
 
 
   def isEmpty( self ):
 
-    return len( self.basket ) == 0 and len( self.sections ) == 0
-
-
-  #def hasSection( self, section ):
-
-  #  return self.sections.has_key( section )
-
-
-  #def getSection( self, section ):
-
-  #  try:
-  #    return self.sections[ section ]
-
-  #  except KeyError:
-  #    raise KeyError( "This configuration object doesn't have a section "
-  #                  + "called %s." % section )
-
-
-  #def getSectionList( self ):
-
-  #  return list( self.sections.iterkeys() )
-
-
-  #def saveSection( self, section, name ):
-
-  #  section.name = name
-  #  section.setParent( self )
-
-  #  self.sections[ name ] = section
-
-
-  #def saveAsSection( self, name ):
-
-  #  ## Watch the difference with the above method: here, THIS object is being
-  #  ## saved into its PARENT as a new section.
-
-  #  self.parent.saveSection( self, name )
-
-
-  #def renameSection( self, oldname, newname ):
-
-  #  ## Warning: this function doesn't check whether the new section name is
-  #  ## already in use -- if so, that section will be overridden. In other
-  #  ## words, this is an 'mv' and not 'mv -i'.
-  #  ## Code that makes use of this method should check that 'newname' is free,
-  #  ## if it thinks it matters.
-
-  #  section = self.getSection( oldname )  ## Raises KeyError if no such section.
-  #  self.deleteSection( oldname )
-  #  section.saveAsSection( newname )
-
-
-  #def deleteSection( self, name ):
-
-  #  try:
-  #    del self.sections[ name ]
-
-  #  except KeyError:
-  #    raise KeyError( "This configuration object doesn't have a section "
-  #                  + "called %s." % name )
-
-
-  #def createAnonymousSection( self ):
-
-  #  return ConfigBasket( self )
-
-
-  #def createSection( self, name ):
-
-  #  c = self.createAnonymousSection()
-  #  c.saveAsSection( name )
-
-  #  return c
-
-
-  #def isAnonymous( self ):
-
-  #  return self.name is None
+    return len( self.basket ) == 0 and len( self.children ) == 0
 
 
   def notifyKeyChanged( self, key, value ):
 
     self.notifiers.triggerAll( key, value )
 
-    ## TODO: Only propagate to childrens if the new value of the parent is
+    ## TODO: Only propagate to children if the new value of the parent is
     ## also new to them.
 
     for child in self.children:

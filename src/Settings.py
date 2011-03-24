@@ -33,10 +33,6 @@ class Settings:
   def save( self ):
     pass
 
-
-  def getSection( self, path, autocreate=False ):
-    pass
-
   def toDict( self ):
     pass
 

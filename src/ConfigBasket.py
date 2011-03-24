@@ -184,7 +184,7 @@ class ConfigBasket( DictAttrProxy ):
 
       try:
         parent_section = self.parent.section( key )
-        subsection = self.section( key, create=True )
+        subsection = self.section( key, create_if_missing=True )
         subsection.setParent( parent_section )
         return subsection
 
@@ -280,21 +280,21 @@ class ConfigBasket( DictAttrProxy ):
     return self.basket.get( key, default )
 
 
-  def section( self, name, create=False ):
+  def section( self, name, create_if_missing=False ):
     """
     Returns the first subsection with the given name in the parent hierarchy.
 
     Raises KeyError if none exist.
 
-    If the create parameter is True, create the section on this object and
-    return it.
+    If the create_if_missing parameter is True, create the section on this
+    object and return it.
 
     """
 
     if name in self.sections:
       return self.sections[ name ]
 
-    if create:
+    if create_if_missing:
       subsection = self.sections[ name ] = ConfigBasket( self )
       return subsection
 

@@ -29,10 +29,11 @@ u"""
 """
 
 
-from Globals import FORMAT_PROPERTIES
-
 from PyQt4.QtGui import QKeySequence
+from PyQt4.QtCore import QSize, QPoint
 
+from Globals import FORMAT_PROPERTIES
+from Matches import RegexMatch, SmartMatch
 
 
 DEFAULT_ESCAPES = {
@@ -338,13 +339,92 @@ class Format( BaseSerializer ):
 
 class KeySequence( BaseSerializer ):
 
+  def __init__( self, default=None ):
+
+    ## QKeySequence.fromString uses PortableText by default, and so do our
+    ## defaults:
+    self.default = QKeySequence.fromString( default ) if default is not None \
+                   else None
+
+
   def serialize( self, seq ):
 
-    ## QKeySequence.toString() uses PortableText format by default.
-    return unicode( seq.toString() )
+    return unicode( seq.toString( QKeySequence.NativeText) )
 
 
   def deserialize( self, string ):
 
-    ## QKeySequence.fromString() uses PortableText format by default.
-    return QKeySequence.fromString( string )
+    return QKeySequence.fromString( string, QKeySequence.NativeText )
+
+
+class Size( BaseSerializer ):
+
+  def serialize( self, size ):
+
+    return u"%dx%d" % ( size.width(), size.height() )
+
+
+  def deserialize( self, string ):
+
+    string = string.lower().strip()
+
+    if u'x' in string:
+
+      w, h = string.split( u'x', 1 )
+
+      try:
+        return QSize( int( w ), int( h ) )
+
+      except TypeError:
+        pass
+
+    return QSize()
+
+
+class Point( BaseSerializer ):
+
+  def serialize( self, point ):
+
+    return u"%dx%d" % ( point.x(), point.y() )
+
+
+  def deserialize( self, string ):
+
+    string = string.lower().strip()
+
+    if u'x' in string:
+
+      x, y = string.split( u'x', 1 )
+
+      try:
+        return QPoint( int( x ), int( y ) )
+
+      except TypeError:
+        pass
+
+    return QPoint()
+
+
+class Pattern( BaseSerializer ):
+
+  def serialize( self, pattern ):
+
+    if any( isinstance( pattern, cls ) for cls in ( RegexMatch, SmartMatch) ):
+      return repr( pattern )
+
+    return u''
+
+
+  def deserialize( self, string ):
+
+    if u":" in string:
+
+      prefix, suffix = string.split( u":", 1 )
+      prefix = prefix.lower()
+
+      for cls in ( RegexMatch, SmartMatch ):
+
+        if prefix == cls.matchtype:
+          return cls( suffix )
+
+    return SmartMatch( string )

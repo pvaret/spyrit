@@ -87,7 +87,7 @@ False
 
 Subsections can be created with an explicit name:
 
->>> subsection = c.section( 'subsection', create=True )
+>>> subsection = c.section( 'subsection', create_if_missing=True )
 
 They can then be accessed as keys on their parent object:
 

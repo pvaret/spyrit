@@ -19,9 +19,10 @@
 ## Implements schemas that defines the layout of a settings object.
 ##
 
-from Serializers import Bool, Int, Format, Str, Size, Point, List, Pattern, KeySequence
-from ConfigPaths import LOG_DIR
-from Globals     import ANSI_COLORS as COL
+from ConfigBasket import ConfigBasket
+from Serializers  import Bool, Int, Format, Str, Size, Point, List, Pattern, KeySequence
+from ConfigPaths  import LOG_DIR
+from Globals      import ANSI_COLORS as COL
 
 from PlatformSpecific import PlatformSpecific
 
@@ -110,7 +111,7 @@ SCHEMA = {
     ( '/ui/input/save_history', Int( u"10" ) ),
   ),
   'sections': (
-    ( '/worlds/*', WORLDS_SCHEMA ),
+    ( '/worlds', WORLDS_SCHEMA ),
     ( '/matches', MATCHES_SCHEMA ),
     ( '/shortcuts', SHORTCUTS_SCHEMA ),
   )
@@ -122,7 +123,7 @@ STATE = {
     ( '/ui/window/pos', Point() ),
   ),
   'sections': (
-    ( '/worlds/*', {
+    ( '/worlds', {
         'keys': (
           ( '/ui/splitter/sizes', List( Int(), u"1000, 100, 100" ) ),
           ( '/ui/input/history', List( Str(), [] ) ),
@@ -132,9 +133,53 @@ STATE = {
 }
 
 
-class SettingsSchema:
+class SettingsSchema( ConfigBasket ):
 
-  def __init__( self, definition ):
+  def __init__( self, definition=None ):
 
-    for path, serializer in definition:
-      pass
+    ConfigBasket.__init__( self )
+
+    if definition:
+      self.loadDefinition( definition )
+
+
+  def loadDefinition( self, definition ):
+
+    for path, serializer in definition.get( 'keys', () ):
+
+      path = path.rstrip( '/' )
+
+      if not '/' in path:
+        path = '/' + path
+
+      node_path, key_pattern = path.rsplit( '/', 1 )
+      node = self.nodeForPath( node_path )
+
+      node.basket[ key_pattern ] = serializer
+
+    for path, sub_definition in definition.get( 'sections', () ):
+
+      sub_node = self.nodeForPath( path )
+
+      inherit = sub_definition.get( 'inherit' )
+
+      if inherit:
+        inherit_node = self.nodeForPath( inherit )
+        sub_node.setParent( inherit_node )
+
+      sub_node.loadDefinition( sub_definition )
+
+
+  def nodeForPath( self, path ):
+
+    node = self
+
+    for name in path.split( '/' ):
+      if name:
+        node = node.section( name, create_if_missing=True )
+
+    return node
+
+
+  def __getitem__( self, key ):
+    pass

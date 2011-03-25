@@ -280,14 +280,18 @@ class ConfigBasket( DictAttrProxy ):
     return self.basket.get( key, default )
 
 
-  def section( self, name, create_if_missing=False ):
+  def section( self, name, create_if_missing=False, inherit=False ):
     """
     Returns the first subsection with the given name in the parent hierarchy.
 
     Raises KeyError if none exist.
 
     If the create_if_missing parameter is True, create the section on this
-    object and return it.
+    object and return it. This object's class is used for the creation, so
+    subclasses of ConfigBasket can work as intented.
+
+    The created section doesn't inherit from anything unless the inherit
+    parameter is True, in which case it inherits from this object.
 
     """
 
@@ -295,7 +299,11 @@ class ConfigBasket( DictAttrProxy ):
       return self.sections[ name ]
 
     if create_if_missing:
-      subsection = self.sections[ name ] = ConfigBasket( self )
+      subsection = self.sections[ name ] = self.__class__()
+
+      if inherit:
+          subsection.setParent( self )
+
       return subsection
 
     if self.parent:

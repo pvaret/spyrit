@@ -14,7 +14,7 @@
 ##
 
 ##
-## ConfigBasket.py
+## SettingsNode.py
 ##
 ## Holds the classes that handle the configuration subsystem.
 ##
@@ -22,7 +22,7 @@
 u"""
 :doctest:
 
->>> from ConfigBasket import *
+>>> from SettingsNode import *
 
 """
 
@@ -144,7 +144,7 @@ class WeakSet( WeakValueDictionary ):
 
 
 
-class ConfigBasket( DictAttrProxy ):
+class SettingsNode( DictAttrProxy ):
   """
   Holds the core behavior for a set of configuration keys.
   """
@@ -152,7 +152,7 @@ class ConfigBasket( DictAttrProxy ):
 
   def __init__( self, parent=None ):
 
-    self.basket    = {}
+    self.keys      = {}
     self.sections  = {}
     self.children  = WeakSet()
     self.notifiers = CallbackRegistry()
@@ -169,8 +169,8 @@ class ConfigBasket( DictAttrProxy ):
 
     ## Attempt to resolve key as local value:
 
-    if key in self.basket:
-      return self.basket[ key ]
+    if key in self.keys:
+      return self.keys[ key ]
 
     ## Attempt to resolve key as section:
 
@@ -232,19 +232,19 @@ class ConfigBasket( DictAttrProxy ):
       ## If the value hasn't changed, we quit right away.
       return
 
-    self.basket[ key ] = value
+    self.keys[ key ] = value
 
     self.notifyKeyChanged( key, value )
 
 
   def __delitem__( self, key ):
 
-    if key not in self.basket:
+    if key not in self.keys:
       raise KeyError( key )
 
-    old_value = self.basket[ key ]
+    old_value = self.keys[ key ]
 
-    del self.basket[ key ]
+    del self.keys[ key ]
 
     value = object()
 
@@ -260,7 +260,7 @@ class ConfigBasket( DictAttrProxy ):
 
   def __contains__( self, key ):
 
-    return key in self.basket
+    return key in self.keys
 
 
   def get( self, key, default=None ):
@@ -268,7 +268,7 @@ class ConfigBasket( DictAttrProxy ):
     Returns the value for the given key from this object if it exists, or the
     given default otherwise.
 
-    >>> c = ConfigBasket()
+    >>> c = SettingsNode()
     >>> c[ 'a' ] = 1
     >>> c.get( 'a', 2 )
     1
@@ -277,7 +277,7 @@ class ConfigBasket( DictAttrProxy ):
 
     """
 
-    return self.basket.get( key, default )
+    return self.keys.get( key, default )
 
 
   def section( self, name, create_if_missing=False, inherit=False ):
@@ -288,7 +288,7 @@ class ConfigBasket( DictAttrProxy ):
 
     If the create_if_missing parameter is True, create the section on this
     object and return it. This object's class is used for the creation, so
-    subclasses of ConfigBasket can work as intented.
+    subclasses of SettingsNode can work as intented.
 
     The created section doesn't inherit from anything unless the inherit
     parameter is True, in which case it inherits from this object.
@@ -324,13 +324,13 @@ class ConfigBasket( DictAttrProxy ):
 
     ## We do this by hand, so notifications are emitted appropriately.
 
-    for key in list( self.basket.keys() ):  ## Wrapped in a list because we'll
-      del self[ key ]                       ## be deleting items on the fly.
+    for key in list( self.keys.keys() ):  ## Wrapped in a list because we'll
+      del self[ key ]                     ## be deleting items on the fly.
 
 
   def apply( self ):
 
-    for k, v in self.basket.iteritems():
+    for k, v in self.keys.iteritems():
       self.parent[ k ] = v
 
     self.clear()
@@ -338,7 +338,7 @@ class ConfigBasket( DictAttrProxy ):
 
   def isEmpty( self ):
 
-    return len( self.basket ) == 0 and len( self.children ) == 0
+    return len( self.keys ) == 0 and len( self.children ) == 0
 
 
   def notifyKeyChanged( self, key, value ):

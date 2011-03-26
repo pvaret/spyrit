@@ -1,10 +1,10 @@
 . :doctest:
 
-This module provides the ``ConfigBasket`` class for easy storage and retrieval
+This module provides the ``SettingsNode`` class for easy storage and retrieval
 of hierarchal configuration keys.
 
->>> from ConfigBasket import ConfigBasket
->>> c = ConfigBasket()
+>>> from SettingsNode import SettingsNode
+>>> c = SettingsNode()
 >>> c[ 'key1' ] = 'TEST'
 >>> print c[ 'key1' ]
 TEST
@@ -21,7 +21,7 @@ Configuration objects are hierarchal: an object can have children, and they
 inherit its keys. Children of a base configuration object are considered as
 *sections* of the configuration.
 
->>> cc = ConfigBasket()
+>>> cc = SettingsNode()
 >>> cc.setParent( c )
 >>> print cc[ 'key1' ]
 TEST
@@ -59,7 +59,7 @@ None
 For the sake of easing the creation of configuration dialogs, the values of a
 configuration object can be applied to its parent:
 
->>> temp_config = ConfigBasket( c )  ## This is the same as creating it without
+>>> temp_config = SettingsNode( c )  ## This is the same as creating it without
 ...                                  ## arguments and calling
 ...                                  ## temp_config.setParent( c ) later.
 
@@ -138,9 +138,9 @@ DictAttrProxy
 
 The module also provides the ``DictAttrProxy`` class, which makes the items in
 a dict-like subclass accessible as underscore-prefixed attributes. It is used
-internally in the implementation of ``ConfigBasket``.
+internally in the implementation of ``SettingsNode``.
 
->>> from ConfigBasket import DictAttrProxy
+>>> from SettingsNode import DictAttrProxy
 
 >>> class MyDictClass( dict, DictAttrProxy ):
 ...   pass

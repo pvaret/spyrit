@@ -19,125 +19,15 @@
 ## Implements schemas that defines the layout of a settings object.
 ##
 
-from ConfigBasket import ConfigBasket
-from Serializers  import Bool, Int, Format, Str, Size, Point, List, Pattern, KeySequence
-from ConfigPaths  import LOG_DIR
-from Globals      import ANSI_COLORS as COL
-
-from PlatformSpecific import PlatformSpecific
-
-default_font = PlatformSpecific.default_font
+from fnmatch      import fnmatchcase
+from SettingsNode import SettingsNode
 
 
-
-
-
-WORLDS_SCHEMA = {
-  'keys': (
-    ( '/name', Str( None ) ),
-    ( '/encoding', Str( u"latin1" ) ),
-    ( '/net/host', Str( u"" ) ),
-    ( '/net/port', Int( u"4201" ) ),
-    ( '/net/ssl', Bool( u"off" ) ),
-  ),
-  'inherit': '/',
-}
-
-MATCHES_SCHEMA = {
-  'keys': (
-    ( 'match', List( Pattern() ) ),
-    ( 'gag', Bool() ),
-    ( 'play', Str() ),
-    ( 'highlight', Format() ),
-    ( 'highlight_*', Format() ),
-  )
-}
-
-SHORTCUTS_SCHEMA = {
-  'keys': (
-    ( 'about',          KeySequence( None ) ),
-    ( 'aboutqt',        KeySequence( None ) ),
-    ( 'newworld',       KeySequence( u"Ctrl+N" ) ),
-    ( 'quickconnect',   KeySequence( None ) ),
-    ( 'quit',           KeySequence( u"Ctrl+Q" ) ),
-    ( 'nexttab',        KeySequence( u"Ctrl+PgDown" ) ),
-    ( 'previoustab',    KeySequence( u"Ctrl+PgUp" ) ),
-    ( 'close',          KeySequence( u"Ctrl+W" ) ),
-    ( 'connect',        KeySequence( u"Ctrl+Shift+S" ) ),
-    ( 'disconnect',     KeySequence( u"Ctrl+Shift+D" ) ),
-    ( 'historyup',      KeySequence( u"Ctrl+Up" ) ),
-    ( 'historydown',    KeySequence( u"Ctrl+Down" ) ),
-    ( 'autocomplete',   KeySequence( u"Ctrl+Space" ) ),
-    ( 'pageup',         KeySequence( u"PgUp" ) ),
-    ( 'pagedown',       KeySequence( u"PgDown" ) ),
-    ( 'stepup',         KeySequence( u"Ctrl+Shift+Up" ) ),
-    ( 'stepdown',       KeySequence( u"Ctrl+Shift+Down" ) ),
-    ( 'home',           KeySequence( u"Ctrl+Home" ) ),
-    ( 'end',            KeySequence( u"Ctrl+End" ) ),
-    ( 'startlog',       KeySequence( None ) ),
-    ( 'stoplog',        KeySequence( None ) ),
-    ( 'toggle2ndinput', KeySequence( u"Ctrl+M" ) ),
-  )
-}
-
-
-
-
-
-SCHEMA = {
-  'keys': (
-    ( '/app/name', Str( u"Spyrit" ) ),
-    ( '/app/version', Str( u"0.5dev" ) ),
-    ( '/log/file', Str( u"[WORLDNAME]-%Y.%m.%d.log" ) ),
-    ( '/log/dir', Str( LOG_DIR ) ),
-    ( '/log/autostart', Bool( u"off" ) ),
-    ( '/log/ansi', Bool( u"off" ) ),
-    ( '/ui/style', Str() ),
-    ( '/ui/window/min_size', Size( u"320x200" ) ),
-    ( '/ui/window/alert', Bool( u"on" ) ),
-    ( '/ui/toolbar/icon_size', Int( u"24" ) ),
-    ( '/ui/view/split_scroll', Bool( u"on" ) ),
-    ( '/ui/view/paging', Bool( u"on" ) ),
-    ( '/ui/view/font/name', Str( default_font ) ),
-    ( '/ui/view/font/size', Int( u"0" ) ),
-    ( '/ui/view/font/text_format', Format( u"color: %s" % COL.lightgray ) ),
-    ( '/ui/view/font/info_format', Format( u"italic ; color: %s" % COL.darkgray ) ),
-    ( '/ui/view/background/color', Str( COL.black ) ),
-    ( '/ui/input/font/name', Str( u"" ) ),
-    ( '/ui/input/font/size', Int( u"0" ) ),
-    ( '/ui/input/font/color', Str( u"" ) ),
-    ( '/ui/input/background/color', Str( COL.white ) ),
-    ( '/ui/input/max_history', Int( u"0" ) ),
-    ( '/ui/input/save_history', Int( u"10" ) ),
-  ),
-  'sections': (
-    ( '/worlds', WORLDS_SCHEMA ),
-    ( '/matches', MATCHES_SCHEMA ),
-    ( '/shortcuts', SHORTCUTS_SCHEMA ),
-  )
-}
-
-STATE = {
-  'keys': (
-    ( '/ui/window/size', Size( u"800x600" ) ),
-    ( '/ui/window/pos', Point() ),
-  ),
-  'sections': (
-    ( '/worlds', {
-        'keys': (
-          ( '/ui/splitter/sizes', List( Int(), u"1000, 100, 100" ) ),
-          ( '/ui/input/history', List( Str(), [] ) ),
-        ),
-    } ),
-  ),
-}
-
-
-class SettingsSchema( ConfigBasket ):
+class SettingsSchema( SettingsNode ):
 
   def __init__( self, definition=None ):
 
-    ConfigBasket.__init__( self )
+    SettingsNode.__init__( self )
 
     if definition:
       self.loadDefinition( definition )
@@ -155,7 +45,9 @@ class SettingsSchema( ConfigBasket ):
       node_path, key_pattern = path.rsplit( '/', 1 )
       node = self.nodeForPath( node_path )
 
-      node.basket[ key_pattern ] = serializer
+      ## Direct access to node.keys instead of going through __setitem__, so we
+      ## can use special characters in the pattern.
+      node.keys[ key_pattern ] = serializer.default
 
     for path, sub_definition in definition.get( 'sections', () ):
 
@@ -182,4 +74,11 @@ class SettingsSchema( ConfigBasket ):
 
 
   def __getitem__( self, key ):
-    pass
+
+    ## Attempt to match the key to a pattern:
+    for pattern in self.keys:
+      if fnmatchcase( key, pattern ):
+        return self.keys[ pattern ]
+
+    ## Otherwise, fall back onto the default behavior.
+    return SettingsNode.__getitem__( self, key )

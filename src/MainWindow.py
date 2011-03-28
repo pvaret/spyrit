@@ -50,17 +50,19 @@ class MainWindow( QMainWindow ):
 
     ## Set up main window according to its configuration.
 
-    self.setWindowTitle( config._app_name )
+    self.setWindowTitle( config._app._name )
 
-    min_size = config._mainwindow_min_size
-    if min_size and len( min_size ) >= 2:
-      self.setMinimumSize( QSize( min_size[0], min_size[1] ) )
+    min_size = config._ui._window._min_size
+    if min_size and min_size.isValid():
+      self.setMinimumSize( min_size )
 
-    size = config._mainwindow_size
-    if size and len( size ) >= 2: self.resize( QSize( size[0], size[1] ) )
+    size = config._ui._window._size
+    if size and size.isValid():
+      self.resize( size )
 
-    pos = config._mainwindow_pos
-    if pos and len( pos ) >= 2: self.move( QPoint( pos[0], pos[1] ) )
+    pos = config._ui._window._pos
+    if pos and not pos.isNull():
+      self.move( pos )
 
 
     ## Create the central widget.
@@ -152,9 +154,11 @@ class MainWindow( QMainWindow ):
 
     ## And bind it to the appropriate configuration keys:
 
-    self.observer = ConfigObserver( config )
-    self.observer.addCallback( "widget_style", self.refreshStyle )
-    self.observer.addCallback( "toolbar_icon_size", self.refreshIcons )
+    self.obs1 = ConfigObserver( config._ui )
+    self.obs1.addCallback( "style", self.refreshStyle )
+
+    self.obs2 = ConfigObserver( config._ui._toolbar )
+    self.obs2.addCallback( "icon_size", self.refreshIcons )
 
     self.refreshMenuWorlds()
 
@@ -166,7 +170,7 @@ class MainWindow( QMainWindow ):
 
   def refreshStyle( self ):
 
-    style = QApplication.instance().core.config._widget_style
+    style = QApplication.instance().core.config._ui._style
 
     if not style:
       style = self.initial_style
@@ -179,7 +183,7 @@ class MainWindow( QMainWindow ):
 
   def refreshIcons( self ):
 
-    size = QApplication.instance().core.config._toolbar_icon_size
+    size = QApplication.instance().core.config._ui._toolbar._icon_size
 
     if not size:
       size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
@@ -311,11 +315,8 @@ class MainWindow( QMainWindow ):
 
     config = QApplication.instance().core.config
 
-    size = ( self.size().width(), self.size().height() )
-    config._mainwindow_size = size
-
-    pos = ( self.pos().x(), self.pos().y() )
-    config._mainwindow_pos = pos
+    config._ui._window._size = self.size()
+    config._ui._window._pos  = self.pos()
 
     ## WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
     ## which sometimes causes a segfault when exiting. The following works

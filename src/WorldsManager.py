@@ -21,8 +21,10 @@
 from PyQt4.QtCore import QObject
 from PyQt4.QtCore import pyqtSignal
 
-from World      import World
-from Utilities  import normalize_text
+from World        import World
+from Settings     import WORLDS
+from Utilities    import normalize_text
+from SettingsNode import SettingsNode
 
 
 class WorldsManager( QObject ):
@@ -33,26 +35,14 @@ class WorldsManager( QObject ):
 
     QObject.__init__( self )
 
-    ## Create the section for worlds in the configuration if it doesn't exist
-    ## already.
+    self.worldconfig = config[ WORLDS ]
 
-    if not config.hasSection( config._worlds_section ):
-      config.createSection( config._worlds_section )
-
-    self.worldconfig = config.getSection( config._worlds_section )
-
-    ## LEGACY: The following code manages the case of old configuration files
-    ## with a different world section naming convention. (v0.2 and before.)
-
-    for worldname, worldconf in list( self.worldconfig.sections.iteritems() ):
-
-      ## Note how we duplicate the .iteritems() iterator into a list: that's
-      ## because we'll be modifying some of its elements on the fly.
-
-      if not hasattr( worldconf, "_name" ):
-        worldconf._name = worldname
-
-      self.worldconfig.renameSection( worldname, self.normalize( worldname ) )
+    ## Safety measure: ensure all worlds have a valid name.
+    n = 0
+    for key, conf in self.worldconfig.sections.iteritems():
+      if not conf._name:
+        n += 1
+        conf._name = u"(Unnamed %d)" % n
 
     self.generateMappings()
 
@@ -65,7 +55,7 @@ class WorldsManager( QObject ):
     self.name_mapping = dict(
                            ( self.normalize( conf._name ), conf )
                            for conf in self.worldconfig.sections.itervalues()
-                         )
+                        )
 
     self.hostport_mapping = {}
 
@@ -82,19 +72,18 @@ class WorldsManager( QObject ):
 
   def knownWorldList( self ):
 
+    ## Return world names, sorted by normalized value.
     return [ name
-               for dummy, name
-               in sorted (
-                           ( self.normalize( conf._name ), conf._name )
-                             for conf
-                             in self.worldconfig.sections.itervalues()
-                         )
+               for _, name in sorted(
+                   ( self.normalize( conf._name ), conf._name )
+                   for conf in self.worldconfig.sections.itervalues()
+               )
            ]
 
 
   def newWorldConf( self, host="", port=0, ssl=False, name="" ):
 
-    worldconf = self.worldconfig.createAnonymousSection()
+    worldconf = SettingsNode( self.worldconfig )
 
     if host: worldconf._host = host
     if port: worldconf._port = port
@@ -106,12 +95,16 @@ class WorldsManager( QObject ):
 
   def saveWorld( self, world ):
 
-    if world.isAnonymous():
+    conf = world.conf
+    if conf in self.worldconfig.sections.itervalues():
+      ## World has already been saved, do nothing.
+      return
 
-      world.conf.saveAsSection( self.normalize( world.conf._name ) )
-      self.generateMappings()
+    key = self.normalize( conf._name )
+    self.worldconfig.sections[ key ] = conf
 
-      self.worldListChanged.emit()
+    self.generateMappings()
+    self.worldListChanged.emit()
 
 
   def newWorld( self, conf ):

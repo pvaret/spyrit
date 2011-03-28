@@ -53,9 +53,10 @@ class SocketPipeline:
 
     self.pipeline.addFilter( TelnetFilter )
     self.pipeline.addFilter( AnsiFilter )
-    self.pipeline.addFilter( UnicodeTextFilter, encoding=conf._world_encoding )
+    self.pipeline.addFilter( UnicodeTextFilter, encoding=conf._net._encoding )
     self.pipeline.addFilter( FlowControlFilter )
-    self.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
+    ## TODO: Reactivate once config refactor is completed!
+    #self.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
 
     self.using_ssl = False
     self.socket    = None
@@ -64,19 +65,19 @@ class SocketPipeline:
 
     self.flush_timer = SingleShotTimer( self.flushBuffer )
 
-    self.observer = ConfigObserver( self.conf )
-    self.observer.addCallback( "world_encoding", self.setStreamEncoding )
+    self.observer = ConfigObserver( self.conf._net )
+    self.observer.addCallback( "encoding", self.setStreamEncoding )
 
 
   def setStreamEncoding( self ):
 
     if self.pipeline:
-      self.pipeline.notify( "encoding_changed", self.conf._world_encoding )
+      self.pipeline.notify( "encoding_changed", self.conf._net._encoding )
 
 
   def setupSocket( self ):
 
-    if self.conf._ssl and check_ssl_is_available():
+    if self.conf._net._ssl and check_ssl_is_available():
 
       self.using_ssl = True
       self.socket    = QSslSocket()
@@ -87,7 +88,7 @@ class SocketPipeline:
     else:
       self.socket = QTcpSocket()
 
-      if self.conf._ssl:  ## SSL was requested but is not available...
+      if self.conf._net._ssl:  ## SSL was requested but is not available...
         messages.warn( u"SSL functions not available; attempting" \
                        u"unencrypted connection instead..." )
 
@@ -103,11 +104,13 @@ class SocketPipeline:
 
     self.pipeline.resetInternalState()
 
+    params = ( self.conf._net._host, self.conf._net._port )
+
     if self.using_ssl:
-      self.socket.connectToHostEncrypted( self.conf._host, self.conf._port )
+      self.socket.connectToHostEncrypted( params )
 
     else:
-      self.socket.connectToHost( self.conf._host, self.conf._port )
+      self.socket.connectToHost( params )
 
 
   def disconnectFromHost( self ):

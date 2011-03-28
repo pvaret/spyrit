@@ -124,7 +124,7 @@ def construct_command_registry():
 
 
   from commands.HelpCommand    import HelpCommand
-  from commands.ConfCommand    import ConfCommand
+  #from commands.ConfCommand    import ConfCommand
   from commands.DebugCommand   import DebugCommand
   from commands.FindCommand    import FindCommand
   from commands.SessionCommand import SessionCommand
@@ -134,7 +134,8 @@ def construct_command_registry():
   command_registry = CommandRegistry()
 
   command_registry.registerCommand( HELP,      HelpCommand )
-  command_registry.registerCommand( "conf",    ConfCommand )
+  ## TODO: Reactivate once config refactor is completed!
+  #command_registry.registerCommand( "conf",    ConfCommand )
   command_registry.registerCommand( "debug",   DebugCommand )
   command_registry.registerCommand( "find",    FindCommand )
   command_registry.registerCommand( "session", SessionCommand )

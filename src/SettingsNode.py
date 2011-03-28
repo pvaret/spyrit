@@ -183,10 +183,8 @@ class SettingsNode( DictAttrProxy ):
     if self.parent:
 
       try:
-        parent_section = self.parent.section( key )
-        subsection = self.section( key, create_if_missing=True )
-        subsection.setParent( parent_section )
-        return subsection
+        self.parent.section( key )  ## If this doesn't fail with KeyError...
+        return self.section( key, create_if_missing=True )
 
       except KeyError:
 
@@ -280,7 +278,7 @@ class SettingsNode( DictAttrProxy ):
     return self.keys.get( key, default )
 
 
-  def section( self, name, create_if_missing=False, inherit=False ):
+  def section( self, name, create_if_missing=False ):
     """
     Returns the first subsection with the given name in the parent hierarchy.
 
@@ -290,8 +288,8 @@ class SettingsNode( DictAttrProxy ):
     object and return it. This object's class is used for the creation, so
     subclasses of SettingsNode can work as intented.
 
-    The created section doesn't inherit from anything unless the inherit
-    parameter is True, in which case it inherits from this object.
+    The created section inherits from the similarly named subsection on this
+    object's parent if it exists.
 
     """
 
@@ -301,8 +299,14 @@ class SettingsNode( DictAttrProxy ):
     if create_if_missing:
       subsection = self.sections[ name ] = self.__class__()
 
-      if inherit:
-          subsection.setParent( self )
+      try:
+        parent_section = self.parent.section( name ) if self.parent else None
+
+      except KeyError:
+        parent_section = None
+
+      if parent_section:
+        subsection.setParent( parent_section )
 
       return subsection
 

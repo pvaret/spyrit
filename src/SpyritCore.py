@@ -28,7 +28,7 @@ from MainWindow      import MainWindow
 from SoundEngine     import SoundEngine
 from WorldsManager   import WorldsManager
 from TempResources   import TempResources
-from TriggersManager import TriggersManager
+#from TriggersManager import TriggersManager
 from CommandRegistry import construct_command_registry
 
 from Globals     import CMDCHAR
@@ -52,7 +52,7 @@ class SpyritCore:
     ## Set up a MOTD to properly welcome our user:
 
     MOTD = (
-        u"Welcome to %s %s!" % ( config._app_name, config._app_version ),
+        u"Welcome to %s %s!" % ( config._app._name, config._app._version ),
         u"Type %shelp for help on available commands." % CMDCHAR
     )
 
@@ -64,7 +64,8 @@ class SpyritCore:
   @pyqtSlot()
   def atExit( self ):
 
-    self.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.
+    ## TODO: Reactivate once config refactor is completed!
+    #self.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.
     self.tmprc.cleanup()
 
 
@@ -115,14 +116,15 @@ def construct_spyrit_core( application ):
   worlds   = WorldsManager( config )
   tmprc    = TempResources()
   sound    = SoundEngine( tmprc )
-  triggers = TriggersManager( config )  ## TODO: Take this out of this module.
+  #triggers = TriggersManager( config )  ## TODO: Take this out of this module.
   commands = construct_command_registry()
 
   core = SpyritCore(
            config=config,
            worlds=worlds,
            commands=commands,
-           triggers=triggers,
+           #triggers=triggers,
+           triggers=None,
            tmprc=tmprc,
            sound=sound,
          )

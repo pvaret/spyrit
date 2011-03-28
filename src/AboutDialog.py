@@ -33,12 +33,12 @@ from PrettyPanelHeader import PrettyPanelHeader
 
 ABOUT = u"""\
 <center><font size="+2">
-  <b>%(app_name)s %(app_version)s</b></font><br/>
+  <b>%(name)s %(version)s</b></font><br/>
 <br/>
 "Endorsed by scientists!"</center>
 <br/>
 <br/>
-%(app_name)s is a client for textual roleplaying games such as MUDs, MUSHes,
+%(name)s is a client for textual roleplaying games such as MUDs, MUSHes,
   MUCKs, MOOs and other M-acronyms.<br/>
 <br/>
 Though it is still in development and far from complete, it tries really hard
@@ -59,7 +59,7 @@ This software uses the <i><a
   Sans Mono</a> font. Additional icons imported from the <a
   href="http://www.oxygen-icons.org/">Oxygen</a> set.<br/>
 <br/>
-%(app_name)s is &#169;2007-2011 P. Varet, and licensed under the
+%(name)s is &#169;2007-2011 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
 """
@@ -90,23 +90,23 @@ class AboutDialog( QDialog ):
 
     self.setLayout( QVBoxLayout( self ) )
 
-    min_size = config._mainwindow_min_size
-    if len( min_size ) >= 2:
-      self.setMinimumSize( min_size[0], min_size[1] )
+    min_size = config._ui._window._min_size
+    if min_size and min_size.isValid():
+      self.setMinimumSize( min_size )
 
-    title = u"About %s" % config._app_name
+    title = u"About %s" % config._app._name
 
     self.setWindowTitle( title )
 
     header = PrettyPanelHeader( title, QPixmap( ":/app/icon" ) )
     self.layout().addWidget( header )
 
-    about = QLabel( ABOUT % config )
+    about = QLabel( ABOUT % config._app )
     about.setContentsMargins( 20, 20, 20, 20 )
     about.setWordWrap( True )
     about.setOpenExternalLinks( True )
 
-    authors = QLabel( AUTHORS % config )
+    authors = QLabel( AUTHORS % config._app )
     authors.setContentsMargins( 20, 20, 20, 20 )
     authors.setWordWrap( True )
     authors.setOpenExternalLinks( True )

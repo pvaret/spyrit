@@ -36,7 +36,7 @@ class ActionSet:
     self.parent = parent
 
     config = QApplication.instance().core.config
-    self.observer = ConfigObserver( config )
+    self.observer = ConfigObserver( config._shortcuts )
     self.closures = []
 
     self.actions = {
@@ -44,7 +44,7 @@ class ActionSet:
       ## Global actions
 
       "about":           ( u"About %s..." % \
-                             config._app_name,    ":/app/icon"        ),
+                             config._app._name,   ":/app/icon"        ),
       "aboutqt":         ( u"About Qt...",        ":/icon/qt-logo"    ),
       "newworld":        ( u"New world...",       ":/icon/new_world"  ),
       "quickconnect":    ( u"Quick connect...",   None                ),
@@ -99,15 +99,14 @@ class ActionSet:
 
     if icon: a.setIcon( QIcon( icon ) )
 
-    shortcutname = "shortcut_" + action
-    config = QApplication.instance().core.config
+    config = QApplication.instance().core.config._shortcuts
 
     def set_action_shortcut():
 
-      ## Note how this closure uses 'config', 'a' and 'shortcutname' as bound
+      ## Note how this closure uses 'config', 'a' and 'action' as bound
       ## variables.
 
-      shortcut = config[ shortcutname ]
+      shortcut = config[ action ]
 
       if shortcut: a.setShortcut( QKeySequence( shortcut ) )
       else:        a.setShortcut( QKeySequence() )
@@ -115,7 +114,7 @@ class ActionSet:
     ## Call it once:
     set_action_shortcut()
 
-    self.observer.addCallback( shortcutname, set_action_shortcut )
+    self.observer.addCallback( action, set_action_shortcut )
 
     ## Keep a reference to the closure, so it's not garbage-collected
     ## right away.

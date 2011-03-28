@@ -16,7 +16,7 @@
 ##
 ## Settings.py
 ##
-## Holds the core settings object, which knows the details of our settings.
+## Holds the core settings object construction.
 ##
 
 
@@ -29,7 +29,10 @@ from PlatformSpecific import PlatformSpecific
 
 default_font = PlatformSpecific.default_font
 
+## World section name
+WORLDS = 'worlds'
 
+## Schema for individual worlds
 WORLDS_SCHEMA = {
   'keys': (
     ( '/name',         Str( None ) ),
@@ -41,6 +44,7 @@ WORLDS_SCHEMA = {
   'inherit': '/',
 }
 
+## Schema for matches
 MATCHES_SCHEMA = {
   'keys': (
     ( 'match',       List( Pattern() ) ),
@@ -51,6 +55,7 @@ MATCHES_SCHEMA = {
   )
 }
 
+## Schema for keyboard shortcuts
 SHORTCUTS_SCHEMA = {
   'keys': (
     ( 'about',          KeySequence( None ) ),
@@ -78,6 +83,7 @@ SHORTCUTS_SCHEMA = {
   )
 }
 
+## Schema for whole application and every world
 SETTINGS_SCHEMA = {
   'keys': (
     ( '/app/name',                  Str( u"Spyrit" ) ),
@@ -105,12 +111,13 @@ SETTINGS_SCHEMA = {
     ( '/ui/input/save_history',     Int( u"10" ) ),
   ),
   'sections': (
-    ( '/worlds',    WORLDS_SCHEMA ),
-    ( '/matches',   MATCHES_SCHEMA ),
-    ( '/shortcuts', SHORTCUTS_SCHEMA ),
+    ( '/%s' % WORLDS, WORLDS_SCHEMA ),
+    ( '/matches',     MATCHES_SCHEMA ),
+    ( '/shortcuts',   SHORTCUTS_SCHEMA ),
   )
 }
 
+## Schema for stateful data that isn't really settings
 STATE_SCHEMA = {
   'keys': (
     ( '/ui/window/size', Size( u"800x600" ) ),
@@ -133,15 +140,14 @@ from SettingsSchema import SettingsSchema
 
 def construct_settings():
 
+  settings         = SettingsNode()
   default_settings = SettingsSchema()
-  default_settings.loadDefinition( SETTINGS_SCHEMA )
-
-  default_state = SettingsSchema()
-  default_state.loadDefinition( STATE_SCHEMA )
-
-  settings = SettingsNode()
+  default_state    = SettingsSchema()
 
   default_settings.setParent( default_state )
   settings.setParent( default_settings )
+
+  default_state.loadDefinition( STATE_SCHEMA )
+  default_settings.loadDefinition( SETTINGS_SCHEMA )
 
   return settings

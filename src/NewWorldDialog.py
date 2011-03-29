@@ -33,7 +33,7 @@ def NewWorldDialog( conf, parent=None ):
     header = PrettyPanelHeader( u"New world",
                                   QPixmap( ":/icon/new_world" ) )
 
-    mapper = ConfigMapper( conf )
+    mapper = ConfigMapper( conf._net )
 
     mapper.addGroup( u"World name", [
                        mapper.lineedit( "name" )

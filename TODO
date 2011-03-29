@@ -1,5 +1,6 @@
 This is an unordered list of features that need implementing sooner or later:
 
+* Change ConfigObserver to accept /path/to/keys instead of just keys.
 * Simplify TabWidget, now that Qt already does what we need.
 * Use exception rather than return values in match action creation.
 * Better implementation of gagging, with GAG chunks instead of chunk deletion.

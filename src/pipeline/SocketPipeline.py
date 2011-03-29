@@ -107,10 +107,10 @@ class SocketPipeline:
     params = ( self.conf._net._host, self.conf._net._port )
 
     if self.using_ssl:
-      self.socket.connectToHostEncrypted( params )
+      self.socket.connectToHostEncrypted( *params )
 
     else:
-      self.socket.connectToHost( params )
+      self.socket.connectToHost( *params )
 
 
   def disconnectFromHost( self ):

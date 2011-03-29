@@ -61,7 +61,7 @@ class WorldsManager( QObject ):
 
     for conf in self.worldconfig.sections.itervalues():
       self.hostport_mapping.setdefault(
-                                        ( conf._host, conf._port ), []
+                                        ( conf._net._host, conf._net._port ), []
                                       ).append( conf )
 
 
@@ -85,10 +85,10 @@ class WorldsManager( QObject ):
 
     worldconf = SettingsNode( self.worldconfig )
 
-    if host: worldconf._host = host
-    if port: worldconf._port = port
     if name: worldconf._name = name
-    if ssl:  worldconf._ssl  = ssl
+    if host: worldconf._net._host = host
+    if port: worldconf._net._port = port
+    if ssl:  worldconf._net._ssl  = ssl
 
     return worldconf
 

@@ -34,15 +34,15 @@ class InputHistory:
 
     conf = inputwidget.world.conf
 
-    if self.shouldsave and conf._save_input_history:
+    if self.shouldsave and conf._ui._input._save_history:
 
       try:
-        count = int( conf._save_input_history )
+        count = int( conf._ui._input._save_history )
 
       except ValueError:
         count = 0
 
-      self.history = conf._input_history[ :count ]
+      self.history = conf._ui._input._history[ :count ]
 
     else:
       self.history = []
@@ -92,10 +92,11 @@ class InputHistory:
 
     conf = self.inputwidget.world.conf
 
-    maxlength = conf._max_history_length
+    maxlength = conf._ui._input._max_history
 
     if maxlength and len( self.history ) > maxlength:
       self.history.pop()
 
-    count = int( conf._save_input_history )
-    if self.shouldsave and count: conf._input_history = self.history[ :count ]
+    count = int( conf._ui._input._save_history )
+    if self.shouldsave and count:
+      conf._ui._input._history = self.history[ :count ]

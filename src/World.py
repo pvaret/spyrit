@@ -86,18 +86,18 @@ class World( QObject ):
     self.socketpipeline = SocketPipeline( conf )
     self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
 
-    self.conf_observer = ConfigObserver( self.conf )
+    self.obs1 = ConfigObserver( self.conf._ui._toolbar )
 
 
   def title( self ):
 
     conf = self.conf
-    return conf._name or u"(%s:%d)" % ( conf._host, conf._port )
+    return conf._name or u"(%s:%d)" % ( conf._net._host, conf._net._port )
 
 
   def host( self ):
 
-    return self.conf._host
+    return self.conf._net._host
 
 
   def save( self ):
@@ -108,14 +108,8 @@ class World( QObject ):
   def setUI( self, worldui ):
 
     self.worldui = worldui
-    self.worldui.updateToolBarIcons( self.conf._toolbar_icon_size )
-    self.conf_observer.addCallback( "toolbar_icon_size",
-                                    self.worldui.updateToolBarIcons )
-
-
-  def isAnonymous( self ):
-
-    return self.conf.isAnonymous()
+    self.worldui.updateToolBarIcons( self.conf._ui._toolbar._icon_size )
+    self.obs1.addCallback( "icon_size", self.worldui.updateToolBarIcons )
 
 
   def info( self, text ):
@@ -163,7 +157,7 @@ class World( QObject ):
 
     if self.status == Status.CONNECTED:
 
-      if self.conf._autolog or self.was_logging:
+      if self.conf._log._autostart or self.was_logging:
         self.startLogging()
 
     elif self.status == Status.DISCONNECTED:
@@ -174,8 +168,8 @@ class World( QObject ):
 
   def computeLogFileName( self ):
 
-    logfile = self.conf._logfile_name
-    logdir  = self.conf._logfile_dir
+    logfile = self.conf._log._file
+    logdir  = self.conf._log._dir
 
     logfile = time.strftime( logfile )
     logfile = logfile.replace( u"[WORLDNAME]", self.title() )
@@ -370,3 +364,4 @@ class World( QObject ):
     self.worldui        = None
     self.socketpipeline = None
     self.logger         = None
+    self.obs1           = None

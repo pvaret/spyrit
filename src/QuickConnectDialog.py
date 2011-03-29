@@ -34,7 +34,7 @@ def QuickConnectDialog( conf, parent=None ):
     header = PrettyPanelHeader( u"Quick connect",
                                   QPixmap( ":/icon/connect" ) )
 
-    mapper = ConfigMapper( conf )
+    mapper = ConfigMapper( conf._net )
 
     mapper.addGroup( u"Connection parameters", [
                        mapper.lineedit( "host", u"&Server:" ),

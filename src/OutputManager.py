@@ -51,7 +51,11 @@ class OutputManager:
 
     self.textcursor = QTextCursor( textview.document() )
 
-    self.observer = ConfigObserver( self.conf )
+    view_conf = self.conf._ui._view
+    text_conf = view_conf._font
+    self.obs1 = ConfigObserver( text_conf )
+    self.obs2 = ConfigObserver( view_conf._background )
+    self.obs3 = ConfigObserver( view_conf )
 
     self.textformat = QTextCharFormat()
     self.infoformat = QTextCharFormat()
@@ -59,13 +63,11 @@ class OutputManager:
     self.textformatmanager = FormatStack( QTextFormatFormatter( self.textformat ) )
     self.infoformatmanager = FormatStack( QTextFormatFormatter( self.infoformat ) )
 
-    self.textformatmanager.setBaseFormat( self.conf[ "output_format" ] )
-    self.infoformatmanager.setBaseFormat( self.conf[ "info_format" ] )
+    self.textformatmanager.setBaseFormat( text_conf[ "text_format" ] )
+    self.infoformatmanager.setBaseFormat( text_conf[ "info_format" ] )
 
-    self.observer.addCallback( "output_format",
-                               self.textformatmanager.setBaseFormat )
-    self.observer.addCallback( "info_format",
-                               self.infoformatmanager.setBaseFormat )
+    self.obs1.addCallback( "text_format", self.textformatmanager.setBaseFormat )
+    self.obs1.addCallback( "info_format", self.infoformatmanager.setBaseFormat )
 
     self.searchmanager = SearchManager( textview, self.conf )
 
@@ -74,23 +76,21 @@ class OutputManager:
 
     self.refresh()
 
-    self.observer.addCallback( [ "output_font_name",
-                                 "output_font_size",
-                                 "output_background_color" ],
-                               self.refresh )
+    self.obs1.addCallback( [ "name", "size" ], self.refresh )
+    self.obs2.addCallback( "color", self.refresh )
 
-    self.textview.setSplitScrollback( self.conf[ "split_scrollback" ] )
-    self.textview.setPaging(          self.conf[ "paging" ] )
+    self.textview.setSplitScrollback( view_conf[ "split_scroll" ] )
+    self.textview.setPaging(          view_conf[ "paging" ] )
 
-    self.observer.addCallback( "split_scrollback", self.textview.setSplitScrollback )
-    self.observer.addCallback( "paging",           self.textview.setPaging )
+    self.obs3.addCallback( "split_scroll", self.textview.setSplitScrollback )
+    self.obs3.addCallback( "paging",       self.textview.setPaging )
 
 
   def refresh( self ):
 
-    self.textview.setConfiguration( self.conf._output_font_name,
-                                    self.conf._output_font_size,
-                                    self.conf._output_background_color )
+    self.textview.setConfiguration( self.conf._ui._view._font._name,
+                                    self.conf._ui._view._font._size,
+                                    self.conf._ui._view._background._color )
 
 
   def findInHistory( self, string ):
@@ -191,5 +191,7 @@ class OutputManager:
     self.textcursor     = None
     self.charformat     = None
     self.infocharformat = None
-    self.observer       = None
+    self.obs1           = None
+    self.obs2           = None
+    self.obs3           = None
     self.searchmanager  = None

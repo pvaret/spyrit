@@ -32,18 +32,6 @@ default_font = PlatformSpecific.default_font
 ## World section name
 WORLDS = 'worlds'
 
-## Schema for individual worlds
-WORLDS_SCHEMA = {
-  'keys': (
-    ( '/name',         Str( None ) ),
-    ( '/net/encoding', Str( u"latin1" ) ),
-    ( '/net/host',     Str( u"" ) ),
-    ( '/net/port',     Int( u"4201" ) ),
-    ( '/net/ssl',      Bool( u"off" ) ),
-  ),
-  'inherit': '/',
-}
-
 ## Schema for matches
 MATCHES_SCHEMA = {
   'keys': (
@@ -109,9 +97,14 @@ SETTINGS_SCHEMA = {
     ( '/ui/input/background/color', Str( COL.white ) ),
     ( '/ui/input/max_history',      Int( u"0" ) ),
     ( '/ui/input/save_history',     Int( u"10" ) ),
+    ( '/name',                      Str( None ) ),
+    ( '/net/encoding',              Str( u"latin1" ) ),
+    ( '/net/host',                  Str( u"" ) ),
+    ( '/net/port',                  Int( u"4201" ) ),
+    ( '/net/ssl',                   Bool( u"off" ) ),
   ),
   'sections': (
-    ( '/%s' % WORLDS, WORLDS_SCHEMA ),
+    ( '/%s' % WORLDS, { 'inherit': '/' } ),
     ( '/matches',     MATCHES_SCHEMA ),
     ( '/shortcuts',   SHORTCUTS_SCHEMA ),
   )
@@ -120,16 +113,10 @@ SETTINGS_SCHEMA = {
 ## Schema for stateful data that isn't really settings
 STATE_SCHEMA = {
   'keys': (
-    ( '/ui/window/size', Size( u"800x600" ) ),
-    ( '/ui/window/pos',  Point() ),
-  ),
-  'sections': (
-    ( '/worlds', {
-        'keys': (
-          ( '/ui/splitter/sizes', List( Int(), u"1000, 100, 100" ) ),
-          ( '/ui/input/history',  List( Str(), [] ) ),
-        ),
-    } ),
+    ( '/ui/window/size',    Size( u"800x600" ) ),
+    ( '/ui/window/pos',     Point() ),
+    ( '/ui/splitter/sizes', List( Int(), u"1000, 100, 100" ) ),
+    ( '/ui/input/history',  List( Str(), u"" ) ),
   ),
 }
 
@@ -147,7 +134,9 @@ def construct_settings():
   default_settings.setParent( default_state )
   settings.setParent( default_settings )
 
+  default_state.label = "DEFAULT_STATE"
   default_state.loadDefinition( STATE_SCHEMA )
+  default_settings.label = "DEFAULT_SETTINGS"
   default_settings.loadDefinition( SETTINGS_SCHEMA )
 
   return settings

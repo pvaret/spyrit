@@ -235,7 +235,7 @@ def create_logger_for_world( world, logfile ):
   if not file:
     return None
 
-  if world.conf._log_ansi:
+  if world.conf._log._ansi:
     LoggerClass = AnsiLogger
   else:
     LoggerClass = PlainLogger

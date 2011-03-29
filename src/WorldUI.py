@@ -137,7 +137,7 @@ class WorldUI( QSplitter ):
     ## Setup splitter.
 
     self.setChildrenCollapsible( False )
-    self.setSizes( world.conf._splitter_sizes )
+    self.setSizes( world.conf._ui._splitter._sizes )
 
     self.splitterMoved.connect( self.saveSplitterPosition )
 
@@ -279,14 +279,14 @@ class WorldUI( QSplitter ):
     if not self.world:
       return
 
-    if self.world.conf._alert_on_activity:
+    if self.world.conf._ui._window._alert:
       QApplication.instance().alert( self.window() )
 
 
   @pyqtSlot()
   def saveSplitterPosition( self ):
 
-    self.world.conf._splitter_sizes = self.sizes()
+    self.world.conf._ui._splitter._sizes = self.sizes()
 
 
   def close( self ):

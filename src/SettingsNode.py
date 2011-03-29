@@ -152,6 +152,7 @@ class SettingsNode( DictAttrProxy ):
 
   def __init__( self, parent=None ):
 
+    self.label     = None
     self.keys      = {}
     self.sections  = {}
     self.children  = WeakSet()
@@ -297,7 +298,10 @@ class SettingsNode( DictAttrProxy ):
       return self.sections[ name ]
 
     if create_if_missing:
+
       subsection = self.sections[ name ] = self.__class__()
+      if self.label:
+        subsection.label = '/'.join( ( self.label, name ) )
 
       try:
         parent_section = self.parent.section( name ) if self.parent else None
@@ -361,3 +365,9 @@ class SettingsNode( DictAttrProxy ):
     self.notifiers.add( notifier )
 
 
+  def __repr__( self ):
+
+    if self.label:
+      return "<%s '%s'>" % ( self.__class__.__name__, self.label )
+
+    return "<%s (%s)>" % ( self.__class__.__name__, hex( id( self ) ) )

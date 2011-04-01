@@ -199,12 +199,12 @@ class BaseSerializer:
 
   def serialize( self, value ):
 
-    raise NotImplemented( "Serializers must implement the serialize method." )
+    raise NotImplementedError( "Serializers must implement the serialize method." )
 
 
   def deserialize( self, string ):
 
-    raise NotImplemented( "Serializers must implement the deserialize method." )
+    raise NotImplementedError( "Serializers must implement the deserialize method." )
 
 
 

@@ -39,11 +39,7 @@ class SettingsSchema( SettingsNode ):
 
       path = path.rstrip( '/' )
 
-      if not '/' in path:
-        path = '/' + path
-
-      node_path, key_pattern = path.rsplit( '/', 1 )
-      node = self.nodeForPath( node_path )
+      node, key_pattern = self.getNodeKeyByPath( path, create_if_missing=True )
 
       ## Direct access to node.keys instead of going through __setitem__, so we
       ## can use special characters in the pattern.
@@ -51,26 +47,15 @@ class SettingsSchema( SettingsNode ):
 
     for path, sub_definition in definition.get( 'sections', () ):
 
-      sub_node = self.nodeForPath( path )
+      sub_node = self.getNodeByPath( path, create_if_missing=True )
 
       inherit = sub_definition.get( 'inherit' )
 
       if inherit:
-        inherit_node = self.nodeForPath( inherit )
+        inherit_node = self.getNodeByPath( inherit )
         sub_node.setParent( inherit_node )
 
       sub_node.loadDefinition( sub_definition )
-
-
-  def nodeForPath( self, path ):
-
-    node = self
-
-    for name in path.split( '/' ):
-      if name:
-        node = node.section( name, create_if_missing=True )
-
-    return node
 
 
   def __getitem__( self, key ):
@@ -80,5 +65,5 @@ class SettingsSchema( SettingsNode ):
       if fnmatchcase( key, pattern ):
         return self.keys[ pattern ]
 
-    ## Otherwise, fall back onto the default behavior.
+    ## Otherwise, fall back on default behavior.
     return SettingsNode.__getitem__( self, key )

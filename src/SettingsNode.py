@@ -301,7 +301,7 @@ class SettingsNode( DictAttrProxy ):
 
       subsection = self.sections[ name ] = self.__class__()
       if self.label:
-        subsection.label = '/'.join( ( self.label, name ) )
+        subsection.label = self.label
 
       try:
         parent_section = self.parent.section( name ) if self.parent else None
@@ -341,6 +341,9 @@ class SettingsNode( DictAttrProxy ):
     for k, v in self.keys.iteritems():
       self.parent[ k ] = v
 
+    for child in self.children:
+      child.apply()
+
     self.clear()
 
 
@@ -363,6 +366,36 @@ class SettingsNode( DictAttrProxy ):
   def registerNotifier( self, notifier ):
 
     self.notifiers.add( notifier )
+
+
+  def getNodeKeyByPath( self, node_path, create_if_missing=False ):
+
+    if '/' in node_path:
+      node_path, key = node_path.rsplit( '/', 1 )
+
+    else:
+      node_path, key = "", node_path
+
+    node = self.getNodeByPath( node_path, create_if_missing )
+
+    if key in node.sections:
+      return node.section( key ), None
+
+    return node, key
+
+
+  def getNodeByPath( self, node_path, create_if_missing=False ):
+
+    node = self
+
+    for section in node_path.split( '/' ):
+
+      if not section:
+        continue
+
+      node = node.section( section, create_if_missing )
+
+    return node
 
 
   def __repr__( self ):

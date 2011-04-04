@@ -19,39 +19,13 @@
 ## This class holds the dialog that lets the user create a new world.
 ##
 
-from PyQt4.QtGui import QPixmap, QWidget, QFormLayout
-from PyQt4.QtGui import QLineEdit, QSpinBox, QCheckBox
+from PyQt4.QtGui import QPixmap, QLineEdit, QSpinBox, QCheckBox
 
 from Utilities            import check_ssl_is_available
+from SettingsPanel        import SettingsPanel
 from PrettyPanelHeader    import PrettyPanelHeader
 from PrettyOptionDialog   import PrettyOptionDialog
 from SettingsWidgetMapper import SettingsWidgetMapper, qlineedit_not_empty
-
-
-class Panel( QWidget ):
-
-  MARGINS = ( 20, 20, 20, 20 )  ## right, top, left, bottom
-
-  def __init__( self, mapper ):
-
-    QWidget.__init__( self )
-
-    self.setLayout( QFormLayout() )
-    self.layout().setContentsMargins( *self.MARGINS )
-
-    self.mapper = mapper
-
-
-  def addBoundRow( self, node_path, widget, label=None ):
-
-    ## WORKAROUND: Qt 4.7 truncates the widget if it's a QCheckBox with its own
-    ## text unless we do this:
-    if label is None:
-      label = u" "
-
-    self.layout().addRow( label, widget )
-
-    return self.mapper.bind( node_path, widget )
 
 
 def NewWorldDialog( settings, parent=None ):
@@ -59,7 +33,7 @@ def NewWorldDialog( settings, parent=None ):
     header = PrettyPanelHeader( u"New world", QPixmap( ":/icon/new_world" ) )
 
     mapper = SettingsWidgetMapper( settings )
-    panel  = Panel( mapper )
+    panel  = SettingsPanel( mapper )
 
     name_mapper = panel.addBoundRow( '/name', QLineEdit(), u"World name:" )
     host_mapper = panel.addBoundRow( '/net/host', QLineEdit(), u"Server:" )
@@ -70,7 +44,6 @@ def NewWorldDialog( settings, parent=None ):
     port = QSpinBox()
     port.setRange( 1, 65535 )
     panel.addBoundRow( '/net/port', port, u"Port:" )
-
 
     if check_ssl_is_available():
       panel.addBoundRow( '/net/ssl', QCheckBox( u"Use SSL &encryption" ) )

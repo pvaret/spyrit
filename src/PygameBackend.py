@@ -53,7 +53,12 @@ class PygameBackend:
       return False
 
     self.mixer = pygame.mixer
-    self.mixer.init( FREQUENCY, SIZE, CHANNELS, BUFFER )
+
+    try:
+      self.mixer.init( FREQUENCY, SIZE, CHANNELS, BUFFER )
+
+    except pygame.error:
+      return False
 
     return True
 

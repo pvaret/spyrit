@@ -53,6 +53,7 @@ class PrettyOptionDialog( QDialog ):
       self.setWindowTitle( title )
 
     mapper.settingsValid.connect( self.okbutton.setEnabled )
+    mapper.emitSignals()
 
     self.buttonbox.accepted.connect( self.accept )
     self.buttonbox.rejected.connect( self.reject )

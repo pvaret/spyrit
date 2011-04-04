@@ -25,22 +25,32 @@ from PyQt4.QtGui import QLineEdit, QSpinBox, QCheckBox
 from Utilities            import check_ssl_is_available
 from PrettyPanelHeader    import PrettyPanelHeader
 from PrettyOptionDialog   import PrettyOptionDialog
-from SettingsWidgetMapper import SettingsWidgetMapper
+from SettingsWidgetMapper import SettingsWidgetMapper, qlineedit_not_empty
 
 
 class Panel( QWidget ):
 
+  MARGINS = ( 20, 20, 20, 20 )  ## right, top, left, bottom
+
   def __init__( self, mapper ):
 
     QWidget.__init__( self )
+
     self.setLayout( QFormLayout() )
+    self.layout().setContentsMargins( *self.MARGINS )
 
     self.mapper = mapper
 
 
   def addBoundRow( self, node_path, widget, label=None ):
 
+    ## WORKAROUND: Qt 4.7 truncates the widget if it's a QCheckBox with its own
+    ## text unless we do this:
+    if label is None:
+      label = u" "
+
     self.layout().addRow( label, widget )
+
     return self.mapper.bind( node_path, widget )
 
 
@@ -51,8 +61,11 @@ def NewWorldDialog( settings, parent=None ):
     mapper = SettingsWidgetMapper( settings )
     panel  = Panel( mapper )
 
-    panel.addBoundRow( '/name', QLineEdit(), u"World name:" )
-    panel.addBoundRow( '/net/host', QLineEdit(), u"Server:" )
+    name_mapper = panel.addBoundRow( '/name', QLineEdit(), u"World name:" )
+    host_mapper = panel.addBoundRow( '/net/host', QLineEdit(), u"Server:" )
+
+    name_mapper.setValidator( qlineedit_not_empty )
+    host_mapper.setValidator( qlineedit_not_empty )
 
     port = QSpinBox()
     port.setRange( 1, 65535 )

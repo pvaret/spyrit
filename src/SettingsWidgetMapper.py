@@ -25,6 +25,8 @@ from PyQt4.QtCore import Qt, QObject, QString, pyqtSlot, pyqtSignal
 from PyQt4.QtGui  import QLineEdit, QSpinBox, QCheckBox
 
 
+qlineedit_not_empty = lambda qlineedit: qlineedit.text().size() > 0
+
 
 class BaseWidgetMapper( QObject ):
 
@@ -47,7 +49,10 @@ class BaseWidgetMapper( QObject ):
     self.validator = None
 
 
-  @pyqtSlot( object )
+  ## WORKAROUND: PyQt 4.7.4 fails to connect signals with a QObject subclass as
+  ## their argument to this slot, so we comment out the slot declaration for
+  ## now. :/
+  #@pyqtSlot( object )
   def emitValueChanged( self, widget_value ):
 
     assert( isinstance( widget_value, self.widget_value_class ) )
@@ -74,7 +79,7 @@ class BaseWidgetMapper( QObject ):
 
   def setValidator( self, validator ):
 
-    self.validator = staticmethod( validator )
+    self.validator = validator
 
 
   def validate( self ):

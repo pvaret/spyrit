@@ -34,14 +34,13 @@ from PrettyOptionPanel import PrettyOptionPanel
 
 class PrettyOptionDialog( QDialog ):
 
-  HEADER_SPACING = 20
-
-  def __init__( self, mapper, header=None, oklabel=None, title=None, parent=None ):
+  def __init__( self, mapper, panel,
+                header=None, oklabel=None, title=None, parent=None ):
 
     QDialog.__init__( self, parent )
 
     self.header    = header
-    self.panel     = PrettyOptionPanel( mapper )
+    self.panel     = panel
     self.buttonbox = QDialogButtonBox( QDialogButtonBox.Ok
                                      | QDialogButtonBox.Cancel )
 
@@ -53,12 +52,10 @@ class PrettyOptionDialog( QDialog ):
     if title:
       self.setWindowTitle( title )
 
-    mapper.isValid.connect( self.okbutton.setEnabled )
+    mapper.settingsValid.connect( self.okbutton.setEnabled )
 
     self.buttonbox.accepted.connect( self.accept )
     self.buttonbox.rejected.connect( self.reject )
-
-    mapper.refreshState()
 
     self.relayout()
 
@@ -72,12 +69,6 @@ class PrettyOptionDialog( QDialog ):
 
     if self.header:
       self.layout().addWidget( self.header )
-
-    if self.panel.layout():
-
-      l, t, r, b = self.panel.layout().getContentsMargins()
-      self.panel.layout().setContentsMargins( 0, max( t, self.HEADER_SPACING ),
-                                              0, b )
 
     self.layout().addWidget( self.panel )
     self.layout().addWidget( Separator( self ) )

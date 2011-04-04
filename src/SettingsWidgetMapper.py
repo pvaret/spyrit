@@ -44,6 +44,7 @@ class BaseWidgetMapper( QObject ):
     self.widget = widget
     self.widget_signal = getattr( widget, self.widget_signal_name )
     self.widget_signal.connect( self.emitValueChanged )
+    self.validator = None
 
 
   @pyqtSlot( object )
@@ -58,6 +59,9 @@ class BaseWidgetMapper( QObject ):
 
   def setValue( self, settings_value ):
 
+    if settings_value is None:
+      return
+
     assert( isinstance( settings_value, self.settings_value_class ) )
     widget_value = self.settingsToWidgetValue( settings_value )
     assert( isinstance( widget_value, self.widget_value_class ) )
@@ -66,6 +70,19 @@ class BaseWidgetMapper( QObject ):
 
 
   widgetToSettingsValue = settingsToWidgetValue = lambda instance, value: value
+
+
+  def setValidator( self, validator ):
+
+    self.validator = staticmethod( validator )
+
+
+  def validate( self ):
+
+    if not self.validator:
+      return True  ## Default: no validator means everything validates.
+
+    return self.validator( self.widget )
 
 
   def __hash__( self ):
@@ -148,6 +165,10 @@ def get_mapper( widget ):
 
 class SettingsWidgetMapper( QObject ):
 
+  settingsValid = pyqtSignal( bool )
+  settingsEmpty = pyqtSignal( bool )
+
+
   def __init__( self, settings ):
 
     QObject.__init__( self )
@@ -161,17 +182,34 @@ class SettingsWidgetMapper( QObject ):
     node, key = self.settings.getNodeKeyByPath( node_path )
 
     widget_mapper = get_mapper( widget )
+    self.node_path_for_widget[ widget_mapper ] = node_path
+
     widget_mapper.valueChanged.connect( self.updateSettingsValue )
     widget_mapper.setValue( node[ key ] )
 
-    self.node_path_for_widget[ widget_mapper ] = node_path
+    return widget_mapper
 
 
   @pyqtSlot( object )
   def updateSettingsValue( self, value ):
 
     widget_mapper = self.sender()
+
+    if not widget_mapper.validate():
+      return
+
     node_path = self.node_path_for_widget[ widget_mapper ]
     node, key = self.settings.getNodeKeyByPath( node_path )
 
     node[ key ] = value
+
+    self.emitSignals()
+
+
+  def emitSignals( self ):
+
+    empty = self.settings.isEmpty()
+    valid = all( mapper.validate() for mapper in self.node_path_for_widget )
+
+    self.settingsEmpty.emit( empty )
+    self.settingsValid.emit( valid )

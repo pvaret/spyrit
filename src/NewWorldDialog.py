@@ -19,37 +19,51 @@
 ## This class holds the dialog that lets the user create a new world.
 ##
 
-from PyQt4.QtGui        import QPixmap
+from PyQt4.QtGui import QPixmap, QWidget, QFormLayout
+from PyQt4.QtGui import QLineEdit, QSpinBox, QCheckBox
 
-from Utilities          import check_ssl_is_available
+from Utilities            import check_ssl_is_available
+from PrettyPanelHeader    import PrettyPanelHeader
+from PrettyOptionDialog   import PrettyOptionDialog
+from SettingsWidgetMapper import SettingsWidgetMapper
 
-from PrettyOptionPanel  import ConfigMapper
-from PrettyPanelHeader  import PrettyPanelHeader
-from PrettyOptionDialog import PrettyOptionDialog
+
+class Panel( QWidget ):
+
+  def __init__( self, mapper ):
+
+    QWidget.__init__( self )
+    self.setLayout( QFormLayout() )
+
+    self.mapper = mapper
 
 
-def NewWorldDialog( conf, parent=None ):
+  def addBoundRow( self, node_path, widget, label=None ):
 
-    header = PrettyPanelHeader( u"New world",
-                                  QPixmap( ":/icon/new_world" ) )
+    self.layout().addRow( label, widget )
+    return self.mapper.bind( node_path, widget )
 
-    mapper = ConfigMapper( conf._net )
 
-    mapper.addGroup( u"World name", [
-                       mapper.lineedit( "name" )
-                     ] )
+def NewWorldDialog( settings, parent=None ):
 
-    mapper.addGroup( u"Connection parameters", [
-                       mapper.lineedit( "host", u"&Server:" ),
-                       mapper.spinbox(  "port", u"&Port:" ),
-                     ] )
+    header = PrettyPanelHeader( u"New world", QPixmap( ":/icon/new_world" ) )
+
+    mapper = SettingsWidgetMapper( settings )
+    panel  = Panel( mapper )
+
+    panel.addBoundRow( '/name', QLineEdit(), u"World name:" )
+    panel.addBoundRow( '/net/host', QLineEdit(), u"Server:" )
+
+    port = QSpinBox()
+    port.setRange( 1, 65535 )
+    panel.addBoundRow( '/net/port', port, u"Port:" )
+
 
     if check_ssl_is_available():
-      mapper.addGroup( u"Encryption", [
-                         mapper.checkbox( "ssl", u"Use SSL &encryption"),
-                       ] )
+      panel.addBoundRow( '/net/ssl', QCheckBox( u"Use SSL &encryption" ) )
 
     dialog = PrettyOptionDialog( mapper,
+                                 panel,
                                  parent  = parent,
                                  header  = header,
                                  oklabel = u"Connect",

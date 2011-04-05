@@ -19,93 +19,93 @@
 ## Contains the default configuration items.
 ##
 
-from ConfigTypes import *
-from ConfigPaths import LOG_DIR
-from Globals     import FORMAT_PROPERTIES
-from Globals     import ANSI_COLORS as COL
+#from ConfigTypes import *
+#from ConfigPaths import LOG_DIR
+#from Globals     import FORMAT_PROPERTIES
+#from Globals     import ANSI_COLORS as COL
 
-from PlatformSpecific import PlatformSpecific
+#from PlatformSpecific import PlatformSpecific
 
-default_font = PlatformSpecific.default_font
+#default_font = PlatformSpecific.default_font
 
-DEFAULTS = (
+#DEFAULTS = (
 
-  ( 'app_name',            u"Spyrit",    STR ),
-  ( 'app_version',         u"0.5dev",    STR ),
-  ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
-  ( 'mainwindow_pos',      None,         INTLIST ),
-  ( 'worlds_section',      u"Worlds",    STR ),
-  ( 'matches_section',     u"Matches",   STR ),
+#  ( 'app_name',            u"Spyrit",    STR ),
+#  ( 'app_version',         u"0.5dev",    STR ),
+#  ( 'mainwindow_min_size', ( 320, 200 ), INTLIST ),
+#  ( 'mainwindow_pos',      None,         INTLIST ),
+#  ( 'worlds_section',      u"Worlds",    STR ),
+#  ( 'matches_section',     u"Matches",   STR ),
 
-  ( 'widget_style',        None, STR ),
+#  ( 'widget_style',        None, STR ),
 
-  ( 'name',                u"",   STR ),   ## Default name in config dialogs.
-  ( 'host',                u"",   STR ),   ## Default host in config dialogs.
-  ( 'port',                4201,  INT ),   ## Default port in config dialogs.
-  ( 'ssl',                 False, BOOL ),  ## By default, no SSL on sockets.
+#  ( 'name',                u"",   STR ),   ## Default name in config dialogs.
+#  ( 'host',                u"",   STR ),   ## Default host in config dialogs.
+#  ( 'port',                4201,  INT ),   ## Default port in config dialogs.
+#  ( 'ssl',                 False, BOOL ),  ## By default, no SSL on sockets.
 
-  ( 'logfile_name',        u"[WORLDNAME]-%Y.%m.%d.log", STR ),
-  ( 'logfile_dir',         LOG_DIR,                     STR ),
-  ( 'autolog',             False,                       BOOL ),
-  ( 'log_ansi',            False,                       BOOL ),
+#  ( 'logfile_name',        u"[WORLDNAME]-%Y.%m.%d.log", STR ),
+#  ( 'logfile_dir',         LOG_DIR,                     STR ),
+#  ( 'autolog',             False,                       BOOL ),
+#  ( 'log_ansi',            False,                       BOOL ),
 
-  ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
+#  ( 'mainwindow_size',   ( 800, 600 ), INTLIST ),
 
-  ( 'toolbar_icon_size', 24, INT ),
+#  ( 'toolbar_icon_size', 24, INT ),
 
-  ( 'output_font_name',        default_font, STR ),
-  ( 'output_font_size',        0,            INT ),  ## 0 = Use system default.
-  ( 'output_background_color', COL.black,    STR ),
+#  ( 'output_font_name',        default_font, STR ),
+#  ( 'output_font_size',        0,            INT ),  ## 0 = Use system default.
+#  ( 'output_background_color', COL.black,    STR ),
 
-  ( 'output_format',  { FORMAT_PROPERTIES.COLOR: COL.lightgray }, FORMAT ),
+#  ( 'output_format',  { FORMAT_PROPERTIES.COLOR: COL.lightgray }, FORMAT ),
 
-  ( 'world_encoding', u'latin1', STR ),
+#  ( 'world_encoding', u'latin1', STR ),
 
-  ( 'split_scrollback', True, BOOL ),
-  ( 'paging',           True, BOOL ),
+#  ( 'split_scrollback', True, BOOL ),
+#  ( 'paging',           True, BOOL ),
 
-  ( 'info_format', { FORMAT_PROPERTIES.COLOR: COL.darkgray,
-                     FORMAT_PROPERTIES.ITALIC: True }, FORMAT ),
+#  ( 'info_format', { FORMAT_PROPERTIES.COLOR: COL.darkgray,
+#                     FORMAT_PROPERTIES.ITALIC: True }, FORMAT ),
 
-  ( 'input_font_name',        u"", STR ),  ## "" = Use system default.
-  ( 'input_font_size',        0,   INT ),  ## 0 = Use system default.
-  ( 'input_font_color',       u"", STR ),  ## "" = Use system default.
-  ( 'input_background_color', u"white", STR ),  ## white
+#  ( 'input_font_name',        u"", STR ),  ## "" = Use system default.
+#  ( 'input_font_size',        0,   INT ),  ## 0 = Use system default.
+#  ( 'input_font_color',       u"", STR ),  ## "" = Use system default.
+#  ( 'input_background_color', u"white", STR ),  ## white
 
-  ( 'splitter_sizes', [ 1000, 100, 100 ], INTLIST ),
+#  ( 'splitter_sizes', [ 1000, 100, 100 ], INTLIST ),
 
-  ( 'max_history_length', 0,    INT ), ## Unlimited.
-  ( 'save_input_history', 10,   INT ),
-  ( 'input_history',      [],   STRLIST ),
+#  ( 'max_history_length', 0,    INT ), ## Unlimited.
+#  ( 'save_input_history', 10,   INT ),
+#  ( 'input_history',      [],   STRLIST ),
 
-  ( 'shortcut_about',          None,               STR ),
-  ( 'shortcut_aboutqt',        None,               STR ),
-  ( 'shortcut_newworld',       u"Ctrl+N",          STR ),
-  ( 'shortcut_quickconnect',   None,               STR ),
-  ( 'shortcut_quit',           u"Ctrl+Q",          STR ),
-  ( 'shortcut_nexttab',        u"Ctrl+PgDown",     STR ),
-  ( 'shortcut_previoustab',    u"Ctrl+PgUp",       STR ),
-  ( 'shortcut_close',          u"Ctrl+W",          STR ),
-  ( 'shortcut_connect',        u"Ctrl+Shift+S",    STR ),
-  ( 'shortcut_disconnect',     u"Ctrl+Shift+D",    STR ),
-  ( 'shortcut_historyup',      u"Ctrl+Up",         STR ),
-  ( 'shortcut_historydown',    u"Ctrl+Down",       STR ),
-  ( 'shortcut_autocomplete',   u"Ctrl+Space",      STR ),
-  ( 'shortcut_pageup',         u"PgUp",            STR ),
-  ( 'shortcut_pagedown',       u"PgDown",          STR ),
-  ( 'shortcut_stepup',         u"Ctrl+Shift+Up",   STR ),
-  ( 'shortcut_stepdown',       u"Ctrl+Shift+Down", STR ),
-  ( 'shortcut_home',           u"Ctrl+Home",       STR ),
-  ( 'shortcut_end',            u"Ctrl+End",        STR ),
+#  ( 'shortcut_about',          None,               STR ),
+#  ( 'shortcut_aboutqt',        None,               STR ),
+#  ( 'shortcut_newworld',       u"Ctrl+N",          STR ),
+#  ( 'shortcut_quickconnect',   None,               STR ),
+#  ( 'shortcut_quit',           u"Ctrl+Q",          STR ),
+#  ( 'shortcut_nexttab',        u"Ctrl+PgDown",     STR ),
+#  ( 'shortcut_previoustab',    u"Ctrl+PgUp",       STR ),
+#  ( 'shortcut_close',          u"Ctrl+W",          STR ),
+#  ( 'shortcut_connect',        u"Ctrl+Shift+S",    STR ),
+#  ( 'shortcut_disconnect',     u"Ctrl+Shift+D",    STR ),
+#  ( 'shortcut_historyup',      u"Ctrl+Up",         STR ),
+#  ( 'shortcut_historydown',    u"Ctrl+Down",       STR ),
+#  ( 'shortcut_autocomplete',   u"Ctrl+Space",      STR ),
+#  ( 'shortcut_pageup',         u"PgUp",            STR ),
+#  ( 'shortcut_pagedown',       u"PgDown",          STR ),
+#  ( 'shortcut_stepup',         u"Ctrl+Shift+Up",   STR ),
+#  ( 'shortcut_stepdown',       u"Ctrl+Shift+Down", STR ),
+#  ( 'shortcut_home',           u"Ctrl+Home",       STR ),
+#  ( 'shortcut_end',            u"Ctrl+End",        STR ),
 
-  ( 'shortcut_startlog',       None,               STR ),
-  ( 'shortcut_stoplog',        None,               STR ),
+#  ( 'shortcut_startlog',       None,               STR ),
+#  ( 'shortcut_stoplog',        None,               STR ),
 
-  ( 'shortcut_toggle2ndinput', u"Ctrl+M",          STR ),
+#  ( 'shortcut_toggle2ndinput', u"Ctrl+M",          STR ),
 
-  ( 'alert_on_activity', True, BOOL ),
+#  ( 'alert_on_activity', True, BOOL ),
 
-)
+#)
 
 
 ## Note: only the configuration keys with a description are listed by the
@@ -164,7 +164,7 @@ DESCRIPTIONS = {
 }
 
 
-ALL_DEFAULTS = dict( ( k, v ) for ( k, v, t ) in DEFAULTS )
-ALL_TYPES    = dict( ( k, t ) for ( k, v, t ) in DEFAULTS )
-ALL_DESCS    = dict( ( k, DESCRIPTIONS[ k ] ) for ( k, _ , _ ) in DEFAULTS
-                                              if k in DESCRIPTIONS )
+#ALL_DEFAULTS = dict( ( k, v ) for ( k, v, t ) in DEFAULTS )
+#ALL_TYPES    = dict( ( k, t ) for ( k, v, t ) in DEFAULTS )
+#ALL_DESCS    = dict( ( k, DESCRIPTIONS[ k ] ) for ( k, _ , _ ) in DEFAULTS
+#                                              if k in DESCRIPTIONS )

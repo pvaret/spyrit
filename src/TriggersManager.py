@@ -24,9 +24,9 @@ import os.path
 
 from PyQt4.QtGui  import QApplication
 
-import ConfigTypes
+#import ConfigTypes
 
-from ConfigBasket import ConfigBasket
+#from ConfigBasket import ConfigBasket
 from Matches      import MatchCreationError
 from Matches      import load_match_by_type
 from OrderedDict  import OrderedDict

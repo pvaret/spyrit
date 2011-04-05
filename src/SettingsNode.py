@@ -398,6 +398,17 @@ class SettingsNode( DictAttrProxy ):
     return node
 
 
+  def getParentByLabel( self, label ):
+
+    if label is self.label:
+      return self
+
+    if self.parent:
+      return self.parent.getParentByLabel( label )
+
+    return None
+
+
   def __repr__( self ):
 
     if self.label:

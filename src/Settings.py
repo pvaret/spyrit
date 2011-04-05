@@ -121,6 +121,9 @@ STATE_SCHEMA = {
 }
 
 
+STATE_LABEL    = "DEFAULT_STATE"
+SETTINGS_LABEL = "DEFAULT_SETTINGS"
+
 
 from SettingsNode   import SettingsNode
 from SettingsSchema import SettingsSchema
@@ -134,9 +137,10 @@ def construct_settings():
   default_settings.setParent( default_state )
   settings.setParent( default_settings )
 
-  default_state.label = "DEFAULT_STATE"
+  default_state.label = STATE_LABEL
   default_state.loadDefinition( STATE_SCHEMA )
-  default_settings.label = "DEFAULT_SETTINGS"
+
+  default_settings.label = SETTINGS_LABEL
   default_settings.loadDefinition( SETTINGS_SCHEMA )
 
   return settings

@@ -45,7 +45,7 @@ from PyQt4.QtGui  import QFontMetrics
 from PyQt4.QtGui  import QAbstractTextDocumentLayout
 
 
-from Utilities        import qt_version
+from CheckVersions    import qt_version
 from SingleShotTimer  import SingleShotTimer
 from PlatformSpecific import platformSpecific
 

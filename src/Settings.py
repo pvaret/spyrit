@@ -104,7 +104,6 @@ SETTINGS_SCHEMA = {
     ( '/net/ssl',                   Bool( u"off" ) ),
   ),
   'sections': (
-    ( '/%s' % WORLDS, { 'inherit': '/' } ),
     ( '/matches',     MATCHES_SCHEMA ),
     ( '/shortcuts',   SHORTCUTS_SCHEMA ),
   )
@@ -142,5 +141,7 @@ def construct_settings():
 
   default_settings.label = SETTINGS_LABEL
   default_settings.loadDefinition( SETTINGS_SCHEMA )
+
+  settings.section( WORLDS, create_if_missing=True ).setParent( settings )
 
   return settings

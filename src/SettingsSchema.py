@@ -50,13 +50,6 @@ class SettingsSchema( SettingsNode ):
     for path, sub_definition in definition.get( 'sections', () ):
 
       sub_node = self.getNodeByPath( path, create_if_missing=True )
-
-      inherit = sub_definition.get( 'inherit' )
-
-      if inherit:
-        inherit_node = self.getNodeByPath( inherit )
-        sub_node.setParent( inherit_node )
-
       sub_node.loadDefinition( sub_definition )
 
 

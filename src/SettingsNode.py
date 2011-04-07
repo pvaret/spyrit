@@ -406,7 +406,9 @@ class SettingsNode( DictAttrProxy ):
 
   def __repr__( self ):
 
-    if self.label:
-      return "<%s '%s'>" % ( self.__class__.__name__, self.label )
+    hid = hex( id( self ) )
 
-    return "<%s (%s)>" % ( self.__class__.__name__, hex( id( self ) ) )
+    if self.label:
+      return "<%s '%s' (%s)>" % ( self.__class__.__name__, self.label, hid )
+
+    return "<%s (%s)>" % ( self.__class__.__name__, hid )

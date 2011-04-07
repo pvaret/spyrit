@@ -22,7 +22,6 @@
 
 from PyQt4.QtGui import QApplication
 
-from Defaults    import ALL_DESCS
 from Settings    import SETTINGS_LABEL
 from Utilities   import format_as_table
 from BaseCommand import BaseCommand
@@ -34,8 +33,12 @@ class SettingsCommand( BaseCommand ):
 
   def _getSerializer( self, settings, option ):
 
-    node, key = settings.getNodeKeyByPath( option )
-    defaults = node.getParentByLabel( SETTINGS_LABEL )
+    try:
+      node, key = settings.getNodeKeyByPath( option )
+      defaults = node.getParentByLabel( SETTINGS_LABEL )
+    except KeyError:
+      return None
+
     return defaults.getSerializer( key )
 
 
@@ -46,23 +49,26 @@ class SettingsCommand( BaseCommand ):
 
     Usage: %(cmd)s <option> <value>
 
-    Example: %(cmd)s output_font_name "Courier New"
+    Example: %(cmd)s ui.view.font.name "Courier New"
 
     """
 
     args = " ".join( args )
 
-    t = world.conf.getType( option )
+    settings = QApplication.instance().core.config
 
-    if not t:
+    s = self._getSerializer( settings, option )
+
+    if not s:
       world.info( u"Unknown configuration option: %s" % option )
       return
 
-    args = t.from_string( args )
-    QApplication.instance().core.config[ option ] = args
+    args = s.deserialize( args )
+    node, key = settings.getNodeKeyByPath( option )
+    node[ key ] = args
 
     ## TODO: Factorize display between this, worldset, reset and worldreset.
-    value = t.to_string( args )
+    value = s.serialize( args )
 
     if value is None:
       value = u'None'

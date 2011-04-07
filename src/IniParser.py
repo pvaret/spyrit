@@ -29,9 +29,6 @@ u"""
 
 import re
 
-from Utilities import quote, unquote
-
-
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
 RE_KEYVALUE = re.compile( r"^(\w(?:-*\w+)*)\s*=\s*(.*)", re.UNICODE )
 
@@ -66,7 +63,7 @@ def parse_ini_line( line ):
 
 
 def ini_to_struct( ini_text ):
-  ur"""
+  u"""
   Parses an ini-formatted block of text into a programmatically usable
   structure.
 
@@ -79,20 +76,20 @@ def ini_to_struct( ini_text ):
   ... [ section1 ]
   ...
   ...   [[ subsection1 ]]
-  ...     stringkey1 = "Contains an escaped \n carriage return."
+  ...     key3 = "This is a string"
   ...
   ...     [[[[ wrong_depth ]]]]
-  ...       key3 = "Section has wrong depth and will be ignored"
+  ...       key4 = "Section has wrong depth and will be ignored"
   ...
   ... [ section2 ]
-  ...   key4 = 4
+  ...   key5 = 5
   ...
   ... ''' ) )  #doctest: +NORMALIZE_WHITESPACE
   ({u'key1': u'1', u'key2': u'2'},
    {u'section1': ({},
-                  {u'subsection1': ({u'stringkey1': u'Contains an escaped \n carriage return.'},
+                  {u'subsection1': ({u'key3': u'"This is a string"'},
                                     {})}),
-    u'section2': ({u'key4': u'4'}, {})})
+    u'section2': ({u'key5': u'5'}, {})})
 
   """
 
@@ -117,7 +114,7 @@ def ini_to_struct( ini_text ):
 
     if key and not skipsection:  ## This is a key/value line.
 
-      current_struct[ KEYS ][ key ] = unquote( result[ "value" ] )
+      current_struct[ KEYS ][ key ] = result[ "value" ]
 
     elif section:  ## This is a section line.
 

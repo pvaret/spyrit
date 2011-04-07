@@ -28,6 +28,7 @@ class SettingsSchema( SettingsNode ):
   def __init__( self, definition=None ):
 
     SettingsNode.__init__( self )
+    self.serializers = {}
 
     if definition:
       self.loadDefinition( definition )
@@ -44,6 +45,7 @@ class SettingsSchema( SettingsNode ):
       ## Direct access to node.keys instead of going through __setitem__, so we
       ## can use special characters in the pattern.
       node.keys[ key_pattern ] = serializer.default
+      node.serializers[ key_pattern ] = serializer
 
     for path, sub_definition in definition.get( 'sections', () ):
 
@@ -61,9 +63,18 @@ class SettingsSchema( SettingsNode ):
   def __getitem__( self, key ):
 
     ## Attempt to match the key to a pattern:
-    for pattern in self.keys:
+    for pattern, value in self.keys.iteritems():
       if fnmatchcase( key, pattern ):
-        return self.keys[ pattern ]
+        return value
 
     ## Otherwise, fall back on default behavior.
     return SettingsNode.__getitem__( self, key )
+
+
+  def getSerializer( self, key ):
+
+    for pattern, value in self.serializers.iteritems():
+      if fnmatchcase( key, pattern ):
+        return value
+
+    return None

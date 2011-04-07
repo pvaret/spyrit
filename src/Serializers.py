@@ -93,7 +93,8 @@ def split( string, sep=u',', esc=BS, quotes=u'"'+u"'" ):
       ## This is the end of the quoted section.
       current_quote = None
 
-  yield string[ last_pos:len( string ) ]
+  if last_pos < len( string ):
+    yield string[ last_pos: ]
 
 
 

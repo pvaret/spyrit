@@ -281,43 +281,38 @@ class SettingsNode( DictAttrProxy ):
 
   def section( self, name, create_if_missing=False ):
     """
-    Returns the first subsection with the given name in the parent hierarchy.
+    Returns the subsection with the given name.
 
-    Raises KeyError if none exist.
+    If it doesn't exist on this node but does on a parent, create a new section
+    on this node with the corresponding name and parent, otherwise raise
+    KeyError.
 
     If the create_if_missing parameter is True, create the section on this
-    object and return it. This object's class is used for the creation, so
-    subclasses of SettingsNode can work as intented.
-
-    The created section inherits from the similarly named subsection on this
-    object's parent if it exists.
+    node even if if doesn't exist on a parent.
 
     """
 
     if name in self.sections:
       return self.sections[ name ]
 
-    if create_if_missing:
+    try:
+      parent_section = self.parent.section( name ) if self.parent else None
 
-      subsection = self.sections[ name ] = self.__class__()
-      if self.label:
-        subsection.label = self.label
+    except KeyError:
+      parent_section = None
 
-      try:
-        parent_section = self.parent.section( name ) if self.parent else None
+    if not create_if_missing and parent_section is None:
+      raise KeyError( u"No such section", name )
 
-      except KeyError:
-        parent_section = None
+    ## Create new subsection with same class as self:
+    subsection = self.sections[ name ] = self.__class__()
 
-      if parent_section:
-        subsection.setParent( parent_section )
+    if self.label:
+      subsection.label = self.label
 
-      return subsection
+    subsection.setParent( parent_section )
 
-    if self.parent:
-      return self.parent.section( name )
-
-    raise KeyError( u"No such section", name )
+    return subsection
 
 
   def setParent( self, parent ):

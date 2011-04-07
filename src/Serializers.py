@@ -29,7 +29,7 @@ u"""
 """
 
 
-from PyQt4.QtGui import QKeySequence
+from PyQt4.QtGui  import QKeySequence
 from PyQt4.QtCore import QSize, QPoint
 
 from Globals   import FORMAT_PROPERTIES

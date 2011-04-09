@@ -149,6 +149,7 @@ class SettingsNode( DictAttrProxy ):
   Holds the core behavior for a set of configuration keys.
   """
 
+  SEP = '.'
 
   def __init__( self, parent=None ):
 
@@ -365,8 +366,8 @@ class SettingsNode( DictAttrProxy ):
 
   def getNodeKeyByPath( self, node_path, create_if_missing=False ):
 
-    if '/' in node_path:
-      node_path, key = node_path.rsplit( '/', 1 )
+    if self.SEP in node_path:
+      node_path, key = node_path.rsplit( self.SEP, 1 )
 
     else:
       node_path, key = "", node_path
@@ -383,7 +384,7 @@ class SettingsNode( DictAttrProxy ):
 
     node = self
 
-    for section in node_path.split( '/' ):
+    for section in node_path.split( self.SEP ):
 
       if not section:
         continue

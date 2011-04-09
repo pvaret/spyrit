@@ -36,16 +36,16 @@ def QuickConnectDialog( settings, parent=None ):
     mapper = SettingsWidgetMapper( settings )
     panel  = SettingsPanel( mapper )
 
-    host_mapper = panel.addBoundRow( '/net/host', QLineEdit(), u"Server:" )
+    host_mapper = panel.addBoundRow( 'net.host', QLineEdit(), u"Server:" )
 
     host_mapper.setValidator( qlineedit_not_empty )
 
     port = QSpinBox()
     port.setRange( 1, 65535 )
-    panel.addBoundRow( '/net/port', port, u"Port:" )
+    panel.addBoundRow( 'net.port', port, u"Port:" )
 
     if check_ssl_is_available():
-      panel.addBoundRow( '/net/ssl', QCheckBox( u"Use SSL &encryption" ) )
+      panel.addBoundRow( 'net.ssl', QCheckBox( u"Use SSL &encryption" ) )
 
     dialog = PrettyOptionDialog( mapper,
                                  panel,

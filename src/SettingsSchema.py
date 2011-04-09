@@ -38,7 +38,7 @@ class SettingsSchema( SettingsNode ):
 
     for path, serializer in definition.get( 'keys', () ):
 
-      path = path.rstrip( '/' )
+      path = path.rstrip( self.SEP )
 
       node, key_pattern = self.getNodeKeyByPath( path, create_if_missing=True )
 

@@ -21,13 +21,38 @@
 ##
 
 import inspect
-import weakref
 
 from functools        import wraps
-from CallbackRegistry import CallbackRegistry
+from CallbackRegistry import CallbackRegistry, WeakCallableRef
 
 
-SLOTIFIED_FN_CACHE = weakref.WeakKeyDictionary()
+
+class SlotifiedFunctionReferenceCache:
+  """Keep a reference to slotified functions so they're not garbage collected
+  right away.
+
+  """
+
+  def __init__( self ):
+
+    self.cache = {}
+
+
+  def __setitem__( self, func, slotified_func ):
+
+    fnref = WeakCallableRef( func, self.expire )
+    self.cache[ id( fnref ) ] = ( func, slotified_func )
+
+
+  def expire( self, fnref ):
+
+    del self.cache[ id( fnref ) ]
+
+
+SLOTIFIED_FN_CACHE = SlotifiedFunctionReferenceCache()
+
+
+
 
 def slotify( fn ):
 

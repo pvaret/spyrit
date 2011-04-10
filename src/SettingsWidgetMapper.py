@@ -198,11 +198,10 @@ class SettingsWidgetMapper( QObject ):
 
     widget_mapper = self.sender()
 
-    if not widget_mapper.validate():
-      return
+    if widget_mapper.validate():
 
-    option_path = self.option_path_for_widget[ widget_mapper ]
-    self.settings[ option_path ] = value
+      option_path = self.option_path_for_widget[ widget_mapper ]
+      self.settings[ option_path ] = value
 
     self.emitSignals()
 

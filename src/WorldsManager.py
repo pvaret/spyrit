@@ -39,12 +39,20 @@ class WorldsManager( QObject ):
 
     ## Safety measure: ensure all worlds have a valid name.
     n = 0
-    for key, conf in self.worldconfig.sections.iteritems():
+    for key, conf in self.getWorldNodes():
       if not conf._name:
         n += 1
         conf._name = u"(Unnamed %d)" % n
 
     self.generateMappings()
+
+
+  def getWorldNodes( self ):
+
+    ## Return direct childrens that are also among saved sections.
+
+    return set( self.worldconfig.children.values() ) \
+         & set( self.worldconfig.sections.values() )
 
 
   def generateMappings( self ):
@@ -54,12 +62,12 @@ class WorldsManager( QObject ):
 
     self.name_mapping = dict(
                            ( self.normalize( conf._name ), conf )
-                           for conf in self.worldconfig.sections.itervalues()
+                           for conf in self.getWorldNodes()
                         )
 
     self.hostport_mapping = {}
 
-    for conf in self.worldconfig.sections.itervalues():
+    for conf in self.getWorldNodes():
       self.hostport_mapping.setdefault(
                                         ( conf._net._host, conf._net._port ), []
                                       ).append( conf )
@@ -76,7 +84,7 @@ class WorldsManager( QObject ):
     return [ name
                for _, name in sorted(
                    ( self.normalize( conf._name ), conf._name )
-                   for conf in self.worldconfig.sections.itervalues()
+                   for conf in self.getWorldNodes()
                )
            ]
 
@@ -96,10 +104,11 @@ class WorldsManager( QObject ):
   def saveWorld( self, world ):
 
     conf = world.conf
-    if conf in self.worldconfig.sections.itervalues():
+    if conf in self.worldconfig.sections:
       ## World has already been saved, do nothing.
       return
 
+    ## TODO: Ensure unicity!
     key = self.normalize( conf._name )
     self.worldconfig.sections[ key ] = conf
 

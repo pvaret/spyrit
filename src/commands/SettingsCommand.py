@@ -16,264 +16,260 @@
 ##
 ## SettingsCommand.py
 ##
-## Commands to manage the configuration.
+## Commands to manage the settings.
 ##
 
 
 from PyQt4.QtGui import QApplication
 
-from Settings    import SETTINGS_LABEL
+from Settings    import SETTINGS_LABEL, DESCRIPTIONS
 from Utilities   import format_as_table
 from BaseCommand import BaseCommand
+
 
 
 class SettingsCommand( BaseCommand ):
 
   u"View and modify the application settings."
 
-  def _getSerializer( self, settings, option ):
+  def _getSerializer( self, settings, setting ):
 
     try:
       defaults = settings.getParentByLabel( SETTINGS_LABEL )
-      return defaults.getSerializer( option )
+      return defaults.getSerializer( setting )
 
     except KeyError:
       return None
 
 
+  def _getValue( self, settings, setting ):
 
-  def cmd_set( self, world, option, *args ):
+    s = self._getSerializer( settings, setting )
+    value = s.serialize( settings[ setting ] )
+
+    if value is None:
+      value = u'None'
+
+    if ' ' in value:
+      value = '"%s"' % value
+
+    return value
+
+
+  def _setValue( self, settings, setting, args ):
+
+    args = " ".join( args )
+
+    s = self._getSerializer( settings, setting )
+
+    if not s:
+      return ( False, u"Unknown setting: %s" % setting )
+
+    args = s.deserialize( args )
+    settings[ setting ] = args
+
+    return ( True, None )
+
+
+  def _resetValue( self, settings, setting ):
+
+    s = self._getSerializer( settings, setting )
+
+    if not s:
+      return ( False, u"Unknown setting: %s" % setting )
+
+    try:
+      del settings[ setting ]
+
+    except KeyError:  ## Playing it safe...
+      pass
+
+    return ( True, None )
+
+
+  def cmd_set( self, world, setting, *args ):
 
     u"""\
-    Sets the given configuration option to the given value.
+    Sets the given setting to the given value.
 
-    Usage: %(cmd)s <option> <value>
+    Usage: %(cmd)s <setting> <value>
 
     Example: %(cmd)s ui.view.font.name "Courier New"
 
     """
 
-    args = " ".join( args )
+    settings = QApplication.instance().core.config
+
+    ok, msg = self._setValue( settings, setting, args )
+
+    if ok:
+      value = self._getValue( settings, setting )
+      world.info( u"%s set to value %s" % ( setting, value ) )
+
+    else:
+      world.info( msg )
+
+
+  def cmd_worldset( self, world, setting, *args ):
+
+    u"""\
+    Sets the given setting to the given value, for this world only.
+
+    Usage: %(cmd)s <setting> <value>
+
+    Example: %(cmd)s ui.view.font.name "Courier New"
+
+    """
+
+    settings = world.conf
+
+    ok, msg = self._setValue( settings, setting, args )
+
+    if ok:
+      value = self._getValue( settings, setting )
+      world.info( u"%s set to value %s on world %s" \
+                  % ( setting, value, world.title() ) )
+    else:
+      world.info( msg )
+
+
+  def cmd_reset( self, world, setting ):
+
+    u"""\
+    Resets the given setting to its default value.
+
+    Usage: %(cmd)s <setting>
+
+    Example: %(cmd)s ui.view.font.name
+
+    """
 
     settings = QApplication.instance().core.config
 
-    s = self._getSerializer( settings, option )
+    ok, msg = self._resetValue( settings, setting )
 
-    if not s:
-      world.info( u"Unknown configuration option: %s" % option )
-      return
+    if ok:
+      value = self._getValue( settings, setting )
+      world.info( u"%s reset to value %s" % ( setting, value ) )
 
-    args = s.deserialize( args )
-    settings[ option ] = args
-
-    ## TODO: Factorize display between this, worldset, reset and worldreset.
-    value = s.serialize( args )
-
-    if value is None:
-      value = u'None'
-
-    if ' ' in value:
-      value = '"%s"' % value
-
-    world.info( u"%s set to value %s" % ( option, value ) )
+    else:
+      world.info( msg )
 
 
-  def cmd_worldset( self, world, option, *args ):
+  def cmd_worldreset( self, world, setting ):
 
     u"""\
-    Sets given configuration option to the given value, for this world only.
+    Resets the given setting for this world to its global value.
 
-    Usage: %(cmd)s <option> <value>
+    Usage: %(cmd)s <setting>
 
-    Example: %(cmd)s output_font_name "Courier New"
+    Example: %(cmd)s ui.view.font.name
 
     """
 
-    args = " ".join( args )
+    settings = world.conf
 
-    t = world.conf.getType( option )
+    ok, msg = self._resetValue( settings, setting )
 
-    if not t:
-      world.info( u"Unknown configuration option: %s" % option )
-      return
-
-    args = t.from_string( args )
-    world.conf[ option ] = args
-
-    value = t.to_string( args )
-
-    if value is None:
-      value = u'None'
-
-    if ' ' in value:
-      value = '"%s"' % value
-
-    world.info( u"%s set to value %s on world %s" \
-                % ( option, value, world.title() ) )
+    if ok:
+      value = self._getValue( settings, setting )
+      world.info( u"%s reset to value %s on world %s" \
+                  % ( setting, value, world.title() ) )
+    else:
+      world.info( msg )
 
 
-  def cmd_reset( self, world, option ):
+  def cmd_settings( self, world ):
 
     u"""\
-    Resets the given configuration option to its default value.
-
-    Usage: %(cmd)s <option>
-
-    Example: %(cmd)s output_font_name
-
-    """
-
-    t = world.conf.getType( option )
-
-    if not t:
-      world.info( u"Unknown configuration option: %s" % option )
-      return
-
-    config = QApplication.instance().core.config
-
-    try:
-      del config[ option ]
-
-    except KeyError:
-      pass
-
-    value = t.to_string( config[ option ] )
-
-    if value is None:
-      value = u'None'
-
-    if ' ' in value:
-      value = '"%s"' % value
-
-    world.info( u"%s reset to value %s" % ( option, value ) )
-
-
-  def cmd_worldreset( self, world, option ):
-
-    u"""\
-    Resets the given configuration option for this world to its global value.
-
-    Usage: %(cmd)s <option>
-
-    Example: %(cmd)s output_font_name
-
-    """
-
-    t = world.conf.getType( option )
-
-    if not t:
-      world.info( u"Unknown configuration option: %s" % option )
-      return
-
-    try:
-      del world.conf[ option ]
-
-    except KeyError:
-      pass
-
-    value = t.to_string( world.conf[ option ] )
-
-    if value is None:
-      value = u'None'
-
-    if ' ' in value:
-      value = '"%s"' % value
-
-    world.info( u"%s reset to value %s on world %s" \
-                % ( option, value, world.title() ) )
-
-
-  def cmd_options( self, world ):
-
-    u"""\
-    Lists all available configuration options.
+    Lists all the available settings.
 
     Usage: %(cmd)s
 
     """
 
-    max_len = max( len( k ) for k in ALL_DESCS )
+    max_len = max( len( k ) for k in DESCRIPTIONS )
 
-    output = u"Available configuration options:\n"
+    output = u"Available settings:\n"
 
-    for option, desc in sorted( ALL_DESCS.iteritems() ):
-      output += option.ljust( max_len + 2 )
+    for setting, desc in sorted( DESCRIPTIONS.iteritems() ):
+      output += setting.ljust( max_len + 2 )
       output += desc
       output += '\n'
 
     world.info( output )
 
 
-  def cmd_show( s, world, option=None ):
+  def cmd_show( s, world, setting=None ):
 
     u"""\
-    Show the current configuration.
+    Show the current settings.
 
-    Usage: %(cmd)s [<option> | all]
+    Usage: %(cmd)s [<setting> | all]
 
-    By default, only the values differing from defaults are shown.
-    If an optional option argument is given, list all values for that option
+    By default, only the values differing from the defaults are shown.
+    If an optional setting argument is given, list all values for that setting
     (default, global, world.)
 
-    If the optional argument 'all' is given, then all values for all options
+    If the optional argument 'all' is given, then all values for all settings
     are listed.
 
     Examples:
-        %(cmd)s output_font_name
+        %(cmd)s ui.view.font.name
         %(cmd)s all
 
     """
 
-    worldconf  = world.conf
-    globalconf = QApplication.instance().core.config
-    defaults   = globalconf.parent
+    worldsettings = world.conf
+    settings      = QApplication.instance().core.config
+    defaults      = settings.getParentByLabel( SETTINGS_LABEL )
 
-    ## 1/ Retrieve list of options to list, based on the argument given by the
+    ## 1/ Retrieve list of settings to list, based on the argument given by the
     ## user:
 
-    if option is not None:
-      option = option.lower().strip()
+    if setting is not None:
+      setting = setting.lower().strip()
 
-    if option is None:  ## No argument given. Show non-default options.
+    if setting is None:  ## No argument given. Show only non-default settings.
 
-      list_options = []
+      list_settings = []
 
-      for k in sorted( ALL_DESCS ):
+      for k in sorted( DESCRIPTIONS ):
 
-        if worldconf.owns( k ) or globalconf.owns( k ):
-          list_options.append( k )
+        if k in worldsettings or k in settings:
+          list_settings.append( k )
 
-      if not list_options:
-        world.info( u"All the configuration options have default values." )
+      if not list_settings:
+        world.info( u"All the settings have default values." )
         return
 
-    elif option == "all":
-      list_options = sorted( ALL_DESCS )
+    elif setting == "all":
+      list_settings = sorted( DESCRIPTIONS )
 
     else:
 
-      if defaults.getType( option ) is None:
-        world.info( u"No such configuration option." )
+      if defaults.getSerializer( setting ) is None:
+        world.info( u"No such setting." )
         return
 
-      list_options = [ option ]
+      list_settings = [ setting ]
 
 
     ## 2/ Format and display as a table:
 
-    output = "Current configuration:\n"
+    output = "Current settings:\n"
 
-    headers = ( u"Options", u"Defaults", u"Global", u"World" )
+    headers = ( u"Setting", u"Defaults", u"Global", u"World" )
 
-    columns = [ list_options ]
+    columns = [ list_settings ]
 
-    for conf in ( defaults, globalconf, worldconf ):
+    for node in ( defaults, settings, worldsettings ):
 
       column = []
 
-      for k in list_options:
-        t = globalconf.getType( k )
-        value = t.to_string( conf[ k ] ) if conf.owns( k ) else u"-"
+      for k in list_settings:
+        s = defaults.getSerializer( k )
+        value = s.serialize( node[ k ] ) if k in node else u"-"
 
         column.append( value if value else u"None" )
 

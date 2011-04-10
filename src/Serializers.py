@@ -259,7 +259,10 @@ class KeySequence( BaseSerializer ):
 
   def serialize( self, seq ):
 
-    return unicode( seq.toString( QKeySequence.NativeText) )
+    if seq is not None:
+      return unicode( seq.toString( QKeySequence.NativeText) )
+
+    return u""
 
 
   def deserialize( self, string ):

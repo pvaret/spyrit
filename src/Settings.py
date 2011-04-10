@@ -124,6 +124,60 @@ STATE_LABEL    = "DEFAULT_STATE"
 SETTINGS_LABEL = "DEFAULT_SETTINGS"
 
 
+DESCRIPTIONS = {
+
+  'log.file':      u"default log filename pattern",
+  'log.dir':       u"default log directory",
+  'log.autostart': u"start logging automatically on connect",
+  'log.ansi':      u"use ANSI to log colors",
+
+  'ui.view.font.name':        u"name of font in output window",
+  'ui.view.font.size':        u"font size in output window",
+  'ui.view.font.text_format': u"format description for output window text",
+  'ui.view.font.info_format': u"format description for information text",
+  'ui.view.background.color': u"background color of output window",
+  'ui.view.split_scroll':     u"split output window when scrolling back",
+  'ui.view.paging':           u"stop scrolling after one page of text",
+
+  'ui.input.font.name':        u"name of font in input field",
+  'ui.input.font.size':        u"size of font in input field",
+  'ui.input.font.color':       u"color of text in input field",
+  'ui.input.background.color': u"background color of input field",
+  'ui.input.save_history':     u"length of input history to keep between sessions",
+
+  'ui.window.alert': u"animate taskbar when text is received from the server",
+
+  'net.encoding': u"server character encoding",
+
+  'shortcuts.about':          u"shortcut: About... dialog",
+  'shortcuts.aboutqt':        u"shortcut: About Qt... dialog",
+  'shortcuts.newworld':       u"shortcut: New World... dialog",
+  'shortcuts.quickconnect':   u"shortcut: Quick Connect... dialog",
+  'shortcuts.quit':           u"shortcut: quit the application",
+  'shortcuts.nexttab':        u"shortcut: switch to the next tab",
+  'shortcuts.previoustab':    u"shortcut: switch to the previous tab",
+  'shortcuts.close':          u"shortcut: close the current tab",
+  'shortcuts.connect':        u"shortcut: reconnect to the current world",
+  'shortcuts.disconnect':     u"shortcut: disconnect from the current world",
+  'shortcuts.historyup':      u"shortcut: previous entry in input history",
+  'shortcuts.historydown':    u"shortcut: next entry in input history",
+  'shortcuts.autocomplete':   u"shortcut: autocomplete current word in input field",
+  'shortcuts.pageup':         u"shortcut: scroll one page up",
+  'shortcuts.pagedown':       u"shortcut: scroll one page down",
+  'shortcuts.stepup':         u"shortcut: scroll one line up",
+  'shortcuts.stepdown':       u"shortcut: scroll one line down",
+  'shortcuts.home':           u"shortcut: scroll to the beginning of output",
+  'shortcuts.end':            u"shortcut: scroll to the end of output",
+  'shortcuts.startlog':       u"shortcut: start logging output",
+  'shortcuts.stoplog':        u"shortcut: stop logging output",
+  'shortcuts.toggle2ndinput': u"shortcut: toggle secondary input field",
+
+}
+
+
+
+
+
 from SettingsNode   import SettingsNode
 from SettingsSchema import SettingsSchema
 

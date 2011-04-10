@@ -147,6 +147,7 @@ class WeakSet( WeakValueDictionary ):
 class SettingsNode( DictAttrProxy ):
   """
   Holds the core behavior for a set of configuration keys.
+
   """
 
   SEP = '.'
@@ -189,8 +190,7 @@ class SettingsNode( DictAttrProxy ):
     if self.parent:
 
       try:
-        self.parent.section( key )  ## If this doesn't fail with KeyError...
-        return self.section( key, create_if_missing=True )
+        return self.section( key )
 
       except KeyError:
 
@@ -210,6 +210,9 @@ class SettingsNode( DictAttrProxy ):
 
     if not self.isValidKeyName( key ):
       raise KeyError( "Invalid key name '%s'" % key )
+
+    if key in self.sections:
+      raise KeyError( "'%s' already exists as section" % key )
 
     old_value = object()
 
@@ -273,6 +276,10 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __contains__( self, key ):
+
+    if self.SEP in key:
+      section, key = key.split( self.SEP, 1 )
+      return key in self.section( section )
 
     return key in self.keys
 

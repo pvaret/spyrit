@@ -169,6 +169,10 @@ class SettingsNode( DictAttrProxy ):
 
   def __getitem__( self, key ):
 
+    if self.SEP in key:
+      section, key = key.split( self.SEP, 1 )
+      return self.section( section )[ key ]
+
     ## Attempt to resolve key as local value:
 
     if key in self.keys:
@@ -198,6 +202,11 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __setitem__( self, key, value ):
+
+    if self.SEP in key:
+      section, key = key.split( self.SEP, 1 )
+      self.section( section )[ key ] = value
+      return
 
     if not self.isValidKeyName( key ):
       raise KeyError( "Invalid key name '%s'" % key )
@@ -238,6 +247,11 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __delitem__( self, key ):
+
+    if self.SEP in key:
+      section, key = key.split( self.SEP, 1 )
+      del self.section( section )[ key ]
+      return
 
     if key not in self.keys:
       raise KeyError( key )
@@ -364,45 +378,16 @@ class SettingsNode( DictAttrProxy ):
     self.notifiers.add( notifier )
 
 
-  def getNodeKeyByPath( self, node_path, create_if_missing=False ):
-
-    if self.SEP in node_path:
-      node_path, key = node_path.rsplit( self.SEP, 1 )
-
-    else:
-      node_path, key = "", node_path
-
-    node = self.getNodeByPath( node_path, create_if_missing )
-
-    if key in node.sections:
-      return node.section( key ), None
-
-    return node, key
-
-
-  def getNodeByPath( self, node_path, create_if_missing=False ):
-
-    node = self
-
-    for section in node_path.split( self.SEP ):
-
-      if not section:
-        continue
-
-      node = node.section( section, create_if_missing )
-
-    return node
-
-
   def getParentByLabel( self, label ):
 
     if label is self.label:
       return self
 
-    if self.parent:
+    elif self.parent:
       return self.parent.getParentByLabel( label )
 
-    return None
+    else:
+      return None
 
 
   def __repr__( self ):

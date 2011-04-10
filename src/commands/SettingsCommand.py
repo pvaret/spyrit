@@ -34,12 +34,12 @@ class SettingsCommand( BaseCommand ):
   def _getSerializer( self, settings, option ):
 
     try:
-      node, key = settings.getNodeKeyByPath( option )
-      defaults = node.getParentByLabel( SETTINGS_LABEL )
+      defaults = settings.getParentByLabel( SETTINGS_LABEL )
+      return defaults.getSerializer( option )
+
     except KeyError:
       return None
 
-    return defaults.getSerializer( key )
 
 
   def cmd_set( self, world, option, *args ):
@@ -64,8 +64,7 @@ class SettingsCommand( BaseCommand ):
       return
 
     args = s.deserialize( args )
-    node, key = settings.getNodeKeyByPath( option )
-    node[ key ] = args
+    settings[ option ] = args
 
     ## TODO: Factorize display between this, worldset, reset and worldreset.
     value = s.serialize( args )

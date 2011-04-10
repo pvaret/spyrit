@@ -179,18 +179,16 @@ class SettingsWidgetMapper( QObject ):
     QObject.__init__( self )
 
     self.settings = settings
-    self.node_path_for_widget = {}
+    self.option_path_for_widget = {}
 
 
-  def bind( self, node_path, widget ):
-
-    node, key = self.settings.getNodeKeyByPath( node_path )
+  def bind( self, option_path, widget ):
 
     widget_mapper = get_mapper( widget )
-    self.node_path_for_widget[ widget_mapper ] = node_path
+    self.option_path_for_widget[ widget_mapper ] = option_path
 
     widget_mapper.valueChanged.connect( self.updateSettingsValue )
-    widget_mapper.setValue( node[ key ] )
+    widget_mapper.setValue( self.settings[ option_path ] )
 
     return widget_mapper
 
@@ -203,10 +201,8 @@ class SettingsWidgetMapper( QObject ):
     if not widget_mapper.validate():
       return
 
-    node_path = self.node_path_for_widget[ widget_mapper ]
-    node, key = self.settings.getNodeKeyByPath( node_path )
-
-    node[ key ] = value
+    option_path = self.option_path_for_widget[ widget_mapper ]
+    self.settings[ option_path ] = value
 
     self.emitSignals()
 
@@ -214,7 +210,7 @@ class SettingsWidgetMapper( QObject ):
   def emitSignals( self ):
 
     empty = self.settings.isEmpty()
-    valid = all( mapper.validate() for mapper in self.node_path_for_widget )
+    valid = all( mapper.validate() for mapper in self.option_path_for_widget )
 
     self.settingsEmpty.emit( empty )
     self.settingsValid.emit( valid )

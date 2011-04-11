@@ -27,9 +27,7 @@ from PyQt4.QtGui import QDialog
 from PyQt4.QtGui import QVBoxLayout
 from PyQt4.QtGui import QDialogButtonBox
 
-
-from Separator         import Separator
-from PrettyOptionPanel import PrettyOptionPanel
+from Separator import Separator
 
 
 class PrettyOptionDialog( QDialog ):

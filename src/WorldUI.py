@@ -34,6 +34,7 @@ from PyQt4.QtGui  import QTabWidget
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
+from pipeline           import ChunkData
 from ActionSet          import ActionSet
 from TabDelegate        import TabDelegate
 from WorldInputUI       import WorldInputUI
@@ -41,7 +42,6 @@ from Autocompleter      import Autocompleter
 from OutputManager      import OutputManager
 from SingleShotTimer    import SingleShotTimer
 from SplittableTextView import SplittableTextView
-from pipeline           import ChunkData
 
 class LED:
 

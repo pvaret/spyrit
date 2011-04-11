@@ -25,11 +25,11 @@ from PyQt4.QtGui import QTextCursor
 from PyQt4.QtGui import QTextCharFormat
 
 
-from SearchManager        import SearchManager
-from FormatStack          import FormatStack
-from QTextFormatFormatter import QTextFormatFormatter
-from ConfigObserver       import ConfigObserver
 from Globals              import LEFTARROW
+from FormatStack          import FormatStack
+from SearchManager        import SearchManager
+from SettingsObserver     import SettingsObserver
+from QTextFormatFormatter import QTextFormatFormatter
 
 from pipeline             import ChunkData
 
@@ -45,17 +45,13 @@ class OutputManager:
   def __init__( self, world, textview ):
 
     self.world = world
-    self.conf  = world.conf
+    self.view_settings  = world.conf._ui._view
 
     self.textview = textview
 
     self.textcursor = QTextCursor( textview.document() )
 
-    view_conf = self.conf._ui._view
-    text_conf = view_conf._font
-    self.obs1 = ConfigObserver( text_conf )
-    self.obs2 = ConfigObserver( view_conf._background )
-    self.obs3 = ConfigObserver( view_conf )
+    self.observer = SettingsObserver( self.view_settings )
 
     self.textformat = QTextCharFormat()
     self.infoformat = QTextCharFormat()
@@ -63,34 +59,36 @@ class OutputManager:
     self.textformatmanager = FormatStack( QTextFormatFormatter( self.textformat ) )
     self.infoformatmanager = FormatStack( QTextFormatFormatter( self.infoformat ) )
 
-    self.textformatmanager.setBaseFormat( text_conf[ "text_format" ] )
-    self.infoformatmanager.setBaseFormat( text_conf[ "info_format" ] )
+    self.textformatmanager.setBaseFormat( self.view_settings._font._text_format )
+    self.infoformatmanager.setBaseFormat( self.view_settings._font._info_format )
 
-    self.obs1.addCallback( "text_format", self.textformatmanager.setBaseFormat )
-    self.obs1.addCallback( "info_format", self.infoformatmanager.setBaseFormat )
+    self.observer.addCallback( "font.text_format",
+                               self.textformatmanager.setBaseFormat )
+    self.observer.addCallback( "font.info_format",
+                               self.infoformatmanager.setBaseFormat )
 
-    self.searchmanager = SearchManager( textview, self.conf )
+    self.searchmanager = SearchManager( textview, world.conf )
 
     self.was_connected   = False
     self.pending_newline = False
 
     self.refresh()
 
-    self.obs1.addCallback( [ "name", "size" ], self.refresh )
-    self.obs2.addCallback( "color", self.refresh )
+    self.observer.addCallback( [ "font.name", "font.size", "background.color" ],
+                               self.refresh )
 
-    self.textview.setSplitScrollback( view_conf[ "split_scroll" ] )
-    self.textview.setPaging(          view_conf[ "paging" ] )
+    self.textview.setSplitScrollback( self.view_settings[ "split_scroll" ] )
+    self.textview.setPaging( self.view_settings[ "paging" ] )
 
-    self.obs3.addCallback( "split_scroll", self.textview.setSplitScrollback )
-    self.obs3.addCallback( "paging",       self.textview.setPaging )
+    self.observer.addCallback( "split_scroll", self.textview.setSplitScrollback )
+    self.observer.addCallback( "paging",       self.textview.setPaging )
 
 
   def refresh( self ):
 
-    self.textview.setConfiguration( self.conf._ui._view._font._name,
-                                    self.conf._ui._view._font._size,
-                                    self.conf._ui._view._background._color )
+    self.textview.setConfiguration( self.view_settings._font._name,
+                                    self.view_settings._font._size,
+                                    self.view_settings._background._color )
 
 
   def findInHistory( self, string ):
@@ -191,7 +189,5 @@ class OutputManager:
     self.textcursor     = None
     self.charformat     = None
     self.infocharformat = None
-    self.obs1           = None
-    self.obs2           = None
-    self.obs3           = None
+    self.observer       = None
     self.searchmanager  = None

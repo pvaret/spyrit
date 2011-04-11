@@ -26,7 +26,7 @@ from PyQt4.QtGui  import QAction
 from PyQt4.QtGui  import QKeySequence
 from PyQt4.QtGui  import QApplication
 
-from ConfigObserver import ConfigObserver
+from SettingsObserver import SettingsObserver
 
 
 class ActionSet:
@@ -36,7 +36,7 @@ class ActionSet:
     self.parent = parent
 
     config = QApplication.instance().core.config
-    self.observer = ConfigObserver( config._shortcuts )
+    self.observer = SettingsObserver( config._shortcuts )
     self.closures = []
 
     self.actions = {

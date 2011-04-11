@@ -31,7 +31,7 @@ from PyQt4.QtGui  import QKeySequence
 
 from ActionSet        import ActionSet
 from InputHistory     import InputHistory
-from ConfigObserver   import ConfigObserver
+from SettingsObserver import SettingsObserver
 
 
 
@@ -63,10 +63,9 @@ class WorldInputUI( QTextEdit ):
 
     ## And bind it to key changes:
 
-    self.obs1 = ConfigObserver( self.conf._ui._input._font )
-    self.obs1.addCallback( [ "color", "name", "size" ], self.refresh )
-    self.obs2 = ConfigObserver( self.conf._ui._input._background )
-    self.obs2.addCallback( [ "color" ], self.refresh )
+    self.observer = SettingsObserver( self.conf._ui._input )
+    self.observer.addCallback( [ "font.color", "font.name", "font.size",
+                                 "background.color" ], self.refresh )
 
     self.returnPressed.connect( self.clearAndSend )
 
@@ -186,6 +185,5 @@ class WorldInputUI( QTextEdit ):
     self.conf      = None
     self.history   = None
     self.commands  = None
-    self.obs1      = None
-    self.obs2      = None
+    self.observer  = None
     self.actionset = None

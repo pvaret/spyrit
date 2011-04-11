@@ -14,9 +14,9 @@
 ##
 
 ##
-## ConfigObserver.py
+## SettingsObserver.py
 ##
-## This file holds ConfigObserver, a helper class that monitors changes in a
+## This file holds SettingsObserver, a helper class that monitors changes in a
 ## Configuration object and calls the appropriate callback when that happens.
 ##
 
@@ -97,31 +97,61 @@ def slotify( fn ):
 
 
 
-class ConfigObserver:
+class Notifier:
 
-  def __init__( self, conf ):
+  def __init__( self, node ):
 
     self.callbacks = {}
+    node.registerNotifier( self.trigger )
 
-    conf.registerNotifier( self.notify )
 
+  def trigger( self, key, value ):
 
-  def notify( self, key, value ):
-
-    callbacks = self.callbacks.get( key, None )
+    callbacks = self.callbacks.get( key )
 
     if callbacks:
       callbacks.triggerAll( key, value )
 
 
+  def addCallback( self, key, callback ):
+
+    self.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
+
+
+
+
+class SettingsObserver:
+
+  def __init__( self, settings ):
+
+    self.notifiers = {}
+    self.settings = settings
+
+
   def addCallback( self, keys, callback ):
 
-    if type( keys ) not in ( type( [] ), type( () ) ): keys = [ keys ]
+    if type( keys ) not in ( list, tuple, set ):
+      keys = [ keys ]
 
+    settings = self.settings
     callback = slotify( callback )
 
     for key in keys:
-      self.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
+
+      node_path, key = key.rsplit( settings.SEP, 1 ) if settings.SEP in key \
+                       else ( '', key )
+
+      node = settings
+      path = node_path
+
+      while path:
+        section, path = ( path + settings.SEP ).split( settings.SEP, 1 )
+        node = node.section( section )
+
+      if node_path not in self.notifiers:
+        self.notifiers[ node_path ] = Notifier( node )
+
+      self.notifiers[ node_path ].addCallback( key, callback )
 
     return self  ## Return self, so as to make it possible to chain calls.
 

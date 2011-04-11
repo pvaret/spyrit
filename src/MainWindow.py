@@ -21,7 +21,6 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QPoint
 from PyQt4.QtCore import QVariant
 from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtGui  import QIcon
@@ -36,10 +35,10 @@ from PyQt4.QtGui  import QMainWindow
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
-from WorldUI        import WorldUI
-from ActionSet      import ActionSet
-from ConfigObserver import ConfigObserver
-from SmartTabWidget import SmartTabWidget
+from WorldUI          import WorldUI
+from ActionSet        import ActionSet
+from SmartTabWidget   import SmartTabWidget
+from SettingsObserver import SettingsObserver
 
 
 class MainWindow( QMainWindow ):
@@ -154,11 +153,9 @@ class MainWindow( QMainWindow ):
 
     ## And bind it to the appropriate configuration keys:
 
-    self.obs1 = ConfigObserver( config._ui )
-    self.obs1.addCallback( "style", self.refreshStyle )
-
-    self.obs2 = ConfigObserver( config._ui._toolbar )
-    self.obs2.addCallback( "icon_size", self.refreshIcons )
+    self.observer = SettingsObserver( config._ui )
+    self.observer.addCallback( "style", self.refreshStyle )
+    self.observer.addCallback( "toolbar.icon_size", self.refreshIcons )
 
     self.refreshMenuWorlds()
 

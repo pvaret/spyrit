@@ -34,12 +34,12 @@ from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
 
-from ConfigObserver   import ConfigObserver
-from PlatformSpecific import platformSpecific
-from Utilities        import ensure_valid_filename
 from Logger           import create_logger_for_world
 from Globals          import CMDCHAR
+from Utilities        import ensure_valid_filename
 from SingleShotTimer  import SingleShotTimer
+from SettingsObserver import SettingsObserver
+from PlatformSpecific import platformSpecific
 
 from pipeline                import ChunkData
 from pipeline.SocketPipeline import SocketPipeline
@@ -86,7 +86,7 @@ class World( QObject ):
     self.socketpipeline = SocketPipeline( conf )
     self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
 
-    self.obs1 = ConfigObserver( self.conf._ui._toolbar )
+    self.observer = SettingsObserver( self.conf._ui._toolbar )
 
 
   def title( self ):
@@ -109,7 +109,7 @@ class World( QObject ):
 
     self.worldui = worldui
     self.worldui.updateToolBarIcons( self.conf._ui._toolbar._icon_size )
-    self.obs1.addCallback( "icon_size", self.worldui.updateToolBarIcons )
+    self.observer.addCallback( "icon_size", self.worldui.updateToolBarIcons )
 
 
   def info( self, text ):
@@ -364,4 +364,4 @@ class World( QObject ):
     self.worldui        = None
     self.socketpipeline = None
     self.logger         = None
-    self.obs1           = None
+    self.observer       = None

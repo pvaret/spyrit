@@ -98,7 +98,7 @@ class SettingsCommand( BaseCommand ):
 
     """
 
-    settings = QApplication.instance().core.config
+    settings = QApplication.instance().core.settings
 
     ok, msg = self._setValue( settings, setting, args )
 
@@ -121,7 +121,7 @@ class SettingsCommand( BaseCommand ):
 
     """
 
-    settings = world.conf
+    settings = world.settings
 
     ok, msg = self._setValue( settings, setting, args )
 
@@ -144,7 +144,7 @@ class SettingsCommand( BaseCommand ):
 
     """
 
-    settings = QApplication.instance().core.config
+    settings = QApplication.instance().core.settings
 
     ok, msg = self._resetValue( settings, setting )
 
@@ -167,7 +167,7 @@ class SettingsCommand( BaseCommand ):
 
     """
 
-    settings = world.conf
+    settings = world.settings
 
     ok, msg = self._resetValue( settings, setting )
 
@@ -220,8 +220,8 @@ class SettingsCommand( BaseCommand ):
 
     """
 
-    worldsettings = world.conf
-    settings      = QApplication.instance().core.config
+    worldsettings = world.settings
+    settings      = QApplication.instance().core.settings
     defaults      = settings.getParentByLabel( SETTINGS_LABEL )
 
     ## 1/ Retrieve list of settings to list, based on the argument given by the

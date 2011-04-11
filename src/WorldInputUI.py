@@ -47,9 +47,9 @@ class WorldInputUI( QTextEdit ):
     self.setTabChangesFocus( True )
     self.setAcceptRichText( False )
 
-    self.world   = world
-    self.conf    = world.conf
-    self.history = InputHistory( self, shouldsavehistory )
+    self.world    = world
+    self.settings = world.settings
+    self.history  = InputHistory( self, shouldsavehistory )
 
     self.actionset = ActionSet( self )
 
@@ -63,7 +63,7 @@ class WorldInputUI( QTextEdit ):
 
     ## And bind it to key changes:
 
-    self.observer = SettingsObserver( self.conf._ui._input )
+    self.observer = SettingsObserver( self.settings._ui._input )
     self.observer.addCallback( [ "font.color", "font.name", "font.size",
                                  "background.color" ], self.refresh )
 
@@ -79,26 +79,26 @@ class WorldInputUI( QTextEdit ):
 
     style_elements = []
 
-    input_conf = self.conf._ui._input
-    if input_conf._font._color:
+    input_settings = self.settings._ui._input
+    if input_settings._font._color:
 
       style_elements.append( u"color: %s" \
-                             % input_conf._font._color )
+                             % input_settings._font._color )
 
-    if input_conf._font._name:
+    if input_settings._font._name:
 
       style_elements.append( u"font-family: %s" \
-                             % input_conf._font._name )
+                             % input_settings._font._name )
 
-    if input_conf._font._size:
+    if input_settings._font._size:
 
       style_elements.append( u"font-size: %dpt" \
-                             % input_conf._font._size )
+                             % input_settings._font._size )
 
-    if input_conf._background._color:
+    if input_settings._background._color:
 
       style_elements.append( u"background-color: %s" \
-                             % input_conf._background._color )
+                             % input_settings._background._color )
 
     if style_elements:
       self.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
@@ -182,7 +182,7 @@ class WorldInputUI( QTextEdit ):
   def __del__( self ):
 
     self.world     = None
-    self.conf      = None
+    self.settings  = None
     self.history   = None
     self.commands  = None
     self.observer  = None

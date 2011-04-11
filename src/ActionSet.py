@@ -35,8 +35,8 @@ class ActionSet:
 
     self.parent = parent
 
-    config = QApplication.instance().core.config
-    self.observer = SettingsObserver( config._shortcuts )
+    settings = QApplication.instance().core.settings
+    self.observer = SettingsObserver( settings._shortcuts )
     self.closures = []
 
     self.actions = {
@@ -44,7 +44,7 @@ class ActionSet:
       ## Global actions
 
       "about":           ( u"About %s..." % \
-                             config._app._name,   ":/app/icon"        ),
+                             settings._app._name, ":/app/icon"        ),
       "aboutqt":         ( u"About Qt...",        ":/icon/qt-logo"    ),
       "newworld":        ( u"New world...",       ":/icon/new_world"  ),
       "quickconnect":    ( u"Quick connect...",   None                ),
@@ -99,14 +99,14 @@ class ActionSet:
 
     if icon: a.setIcon( QIcon( icon ) )
 
-    config = QApplication.instance().core.config._shortcuts
+    settings = QApplication.instance().core.settings._shortcuts
 
     def set_action_shortcut():
 
-      ## Note how this closure uses 'config', 'a' and 'action' as bound
+      ## Note how this closure uses 'settings', 'a' and 'action' as bound
       ## variables.
 
-      shortcut = config[ action ]
+      shortcut = settings[ action ]
 
       if shortcut: a.setShortcut( QKeySequence( shortcut ) )
       else:        a.setShortcut( QKeySequence() )

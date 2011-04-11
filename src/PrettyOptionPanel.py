@@ -44,10 +44,10 @@ class ConfigMapperWidget:
 
   def __init__( self, mapper, option, label=None ):
 
-    self.mapper = mapper
-    self.conf   = mapper.conf  ## For convenience.
-    self.option = option
-    self.label  = label
+    self.mapper   = mapper
+    self.settings = mapper.settings  ## For convenience.
+    self.option   = option
+    self.label    = label
 
     mapper.widgets.append( self )
 
@@ -62,9 +62,9 @@ class ConfigMapperWidget:
 
     value = self.obtainValueFromWidget()
 
-    if value != self.conf[ self.option ]:
+    if value != self.settings[ self.option ]:
 
-      self.conf[ self.option ] = value
+      self.settings[ self.option ] = value
       self.mapper.refreshState()
 
 
@@ -83,8 +83,8 @@ class ConfigMapperWidget:
 
     value = self.obtainValueFromWidget()
 
-    if value != self.conf[ self.option ]:
-      self.applyValueToWidget( self.conf[ self.option ] )
+    if value != self.settings[ self.option ]:
+      self.applyValueToWidget( self.settings[ self.option ] )
 
 
   def applyValueToWidget( self, value ):
@@ -100,7 +100,7 @@ class ConfigMapperWidget:
     ## of the dialog if it isn't.
     ## This method should be reimplemented by widget mappers that need to.
 
-    if self.conf[ self.option ]:
+    if self.settings[ self.option ]:
       return True
 
     else:
@@ -212,11 +212,11 @@ class ConfigMapper( QObject ):
   isValid    = pyqtSignal( bool )
   hasChanges = pyqtSignal( bool )
 
-  def __init__( self, conf ):
+  def __init__( self, settings ):
 
     QObject.__init__( self )
 
-    self.conf     = conf
+    self.settings = settings
     self.widgets  = []
     self.contents = []
 
@@ -230,7 +230,7 @@ class ConfigMapper( QObject ):
 
     valid = all( w.isValid() for w in self.widgets )
 
-    self.hasChanges.emit( not self.conf.isEmpty() )
+    self.hasChanges.emit( not self.settings.isEmpty() )
     self.isValid.emit( valid )
 
 
@@ -337,13 +337,13 @@ class PrettyOptionPanel( QWidget ):
 
   def defaults( self ):
 
-    self.mapper.conf.reset()
+    self.mapper.settings.reset()
     self.mapper.updateWidgetsFromConf()
 
 
   def apply( self ):
 
-    self.mapper.conf.apply()
+    self.mapper.settings.apply()
     self.mapper.updateWidgetsFromConf()
 
 

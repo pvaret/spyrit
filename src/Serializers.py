@@ -17,8 +17,8 @@
 ## Serializers.py
 ##
 ## Serializers are small classes that know how to serialize and deserialize
-## configuration values to and from strings, and can also compute and retain a
-## sane default for each given configuration key.
+## settings values to and from strings, and can also compute and retain a
+## sane default for each given setting.
 ##
 
 u"""
@@ -30,7 +30,8 @@ u"""
 
 
 from PyQt4.QtGui  import QKeySequence
-from PyQt4.QtCore import QSize, QPoint
+from PyQt4.QtCore import QSize
+from PyQt4.QtCore import QPoint
 
 from Globals   import FORMAT_PROPERTIES
 from Matches   import RegexMatch, SmartMatch

@@ -45,7 +45,7 @@ class OutputManager:
   def __init__( self, world, textview ):
 
     self.world = world
-    self.view_settings  = world.conf._ui._view
+    self.view_settings  = world.settings._ui._view
 
     self.textview = textview
 
@@ -67,7 +67,7 @@ class OutputManager:
     self.observer.addCallback( "font.info_format",
                                self.infoformatmanager.setBaseFormat )
 
-    self.searchmanager = SearchManager( textview, world.conf )
+    self.searchmanager = SearchManager( textview, world.settings )
 
     self.was_connected   = False
     self.pending_newline = False
@@ -185,7 +185,7 @@ class OutputManager:
   def __del__( self ):
 
     self.world          = None
-    self.conf           = None
+    self.settings       = None
     self.textcursor     = None
     self.charformat     = None
     self.infocharformat = None

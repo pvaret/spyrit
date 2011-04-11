@@ -43,23 +43,23 @@ from SettingsObserver import SettingsObserver
 
 class MainWindow( QMainWindow ):
 
-  def __init__( self, config ):
+  def __init__( self, settings ):
 
     QMainWindow.__init__( self )
 
     ## Set up main window according to its configuration.
 
-    self.setWindowTitle( config._app._name )
+    self.setWindowTitle( settings._app._name )
 
-    min_size = config._ui._window._min_size
+    min_size = settings._ui._window._min_size
     if min_size and min_size.isValid():
       self.setMinimumSize( min_size )
 
-    size = config._ui._window._size
+    size = settings._ui._window._size
     if size and size.isValid():
       self.resize( size )
 
-    pos = config._ui._window._pos
+    pos = settings._ui._window._pos
     if pos and not pos.isNull():
       self.move( pos )
 
@@ -153,7 +153,7 @@ class MainWindow( QMainWindow ):
 
     ## And bind it to the appropriate configuration keys:
 
-    self.observer = SettingsObserver( config._ui )
+    self.observer = SettingsObserver( settings._ui )
     self.observer.addCallback( "style", self.refreshStyle )
     self.observer.addCallback( "toolbar.icon_size", self.refreshIcons )
 
@@ -167,7 +167,7 @@ class MainWindow( QMainWindow ):
 
   def refreshStyle( self ):
 
-    style = QApplication.instance().core.config._ui._style
+    style = QApplication.instance().core.settings._ui._style
 
     if not style:
       style = self.initial_style
@@ -180,7 +180,7 @@ class MainWindow( QMainWindow ):
 
   def refreshIcons( self ):
 
-    size = QApplication.instance().core.config._ui._toolbar._icon_size
+    size = QApplication.instance().core.settings._ui._toolbar._icon_size
 
     if not size:
       size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
@@ -310,10 +310,10 @@ class MainWindow( QMainWindow ):
 
     ## Save the main window's geometry when it's about to be closed.
 
-    config = QApplication.instance().core.config
+    settings = QApplication.instance().core.settings
 
-    config._ui._window._size = self.size()
-    config._ui._window._pos  = self.pos()
+    settings._ui._window._size = self.size()
+    settings._ui._window._pos  = self.pos()
 
     ## WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
     ## which sometimes causes a segfault when exiting. The following works
@@ -335,7 +335,7 @@ class MainWindow( QMainWindow ):
 
     worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
-    dialog = NewWorldDialog( world.conf, self )
+    dialog = NewWorldDialog( world.settings, self )
 
     if dialog.exec_():
 
@@ -349,7 +349,7 @@ class MainWindow( QMainWindow ):
 
     worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
-    dialog = QuickConnectDialog( world.conf, self )
+    dialog = QuickConnectDialog( world.settings, self )
 
     if dialog.exec_():
       QApplication.instance().core.openWorld( world )
@@ -379,5 +379,5 @@ class MainWindow( QMainWindow ):
 
     from AboutDialog import AboutDialog
 
-    config = QApplication.instance().core.config
-    AboutDialog( config, self ).exec_()
+    settings = QApplication.instance().core.settings
+    AboutDialog( settings, self ).exec_()

@@ -24,8 +24,8 @@ import os.path
 
 from PlatformSpecific import platformSpecific
 
-CONFIG_DIR  = platformSpecific.get_configuration_dir()
-CONFIG_FILE = platformSpecific.get_configuration_file()
+CONFIG_DIR  = platformSpecific.get_settings_dir()
+CONFIG_FILE = platformSpecific.get_settings_file()
 
 LOG_DIR     = os.path.join( CONFIG_DIR, "logs" )
 

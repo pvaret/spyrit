@@ -31,18 +31,18 @@ class WorldsManager( QObject ):
 
   worldListChanged = pyqtSignal()
 
-  def __init__( self, config ):
+  def __init__( self, settings ):
 
     QObject.__init__( self )
 
-    self.worldconfig = config[ WORLDS ]
+    self.worldsettings = settings[ WORLDS ]
 
     ## Safety measure: ensure all worlds have a valid name.
     n = 0
-    for key, conf in self.getWorldNodes():
-      if not conf._name:
+    for key, settings in self.getWorldNodes():
+      if not settings._name:
         n += 1
-        conf._name = u"(Unnamed %d)" % n
+        settings._name = u"(Unnamed %d)" % n
 
     self.generateMappings()
 
@@ -51,8 +51,8 @@ class WorldsManager( QObject ):
 
     ## Return direct childrens that are also among saved sections.
 
-    return set( self.worldconfig.children.values() ) \
-         & set( self.worldconfig.sections.values() )
+    return set( self.worldsettings.children.values() ) \
+         & set( self.worldsettings.sections.values() )
 
 
   def generateMappings( self ):
@@ -61,16 +61,16 @@ class WorldsManager( QObject ):
     ## their (host, port) connection pair.
 
     self.name_mapping = dict(
-                           ( self.normalize( conf._name ), conf )
-                           for conf in self.getWorldNodes()
+                           ( self.normalize( settings._name ), settings )
+                           for settings in self.getWorldNodes()
                         )
 
     self.hostport_mapping = {}
 
-    for conf in self.getWorldNodes():
+    for settings in self.getWorldNodes():
       self.hostport_mapping.setdefault(
-                                        ( conf._net._host, conf._net._port ), []
-                                      ).append( conf )
+                                        ( settings._net._host, settings._net._port ), []
+                                      ).append( settings )
 
 
   def normalize( self, name ):
@@ -83,68 +83,68 @@ class WorldsManager( QObject ):
     ## Return world names, sorted by normalized value.
     return [ name
                for _, name in sorted(
-                   ( self.normalize( conf._name ), conf._name )
-                   for conf in self.getWorldNodes()
+                   ( self.normalize( settings._name ), settings._name )
+                   for settings in self.getWorldNodes()
                )
            ]
 
 
-  def newWorldConf( self, host="", port=0, ssl=False, name="" ):
+  def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
 
-    worldconf = SettingsNode( self.worldconfig )
+    worldsettings = SettingsNode( self.worldsettings )
 
-    if name: worldconf._name = name
-    if host: worldconf._net._host = host
-    if port: worldconf._net._port = port
-    if ssl:  worldconf._net._ssl  = ssl
+    if name: worldsettings._name = name
+    if host: worldsettings._net._host = host
+    if port: worldsettings._net._port = port
+    if ssl:  worldsettings._net._ssl  = ssl
 
-    return worldconf
+    return worldsettings
 
 
   def saveWorld( self, world ):
 
-    conf = world.conf
-    if conf in self.worldconfig.sections:
+    settings = world.settings
+    if settings in self.worldsettings.sections:
       ## World has already been saved, do nothing.
       return
 
     ## TODO: Ensure unicity!
-    key = self.normalize( conf._name )
-    self.worldconfig.sections[ key ] = conf
+    key = self.normalize( settings._name )
+    self.worldsettings.sections[ key ] = settings
 
     self.generateMappings()
     self.worldListChanged.emit()
 
 
-  def newWorld( self, conf ):
+  def newWorld( self, settings ):
 
-    return World( conf )
+    return World( settings )
 
 
   def newAnonymousWorld( self, host="", port=0, ssl=False ):
 
-    conf = self.newWorldConf( host, port, ssl )
-    return self.newWorld( conf )
+    settings = self.newWorldSettings( host, port, ssl )
+    return self.newWorld( settings )
 
 
   def lookupWorldByName( self, name ):
 
-    conf = self.name_mapping.get( self.normalize( name ) )
+    settings = self.name_mapping.get( self.normalize( name ) )
 
-    if conf:
-      return self.newWorld( conf )
+    if settings:
+      return self.newWorld( settings )
 
     return None
 
 
   def lookupWorldByHostPort( self, host, port ):
 
-    confs = self.hostport_mapping.get( ( host, port ) )
+    settings = self.hostport_mapping.get( ( host, port ) )
 
-    if confs and len( confs ) == 1:
+    if settings and len( settings ) == 1:
 
       ## One matching configuration found, and only one.
-      return self.newWorld( confs[ 0 ] )
+      return self.newWorld( settings[ 0 ] )
 
     return None
 

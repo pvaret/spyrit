@@ -84,29 +84,29 @@ AUTHORS = u"""\
 
 class AboutDialog( QDialog ):
 
-  def __init__( self, config, parent=None ):
+  def __init__( self, settings, parent=None ):
 
     QDialog.__init__( self, parent )
 
     self.setLayout( QVBoxLayout( self ) )
 
-    min_size = config._ui._window._min_size
+    min_size = settings._ui._window._min_size
     if min_size and min_size.isValid():
       self.setMinimumSize( min_size )
 
-    title = u"About %s" % config._app._name
+    title = u"About %s" % settings._app._name
 
     self.setWindowTitle( title )
 
     header = PrettyPanelHeader( title, QPixmap( ":/app/icon" ) )
     self.layout().addWidget( header )
 
-    about = QLabel( ABOUT % config._app )
+    about = QLabel( ABOUT % settings._app )
     about.setContentsMargins( 20, 20, 20, 20 )
     about.setWordWrap( True )
     about.setOpenExternalLinks( True )
 
-    authors = QLabel( AUTHORS % config._app )
+    authors = QLabel( AUTHORS % settings._app )
     authors.setContentsMargins( 20, 20, 20, 20 )
     authors.setWordWrap( True )
     authors.setOpenExternalLinks( True )

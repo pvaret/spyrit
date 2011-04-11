@@ -61,17 +61,17 @@ class World( QObject ):
   disconnected = pyqtSignal( bool )
   nowLogging   = pyqtSignal( bool )
 
-  def __init__( self, conf=None ):
+  def __init__( self, settings=None ):
 
     QObject.__init__( self )
 
     worldsmanager = QApplication.instance().core.worlds
-    if not conf:
-      conf = worldsmanager.newWorldConf()
+    if not settings:
+      settings = worldsmanager.newWorldSettings()
 
-    self.conf    = conf
-    self.worldui = None
-    self.logger  = None
+    self.settings = settings
+    self.worldui  = None
+    self.logger   = None
 
     self.input = []
     self.input_flush = SingleShotTimer( self.flushPendingInput )
@@ -83,21 +83,22 @@ class World( QObject ):
 
     self.status = Status.DISCONNECTED
 
-    self.socketpipeline = SocketPipeline( conf )
+    self.socketpipeline = SocketPipeline( settings )
     self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
 
-    self.observer = SettingsObserver( self.conf._ui._toolbar )
+    self.observer = SettingsObserver( self.settings._ui._toolbar )
 
 
   def title( self ):
 
-    conf = self.conf
-    return conf._name or u"(%s:%d)" % ( conf._net._host, conf._net._port )
+    settings = self.settings
+    return settings._name or u"(%s:%d)" \
+                          % ( settings._net._host, settings._net._port )
 
 
   def host( self ):
 
-    return self.conf._net._host
+    return self.settings._net._host
 
 
   def save( self ):
@@ -108,7 +109,7 @@ class World( QObject ):
   def setUI( self, worldui ):
 
     self.worldui = worldui
-    self.worldui.updateToolBarIcons( self.conf._ui._toolbar._icon_size )
+    self.worldui.updateToolBarIcons( self.settings._ui._toolbar._icon_size )
     self.observer.addCallback( "icon_size", self.worldui.updateToolBarIcons )
 
 
@@ -157,7 +158,7 @@ class World( QObject ):
 
     if self.status == Status.CONNECTED:
 
-      if self.conf._log._autostart or self.was_logging:
+      if self.settings._log._autostart or self.was_logging:
         self.startLogging()
 
     elif self.status == Status.DISCONNECTED:
@@ -168,8 +169,8 @@ class World( QObject ):
 
   def computeLogFileName( self ):
 
-    logfile = self.conf._log._file
-    logdir  = self.conf._log._dir
+    logfile = self.settings._log._file
+    logdir  = self.settings._log._dir
 
     logfile = time.strftime( logfile )
     logfile = logfile.replace( u"[WORLDNAME]", self.title() )
@@ -202,7 +203,7 @@ class World( QObject ):
 
   def startLogging( self ):
 
-    ## TODO: Prompt for a logfile name if none is recorded in config
+    ## TODO: Prompt for a logfile name if none is recorded in settings
 
     logfile = self.computeLogFileName()
 

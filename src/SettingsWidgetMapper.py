@@ -21,8 +21,14 @@
 ##
 
 
-from PyQt4.QtCore import Qt, QObject, QString, pyqtSlot, pyqtSignal
-from PyQt4.QtGui  import QLineEdit, QSpinBox, QCheckBox
+from PyQt4.QtCore import Qt
+from PyQt4.QtCore import QObject
+from PyQt4.QtCore import QString
+from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtGui  import QSpinBox
+from PyQt4.QtGui  import QLineEdit
+from PyQt4.QtGui  import QCheckBox
 
 
 qlineedit_not_empty = lambda qlineedit: qlineedit.text().size() > 0

@@ -225,16 +225,16 @@ class GagAction:
 
 
 
-def get_matches_configuration( conf ):
+def get_matches_configuration( settings ):
 
-  section = conf._matches_section
+  section = settings._matches_section
 
-  if not conf.hasSection( section ):
+  if not settings.hasSection( section ):
     ## No Matches section yet. Create it.
-    matches = conf.createSection( section )
+    matches = settings.createSection( section )
 
   else:
-    matches = conf.getSection( section )
+    matches = settings.getSection( section )
 
   return dict( ( group, matches.getSection( group ).getOwnDict() )
                for group in matches.getSectionList() )
@@ -270,21 +270,21 @@ class MatchGroup:
 
 class TriggersManager:
 
-  def __init__( self, config ):
+  def __init__( self, settings ):
 
     self.groups = {}
 
-    self.load( config )
-    config.registerSaveCallback( self.confSaveCallback )
+    self.load( settings )
+    settings.registerSaveCallback( self.confSaveCallback )
 
 
-  def load( self, conf ):
+  def load( self, settings ):
 
-    all_groups = get_matches_configuration( conf )
+    all_groups = get_matches_configuration( settings )
 
-    for groupname, conf in all_groups.iteritems():
+    for groupname, settings in all_groups.iteritems():
 
-      matches = conf.get( 'match', [] )
+      matches = settings.get( 'match', [] )
 
       matchgroup = None
 
@@ -313,7 +313,7 @@ class TriggersManager:
       if not matchgroup:  ## No match created, presumably due to errors.
         continue
 
-      if 'gag' in conf:
+      if 'gag' in settings:
 
         action, _ = GagAction.factory()
         if action:
@@ -321,13 +321,13 @@ class TriggersManager:
 
         continue  ## If there's a gag, ignore all other actions!
 
-      if 'play' in conf:
+      if 'play' in settings:
 
-        action, _ = PlayAction.factory( conf.get( 'play' ) )
+        action, _ = PlayAction.factory( settings.get( 'play' ) )
         if action:
           matchgroup.addAction( action )
 
-      highlight_keys = [ k for k in conf if k.startswith( "highlight" ) ]
+      highlight_keys = [ k for k in settings if k.startswith( "highlight" ) ]
 
       for k in highlight_keys:
 
@@ -337,12 +337,12 @@ class TriggersManager:
         else:
           token = None
 
-        action, _ = HighlightAction.factory( conf[ k ], token )
+        action, _ = HighlightAction.factory( settings[ k ], token )
         if action:
           matchgroup.addAction( action )
 
 
-  def save( self, conf ):
+  def save( self, settings ):
 
     ## Configuration is about to be saved. Serialize our current setup into the
     ## configuration.
@@ -362,12 +362,12 @@ class TriggersManager:
     new_match_conf = ConfigBasket.buildFromDict( conf_dict )
 
     try:
-      conf.deleteSection( conf._matches_section )
+      settings.deleteSection( settings._matches_section )
     except KeyError:
       pass
 
     if conf_dict:
-      conf.saveSection( new_match_conf, conf._matches_section )
+      settings.saveSection( new_match_conf, settings._matches_section )
 
 
   def createMatch( self, pattern, type=u"smart" ):
@@ -488,5 +488,5 @@ class TriggersManager:
 
   def confSaveCallback( self ):
 
-    config = QApplication.instance().core.config
-    self.save( config )
+    settings = QApplication.instance().core.settings
+    self.save( settings )

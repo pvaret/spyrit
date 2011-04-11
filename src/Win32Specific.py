@@ -35,11 +35,11 @@ class Win32Specific:
   def get_homedir( self ):
     return winpaths.get_homedir()
 
-  def get_configuration_dir( self ):
+  def get_settings_dir( self ):
     return os.path.join( winpaths.get_appdata(), self.CONFIG_DIR )
 
-  def get_configuration_file( self ):
-    return os.path.join( self.get_configuration_dir(), self.CONFIG_FILE )
+  def get_settings_file( self ):
+    return os.path.join( self.get_settings_dir(), self.CONFIG_FILE )
 
   def get_sound_backends( self ):
     return [ "qsound" ]

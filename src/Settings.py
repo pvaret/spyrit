@@ -32,6 +32,9 @@ default_font = PlatformSpecific.default_font
 ## World section name
 WORLDS = 'worlds'
 
+## Matches section name
+MATCHES = 'matches'
+
 ## Schema for matches
 MATCHES_SCHEMA = {
   'keys': (
@@ -104,7 +107,7 @@ SETTINGS_SCHEMA = {
     ( 'net.ssl',                   Bool( u"off" ) ),
   ),
   'sections': (
-    ( 'matches',   MATCHES_SCHEMA ),
+    (  MATCHES,    MATCHES_SCHEMA ),
     ( 'shortcuts', SHORTCUTS_SCHEMA ),
   )
 }

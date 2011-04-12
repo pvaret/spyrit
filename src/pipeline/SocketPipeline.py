@@ -56,8 +56,7 @@ class SocketPipeline:
     self.pipeline.addFilter( AnsiFilter )
     self.pipeline.addFilter( UnicodeTextFilter, encoding=self.net_settings._encoding )
     self.pipeline.addFilter( FlowControlFilter )
-    ## TODO: Reactivate once config refactor is completed!
-    #self.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
+    self.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
 
     self.using_ssl = False
     self.socket    = None

@@ -22,29 +22,19 @@
 
 import os.path
 
-from PyQt4.QtGui  import QApplication
+from PyQt4.QtGui import QApplication
 
-#import ConfigTypes
+from Matches     import load_match_by_type
+from Settings    import MATCHES
+from Utilities   import normalize_text
+from OrderedDict import OrderedDict
 
-#from ConfigBasket import ConfigBasket
-from Matches      import MatchCreationError
-from Matches      import load_match_by_type
-from OrderedDict  import OrderedDict
-from Utilities    import normalize_text
+from pipeline    import ChunkData
 
-from pipeline     import ChunkData
-
+import Serializers
 
 
-def trigger_type_getter( key ):
 
-  ## This function is used by the module where the global configuration object
-  ## is instantiated.
-
-  if key == "match":
-    return ConfigTypes.STRLIST
-
-  return ConfigTypes.STR
 
 
 
@@ -98,7 +88,7 @@ class HighlightAction:
   @classmethod
   def factory( cls, format, token=None ):
 
-    format = ConfigTypes.FORMAT.from_string( format )
+    format = Serializers.Format().deserialize( format )
 
     if not format:
       return None, u"Invalid format!"
@@ -141,13 +131,13 @@ class HighlightAction:
 
   def __repr__( self ):
 
-    return ConfigTypes.FORMAT.to_string( self.highlight )
+    return Serializers.Format().serialize( self.highlight )
 
 
   def __unicode__( self ):
 
     return u"highlight" + ( u" (%s)" % self.token if self.token else u"" ) \
-           + u": " + ConfigTypes.FORMAT.to_string( self.highlight )
+           + u": " + Serializers.Format().serialize( self.highlight )
 
 
 
@@ -225,24 +215,6 @@ class GagAction:
 
 
 
-def get_matches_configuration( settings ):
-
-  section = settings._matches_section
-
-  if not settings.hasSection( section ):
-    ## No Matches section yet. Create it.
-    matches = settings.createSection( section )
-
-  else:
-    matches = settings.getSection( section )
-
-  return dict( ( group, matches.getSection( group ).getOwnDict() )
-               for group in matches.getSectionList() )
-
-
-
-
-
 class MatchGroup:
 
   def __init__( self, name ):
@@ -275,45 +247,33 @@ class TriggersManager:
     self.groups = {}
 
     self.load( settings )
-    settings.registerSaveCallback( self.confSaveCallback )
+    #settings.registerSaveCallback( self.confSaveCallback )
 
 
   def load( self, settings ):
 
-    all_groups = get_matches_configuration( settings )
+    all_groups = settings[ MATCHES ]
 
-    for groupname, settings in all_groups.iteritems():
+    for groupname, node in all_groups.sections.iteritems():
 
-      matches = settings.get( 'match', [] )
+      matches = node.get( 'match', [] )
 
       matchgroup = None
 
       for match in matches:
 
-        type = match.lower().split( ':', 1 )[0]
-
-        try:
-
-          ## TODO: Should this method have to know about match types?
-          if type in ( u"smart", u"regex" ):
-            pattern = match[ len( type )+1: ]
-            m = self.createMatch( pattern, type )
-
-          else:
-            m = self.createMatch( match )
-
-        except MatchCreationError:
+        if not match:
           continue
 
         if not matchgroup:
           matchgroup = self.createOrGetMatchGroup( groupname )
 
-        matchgroup.addMatch( m )
+        matchgroup.addMatch( match )
 
       if not matchgroup:  ## No match created, presumably due to errors.
         continue
 
-      if 'gag' in settings:
+      if 'gag' in node:
 
         action, _ = GagAction.factory()
         if action:
@@ -321,13 +281,13 @@ class TriggersManager:
 
         continue  ## If there's a gag, ignore all other actions!
 
-      if 'play' in settings:
+      if 'play' in node:
 
-        action, _ = PlayAction.factory( settings.get( 'play' ) )
+        action, _ = PlayAction.factory( node.get( 'play' ) )
         if action:
           matchgroup.addAction( action )
 
-      highlight_keys = [ k for k in settings if k.startswith( "highlight" ) ]
+      highlight_keys = [ k for k in node if k.startswith( "highlight" ) ]
 
       for k in highlight_keys:
 
@@ -337,37 +297,37 @@ class TriggersManager:
         else:
           token = None
 
-        action, _ = HighlightAction.factory( settings[ k ], token )
+        action, _ = HighlightAction.factory( node[ k ], token )
         if action:
           matchgroup.addAction( action )
 
 
-  def save( self, settings ):
+  #def save( self, settings ):
 
-    ## Configuration is about to be saved. Serialize our current setup into the
-    ## configuration.
+  #  ## Configuration is about to be saved. Serialize our current setup into the
+  #  ## configuration.
 
-    conf_dict = {}
+  #  conf_dict = {}
 
-    for matchgroup in self.groups.itervalues():
+  #  for matchgroup in self.groups.itervalues():
 
-      group_dict = {}
-      group_dict[ 'match' ] = [ repr( m ) for m in matchgroup.matches ]
+  #    group_dict = {}
+  #    group_dict[ 'match' ] = [ repr( m ) for m in matchgroup.matches ]
 
-      for action in matchgroup.actions.itervalues():
-        group_dict[ action.name ] = repr( action )
+  #    for action in matchgroup.actions.itervalues():
+  #      group_dict[ action.name ] = repr( action )
 
-      conf_dict[ ConfigBasket.SECTION_CHAR + matchgroup.name ] = group_dict
+  #    conf_dict[ ConfigBasket.SECTION_CHAR + matchgroup.name ] = group_dict
 
-    new_match_conf = ConfigBasket.buildFromDict( conf_dict )
+  #  new_match_conf = ConfigBasket.buildFromDict( conf_dict )
 
-    try:
-      settings.deleteSection( settings._matches_section )
-    except KeyError:
-      pass
+  #  try:
+  #    settings.deleteSection( settings._matches_section )
+  #  except KeyError:
+  #    pass
 
-    if conf_dict:
-      settings.saveSection( new_match_conf, settings._matches_section )
+  #  if conf_dict:
+  #    settings.saveSection( new_match_conf, settings._matches_section )
 
 
   def createMatch( self, pattern, type=u"smart" ):
@@ -409,7 +369,7 @@ class TriggersManager:
       action = PlayAction
 
     else:
-      return None, u"No such action as %s!" % actionname
+      return None, u"%s: No such action!" % actionname
 
     factory = action.factory
     ok, msg = match_args_to_function( factory, args, kwargs )
@@ -486,7 +446,7 @@ class TriggersManager:
     return len( self.groups ) == 0
 
 
-  def confSaveCallback( self ):
+  #def confSaveCallback( self ):
 
-    settings = QApplication.instance().core.settings
-    self.save( settings )
+  #  settings = QApplication.instance().core.settings
+  #  self.save( settings )

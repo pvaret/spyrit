@@ -34,7 +34,7 @@ from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QPoint
 
 from Globals   import FORMAT_PROPERTIES
-from Matches   import RegexMatch, SmartMatch
+from Matches   import RegexMatch, SmartMatch, MatchCreationError
 from Utilities import quote, unquote, BS
 
 
@@ -331,14 +331,24 @@ class Pattern( BaseSerializer ):
 
   def deserialize( self, string ):
 
+    if not string:
+      return None
+
     if u":" in string:
 
       prefix, suffix = string.split( u":", 1 )
       prefix = prefix.lower()
 
-      for cls in ( RegexMatch, SmartMatch ):
+      for class_ in ( RegexMatch, SmartMatch ):
 
-        if prefix == cls.matchtype:
-          return cls( suffix )
+        if prefix == class_.matchtype:
+          break
 
-    return SmartMatch( string )
+    else:
+        class_ = SmartMatch
+
+    try:
+        return class_( string )
+
+    except MatchCreationError:
+        return None

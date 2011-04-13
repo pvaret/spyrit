@@ -20,14 +20,18 @@
 ##
 
 
-from Serializers  import Bool, Int, Str, List
-from Serializers  import Size, Point, Format, Pattern, KeySequence
-from ConfigPaths  import LOG_DIR
-from Globals      import ANSI_COLORS as COL
+import codecs
+
+from Globals       import ANSI_COLORS as COL
+from IniParser     import ini_to_struct
+from Serializers   import Bool, Int, Str, List
+from Serializers   import Size, Point, Format, Pattern, KeySequence
+from SettingsPaths import SETTINGS_FILE, LOG_DIR, FILE_ENCODING
 
 from PlatformSpecific import PlatformSpecific
 
 default_font = PlatformSpecific.default_font
+
 
 ## World section name
 WORLDS = 'worlds'
@@ -184,6 +188,42 @@ DESCRIPTIONS = {
 from SettingsNode   import SettingsNode
 from SettingsSchema import SettingsSchema
 
+
+def populate_from_struct( settings, struct, default_label ):
+
+  keys, subsections = struct
+
+  defaults = settings.getParentByLabel( default_label )
+
+  if not defaults:
+    ## This section doesn't exist in the schema. Do nothing.
+    return
+
+  for k, v in keys.iteritems():
+
+    s = defaults.getSerializer( k )
+
+    if not s:
+      ## This key doesn't exist in the schema. Move on.
+      continue
+
+    v = s.deserialize( v )
+    settings[ k ] = v
+
+  for k, subsection in subsections.iteritems():
+
+    try:
+      node = settings.section( k )
+    except KeyError:
+      ## This section is unknown. Move on.
+      continue
+
+    populate_from_struct( node, subsection, default_label )
+
+  return settings
+
+
+
 def construct_settings():
 
   settings         = SettingsNode()
@@ -200,5 +240,15 @@ def construct_settings():
   default_settings.loadDefinition( SETTINGS_SCHEMA )
 
   settings.section( WORLDS, create_if_missing=True ).setParent( settings )
+
+  try:
+    f = open( SETTINGS_FILE )
+    ini = codecs.getreader( FILE_ENCODING )( f, "replace" ).read()
+
+  except ( IOError, OSError ):
+    pass
+
+  else:
+    populate_from_struct( settings, ini_to_struct( ini ), SETTINGS_LABEL )
 
   return settings

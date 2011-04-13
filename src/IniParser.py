@@ -143,52 +143,43 @@ def ini_to_struct( ini_text ):
 
 
 
+def struct_to_ini( struct, depth=0 ):
 
-  #def save( self, filename ):
+  """Takes a programmatic structure and generates an INI representation for it.
 
-  #  self.aboutToSave.triggerAll()
+  The structure is a tuple of the form ( keys, sections ), where 'keys' and
+  'sections' are both dictionaries. 'keys' associates setting names to values,
+  both expressed as strings, and section associates section names to
+  sub-structures of the same type as the parent structure.
 
-  #  config_txt = []
-  #  config_txt.append( u"## version: 1\n" )
+  >>> keys = { u'key1': u"1", u'key2': "2" }
+  >>> sections = { 'subsection': ( { u'otherkey': u'3' }, {} ) }
+  >>> print struct_to_ini( ( keys, sections ) )
+  key1 = 1
+  key2 = 2
+  <BLANKLINE>
+    [ subsection ]
+    otherkey = 3
+  <BLANKLINE>
 
-  #  def save_section( configobj, indent_level=0 ):
+  """
 
-  #    for k, v in sorted( configobj.getOwnDict().iteritems() ):
+  output = u''
 
-  #      t = configobj.getType( k )
+  keys, sections = struct
 
-  #      if not t:  ## Unknown key!
-  #        continue
+  for k, v in sorted( keys.iteritems() ):
+    output += "%s%s = %s\n" % ( INDENT*depth, k, v )
 
-  #      v = t.to_string( v )
+  depth += 1
 
-  #      config_txt.append( self.INDENT * indent_level )
-  #      config_txt.append( u"%s = %s\n" % ( k, v ) )
+  for k, substruct in sorted( sections.iteritems() ):
+    output += u'\n'
+    output += INDENT * depth
+    output += u'[' * depth
+    output += u' %s ' % k
+    output += u']' * depth
+    output += u'\n'
+    output += struct_to_ini( substruct, depth )
 
-  #    for sectionname, section in sorted( configobj.sections.iteritems() ):
-
-  #      if section.isEmpty():  ## Section is empty
-  #        continue
-
-  #      config_txt.append( u"\n" )
-  #      config_txt.append( self.INDENT * indent_level )
-  #      config_txt.append( u"[" * ( indent_level + 1 ) )
-  #      config_txt.append( u" %s " % sectionname.strip() )
-  #      config_txt.append( u"]" * ( indent_level + 1 ) )
-  #      config_txt.append( u"\n" )
-
-  #      save_section( section, indent_level+1 )
-
-  #  save_section( self )
-
-  #  try:
-  #    f = codecs.getwriter( self.ENCODING ) ( open( filename, "w" ), "ignore" )
-
-  #  except IOError:
-  #    ## Unable to save configuration. Aborting.
-  #    messages.error( u"Unable to save configuration to file %s!" % filename )
-  #    return
-
-  #  f.write( ''.join(  config_txt ) )
-
-  #  f.close()
+  return output

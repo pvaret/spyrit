@@ -14,7 +14,7 @@
 ##
 
 ##
-## ConfigPaths.py
+## SettingsPaths.py
 ##
 ## Contains the code that figures out the paths used by this program depending
 ## on the OS.
@@ -24,16 +24,17 @@ import os.path
 
 from PlatformSpecific import platformSpecific
 
-CONFIG_DIR  = platformSpecific.get_settings_dir()
-CONFIG_FILE = platformSpecific.get_settings_file()
+SETTINGS_DIR  = platformSpecific.get_settings_dir()
+SETTINGS_FILE = platformSpecific.get_settings_file()
+LOG_DIR       = os.path.join( SETTINGS_DIR, "logs" )
 
-LOG_DIR     = os.path.join( CONFIG_DIR, "logs" )
+FILE_ENCODING = "UTF-8"
 
-if not os.path.exists( CONFIG_DIR ):
+
+if not os.path.exists( SETTINGS_DIR ):
 
   try:
-    os.makedirs( CONFIG_DIR )
+    os.makedirs( SETTINGS_DIR )
 
   except ( IOError, OSError ):
     pass
-    

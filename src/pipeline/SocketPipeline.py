@@ -48,7 +48,7 @@ class SocketPipeline:
 
     self.net_settings = settings._net
 
-    triggersmanager = QApplication.instance().core.triggers
+    self.triggersmanager = QApplication.instance().core.triggers
 
     self.pipeline = Pipeline()
 
@@ -56,7 +56,7 @@ class SocketPipeline:
     self.pipeline.addFilter( AnsiFilter )
     self.pipeline.addFilter( UnicodeTextFilter, encoding=self.net_settings._encoding )
     self.pipeline.addFilter( FlowControlFilter )
-    self.pipeline.addFilter( TriggersFilter, manager=triggersmanager )
+    self.pipeline.addFilter( TriggersFilter, manager=self.triggersmanager )
 
     self.using_ssl = False
     self.socket    = None

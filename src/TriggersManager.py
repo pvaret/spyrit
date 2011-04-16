@@ -251,6 +251,7 @@ class TriggersManager:
 
 
   def load( self, settings ):
+    return
 
     all_groups = settings[ MATCHES ]
 
@@ -287,7 +288,7 @@ class TriggersManager:
         if action:
           matchgroup.addAction( action )
 
-      highlight_keys = [ k for k in node if k.startswith( "highlight" ) ]
+      highlight_keys = [ k for k in node.keys if k.startswith( "highlight" ) ]
 
       for k in highlight_keys:
 

@@ -39,7 +39,7 @@ class WorldsManager( QObject ):
 
     ## Safety measure: ensure all worlds have a valid name.
     n = 0
-    for key, settings in self.getWorldNodes():
+    for settings in self.getWorldNodes():
       if not settings._name:
         n += 1
         settings._name = u"(Unnamed %d)" % n
@@ -49,10 +49,7 @@ class WorldsManager( QObject ):
 
   def getWorldNodes( self ):
 
-    ## Return direct childrens that are also among saved sections.
-
-    return set( self.worldsettings.children.values() ) \
-         & set( self.worldsettings.sections.values() )
+    return self.worldsettings.sections.values()
 
 
   def generateMappings( self ):

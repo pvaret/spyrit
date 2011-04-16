@@ -30,7 +30,7 @@ u"""
 import re
 
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
-RE_KEYVALUE = re.compile( r"^(\w(?:-*\w+)*)\s*=\s*(.*)", re.UNICODE )
+RE_KEYVALUE = re.compile( r"^(\w(?:[-.]?\w+)*)\s*=\s*(.*)", re.UNICODE )
 
 INDENT   = u"  "
 
@@ -82,14 +82,14 @@ def ini_to_struct( ini_text ):
   ...       key4 = "Section has wrong depth and will be ignored"
   ...
   ... [ section2 ]
-  ...   key5 = 5
+  ...   compound.key5 = 5
   ...
   ... ''' ) )  #doctest: +NORMALIZE_WHITESPACE
   ({u'key1': u'1', u'key2': u'2'},
    {u'section1': ({},
                   {u'subsection1': ({u'key3': u'"This is a string"'},
                                     {})}),
-    u'section2': ({u'key5': u'5'}, {})})
+    u'section2': ({u'compound.key5': u'5'}, {})})
 
   """
 

@@ -70,7 +70,12 @@ class SettingsSchema( SettingsNode ):
 
     if self.SEP in key:
       section, key = key.split( self.SEP, 1 )
-      return self.section( section ).getSerializer( key )
+
+      try:
+        return self.section( section ).getSerializer( key )
+
+      except KeyError:
+        return None
 
     for pattern, value in self.serializers.iteritems():
       if fnmatchcase( key, pattern ):

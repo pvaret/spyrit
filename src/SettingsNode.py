@@ -160,6 +160,8 @@ class SettingsNode( DictAttrProxy ):
     self.children  = WeakSet()
     self.notifiers = CallbackRegistry()
 
+    self.is_container = False
+
     self.setParent( parent )
 
 
@@ -169,6 +171,13 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __getitem__( self, key ):
+
+    if self.is_container:
+
+      if self.parent:
+        return self.parent[ key ]
+
+      raise KeyError( key )
 
     if self.SEP in key:
       section, key = key.split( self.SEP, 1 )
@@ -202,6 +211,9 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __setitem__( self, key, value ):
+
+    if self.is_container:
+      raise TypeError( "Container nodes can't hold keys!" )
 
     if self.SEP in key:
       section, key = key.split( self.SEP, 1 )
@@ -317,11 +329,25 @@ class SettingsNode( DictAttrProxy ):
     if name in self.sections:
       return self.sections[ name ]
 
-    try:
-      parent_section = self.parent.section( name ) if self.parent else None
+    if self.is_container:
 
-    except KeyError:
-      parent_section = None
+      if create_if_missing:
+        parent_section = self
+
+      else:
+
+        if self.parent:
+          return self.parent.section( name )
+
+        raise KeyError( name )
+
+    else:
+
+      try:
+        parent_section = self.parent.section( name ) if self.parent else None
+
+      except KeyError:
+        parent_section = None
 
     if not create_if_missing and parent_section is None:
       raise KeyError( u"No such section", name )
@@ -366,7 +392,10 @@ class SettingsNode( DictAttrProxy ):
 
   def isEmpty( self ):
 
-    return len( self.keys ) == 0 and len( self.children ) == 0
+    all_children = set( self.children.values() ) | set( self.sections.values() )
+
+    return len( self.keys ) == 0 \
+           and all( node.isEmpty() for node in all_children )
 
 
   def notifyKeyChanged( self, key, value ):

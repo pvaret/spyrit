@@ -34,10 +34,10 @@ default_font = PlatformSpecific.default_font
 
 
 ## World section name
-WORLDS = 'worlds'
+WORLDS = u'worlds'
 
 ## Matches section name
-MATCHES = 'matches'
+MATCHES = u'matches'
 
 ## Schema for matches
 MATCHES_SCHEMA = {
@@ -195,30 +195,27 @@ def populate_from_struct( settings, struct, default_label ):
 
   defaults = settings.getParentByLabel( default_label )
 
-  if not defaults:
-    ## This section doesn't exist in the schema. Do nothing.
-    return
+  if defaults:
 
-  for k, v in keys.iteritems():
+    for k, v in keys.iteritems():
 
-    s = defaults.getSerializer( k )
+      s = defaults.getSerializer( k )
 
-    if not s:
-      ## This key doesn't exist in the schema. Move on.
-      continue
+      if not s:
+        ## This key doesn't exist in the schema. Move on.
+        continue
 
-    v = s.deserialize( v )
-    settings[ k ] = v
+      v = s.deserialize( v )
+      if v is not None:
+        settings[ k ] = v
 
   for k, subsection in subsections.iteritems():
 
-    try:
-      node = settings.section( k )
-    except KeyError:
-      ## This section is unknown. Move on.
-      continue
-
+    node = settings.section( k, create_if_missing=True )
     populate_from_struct( node, subsection, default_label )
+
+    if node.isEmpty() and not node.is_container:
+      del settings.sections[ k ]
 
   return settings
 
@@ -239,7 +236,12 @@ def construct_settings():
   default_settings.label = SETTINGS_LABEL
   default_settings.loadDefinition( SETTINGS_SCHEMA )
 
-  settings.section( WORLDS, create_if_missing=True ).setParent( settings )
+  ## TODO: Make this non-hardcoded.
+  worlds = settings.section( WORLDS, create_if_missing=True )
+  worlds.is_container = True
+  worlds.setParent( settings )
+  matches = settings.section( MATCHES )  ## Should exist on default_settings.
+  matches.is_container = True
 
   try:
     f = open( SETTINGS_FILE )

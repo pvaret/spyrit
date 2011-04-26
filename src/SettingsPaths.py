@@ -25,7 +25,8 @@ import os.path
 from PlatformSpecific import platformSpecific
 
 SETTINGS_DIR  = platformSpecific.get_settings_dir()
-SETTINGS_FILE = platformSpecific.get_settings_file()
+## TODO XXX revert to default file name before release!
+SETTINGS_FILE = platformSpecific.get_settings_file() + "-dev"
 LOG_DIR       = os.path.join( SETTINGS_DIR, "logs" )
 
 FILE_ENCODING = "UTF-8"

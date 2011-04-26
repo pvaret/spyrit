@@ -23,12 +23,15 @@
 import inspect
 
 from functools        import wraps
-from CallbackRegistry import CallbackRegistry, WeakCallableRef
+
+from WeakRef          import WeakCallableRef
+from CallbackRegistry import CallbackRegistry
 
 
 
 class SlotifiedFunctionReferenceCache:
-  """Keep a reference to slotified functions so they're not garbage collected
+  """\
+  Keep a reference to slotified functions so they're not garbage collected
   right away.
 
   """

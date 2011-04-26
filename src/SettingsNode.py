@@ -27,11 +27,10 @@ u"""
 """
 
 
+from WeakRef          import WeakSet
 from CallbackRegistry import CallbackRegistry
-from weakref          import WeakValueDictionary
 
 import string
-
 VALID_KEY_CHARACTER = set( string.ascii_letters + string.digits + "_" )
 
 
@@ -115,32 +114,6 @@ class DictAttrProxy( object ):
     except KeyError:
       raise AttributeError( attr )
 
-
-
-
-class WeakSet( WeakValueDictionary ):
-
-  """
-  Provides a set that doesn't keep references to its contents.
-
-  >>> class Class( object ): pass
-  >>> ws = WeakSet()
-  >>> a = Class() ; b = Class()
-  >>> ws.add( a ) ; ws.add( b )
-  >>> len( ws )
-  2
-  >>> del b
-  >>> len( ws )
-  1
-
-  """
-
-  __iter__ = WeakValueDictionary.itervalues
-  __len__ = WeakValueDictionary.__len__
-
-  def add( self, val ):
-
-    self[ id( val ) ] = val
 
 
 

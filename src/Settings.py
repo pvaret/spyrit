@@ -185,8 +185,9 @@ DESCRIPTIONS = {
 
 
 
-from SettingsNode   import SettingsNode
-from SettingsSchema import SettingsSchema
+from SettingsNode          import SettingsNode
+from SettingsSchema        import SettingsSchema
+from SettingsNodeContainer import SettingsNodeContainer
 
 
 def populate_from_struct( settings, struct, default_label ):
@@ -214,9 +215,6 @@ def populate_from_struct( settings, struct, default_label ):
     node = settings.section( k, create_if_missing=True )
     populate_from_struct( node, subsection, default_label )
 
-    if node.isEmpty() and not node.is_container:
-      del settings.sections[ k ]
-
   return settings
 
 
@@ -237,11 +235,10 @@ def construct_settings():
   default_settings.loadDefinition( SETTINGS_SCHEMA )
 
   ## TODO: Make this non-hardcoded.
-  worlds = settings.section( WORLDS, create_if_missing=True )
-  worlds.is_container = True
-  worlds.setParent( settings )
-  matches = settings.section( MATCHES )  ## Should exist on default_settings.
-  matches.is_container = True
+  settings.sections[ WORLDS ] = SettingsNodeContainer( settings )
+  settings.sections[ WORLDS ].new_sections_inherit_from = settings
+
+  settings.sections[ MATCHES ] = SettingsNodeContainer( default_settings[ MATCHES ] )
 
   try:
     f = open( SETTINGS_FILE )

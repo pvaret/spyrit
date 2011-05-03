@@ -88,7 +88,8 @@ class WorldsManager( QObject ):
 
   def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
 
-    worldsettings = SettingsNode( self.worldsettings )
+    ## TODO: Add createSection() to nodes that would do the right thing.
+    worldsettings = SettingsNode( self.worldsettings.parent )
 
     if name: worldsettings._name = name
     if host: worldsettings._net._host = host

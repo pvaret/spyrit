@@ -16,7 +16,7 @@
 ##
 ## SettingsNode.py
 ##
-## Holds the classes that handle the configuration subsystem.
+## Holds the core class for the configuration subsystem.
 ##
 
 u"""
@@ -119,7 +119,7 @@ class DictAttrProxy( object ):
 
 class SettingsNode( DictAttrProxy ):
   """
-  Holds the core behavior for a set of configuration keys.
+  Implements the core behavior for a set of configuration keys.
 
   """
 
@@ -133,8 +133,6 @@ class SettingsNode( DictAttrProxy ):
     self.children  = WeakSet()
     self.notifiers = CallbackRegistry()
 
-    self.is_container = False
-
     self.setParent( parent )
 
 
@@ -144,13 +142,6 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __getitem__( self, key ):
-
-    if self.is_container:
-
-      if self.parent:
-        return self.parent[ key ]
-
-      raise KeyError( key )
 
     if self.SEP in key:
       section, key = key.split( self.SEP, 1 )
@@ -184,9 +175,6 @@ class SettingsNode( DictAttrProxy ):
 
 
   def __setitem__( self, key, value ):
-
-    if self.is_container:
-      raise TypeError( "Container nodes can't hold keys!" )
 
     if self.SEP in key:
       section, key = key.split( self.SEP, 1 )
@@ -302,27 +290,13 @@ class SettingsNode( DictAttrProxy ):
     if name in self.sections:
       return self.sections[ name ]
 
-    if self.is_container:
+    try:
+      parent = self.parent.section( name ) if self.parent else None
 
-      if create_if_missing:
-        parent_section = self
+    except KeyError:
+      parent = None
 
-      else:
-
-        if self.parent:
-          return self.parent.section( name )
-
-        raise KeyError( name )
-
-    else:
-
-      try:
-        parent_section = self.parent.section( name ) if self.parent else None
-
-      except KeyError:
-        parent_section = None
-
-    if not create_if_missing and parent_section is None:
+    if not create_if_missing and parent is None:
       raise KeyError( u"No such section", name )
 
     ## Create new subsection with same class as self:
@@ -331,7 +305,7 @@ class SettingsNode( DictAttrProxy ):
     if self.label:
       subsection.label = self.label
 
-    subsection.setParent( parent_section )
+    subsection.setParent( parent )
 
     return subsection
 

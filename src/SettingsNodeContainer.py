@@ -81,7 +81,7 @@ class SettingsNodeContainer( SettingsNode ):
     raise KeyError( key )
 
 
-  def section( self, name ):
+  def section( self, name, **kwargs ):
 
     if name in self.sections:
       return self.sections[ name ]
@@ -90,7 +90,11 @@ class SettingsNodeContainer( SettingsNode ):
         parent = self.new_sections_inherit_from
 
     elif self.parent:
-      parent = self.parent.section( name )  ## may raise KeyError
+      try:
+        parent = self.parent.section( name )  ## may raise KeyError
+
+      except KeyError:  ## TODO: This is a hack. Do away with this eventually.
+        parent = self.parent
 
     else:
       raise KeyError( u"No such section", name )

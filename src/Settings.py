@@ -23,7 +23,7 @@
 import codecs
 
 from Globals       import ANSI_COLORS as COL
-from IniParser     import ini_to_struct
+from IniParser     import parse_settings
 from Serializers   import Bool, Int, Str, List
 from Serializers   import Size, Point, Format, Pattern, KeySequence
 from SettingsPaths import SETTINGS_FILE, LOG_DIR, FILE_ENCODING
@@ -248,6 +248,6 @@ def construct_settings():
     pass
 
   else:
-    populate_from_struct( settings, ini_to_struct( ini ), SETTINGS_LABEL )
+    populate_from_struct( settings, parse_settings( ini ), SETTINGS_LABEL )
 
   return settings

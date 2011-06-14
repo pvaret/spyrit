@@ -22,9 +22,10 @@ from PyQt4.QtCore import QObject
 from PyQt4.QtCore import pyqtSignal
 
 from World        import World
-from Settings     import WORLDS
 from Utilities    import normalize_text
 from SettingsNode import SettingsNode
+
+from SpyritSettings import WORLDS
 
 
 class WorldsManager( QObject ):
@@ -49,7 +50,7 @@ class WorldsManager( QObject ):
 
   def getWorldNodes( self ):
 
-    return self.worldsettings.sections.values()
+    return self.worldsettings.nodes.values()
 
 
   def generateMappings( self ):
@@ -78,12 +79,7 @@ class WorldsManager( QObject ):
   def knownWorldList( self ):
 
     ## Return world names, sorted by normalized value.
-    return [ name
-               for _, name in sorted(
-                   ( self.normalize( settings._name ), settings._name )
-                   for settings in self.getWorldNodes()
-               )
-           ]
+    return sorted( self.getWorldNodes(), key=lambda s: self.normalize( s._name ) )
 
 
   def newWorldSettings( self, host="", port=0, ssl=False, name="" ):

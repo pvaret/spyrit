@@ -24,12 +24,12 @@ import os.path
 
 from PyQt4.QtGui import QApplication
 
-from Matches     import load_match_by_type
-from Settings    import MATCHES
-from Utilities   import normalize_text
-from OrderedDict import OrderedDict
+from Matches        import load_match_by_type
+from Utilities      import normalize_text
+from OrderedDict    import OrderedDict
+from SpyritSettings import MATCHES
 
-from pipeline    import ChunkData
+from pipeline import ChunkData
 
 import Serializers
 

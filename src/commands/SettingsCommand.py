@@ -22,9 +22,9 @@
 
 from PyQt4.QtGui import QApplication
 
-from Settings    import SETTINGS_LABEL, DESCRIPTIONS
-from Utilities   import format_as_table
-from BaseCommand import BaseCommand
+from Utilities      import format_as_table
+from BaseCommand    import BaseCommand
+from SpyritSettings import DESCRIPTIONS
 
 
 
@@ -34,11 +34,11 @@ class SettingsCommand( BaseCommand ):
 
   def _getSerializer( self, settings, setting ):
 
-    try:
-      defaults = settings.getParentByLabel( SETTINGS_LABEL )
-      return defaults.getSerializer( setting )
+    #try:
+    #  defaults = settings.getParentByLabel( SETTINGS_LABEL )
+    #  return defaults.getSerializer( setting )
 
-    except KeyError:
+    #except KeyError:
       return None
 
 

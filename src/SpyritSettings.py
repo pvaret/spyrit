@@ -14,9 +14,9 @@
 ##
 
 ##
-## Settings.py
+## SpyritSettings.py
 ##
-## Holds the core settings object construction.
+## Holds the definition of Spyrit settings.
 ##
 
 
@@ -27,6 +27,8 @@ from IniParser     import parse_settings
 from Serializers   import Bool, Int, Str, List
 from Serializers   import Size, Point, Format, Pattern, KeySequence
 from SettingsPaths import SETTINGS_FILE, LOG_DIR, FILE_ENCODING
+
+from settings.Settings import construct_proto
 
 from PlatformSpecific import PlatformSpecific
 
@@ -79,6 +81,17 @@ SHORTCUTS_SCHEMA = {
 }
 
 ## Schema for whole application and every world
+WORLDS_SCHEMA = {
+  'keys': (
+    ( 'name',                      Str( None ) ),
+    ( 'net.encoding',              Str( u"latin1" ) ),
+    ( 'net.host',                  Str( u"" ) ),
+    ( 'net.port',                  Int( u"4201" ) ),
+    ( 'net.ssl',                   Bool( u"off" ) ),
+  ),
+  'inherit': '..',
+}
+
 SETTINGS_SCHEMA = {
   'keys': (
     ( 'app.name',                  Str( u"Spyrit" ) ),
@@ -104,15 +117,11 @@ SETTINGS_SCHEMA = {
     ( 'ui.input.background.color', Str( COL.white ) ),
     ( 'ui.input.max_history',      Int( u"0" ) ),
     ( 'ui.input.save_history',     Int( u"10" ) ),
-    ( 'name',                      Str( None ) ),
-    ( 'net.encoding',              Str( u"latin1" ) ),
-    ( 'net.host',                  Str( u"" ) ),
-    ( 'net.port',                  Int( u"4201" ) ),
-    ( 'net.ssl',                   Bool( u"off" ) ),
   ),
   'sections': (
-    (  MATCHES,    MATCHES_SCHEMA ),
-    ( 'shortcuts', SHORTCUTS_SCHEMA ),
+    (  MATCHES + u'.*', MATCHES_SCHEMA ),
+    (  WORLDS + u'.*',  WORLDS_SCHEMA ),
+    ( 'shortcuts',      SHORTCUTS_SCHEMA ),
   )
 }
 
@@ -125,10 +134,6 @@ STATE_SCHEMA = {
     ( 'ui.input.history',  List( Str(), u"" ) ),
   ),
 }
-
-
-STATE_LABEL    = "DEFAULT_STATE"
-SETTINGS_LABEL = "DEFAULT_SETTINGS"
 
 
 DESCRIPTIONS = {
@@ -185,69 +190,10 @@ DESCRIPTIONS = {
 
 
 
-from SettingsNode          import SettingsNode
-from SettingsSchema        import SettingsSchema
-from SettingsNodeContainer import SettingsNodeContainer
-
-
-def populate_from_struct( settings, struct, default_label ):
-
-  keys, subsections = struct
-
-  defaults = settings.getParentByLabel( default_label )
-
-  if defaults:
-
-    for k, v in keys.iteritems():
-
-      s = defaults.getSerializer( k )
-
-      if not s:
-        ## This key doesn't exist in the schema. Move on.
-        continue
-
-      v = s.deserialize( v )
-      if v is not None:
-        settings[ k ] = v
-
-  for k, subsection in subsections.iteritems():
-
-    node = settings.section( k, create_if_missing=True )
-    populate_from_struct( node, subsection, default_label )
-
-  return settings
-
-
-
 def construct_settings():
 
-  settings         = SettingsNode()
-  default_settings = SettingsSchema()
-  default_state    = SettingsSchema()
-
-  default_settings.setParent( default_state )
-  settings.setParent( default_settings )
-
-  default_state.label = STATE_LABEL
-  default_state.loadDefinition( STATE_SCHEMA )
-
-  default_settings.label = SETTINGS_LABEL
-  default_settings.loadDefinition( SETTINGS_SCHEMA )
-
-  ## TODO: Make this non-hardcoded.
-  settings.sections[ WORLDS ] = SettingsNodeContainer( settings )
-  settings.sections[ WORLDS ].new_sections_inherit_from = settings
-
-  settings.sections[ MATCHES ] = SettingsNodeContainer( default_settings[ MATCHES ] )
-
-  try:
-    f = open( SETTINGS_FILE )
-    ini = codecs.getreader( FILE_ENCODING )( f, "replace" ).read()
-
-  except ( IOError, OSError ):
-    pass
-
-  else:
-    populate_from_struct( settings, parse_settings( ini ), SETTINGS_LABEL )
+  proto = construct_proto( SETTINGS_SCHEMA )
+  settings = proto.klass( None )
+  settings.proto = proto
 
   return settings

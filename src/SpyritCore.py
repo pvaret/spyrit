@@ -23,7 +23,7 @@
 
 from PyQt4.QtCore import pyqtSlot
 
-from Settings        import construct_settings
+from SpyritSettings  import construct_settings
 from MainWindow      import MainWindow
 from SoundEngine     import SoundEngine
 from WorldsManager   import WorldsManager

@@ -154,8 +154,9 @@ class MainWindow( QMainWindow ):
     ## And bind it to the appropriate configuration keys:
 
     self.observer = SettingsObserver( settings._ui )
-    self.observer.addCallback( "style", self.refreshStyle )
-    self.observer.addCallback( "toolbar.icon_size", self.refreshIcons )
+    ##TODO: reactivate
+    #self.observer.addCallback( "style", self.refreshStyle )
+    #self.observer.addCallback( "toolbar.icon_size", self.refreshIcons )
 
     self.refreshMenuWorlds()
 

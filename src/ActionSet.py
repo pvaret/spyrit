@@ -114,7 +114,8 @@ class ActionSet:
     ## Call it once:
     set_action_shortcut()
 
-    self.observer.addCallback( action, set_action_shortcut )
+    ##TODO: reactivate
+    #self.observer.addCallback( action, set_action_shortcut )
 
     ## Keep a reference to the closure, so it's not garbage-collected
     ## right away.

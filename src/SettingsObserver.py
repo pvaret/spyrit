@@ -141,7 +141,7 @@ class SettingsObserver:
 
     for key in keys:
 
-      node_path, key = key.rsplit( settings.SEP, 1 ) if settings.SEP in key \
+      node_path, key = key.rsplit( ".", 1 ) if "." in key \
                        else ( '', key )
 
       node = settings

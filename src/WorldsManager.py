@@ -23,7 +23,6 @@ from PyQt4.QtCore import pyqtSignal
 
 from World        import World
 from Utilities    import normalize_text
-from SettingsNode import SettingsNode
 
 from SpyritSettings import WORLDS
 
@@ -84,8 +83,8 @@ class WorldsManager( QObject ):
 
   def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
 
-    ## TODO: Add createSection() to nodes that would do the right thing.
-    worldsettings = SettingsNode( self.worldsettings.parent )
+    ## TODO: Add createSection() to nodes that would do the right thing?
+    worldsettings = self.worldsettings.proto.build( self.worldsettings, '--' )
 
     if name: worldsettings._name = name
     if host: worldsettings._net._host = host

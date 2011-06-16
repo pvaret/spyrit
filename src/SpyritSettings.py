@@ -192,7 +192,7 @@ DESCRIPTIONS = {
 
 def construct_settings():
 
-  proto = construct_proto( SETTINGS_SCHEMA )
+  proto = construct_proto( [ SETTINGS_SCHEMA, STATE_SCHEMA ] )
   settings = proto.klass( None )
   settings.proto = proto
 

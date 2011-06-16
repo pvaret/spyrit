@@ -192,13 +192,13 @@ class NodeProto( object ):
     return self.nodes[ key ]
 
 
-  def new( self, key, klass=Leaf ):
+  def new( self, key, klass, nodeclass ):
 
     subkey = None
 
     if "." in key:
       key, subkey = key.split( ".", 1 )
-      return self.new( key, klass=Node ).new( subkey, klass )
+      return self.new( key, klass=nodeclass, nodeclass=nodeclass ).new( subkey, klass=klass, nodeclass=nodeclass )
 
     if key not in self.nodes:
       self.nodes[ key ] = NodeProto( klass )
@@ -259,28 +259,124 @@ class NodeProto( object ):
 
 
 
-def construct_proto( schema_def ):
 
-  pending_schema_defs = [ ( [], schema_def ) ]
+## TODO: Move this out of this file.
+class DictAttrProxy( object ):
+  u"""
+  This class is meant to be inherited from by dict-like subclasses, and makes
+  the dict's keys accessible as attributes. Use it as a parent class, and you
+  can then access:
+    d[ "somekey" ]
+  as:
+    d._somekey
+  It requires the child class to have the __{set|get|del}item__ methods of a
+  dictionary.
 
-  proto = current_proto = NodeProto( Node )
+  """
+
+
+  @staticmethod
+  def validatedAttr( attr ):
+    u"""
+    Static method. Determines whether the parameter begins with one
+    underscore '_' but not two. Returns None otherwise.
+    Attributes beginning with one underscore will be looked up as items on
+    self.
+
+    """
+
+    if len( attr ) >= 2 \
+      and attr.startswith( "_" ) \
+      and not attr.startswith( "__" ):
+
+        return attr[ 1: ]
+
+    return None
+
+
+  def __getattr__( self, attr ):
+
+    vattr = self.validatedAttr( attr )
+
+    if vattr is None:
+      ## This is neither an existing native attribute, nor a 'special'
+      ## attribute name that should be read off the mapped dictionary,
+      ## so we raise an AttributeError.
+      raise AttributeError( attr )
+
+    try:
+      return self[ vattr ]
+
+    except KeyError:
+      raise AttributeError( attr )
+
+
+  def __setattr__( self, attr, value ):
+
+    vattr = self.validatedAttr( attr )
+
+    if vattr:
+      self[ vattr ] = value
+
+    else:
+      ## If this is a 'normal' attribute, treat it the normal way.
+      object.__setattr__( self, attr, value )
+
+
+  def __delattr__( self, attr ):
+
+    vattr = self.validatedAttr( attr )
+
+    if vattr is None:
+      ## If this is a 'normal' attribute, treat it the normal way
+      ## and then return.
+      object.__delattr__( self, attr )
+
+      return
+
+    try:
+      del self[ vattr ]
+
+    except KeyError:
+      raise AttributeError( attr )
+
+
+class MyLeaf( Leaf, DictAttrProxy ):
+  pass
+
+class MyNode( Node, DictAttrProxy ):
+  pass
+
+
+
+def construct_proto( schema_defs, root_class=MyNode, node_class=MyNode, leaf_class=MyLeaf ):
+
+  pending_schema_defs = [ ( [], schema_def ) for schema_def in schema_defs ]
+
+  proto = NodeProto( root_class )
 
   while pending_schema_defs:
 
     current_depth, current_schema_def = pending_schema_defs.pop( 0 )
-    new_proto = current_proto.new( ".".join( current_depth ), klass=Node ) \
+    key = ".".join( current_depth )
+    new_proto = proto.new( key, klass=node_class, nodeclass=node_class ) \
                 if current_depth else None
 
     if new_proto:
       new_proto.inherit = current_schema_def.get( 'inherit' )
 
     for key, ser in current_schema_def.get( 'keys' ):
+
       key = ".".join( current_depth + [ key ] )
-      new_proto = current_proto.new( key )
+      new_proto = proto.new( key, klass=leaf_class, nodeclass=node_class )
       new_proto.default_value = ser.default
 
     for section_key, sub_schema_def in current_schema_def.get( 'sections', () ):
+
       pending_schema_defs.append( ( current_depth + [ section_key ],
                                     sub_schema_def ) )
 
   return proto
+
+
+

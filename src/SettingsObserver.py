@@ -23,9 +23,7 @@
 import inspect
 
 from functools        import wraps
-
 from WeakRef          import WeakCallableRef
-from CallbackRegistry import CallbackRegistry
 
 
 
@@ -100,34 +98,10 @@ def slotify( fn ):
 
 
 
-class Notifier:
-
-  def __init__( self, node ):
-
-    self.callbacks = {}
-    node.registerNotifier( self.trigger )
-
-
-  def trigger( self, key, value ):
-
-    callbacks = self.callbacks.get( key )
-
-    if callbacks:
-      callbacks.triggerAll( key, value )
-
-
-  def addCallback( self, key, callback ):
-
-    self.callbacks.setdefault( key, CallbackRegistry() ).add( callback )
-
-
-
-
 class SettingsObserver:
 
   def __init__( self, settings ):
 
-    self.notifiers = {}
     self.settings = settings
 
 
@@ -136,29 +110,9 @@ class SettingsObserver:
     if type( keys ) not in ( list, tuple, set ):
       keys = [ keys ]
 
-    settings = self.settings
     callback = slotify( callback )
 
     for key in keys:
-
-      node_path, key = key.rsplit( ".", 1 ) if "." in key \
-                       else ( '', key )
-
-      node = settings
-      path = node_path
-
-      while path:
-        section, path = ( path + settings.SEP ).split( settings.SEP, 1 )
-        node = node.section( section )
-
-      if node_path not in self.notifiers:
-        self.notifiers[ node_path ] = Notifier( node )
-
-      self.notifiers[ node_path ].addCallback( key, callback )
+      self.settings.get( key ).notifier.add( callback )
 
     return self  ## Return self, so as to make it possible to chain calls.
-
-
-  def __del__( self ):
-
-    self.callbacks = None

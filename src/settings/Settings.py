@@ -136,6 +136,10 @@ class Node( object ):
 
   def get( self, key ):
 
+    if "." in key:
+      head, tail = key.split( ".", 1 )
+      return self.get( head ).get( tail )
+
     try:
       return self.nodes[ key ]
 
@@ -170,6 +174,12 @@ class Node( object ):
   def value( self ):
 
     return self
+
+
+  def isEmpty( self ):
+
+    return all( node.isEmpty() for node in self.nodes.itervalues() )
+
 
 
 

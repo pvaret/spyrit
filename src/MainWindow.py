@@ -204,7 +204,7 @@ class MainWindow( QMainWindow ):
     self.menu_connect.clear()
 
     worldsmanager = QApplication.instance().core.worlds
-    worlds = worldsmanager.knownWorldList()
+    worlds = worldsmanager.worldList()
 
     if not worlds:
 

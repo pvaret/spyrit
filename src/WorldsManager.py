@@ -75,10 +75,11 @@ class WorldsManager( QObject ):
     return normalize_text( name.strip() )
 
 
-  def knownWorldList( self ):
+  def worldList( self ):
 
     ## Return world names, sorted by normalized value.
-    return sorted( self.getWorldNodes(), key=lambda s: self.normalize( s._name ) )
+    worlds = ( world._name for world in self.getWorldNodes() )
+    return sorted( worlds, key=lambda s: self.normalize( s ) )
 
 
   def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
@@ -97,13 +98,13 @@ class WorldsManager( QObject ):
   def saveWorld( self, world ):
 
     settings = world.settings
-    if settings in self.worldsettings.sections:
+    if settings in self.worldsettings.nodes.values():
       ## World has already been saved, do nothing.
       return
 
     ## TODO: Ensure unicity!
     key = self.normalize( settings._name )
-    self.worldsettings.sections[ key ] = settings
+    self.worldsettings.nodes[ key ] = settings
 
     self.generateMappings()
     self.worldListChanged.emit()

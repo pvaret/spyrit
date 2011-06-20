@@ -34,11 +34,10 @@ class SettingsCommand( BaseCommand ):
 
   def _getSerializer( self, settings, setting ):
 
-    #try:
-    #  defaults = settings.getParentByLabel( SETTINGS_LABEL )
-    #  return defaults.getSerializer( setting )
+    try:
+      return settings.get( setting ).proto.metadata.get( 'serializer' )
 
-    #except KeyError:
+    except KeyError:
       return None
 
 
@@ -200,7 +199,7 @@ class SettingsCommand( BaseCommand ):
     world.info( output )
 
 
-  def cmd_show( s, world, setting=None ):
+  def cmd_show( self, world, setting=None ):
 
     u"""\
     Show the current settings.
@@ -222,7 +221,6 @@ class SettingsCommand( BaseCommand ):
 
     worldsettings = world.settings
     settings      = QApplication.instance().core.settings
-    defaults      = settings.getParentByLabel( SETTINGS_LABEL )
 
     ## 1/ Retrieve list of settings to list, based on the argument given by the
     ## user:
@@ -236,7 +234,7 @@ class SettingsCommand( BaseCommand ):
 
       for k in sorted( DESCRIPTIONS ):
 
-        if k in worldsettings or k in settings:
+        if not all( s.get( k ).isEmpty() for s in ( settings, worldsettings ) ):
           list_settings.append( k )
 
       if not list_settings:
@@ -248,7 +246,7 @@ class SettingsCommand( BaseCommand ):
 
     else:
 
-      if defaults.getSerializer( setting ) is None:
+      if self._getSerializer( settings, setting ) is None:
         world.info( u"No such setting." )
         return
 
@@ -263,13 +261,18 @@ class SettingsCommand( BaseCommand ):
 
     columns = [ list_settings ]
 
-    for node in ( defaults, settings, worldsettings ):
+    for node in ( None, settings, worldsettings ):
 
       column = []
 
       for k in list_settings:
-        s = defaults.getSerializer( k )
-        value = s.serialize( node[ k ] ) if k in node else u"-"
+
+        if node is None:  ## Hackish: 'None' here means defaults.
+          value = settings.get( k ).proto.metadata.get( 'default' )
+
+        else:
+          s = self._getSerializer( node, k )
+          value = s.serialize( node[ k ] ) if not node.get( k ).isEmpty() else u"-"
 
         column.append( value if value else u"None" )
 

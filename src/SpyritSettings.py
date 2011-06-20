@@ -44,79 +44,80 @@ MATCHES = u'matches'
 ## Schema for matches
 MATCHES_SCHEMA = {
   'keys': (
-    ( 'match',       List( Pattern() ) ),
-    ( 'gag',         Bool() ),
-    ( 'play',        Str() ),
-    ( 'highlight',   Format() ),
-    ( 'highlight_*', Format() ),
+    ( 'match',       { 'serializer': List( Pattern() ) } ),
+    ( 'gag',         { 'serializer': Bool() } ),
+    ( 'play',        { 'serializer': Str() } ),
+    ( 'highlight',   { 'serializer': Format() } ),
+    ( 'highlight_*', { 'serializer': Format() } ),
   )
 }
 
 ## Schema for keyboard shortcuts
 SHORTCUTS_SCHEMA = {
+  'default_metadata': { 'serializer': KeySequence() },
   'keys': (
-    ( 'about',          KeySequence( None ) ),
-    ( 'aboutqt',        KeySequence( None ) ),
-    ( 'newworld',       KeySequence( u"Ctrl+N" ) ),
-    ( 'quickconnect',   KeySequence( None ) ),
-    ( 'quit',           KeySequence( u"Ctrl+Q" ) ),
-    ( 'nexttab',        KeySequence( u"Ctrl+PgDown" ) ),
-    ( 'previoustab',    KeySequence( u"Ctrl+PgUp" ) ),
-    ( 'close',          KeySequence( u"Ctrl+W" ) ),
-    ( 'connect',        KeySequence( u"Ctrl+Shift+S" ) ),
-    ( 'disconnect',     KeySequence( u"Ctrl+Shift+D" ) ),
-    ( 'historyup',      KeySequence( u"Ctrl+Up" ) ),
-    ( 'historydown',    KeySequence( u"Ctrl+Down" ) ),
-    ( 'autocomplete',   KeySequence( u"Ctrl+Space" ) ),
-    ( 'pageup',         KeySequence( u"PgUp" ) ),
-    ( 'pagedown',       KeySequence( u"PgDown" ) ),
-    ( 'stepup',         KeySequence( u"Ctrl+Shift+Up" ) ),
-    ( 'stepdown',       KeySequence( u"Ctrl+Shift+Down" ) ),
-    ( 'home',           KeySequence( u"Ctrl+Home" ) ),
-    ( 'end',            KeySequence( u"Ctrl+End" ) ),
-    ( 'startlog',       KeySequence( None ) ),
-    ( 'stoplog',        KeySequence( None ) ),
-    ( 'toggle2ndinput', KeySequence( u"Ctrl+M" ) ),
+    ( 'about',          { 'default': None } ),
+    ( 'aboutqt',        { 'default': None } ),
+    ( 'newworld',       { 'default': u"Ctrl+N" } ),
+    ( 'quickconnect',   { 'default': None } ),
+    ( 'quit',           { 'default': u"Ctrl+Q" } ),
+    ( 'nexttab',        { 'default': u"Ctrl+PgDown" } ),
+    ( 'previoustab',    { 'default': u"Ctrl+PgUp" } ),
+    ( 'close',          { 'default': u"Ctrl+W" } ),
+    ( 'connect',        { 'default': u"Ctrl+Shift+S" } ),
+    ( 'disconnect',     { 'default': u"Ctrl+Shift+D" } ),
+    ( 'historyup',      { 'default': u"Ctrl+Up" } ),
+    ( 'historydown',    { 'default': u"Ctrl+Down" } ),
+    ( 'autocomplete',   { 'default': u"Ctrl+Space" } ),
+    ( 'pageup',         { 'default': u"PgUp" } ),
+    ( 'pagedown',       { 'default': u"PgDown" } ),
+    ( 'stepup',         { 'default': u"Ctrl+Shift+Up" } ),
+    ( 'stepdown',       { 'default': u"Ctrl+Shift+Down" } ),
+    ( 'home',           { 'default': u"Ctrl+Home" } ),
+    ( 'end',            { 'default': u"Ctrl+End" } ),
+    ( 'startlog',       { 'default': None } ),
+    ( 'stoplog',        { 'default': None } ),
+    ( 'toggle2ndinput', { 'default': u"Ctrl+M" } ),
   )
 }
 
 ## Schema for whole application and every world
 WORLDS_SCHEMA = {
   'keys': (
-    ( 'name',                      Str( None ) ),
-    ( 'net.encoding',              Str( u"latin1" ) ),
-    ( 'net.host',                  Str( u"" ) ),
-    ( 'net.port',                  Int( u"4201" ) ),
-    ( 'net.ssl',                   Bool( u"off" ) ),
+    ( 'name',         { 'serializer': Str(), 'default': None } ),
+    ( 'net.encoding', { 'serializer': Str(), 'default': u"latin1" } ),
+    ( 'net.host',     { 'serializer': Str(), 'default': u"" } ),
+    ( 'net.port',     { 'serializer': Int(), 'default': u"4201" } ),
+    ( 'net.ssl',      { 'serializer': Bool(), 'default':  u"off" } ),
   ),
   'inherit': '..',
 }
 
 SETTINGS_SCHEMA = {
   'keys': (
-    ( 'app.name',                  Str( u"Spyrit" ) ),
-    ( 'app.version',               Str( u"0.5dev" ) ),
-    ( 'log.file',                  Str( u"[WORLDNAME]-%Y.%m.%d.log" ) ),
-    ( 'log.dir',                   Str( LOG_DIR ) ),
-    ( 'log.autostart',             Bool( u"off" ) ),
-    ( 'log.ansi',                  Bool( u"off" ) ),
-    ( 'ui.style',                  Str() ),
-    ( 'ui.window.min_size',        Size( u"320x200" ) ),
-    ( 'ui.window.alert',           Bool( u"on" ) ),
-    ( 'ui.toolbar.icon_size',      Int( u"24" ) ),
-    ( 'ui.view.split_scroll',      Bool( u"on" ) ),
-    ( 'ui.view.paging',            Bool( u"on" ) ),
-    ( 'ui.view.font.name',         Str( default_font ) ),
-    ( 'ui.view.font.size',         Int( u"0" ) ),
-    ( 'ui.view.font.text_format',  Format( u"color: %s" % COL.lightgray ) ),
-    ( 'ui.view.font.info_format',  Format( u"italic ; color: %s" % COL.darkgray ) ),
-    ( 'ui.view.background.color',  Str( COL.black ) ),
-    ( 'ui.input.font.name',        Str( u"" ) ),
-    ( 'ui.input.font.size',        Int( u"0" ) ),
-    ( 'ui.input.font.color',       Str( u"" ) ),
-    ( 'ui.input.background.color', Str( COL.white ) ),
-    ( 'ui.input.max_history',      Int( u"0" ) ),
-    ( 'ui.input.save_history',     Int( u"10" ) ),
+    ( 'app.name',                  { 'serializer': Str(),    'default': u"Spyrit" } ),
+    ( 'app.version',               { 'serializer': Str(),    'default': u"0.5dev" } ),
+    ( 'log.file',                  { 'serializer': Str(),    'default': u"[WORLDNAME]-%Y.%m.%d.log" } ),
+    ( 'log.dir',                   { 'serializer': Str(),    'default': LOG_DIR } ),
+    ( 'log.autostart',             { 'serializer': Bool(),   'default': u"off" } ),
+    ( 'log.ansi',                  { 'serializer': Bool(),   'default': u"off" } ),
+    ( 'ui.style',                  { 'serializer': Str(),    'default': u"off" } ),
+    ( 'ui.window.min_size',        { 'serializer': Size(),   'default': u"320x200" } ),
+    ( 'ui.window.alert',           { 'serializer': Bool(),   'default': u"on" } ),
+    ( 'ui.toolbar.icon_size',      { 'serializer': Int(),    'default': u"24" } ),
+    ( 'ui.view.split_scroll',      { 'serializer': Bool(),   'default': u"on" } ),
+    ( 'ui.view.paging',            { 'serializer': Bool(),   'default': u"on" } ),
+    ( 'ui.view.font.name',         { 'serializer': Str(),    'default': default_font } ),
+    ( 'ui.view.font.size',         { 'serializer': Int(),    'default': u"0" } ),
+    ( 'ui.view.font.text_format',  { 'serializer': Format(), 'default': u"color: %s" % COL.lightgray } ),
+    ( 'ui.view.font.info_format',  { 'serializer': Format(), 'default': u"italic ; color: %s" % COL.darkgray } ),
+    ( 'ui.view.background.color',  { 'serializer': Str(),    'default': COL.black } ),
+    ( 'ui.input.font.name',        { 'serializer': Str(),    'default': u"" } ),
+    ( 'ui.input.font.size',        { 'serializer': Int(),    'default': u"0" } ),
+    ( 'ui.input.font.color',       { 'serializer': Str(),    'default': u"" } ),
+    ( 'ui.input.background.color', { 'serializer': Str(),    'default': COL.white } ),
+    ( 'ui.input.max_history',      { 'serializer': Int(),    'default': u"0" } ),
+    ( 'ui.input.save_history',     { 'serializer': Int(),    'default': u"10" } ),
   ),
   'sections': (
     (  MATCHES + u'.*', MATCHES_SCHEMA ),
@@ -127,11 +128,12 @@ SETTINGS_SCHEMA = {
 
 ## Schema for stateful data that isn't really settings
 STATE_SCHEMA = {
+  'default_metadata': { 'state': True },
   'keys': (
-    ( 'ui.window.size',    Size( u"800x600" ) ),
-    ( 'ui.window.pos',     Point() ),
-    ( 'ui.splitter.sizes', List( Int(), u"1000, 100, 100" ) ),
-    ( 'ui.input.history',  List( Str(), u"" ) ),
+    ( 'ui.window.size',    { 'serializer': Size(), 'default': u"800x600" } ),
+    ( 'ui.window.pos',     { 'serializer': Point() } ),
+    ( 'ui.splitter.sizes', { 'serializer': List( Int() ), 'default': u"1000, 100, 100" } ),
+    ( 'ui.input.history',  { 'serializer': List( Str() ), 'default': u"" } ),
   ),
 }
 
@@ -159,7 +161,7 @@ DESCRIPTIONS = {
 
   'ui.window.alert': u"animate taskbar when text is received from the server",
 
-  'net.encoding': u"server character encoding",
+  #'net.encoding': u"server character encoding",
 
   'shortcuts.about':          u"shortcut: About... dialog",
   'shortcuts.aboutqt':        u"shortcut: About Qt... dialog",

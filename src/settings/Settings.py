@@ -191,6 +191,7 @@ class NodeProto( object ):
     self.default_value = None
     self.klass = klass
     self.inherit = None
+    self.metadata = {}
 
 
   def get( self, key ):
@@ -375,11 +376,23 @@ def construct_proto( schema_defs, root_class=MyNode, node_class=MyNode, leaf_cla
     if new_proto:
       new_proto.inherit = current_schema_def.get( 'inherit' )
 
-    for key, ser in current_schema_def.get( 'keys' ):
+    section_metadata = current_schema_def.get( 'default_metadata' ) or {}
+
+    for key, metadata in current_schema_def.get( 'keys' ):
 
       key = ".".join( current_depth + [ key ] )
       new_proto = proto.new( key, klass=leaf_class, nodeclass=node_class )
-      new_proto.default_value = ser.default
+
+      new_proto.metadata.update( section_metadata )
+      new_proto.metadata.update( metadata )
+
+      serializer = new_proto.metadata.get( 'serializer' )
+      default = new_proto.metadata.get( 'default' )
+
+      if None not in ( serializer, default ):
+        default = serializer.deserialize( default )
+
+      new_proto.default_value = default
 
     for section_key, sub_schema_def in current_schema_def.get( 'sections', () ):
 

@@ -17,9 +17,10 @@
 ## Serializers.py
 ##
 ## Serializers are small classes that know how to serialize and deserialize
-## settings values to and from strings, and can also compute and retain a
-## sane default for each given setting.
+## settings values to and from strings, and can also compute a default value
+## from the default string.
 ##
+
 
 u"""
 :doctest:
@@ -101,12 +102,7 @@ def split( string, sep=u',', esc=BS, quotes=u'"'+u"'" ):
 
 
 
-class BaseSerializer:
-
-  def __init__( self, default=None ):
-
-    self.default = self.deserialize( default ) if default is not None else None
-
+class BaseSerializer( object ):
 
   def serialize( self, value ):
 
@@ -116,6 +112,14 @@ class BaseSerializer:
   def deserialize( self, string ):
 
     raise NotImplementedError( "Serializers must implement the deserialize method." )
+
+
+  def deserializeDefault( self, default ):
+
+    if type( default ) is unicode:
+      default = self.deserialize( default )
+
+    return default
 
 
 
@@ -136,6 +140,7 @@ class Int( BaseSerializer ):
       return unicode( int_ )
 
     return u''
+
 
 
 class Str( BaseSerializer ):
@@ -163,14 +168,15 @@ class Bool( BaseSerializer ):
     return u"True" if bool_ else u"False"
 
 
+
 class List( BaseSerializer ):
 
   sep = u","
 
-  def __init__( self, sub_serializer, default=None ):
+  def __init__( self, sub_serializer ):
 
     self.sub_serializer = sub_serializer
-    BaseSerializer.__init__( self, default )
+    BaseSerializer.__init__( self )
 
 
   def serialize( self, list_ ):
@@ -250,12 +256,11 @@ class Format( BaseSerializer ):
 
 class KeySequence( BaseSerializer ):
 
-  def __init__( self, default=None ):
+  def deserializeDefault( self, string ):
 
     ## QKeySequence.fromString uses PortableText by default, and so do our
     ## defaults:
-    self.default = QKeySequence.fromString( default ) if default is not None \
-                   else None
+    return QKeySequence.fromString( string ) if string is not None else None
 
 
   def serialize( self, seq ):
@@ -269,6 +274,7 @@ class KeySequence( BaseSerializer ):
   def deserialize( self, string ):
 
     return QKeySequence.fromString( string, QKeySequence.NativeText )
+
 
 
 class Size( BaseSerializer ):
@@ -295,6 +301,7 @@ class Size( BaseSerializer ):
     return QSize()
 
 
+
 class Point( BaseSerializer ):
 
   def serialize( self, point ):
@@ -317,6 +324,7 @@ class Point( BaseSerializer ):
         pass
 
     return QPoint()
+
 
 
 class Pattern( BaseSerializer ):

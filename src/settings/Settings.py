@@ -390,7 +390,7 @@ def construct_proto( schema_defs, root_class=MyNode, node_class=MyNode, leaf_cla
       default = new_proto.metadata.get( 'default' )
 
       if None not in ( serializer, default ):
-        default = serializer.deserialize( default )
+        default = serializer.deserializeDefault( default )
 
       new_proto.default_value = default
 

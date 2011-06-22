@@ -240,7 +240,6 @@ def ini_to_struct( ini_text ):
   current_struct = struct
 
   struct_stack = []
-
   skipsection  = False
 
   for line in ini_text.split( u'\n' ):

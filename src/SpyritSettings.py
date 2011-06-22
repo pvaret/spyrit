@@ -198,4 +198,46 @@ def construct_settings():
   settings = proto.klass( None )
   settings.proto = proto
 
+
+  try:
+    reader = codecs.getreader( FILE_ENCODING )
+    settings_text = reader( file( SETTINGS_FILE ), 'ignore' ).read()
+
+  except ( LookupError, IOError, OSError ):
+    settings_text = u""
+
+  settings_struct = parse_settings( settings_text )
+
+  stack = [ ( settings, settings_struct ) ]
+
+  while stack:
+
+    current_settings, struct = stack.pop( 0 )
+    keys, sections = struct
+
+    for key, value in keys.iteritems():
+
+      try:
+        node = current_settings.get( key )
+
+      except KeyError:
+        continue
+
+      serializer = node.proto.metadata.get( 'serializer' )
+      if serializer is None:
+        continue
+
+      value = serializer.deserialize( value )
+      node.setValue( value )
+
+    for section, struct in sections.iteritems():
+
+      try:
+        node = current_settings.get( section )
+
+      except KeyError:
+        continue
+
+      stack.append( ( node, struct ) )
+
   return settings

@@ -102,7 +102,7 @@ SETTINGS_SCHEMA = {
     ( 'log.autostart',             { 'serializer': Bool(),   'default': False } ),
     ( 'log.ansi',                  { 'serializer': Bool(),   'default': False } ),
     ( 'ui.style',                  { 'serializer': Str(),    'default': False } ),
-    ( 'ui.window.min_size',        { 'serializer': Size(),   'default': u"320x200" } ),
+    ( 'ui.window.min_size',        { 'serializer': Size(),   'default': u"640x480" } ),
     ( 'ui.window.alert',           { 'serializer': Bool(),   'default': True } ),
     ( 'ui.toolbar.icon_size',      { 'serializer': Int(),    'default': 24 } ),
     ( 'ui.view.split_scroll',      { 'serializer': Bool(),   'default': True } ),

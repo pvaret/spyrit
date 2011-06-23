@@ -42,7 +42,7 @@ from Utilities import quote, unquote, BS
 
 
 
-def split( string, sep=u',', esc=BS, quotes=u'"'+u"'" ):
+def split( string, sep=u',', esc=BS, quotes=u'"' ):
   ur"""
   Splits a string along the given single-character separator (by default, a
   comma).
@@ -172,7 +172,8 @@ class Bool( BaseSerializer ):
 
 class List( BaseSerializer ):
 
-  sep = u","
+  SEP   = u","
+  QUOTE = u'"'
 
   def __init__( self, sub_serializer ):
 
@@ -182,13 +183,25 @@ class List( BaseSerializer ):
 
   def serialize( self, list_ ):
 
-    return self.sep.join( self.sub_serializer.serialize( item )
+    return self.SEP.join( self.QUOTE
+                        + self.sub_serializer.serialize( item )
+                        + self.QUOTE
                           for item in list_ )
+
 
   def deserialize( self, string ):
 
-    return list( self.sub_serializer.deserialize( item )
-                 for item in split( string, sep=self.sep ) )
+    items = list( split( string, sep=self.SEP, quotes=self.QUOTE ) )
+
+    for pos, item in enumerate( items ):
+
+      if item[ 0 ] == item[ -1 ] == self.QUOTE:
+        item = item[ 1:-1 ]
+
+      items[ pos ] = self.sub_serializer.deserialize( item )
+
+    return items
+
 
 
 

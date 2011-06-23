@@ -45,80 +45,46 @@ def check_ssl_is_available():
 
 
 
-def case_insensitive_cmp( x, y ):
-
-  return ( x.lower() < y.lower() ) and -1 or 1
-
-
-
-def quote( string, esc=BS, quote=u'"' ):
+def quote( string, esc=BS ):
   ur"""
-  Quotes the given string and escapes typical control characters.
+  Escapes typical control characters in the given string.
 
-  >>> STR = u'''It's "wonderful".
-  ... '''
+  >>> STR = u'''Carriage
+  ... return.'''
   >>> print quote( STR )
-  "It's \"wonderful\".\n"
-
-  Can also escape without quoting:
-
-  >>> STR = u'''No
-  ... quote.'''
-  >>> print quote( STR, quote=None )
-  No\nquote.
+  Carriage\nreturn.
 
   """
-
-  escapes = DEFAULT_ESCAPES.copy()
-  if quote:
-    escapes[ quote ] = quote
 
   ## Escape the escape character itself:
   string = string.replace( esc, esc + esc )
 
   ## Then escape the rest:
-  for from_, to in escapes.iteritems():
+  for from_, to in DEFAULT_ESCAPES.iteritems():
     string = string.replace( from_, esc + to )
-
-  if quote:
-    string = quote + string + quote
 
   return string
 
 
 
-def unquote( string, esc=BS, quotes=u'"'+u"'" ):
+def unquote( string, esc=BS ):
   ur"""
   Unquote a string. Reverse operation to quote().
 
-  >>> print unquote( ur'"It\'s okay.\nYes."' )
+  >>> print unquote( ur'It\'s okay.\nYes.' )
   It's okay.
   Yes.
 
-  >>> STR = u'''This 'is'
-  ... a "test".'''
+  >>> STR = ur'''This \\ 'is'
+  ... a "test".\n'''
   >>> unquote( quote( STR ) ) == STR
   True
 
-  Single characters are returned unmodified.
-
-  >>> print unquote( u'"' )
-  "
-
   """
 
-  ## Special case: single chars should be returned as such.
-  if len( string ) <= 1:
-    return string
-
-  result = []
-
-  if string[0] == string[-1] and string[0] in quotes:
-    string = string[1:-1]
-
-  escapes = dict( ( v, k ) for ( k, v ) in DEFAULT_ESCAPES.iteritems() )
-
+  result    = []
   in_escape = False
+  escapes   = dict( ( v, k ) for ( k, v ) in DEFAULT_ESCAPES.iteritems() )
 
   for c in string:
 

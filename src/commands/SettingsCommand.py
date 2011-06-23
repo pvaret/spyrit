@@ -267,11 +267,12 @@ class SettingsCommand( BaseCommand ):
 
       for k in list_settings:
 
+        s = self._getSerializer( node or settings, k )
+
         if node is None:  ## Hackish: 'None' here means defaults.
-          value = settings.get( k ).proto.metadata.get( 'default' )
+          value = s.serialize( settings.get( k ).proto.default_value )
 
         else:
-          s = self._getSerializer( node, k )
           value = s.serialize( node[ k ] ) if not node.get( k ).isEmpty() else u"-"
 
         column.append( value if value else u"None" )

@@ -29,6 +29,7 @@ u"""
 
 """
 
+import re
 
 from PyQt4.QtGui  import QKeySequence
 from PyQt4.QtCore import QSize
@@ -279,6 +280,8 @@ class KeySequence( BaseSerializer ):
 
 class Size( BaseSerializer ):
 
+  SEP = ur'[x,]'
+
   def serialize( self, size ):
 
     return u"%dx%d" % ( size.width(), size.height() )
@@ -288,9 +291,9 @@ class Size( BaseSerializer ):
 
     string = string.lower().strip()
 
-    if u'x' in string:
+    if re.search( self.SEP, string ):
 
-      w, h = string.split( u'x', 1 )
+      w, h = re.split( self.SEP, string, 1 )
 
       try:
         return QSize( int( w ), int( h ) )

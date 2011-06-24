@@ -198,7 +198,6 @@ def construct_settings():
   settings = proto.klass( None )
   settings.proto = proto
 
-
   try:
     reader = codecs.getreader( FILE_ENCODING )
     settings_text = reader( file( SETTINGS_FILE ), 'ignore' ).read()

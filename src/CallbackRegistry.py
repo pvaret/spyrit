@@ -28,12 +28,49 @@ u"""
 """
 
 
+import inspect
+
 from WeakRef import WeakCallableRef
+
+
+def safe_call( fn, args ):
+
+  ## This function works like a Qt-like slot, in the sense that it calls the
+  ## given function with the right number of parameters if more than required
+  ## are passed.
+
+  ( fn_args, varargs, varkw, defaults ) = inspect.getargspec( fn )
+
+  if varargs:
+    return fn( *args )
+
+  n_args = len( fn_args )
+
+  if inspect.ismethod( fn ):
+    ## Account for 'self' implicit argument.
+    n_args -= 1
+
+  if not n_args:
+    return fn()
+
+  ## We use the LAST n arguments. The reason for this is, our most common
+  ## use case for this decorator is to bind configuration changes to
+  ## the appropriate callbacks. Configuration change notifications emit
+  ## a (key, value) tuple of arguments, and the typical signatures for our
+  ## callbacks will use both key and value, or value alone, or nothing at
+  ## all.
+  ## If we used the FIRST n arguments, then in the second case we'd only
+  ## transmit the key, which is not as useful as the value.
+
+  args = args[ -n_args: ]
+
+  return fn( *args )
+
 
 
 class CallbackRegistry:
 
-  u"""\
+  u"""
   Maintains a registry of weakly referenced callbacks.
 
   Let's create a registry:
@@ -95,10 +132,10 @@ class CallbackRegistry:
     return len( self.__registry )
 
 
-  def triggerAll( self, *args, **kwargs ):
+  def triggerAll( self, *args ):
 
     for fnref in self.__registry.itervalues():
 
       fn = fnref()
       if fn is not None:
-        fn( *args, **kwargs )
+        safe_call( fn, args )

@@ -95,7 +95,7 @@ class Leaf( object ):
     self.own_value = value
 
     new_value = self.value()
-    if new_value != prev_value:
+    if self.notifier and ( new_value != prev_value ):
       self.notifier.triggerAll( new_value )
 
 

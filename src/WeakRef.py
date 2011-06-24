@@ -59,7 +59,7 @@ class WeakSet( WeakValueDictionary ):
 
 
 
-class WeakCallableRef:
+class WeakCallableRef( object ):
 
   u"""\
   Implements a weakref for callables, be they functions or methods.

@@ -61,7 +61,7 @@ class WeakSet( WeakValueDictionary ):
 
 class WeakCallableRef( object ):
 
-  u"""\
+  u"""
   Implements a weakref for callables, be they functions or methods.
 
   Due to implementation details, native Python weakrefs on bound methods always

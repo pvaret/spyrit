@@ -362,32 +362,25 @@ class MyNode( Node, DictAttrProxy ):
 
 def construct_proto( schema_defs, root_class=MyNode, node_class=MyNode, leaf_class=MyLeaf ):
 
-  pending_schema_defs = [ ( [], schema_def ) for schema_def in schema_defs ]
-
   proto = NodeProto( root_class )
+  pending_schema_defs = [ ( proto, schema_def ) for schema_def in schema_defs ]
 
   while pending_schema_defs:
 
-    current_depth, current_schema_def = pending_schema_defs.pop( 0 )
-    key = ".".join( current_depth )
-    new_proto = proto.new( key, klass=node_class, nodeclass=node_class ) \
-                if current_depth else None
+    current_proto, current_schema_def = pending_schema_defs.pop( 0 )
 
-    if new_proto:
-      new_proto.inherit = current_schema_def.get( 'inherit' )
-
-    section_metadata = current_schema_def.get( 'default_metadata' ) or {}
+    current_proto.inherit = current_schema_def.get( 'inherit' )
+    section_metadata      = current_schema_def.get( 'default_metadata' ) or {}
 
     for key, metadata in current_schema_def.get( 'keys' ):
 
-      key = ".".join( current_depth + [ key ] )
-      new_proto = proto.new( key, klass=leaf_class, nodeclass=node_class )
+      new_proto = current_proto.new( key, klass=leaf_class, nodeclass=node_class )
 
       new_proto.metadata.update( section_metadata )
       new_proto.metadata.update( metadata )
 
+      default    = new_proto.metadata.get( 'default' )
       serializer = new_proto.metadata.get( 'serializer' )
-      default = new_proto.metadata.get( 'default' )
 
       if None not in ( serializer, default ):
         default = serializer.deserializeDefault( default )
@@ -396,8 +389,9 @@ def construct_proto( schema_defs, root_class=MyNode, node_class=MyNode, leaf_cla
 
     for section_key, sub_schema_def in current_schema_def.get( 'sections', () ):
 
-      pending_schema_defs.append( ( current_depth + [ section_key ],
-                                    sub_schema_def ) )
+      new_proto = current_proto.new( section_key, klass=node_class, nodeclass=node_class )
+
+      pending_schema_defs.append( ( new_proto, sub_schema_def ) )
 
   return proto
 

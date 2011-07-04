@@ -28,7 +28,7 @@ from Serializers   import Bool, Int, Str, List
 from Serializers   import Size, Point, Format, Pattern, KeySequence
 from SettingsPaths import SETTINGS_FILE, LOG_DIR, FILE_ENCODING
 
-from settings.Settings import construct_proto
+from settings.Settings import Settings
 
 from PlatformSpecific import PlatformSpecific
 
@@ -192,11 +192,10 @@ DESCRIPTIONS = {
 
 
 
-def construct_settings():
+def load_settings():
 
-  proto = construct_proto( [ SETTINGS_SCHEMA, STATE_SCHEMA ] )
-  settings = proto.klass( None )
-  settings.proto = proto
+  settings = Settings()
+  settings.loadSchema( [ SETTINGS_SCHEMA, STATE_SCHEMA ] )
 
   try:
     reader = codecs.getreader( FILE_ENCODING )

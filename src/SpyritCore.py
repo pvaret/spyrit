@@ -23,14 +23,15 @@
 
 from PyQt4.QtCore import pyqtSlot
 
-from SpyritSettings  import load_settings
 from MainWindow      import MainWindow
 from SoundEngine     import SoundEngine
 from WorldsManager   import WorldsManager
 from TempResources   import TempResources
 from TriggersManager import TriggersManager
+
 from Globals         import CMDCHAR
 from Messages        import messages
+from SpyritSettings  import load_settings
 from CommandRegistry import construct_command_registry
 
 

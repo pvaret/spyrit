@@ -144,11 +144,11 @@ class Leaf( object ):
 
   def __init__( self, container ):
 
-    self.inherit = None
-    self.container = container
-    self.own_value = NO_VALUE
+    self.inherit        = None
+    self.notifier       = CallbackRegistry()
+    self.own_value      = NO_VALUE
+    self.container      = container
     self.fallback_value = None
-    self.notifier = CallbackRegistry()
 
 
   def setInherit( self, inherit ):
@@ -204,12 +204,14 @@ class Leaf( object ):
 
 class Node( DictAttrProxy ):
 
+  dump_predicate = lambda node: not node.proto.metadata.get( "exclude_from_dump" )
+
   def __init__( self, container ):
 
-    self.inherit = None
-    self.proto = None
+    self.proto     = None
+    self.nodes     = {}
+    self.inherit   = None
     self.container = container
-    self.nodes = {}
 
 
   def setInherit( self, inherit ):
@@ -264,17 +266,63 @@ class Node( DictAttrProxy ):
     return all( node.isEmpty() for node in self.nodes.itervalues() )
 
 
+  def dump( self, predicate=dump_predicate ):
+
+    stack = [ ( self, "" ) ]
+    result = ( {}, {} )
+
+    nodeclass = self.proto.metadata[ 'nodeclass' ]
+    leafclass = self.proto.metadata[ 'leafclass' ]
+
+    KEYS     = 0
+    SECTIONS = 1
+
+    while stack:
+
+      node, key = stack.pop( 0 )
+
+      ## TODO: Do away with 'isinstance'.
+
+      if isinstance( node, leafclass ):
+
+        serializer = node.proto.metadata.get( 'serializer' )
+
+        if node.isEmpty() or serializer is None:
+          continue
+
+        result[ KEYS ][ key ] = serializer.serialize( node.value() )
+
+      elif isinstance( node, nodeclass ):
+
+        for node_key, node in sorted( node.nodes.iteritems() ):
+
+          if node.isEmpty() or not predicate( node ):
+            continue
+
+          subkey = '.'.join( ( key, node_key ) ) if key else node_key
+
+          if node.proto.metadata.get( 'is_section' ):
+            result[ SECTIONS ][ subkey ] = node.dump( predicate )
+
+          else:
+            stack.append( ( node, subkey ) )
+
+    return result
+
+
 
 
 class NodeProto( object ):
 
+  PROPAGATE_METADATA = [ 'nodeclass', 'leafclass' ]
+
   def __init__( self, klass ):
 
-    self.nodes = MatchingDict()
+    self.nodes         = MatchingDict()
+    self.klass         = klass
+    self.inherit       = None
+    self.metadata      = {}
     self.default_value = None
-    self.klass = klass
-    self.inherit = None
-    self.metadata = {}
 
 
   def get( self, key ):
@@ -288,14 +336,18 @@ class NodeProto( object ):
 
   def new( self, key, klass, nodeclass ):
 
-    subkey = None
-
     if "." in key:
       key, subkey = key.split( ".", 1 )
       return self.new( key, klass=nodeclass, nodeclass=nodeclass ).new( subkey, klass=klass, nodeclass=nodeclass )
 
     if key not in self.nodes:
-      self.nodes[ key ] = NodeProto( klass )
+
+      new_node = NodeProto( klass )
+
+      for prop in self.PROPAGATE_METADATA:
+        new_node.metadata[ prop ] = self.metadata[ prop ]
+
+      self.nodes[ key ] = new_node
 
     return self.nodes[ key ]
 
@@ -363,16 +415,23 @@ class Settings( Node ):
   nodeclass = Node
   leafclass = Leaf
 
+
   def __init__( self ):
 
     super( Settings, self ).__init__( None )
 
     self.proto = NodeProto( self.__class__ )
 
+    self.proto.metadata[ 'nodeclass' ] = self.nodeclass
+    self.proto.metadata[ 'leafclass' ] = self.leafclass
 
-  def loadSchema( self, schema_defs ):
 
-    pending_schema_defs = [ ( self.proto, schema_def ) for schema_def in schema_defs ]
+  def loadSchema( self, schema_def ):
+
+    nodeclass = self.proto.metadata[ 'nodeclass' ]
+    leafclass = self.proto.metadata[ 'leafclass' ]
+
+    pending_schema_defs = [ ( self.proto, schema_def ) ]
 
     while pending_schema_defs:
 
@@ -383,10 +442,11 @@ class Settings( Node ):
 
       for key, metadata in current_schema_def.get( 'keys' ):
 
-        new_proto = current_proto.new( key, klass=self.leafclass, nodeclass=self.nodeclass )
+        new_proto = current_proto.new( key, klass=leafclass, nodeclass=nodeclass )
 
         new_proto.metadata.update( section_metadata )
         new_proto.metadata.update( metadata )
+        new_proto.metadata[ 'schema_id' ] = id( schema_def )
 
         default    = new_proto.metadata.get( 'default' )
         serializer = new_proto.metadata.get( 'serializer' )
@@ -398,25 +458,48 @@ class Settings( Node ):
 
       for section_key, sub_schema_def in current_schema_def.get( 'sections', () ):
 
-        new_proto = current_proto.new( section_key, klass=self.nodeclass, nodeclass=self.nodeclass )
+        new_proto = current_proto
+
+        for key in section_key.split( "." ):
+          new_proto = new_proto.new( key, klass=nodeclass, nodeclass=nodeclass )
+          new_proto.metadata[ 'is_section' ] = True
+
         pending_schema_defs.append( ( new_proto, sub_schema_def ) )
 
 
+  def restore( self, settings_struct ):
 
-def dump_settings( settings, key="" ):
+    stack = [ ( self, settings_struct ) ]
 
-  result = []
+    while stack:
 
-  if isinstance( settings, Leaf ):
+      current_settings, struct = stack.pop( 0 )
+      keys, sections = struct
 
-    serializer = settings.proto.metadata.get( 'serializer' )
+      for key, value in keys.iteritems():
 
-    if settings.isEmpty() or serializer is None:
-      return result
+        try:
+          node = current_settings.get( key )
 
-    return [ ( key, serializer.serialize( settings.value() ) ) ]
+        except KeyError:
+          continue
 
-  for node_key, node in sorted( settings.nodes.iteritems() ):
-    result += dump_settings( node, '.'.join( ( key, node_key ) ) )
+        serializer = node.proto.metadata.get( 'serializer' )
+        if serializer is None:
+          continue
 
-  return result
+        value = serializer.deserialize( value )
+        node.setValue( value )
+
+      for section, struct in sections.iteritems():
+
+        try:
+          node = current_settings.get( section )
+
+        except KeyError:
+          continue
+
+        if isinstance( node, self.nodeclass ):
+          stack.append( ( node, struct ) )
+
+

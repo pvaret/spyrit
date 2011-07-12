@@ -128,7 +128,7 @@ SETTINGS_SCHEMA = {
 
 ## Schema for stateful data that isn't really settings
 STATE_SCHEMA = {
-  'default_metadata': { 'state': True },
+  'default_metadata': { 'exclude_from_dump': True },
   'keys': (
     ( 'ui.window.pos',     { 'serializer': Point() } ),
     ( 'ui.window.size',    { 'serializer': Size(),        'default': u"800x600" } ),
@@ -195,7 +195,8 @@ DESCRIPTIONS = {
 def load_settings():
 
   settings = Settings()
-  settings.loadSchema( [ SETTINGS_SCHEMA, STATE_SCHEMA ] )
+  settings.loadSchema( SETTINGS_SCHEMA )
+  settings.loadSchema( STATE_SCHEMA )
 
   try:
     reader = codecs.getreader( FILE_ENCODING )
@@ -206,36 +207,6 @@ def load_settings():
 
   settings_struct = parse_settings( settings_text )
 
-  stack = [ ( settings, settings_struct ) ]
-
-  while stack:
-
-    current_settings, struct = stack.pop( 0 )
-    keys, sections = struct
-
-    for key, value in keys.iteritems():
-
-      try:
-        node = current_settings.get( key )
-
-      except KeyError:
-        continue
-
-      serializer = node.proto.metadata.get( 'serializer' )
-      if serializer is None:
-        continue
-
-      value = serializer.deserialize( value )
-      node.setValue( value )
-
-    for section, struct in sections.iteritems():
-
-      try:
-        node = current_settings.get( section )
-
-      except KeyError:
-        continue
-
-      stack.append( ( node, struct ) )
+  settings.restore( settings_struct )
 
   return settings

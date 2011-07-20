@@ -31,7 +31,7 @@ from TriggersManager import TriggersManager
 
 from Globals         import CMDCHAR
 from Messages        import messages
-from SpyritSettings  import load_settings
+from SpyritSettings  import load_settings, save_settings
 from CommandRegistry import construct_command_registry
 
 
@@ -62,9 +62,8 @@ class SpyritCore:
   @pyqtSlot()
   def atExit( self ):
 
-    ## TODO: Reactivate once settings refactor is completed!
-    #self.settings.save( CONFIG_FILE )  ## TODO: Take this out of this file.
     self.tmprc.cleanup()
+    save_settings( self.settings )
 
 
   def constructMainWindow( self ):

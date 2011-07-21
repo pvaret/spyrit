@@ -347,7 +347,7 @@ class Pattern( BaseSerializer ):
 
   def serialize( self, pattern ):
 
-    if any( isinstance( pattern, cls ) for cls in ( RegexMatch, SmartMatch) ):
+    if isinstance( pattern, ( RegexMatch, SmartMatch) ):
       return repr( pattern )
 
     return u''
@@ -366,6 +366,7 @@ class Pattern( BaseSerializer ):
       for class_ in ( RegexMatch, SmartMatch ):
 
         if prefix == class_.matchtype:
+          string = suffix
           break
 
     else:

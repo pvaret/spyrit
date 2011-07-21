@@ -27,6 +27,7 @@ class PosixSpecific:
 
   CONFIG_DIR  = ".spyrit"
   CONFIG_FILE = "spyrit.conf"
+  STATE_FILE  = "spyrit.state"
 
   should_repaint_on_scroll = False
   default_font             = u"Nimbus Mono L"
@@ -36,13 +37,15 @@ class PosixSpecific:
 
 
   def get_settings_dir( self ):
-
-    home_dir = os.path.expanduser( "~" )
     return os.path.join( self.get_homedir(), self.CONFIG_DIR )
 
 
   def get_settings_file( self ):
     return os.path.join( self.get_settings_dir(), self.CONFIG_FILE )
+
+
+  def get_state_file( self ):
+    return os.path.join( self.get_settings_dir(), self.STATE_FILE )
 
 
   def get_sound_backends( self ):

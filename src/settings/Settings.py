@@ -287,7 +287,7 @@ class Node( DictAttrProxy ):
 
         serializer = node.proto.metadata.get( 'serializer' )
 
-        if node.isEmpty() or serializer is None:
+        if node.isEmpty() or serializer is None or not predicate( node ):
           continue
 
         result[ KEYS ][ key ] = serializer.serialize( node.value() )
@@ -296,13 +296,17 @@ class Node( DictAttrProxy ):
 
         for node_key, node in sorted( node.nodes.iteritems() ):
 
-          if node.isEmpty() or not predicate( node ):
+          if node.isEmpty():
             continue
 
           subkey = '.'.join( ( key, node_key ) ) if key else node_key
 
           if node.proto.metadata.get( 'is_section' ):
-            result[ SECTIONS ][ subkey ] = node.dump( predicate )
+
+            dump = node.dump( predicate )
+
+            if len( dump[ KEYS ] ) + len( dump[ SECTIONS ] ) > 0:
+              result[ SECTIONS ][ subkey ] = dump
 
           else:
             stack.append( ( node, subkey ) )

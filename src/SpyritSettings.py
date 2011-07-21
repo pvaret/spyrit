@@ -26,7 +26,7 @@ from Globals       import ANSI_COLORS as COL
 from IniParser     import parse_settings, struct_to_ini
 from Serializers   import Bool, Int, Str, List
 from Serializers   import Size, Point, Format, Pattern, KeySequence
-from SettingsPaths import SETTINGS_FILE, LOG_DIR, FILE_ENCODING
+from SettingsPaths import SETTINGS_FILE, STATE_FILE, LOG_DIR, FILE_ENCODING
 
 from settings.Settings import Settings
 
@@ -209,6 +209,18 @@ def load_settings():
 
   settings.restore( settings_struct )
 
+
+  try:
+    reader = codecs.getreader( FILE_ENCODING )
+    state_text = reader( file( STATE_FILE ), 'ignore' ).read()
+
+  except ( LookupError, IOError, OSError ):
+    state_text = u""
+
+  state_struct = parse_settings( state_text )
+
+  settings.restore( state_struct )
+
   return settings
 
 
@@ -222,4 +234,16 @@ def save_settings( settings ):
 
   except ( LookupError, IOError, OSError ):
     ## Well shucks.
+    pass
+
+
+  dump_predicate = lambda node: node.proto.metadata.get( "schema_id" ) == id( STATE_SCHEMA )
+  state_text = struct_to_ini( settings.dump( dump_predicate ) )
+
+  try:
+    writer = codecs.getwriter( FILE_ENCODING )
+    writer( file( STATE_FILE, 'w' ), 'ignore' ).write( state_text )
+
+  except ( LookupError, IOError, OSError ):
+    ## Well shucks too.
     pass

@@ -31,6 +31,8 @@ DEFAULT_ESCAPES = {
   u'\n': u'n',
   u'\r': u'r',
   u'\t': u't',
+  u'"':  u'"',
+  u'\'': u'\'',
 }
 
 BS = u"\\"

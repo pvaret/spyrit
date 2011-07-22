@@ -183,24 +183,34 @@ class List( BaseSerializer ):
 
   def serialize( self, list_ ):
 
-    return self.SEP.join( self.QUOTE
-                        + self.sub_serializer.serialize( item )
-                        + self.QUOTE
-                          for item in list_ )
+    result = []
+
+    for item in list_:
+
+      item = self.sub_serializer.serialize( item )
+
+      result.append( item if self.SEP not in item
+                          else self.QUOTE + item + self.QUOTE )
+
+    return self.SEP.join( result )
 
 
   def deserialize( self, string ):
 
-    items = list( split( string, sep=self.SEP, quotes=self.QUOTE ) )
+    result = []
 
-    for pos, item in enumerate( items ):
+    for item in split( string, sep=self.SEP, quotes=self.QUOTE ):
 
-      if item[ 0 ] == item[ -1 ] == self.QUOTE:
+      ## Because the string serializer uses quote(), which quotes the "
+      ## character, the following is guaranteed to only be true when we've
+      ## added the quotes ourselves in serialize().
+
+      if item[0] == item[-1] == self.QUOTE:
         item = item[ 1:-1 ]
 
-      items[ pos ] = self.sub_serializer.deserialize( item )
+      result.append( self.sub_serializer.deserialize( item ) )
 
-    return items
+    return result
 
 
 

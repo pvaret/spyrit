@@ -12,7 +12,6 @@ This is an unordered list of features that need implementing sooner or later:
 * Configuration screens for everything.
 * Switch between on/off icons rather than having two of them side by side.
 * Opera-like default page.
-* Split state data and configuration. -> almost done.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
 * Fix unloading of sound engines when quitting?
 * Make catching of Command exceptions dependant on a variable settable from a debug command?

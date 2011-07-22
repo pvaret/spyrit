@@ -201,7 +201,7 @@ class List( BaseSerializer ):
 
     for item in split( string, sep=self.SEP, quotes=self.QUOTE ):
 
-      ## Because the string serializer uses quote(), which quotes the "
+      ## Because the string serializer uses quote(), which escapes the "
       ## character, the following is guaranteed to only be true when we've
       ## added the quotes ourselves in serialize().
 
@@ -358,12 +358,14 @@ class Pattern( BaseSerializer ):
   def serialize( self, pattern ):
 
     if isinstance( pattern, ( RegexMatch, SmartMatch) ):
-      return repr( pattern )
+      return quote( repr( pattern ) )
 
     return u''
 
 
   def deserialize( self, string ):
+
+    string = unquote( string )
 
     if not string:
       return None

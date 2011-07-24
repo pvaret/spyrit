@@ -88,8 +88,6 @@ class HighlightAction:
   @classmethod
   def factory( cls, format, token=None ):
 
-    format = Serializers.Format().deserialize( format )
-
     if not format:
       return None, u"Invalid format!"
 
@@ -247,17 +245,15 @@ class TriggersManager:
     self.groups = {}
 
     self.load( settings )
-    #settings.registerSaveCallback( self.confSaveCallback )
 
 
   def load( self, settings ):
-    return
 
     all_groups = settings[ MATCHES ]
 
-    for groupname, node in all_groups.sections.iteritems():
+    for groupname, node in all_groups.nodes.iteritems():
 
-      matches = node.get( 'match', [] )
+      matches = node.get( 'match' ).value() or []
 
       matchgroup = None
 
@@ -274,7 +270,7 @@ class TriggersManager:
       if not matchgroup:  ## No match created, presumably due to errors.
         continue
 
-      if 'gag' in node:
+      if 'gag' in node.nodes:
 
         action, _ = GagAction.factory()
         if action:
@@ -282,13 +278,13 @@ class TriggersManager:
 
         continue  ## If there's a gag, ignore all other actions!
 
-      if 'play' in node:
+      if 'play' in node.nodes:
 
-        action, _ = PlayAction.factory( node.get( 'play' ) )
+        action, _ = PlayAction.factory( node.get( 'play' ).value() )
         if action:
           matchgroup.addAction( action )
 
-      highlight_keys = [ k for k in node.keys if k.startswith( "highlight" ) ]
+      highlight_keys = [ k for k in node.nodes if k.startswith( "highlight" ) ]
 
       for k in highlight_keys:
 
@@ -301,34 +297,6 @@ class TriggersManager:
         action, _ = HighlightAction.factory( node[ k ], token )
         if action:
           matchgroup.addAction( action )
-
-
-  #def save( self, settings ):
-
-  #  ## Configuration is about to be saved. Serialize our current setup into the
-  #  ## configuration.
-
-  #  conf_dict = {}
-
-  #  for matchgroup in self.groups.itervalues():
-
-  #    group_dict = {}
-  #    group_dict[ 'match' ] = [ repr( m ) for m in matchgroup.matches ]
-
-  #    for action in matchgroup.actions.itervalues():
-  #      group_dict[ action.name ] = repr( action )
-
-  #    conf_dict[ ConfigBasket.SECTION_CHAR + matchgroup.name ] = group_dict
-
-  #  new_match_conf = ConfigBasket.buildFromDict( conf_dict )
-
-  #  try:
-  #    settings.deleteSection( settings._matches_section )
-  #  except KeyError:
-  #    pass
-
-  #  if conf_dict:
-  #    settings.saveSection( new_match_conf, settings._matches_section )
 
 
   def createMatch( self, pattern, type=u"smart" ):
@@ -445,9 +413,3 @@ class TriggersManager:
   def isEmpty( self ):
 
     return len( self.groups ) == 0
-
-
-  #def confSaveCallback( self ):
-
-  #  settings = QApplication.instance().core.settings
-  #  self.save( settings )

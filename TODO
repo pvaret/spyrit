@@ -22,6 +22,7 @@ This is an unordered list of features that need implementing sooner or later:
 * Idea: In case of missing parameters for command, provide brief usage summary (ex: conf without parameters -> "usage: /conf [keys|set|show|worldreset|reset]")
 * Aliases (/alias str 'send something to the world with [PARAMETERS]')
 * Clean up ActionSet with config/shortcut-aware QAction subclasses and no closures.
+* Fix paging when it starts off and is turned on later.
 
 Protocol support:
 

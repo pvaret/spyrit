@@ -63,6 +63,7 @@ class SpyritCore:
   def atExit( self ):
 
     self.tmprc.cleanup()
+    self.triggers.save( self.settings )
     save_settings( self.settings )
 
 

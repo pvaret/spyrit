@@ -334,7 +334,6 @@ class MatchCommand( BaseCommand ):
 
     if mgr.isEmpty():
       msg.append( u"  None." )
-      return
 
     for key, matchgroup in sorted( mgr.groups.iteritems() ):
 

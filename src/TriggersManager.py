@@ -79,14 +79,16 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
     else:
       pos += len( payload )
 
-    if target_pos == pos:
-      chunkbuffer.append( new_chunk )
+  if target_pos == pos:
+    chunkbuffer.append( new_chunk )
 
 
 class HighlightAction:
 
   @classmethod
   def factory( cls, format, token=None ):
+
+    format = Serializers.Format().deserialize( format )
 
     if not format:
       return None, u"Invalid format!"
@@ -243,7 +245,6 @@ class TriggersManager:
   def __init__( self, settings ):
 
     self.groups = {}
-
     self.load( settings )
 
 
@@ -413,3 +414,23 @@ class TriggersManager:
   def isEmpty( self ):
 
     return len( self.groups ) == 0
+
+
+  def save( self, settings ):
+
+    ## Configuration is about to be saved. Serialize our current setup into the
+    ## configuration.
+
+    try:
+      del settings.nodes[ MATCHES ]
+
+    except KeyError:
+      pass
+
+    for groupname, matchgroup in self.groups.iteritems():
+
+      node = settings[ MATCHES ].get( groupname )
+      node[ 'match' ] = matchgroup.matches
+
+      for action in matchgroup.actions.itervalues():
+        node[ action.name ] = repr( action )

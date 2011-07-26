@@ -45,10 +45,14 @@ MATCHES = u'matches'
 MATCHES_SCHEMA = {
   'keys': (
     ( 'match',       { 'serializer': List( Pattern() ) } ),
-    ( 'gag',         { 'serializer': Bool() } ),
+    #( 'gag',         { 'serializer': Bool() } ),
+    #( 'play',        { 'serializer': Str() } ),
+    #( 'highlight',   { 'serializer': Format() } ),
+    #( 'highlight_*', { 'serializer': Format() } ),
+    ( 'gag',         { 'serializer': Str() } ),
     ( 'play',        { 'serializer': Str() } ),
-    ( 'highlight',   { 'serializer': Format() } ),
-    ( 'highlight_*', { 'serializer': Format() } ),
+    ( 'highlight',   { 'serializer': Str() } ),
+    ( 'highlight_*', { 'serializer': Str() } ),
   )
 }
 

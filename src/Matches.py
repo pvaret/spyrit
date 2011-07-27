@@ -37,7 +37,7 @@ class RegexMatch:
 
   matchtype = u"regex"
 
-  def __init__( self, pattern=None ):
+  def __init__( self, pattern=u"" ):
 
     self.pattern = pattern
     self.regex   = None

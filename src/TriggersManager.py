@@ -22,29 +22,19 @@
 
 import os.path
 
-from PyQt4.QtGui  import QApplication
+from PyQt4.QtGui import QApplication
 
-import ConfigTypes
+from Matches        import load_match_by_type
+from Utilities      import normalize_text
+from OrderedDict    import OrderedDict
+from SpyritSettings import MATCHES
 
-from ConfigBasket import ConfigBasket
-from Matches      import MatchCreationError
-from Matches      import load_match_by_type
-from OrderedDict  import OrderedDict
-from Utilities    import normalize_text
+from pipeline import ChunkData
 
-from pipeline     import ChunkData
-
+import Serializers
 
 
-def trigger_type_getter( key ):
 
-  ## This function is used by the module where the global configuration object
-  ## is instantiated.
-
-  if key == "match":
-    return ConfigTypes.STRLIST
-
-  return ConfigTypes.STR
 
 
 
@@ -89,8 +79,8 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
     else:
       pos += len( payload )
 
-    if target_pos == pos:
-      chunkbuffer.append( new_chunk )
+  if target_pos == pos:
+    chunkbuffer.append( new_chunk )
 
 
 class HighlightAction:
@@ -98,7 +88,7 @@ class HighlightAction:
   @classmethod
   def factory( cls, format, token=None ):
 
-    format = ConfigTypes.FORMAT.from_string( format )
+    format = Serializers.Format().deserialize( format )
 
     if not format:
       return None, u"Invalid format!"
@@ -141,13 +131,13 @@ class HighlightAction:
 
   def __repr__( self ):
 
-    return ConfigTypes.FORMAT.to_string( self.highlight )
+    return Serializers.Format().serialize( self.highlight )
 
 
   def __unicode__( self ):
 
     return u"highlight" + ( u" (%s)" % self.token if self.token else u"" ) \
-           + u": " + ConfigTypes.FORMAT.to_string( self.highlight )
+           + u": " + Serializers.Format().serialize( self.highlight )
 
 
 
@@ -225,24 +215,6 @@ class GagAction:
 
 
 
-def get_matches_configuration( conf ):
-
-  section = conf._matches_section
-
-  if not conf.hasSection( section ):
-    ## No Matches section yet. Create it.
-    matches = conf.createSection( section )
-
-  else:
-    matches = conf.getSection( section )
-
-  return dict( ( group, matches.getSection( group ).getOwnDict() )
-               for group in matches.getSectionList() )
-
-
-
-
-
 class MatchGroup:
 
   def __init__( self, name ):
@@ -270,50 +242,36 @@ class MatchGroup:
 
 class TriggersManager:
 
-  def __init__( self, config ):
+  def __init__( self, settings ):
 
     self.groups = {}
-
-    self.load( config )
-    config.registerSaveCallback( self.confSaveCallback )
+    self.load( settings )
 
 
-  def load( self, conf ):
+  def load( self, settings ):
 
-    all_groups = get_matches_configuration( conf )
+    all_groups = settings[ MATCHES ]
 
-    for groupname, conf in all_groups.iteritems():
+    for groupname, node in all_groups.nodes.iteritems():
 
-      matches = conf.get( 'match', [] )
+      matches = node.get( 'match' ).value() or []
 
       matchgroup = None
 
       for match in matches:
 
-        type = match.lower().split( ':', 1 )[0]
-
-        try:
-
-          ## TODO: Should this method have to know about match types?
-          if type in ( u"smart", u"regex" ):
-            pattern = match[ len( type )+1: ]
-            m = self.createMatch( pattern, type )
-
-          else:
-            m = self.createMatch( match )
-
-        except MatchCreationError:
+        if not match:
           continue
 
         if not matchgroup:
           matchgroup = self.createOrGetMatchGroup( groupname )
 
-        matchgroup.addMatch( m )
+        matchgroup.addMatch( match )
 
       if not matchgroup:  ## No match created, presumably due to errors.
         continue
 
-      if 'gag' in conf:
+      if 'gag' in node.nodes:
 
         action, _ = GagAction.factory()
         if action:
@@ -321,13 +279,13 @@ class TriggersManager:
 
         continue  ## If there's a gag, ignore all other actions!
 
-      if 'play' in conf:
+      if 'play' in node.nodes:
 
-        action, _ = PlayAction.factory( conf.get( 'play' ) )
+        action, _ = PlayAction.factory( node.get( 'play' ).value() )
         if action:
           matchgroup.addAction( action )
 
-      highlight_keys = [ k for k in conf if k.startswith( "highlight" ) ]
+      highlight_keys = [ k for k in node.nodes if k.startswith( "highlight" ) ]
 
       for k in highlight_keys:
 
@@ -337,37 +295,9 @@ class TriggersManager:
         else:
           token = None
 
-        action, _ = HighlightAction.factory( conf[ k ], token )
+        action, _ = HighlightAction.factory( node[ k ], token )
         if action:
           matchgroup.addAction( action )
-
-
-  def save( self, conf ):
-
-    ## Configuration is about to be saved. Serialize our current setup into the
-    ## configuration.
-
-    conf_dict = {}
-
-    for matchgroup in self.groups.itervalues():
-
-      group_dict = {}
-      group_dict[ 'match' ] = [ repr( m ) for m in matchgroup.matches ]
-
-      for action in matchgroup.actions.itervalues():
-        group_dict[ action.name ] = repr( action )
-
-      conf_dict[ ConfigBasket.SECTION_CHAR + matchgroup.name ] = group_dict
-
-    new_match_conf = ConfigBasket.buildFromDict( conf_dict )
-
-    try:
-      conf.deleteSection( conf._matches_section )
-    except KeyError:
-      pass
-
-    if conf_dict:
-      conf.saveSection( new_match_conf, conf._matches_section )
 
 
   def createMatch( self, pattern, type=u"smart" ):
@@ -409,7 +339,7 @@ class TriggersManager:
       action = PlayAction
 
     else:
-      return None, u"No such action as %s!" % actionname
+      return None, u"%s: No such action!" % actionname
 
     factory = action.factory
     ok, msg = match_args_to_function( factory, args, kwargs )
@@ -486,7 +416,21 @@ class TriggersManager:
     return len( self.groups ) == 0
 
 
-  def confSaveCallback( self ):
+  def save( self, settings ):
 
-    config = QApplication.instance().core.config
-    self.save( config )
+    ## Configuration is about to be saved. Serialize our current setup into the
+    ## configuration.
+
+    try:
+      del settings.nodes[ MATCHES ]
+
+    except KeyError:
+      pass
+
+    for groupname, matchgroup in self.groups.iteritems():
+
+      node = settings[ MATCHES ].get( groupname )
+      node[ 'match' ] = matchgroup.matches
+
+      for action in matchgroup.actions.itervalues():
+        node[ action.name ] = repr( action )

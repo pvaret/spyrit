@@ -26,10 +26,10 @@ from PyQt4.QtGui import QTextDocument
 
 class SearchManager:
 
-  def __init__( self, textedit, conf ):
+  def __init__( self, textedit, settings ):
 
     self.textedit = textedit
-    self.conf     = conf
+    self.settings = settings
 
     self.cursor          = None
     self.previous_search = None
@@ -91,6 +91,6 @@ class SearchManager:
 
   def __del__( self ):
 
-    self.conf     = None
     self.cursor   = None
+    self.settings = None
     self.textedit = None

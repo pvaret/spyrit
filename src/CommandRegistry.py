@@ -123,22 +123,22 @@ class CommandRegistry:
 def construct_command_registry():
 
 
-  from commands.HelpCommand    import HelpCommand
-  from commands.ConfCommand    import ConfCommand
-  from commands.DebugCommand   import DebugCommand
-  from commands.FindCommand    import FindCommand
-  from commands.SessionCommand import SessionCommand
-  from commands.SoundCommand   import SoundCommand
-  from commands.MatchCommand   import MatchCommand
+  from commands.HelpCommand     import HelpCommand
+  from commands.SettingsCommand import SettingsCommand
+  from commands.DebugCommand    import DebugCommand
+  from commands.FindCommand     import FindCommand
+  from commands.SessionCommand  import SessionCommand
+  from commands.SoundCommand    import SoundCommand
+  from commands.MatchCommand    import MatchCommand
 
   command_registry = CommandRegistry()
 
-  command_registry.registerCommand( HELP,      HelpCommand )
-  command_registry.registerCommand( "conf",    ConfCommand )
-  command_registry.registerCommand( "debug",   DebugCommand )
-  command_registry.registerCommand( "find",    FindCommand )
-  command_registry.registerCommand( "session", SessionCommand )
-  command_registry.registerCommand( "sound",   SoundCommand )
-  command_registry.registerCommand( "match",   MatchCommand )
+  command_registry.registerCommand( HELP,       HelpCommand )
+  command_registry.registerCommand( "settings", SettingsCommand )
+  command_registry.registerCommand( "debug",    DebugCommand )
+  command_registry.registerCommand( "find",     FindCommand )
+  command_registry.registerCommand( "session",  SessionCommand )
+  command_registry.registerCommand( "sound",    SoundCommand )
+  command_registry.registerCommand( "match",    MatchCommand )
 
   return command_registry

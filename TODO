@@ -1,9 +1,9 @@
 This is an unordered list of features that need implementing sooner or later:
 
+* Replace SettingsObserver with simple function.
 * Simplify TabWidget, now that Qt already does what we need.
 * Use exception rather than return values in match action creation.
 * Better implementation of gagging, with GAG chunks instead of chunk deletion.
-* Refactor code to use new-style signal/slots.
 * GUI for search.
 * GUI for completion.
 * Log command.
@@ -12,7 +12,6 @@ This is an unordered list of features that need implementing sooner or later:
 * Configuration screens for everything.
 * Switch between on/off icons rather than having two of them side by side.
 * Opera-like default page.
-* Split state data and configuration.
 * Investigate possibility to unwind circular references by introducing weak references to World object.
 * Fix unloading of sound engines when quitting?
 * Make catching of Command exceptions dependant on a variable settable from a debug command?
@@ -23,6 +22,7 @@ This is an unordered list of features that need implementing sooner or later:
 * Idea: In case of missing parameters for command, provide brief usage summary (ex: conf without parameters -> "usage: /conf [keys|set|show|worldreset|reset]")
 * Aliases (/alias str 'send something to the world with [PARAMETERS]')
 * Clean up ActionSet with config/shortcut-aware QAction subclasses and no closures.
+* Fix paging when it starts off and is turned on later.
 
 Protocol support:
 

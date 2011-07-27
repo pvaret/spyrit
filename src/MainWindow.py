@@ -21,7 +21,6 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QPoint
 from PyQt4.QtCore import QVariant
 from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtGui  import QIcon
@@ -36,31 +35,33 @@ from PyQt4.QtGui  import QMainWindow
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
-from WorldUI        import WorldUI
-from ActionSet      import ActionSet
-from ConfigObserver import ConfigObserver
-from SmartTabWidget import SmartTabWidget
+from WorldUI          import WorldUI
+from ActionSet        import ActionSet
+from SmartTabWidget   import SmartTabWidget
+from SettingsObserver import SettingsObserver
 
 
 class MainWindow( QMainWindow ):
 
-  def __init__( self, config ):
+  def __init__( self, settings ):
 
     QMainWindow.__init__( self )
 
     ## Set up main window according to its configuration.
 
-    self.setWindowTitle( config._app_name )
+    self.setWindowTitle( settings._app._name )
 
-    min_size = config._mainwindow_min_size
-    if min_size and len( min_size ) >= 2:
-      self.setMinimumSize( QSize( min_size[0], min_size[1] ) )
+    min_size = settings._ui._window._min_size
+    if min_size and min_size.isValid():
+      self.setMinimumSize( min_size )
 
-    size = config._mainwindow_size
-    if size and len( size ) >= 2: self.resize( QSize( size[0], size[1] ) )
+    size = settings._ui._window._size
+    if size and size.isValid():
+      self.resize( size )
 
-    pos = config._mainwindow_pos
-    if pos and len( pos ) >= 2: self.move( QPoint( pos[0], pos[1] ) )
+    pos = settings._ui._window._pos
+    if pos and not pos.isNull():
+      self.move( pos )
 
 
     ## Create the central widget.
@@ -152,9 +153,9 @@ class MainWindow( QMainWindow ):
 
     ## And bind it to the appropriate configuration keys:
 
-    self.observer = ConfigObserver( config )
-    self.observer.addCallback( "widget_style", self.refreshStyle )
-    self.observer.addCallback( "toolbar_icon_size", self.refreshIcons )
+    self.observer = SettingsObserver( settings._ui )
+    self.observer.addCallback( "style", self.refreshStyle )
+    self.observer.addCallback( "toolbar.icon_size", self.refreshIcons )
 
     self.refreshMenuWorlds()
 
@@ -166,7 +167,7 @@ class MainWindow( QMainWindow ):
 
   def refreshStyle( self ):
 
-    style = QApplication.instance().core.config._widget_style
+    style = QApplication.instance().core.settings._ui._style
 
     if not style:
       style = self.initial_style
@@ -179,7 +180,7 @@ class MainWindow( QMainWindow ):
 
   def refreshIcons( self ):
 
-    size = QApplication.instance().core.config._toolbar_icon_size
+    size = QApplication.instance().core.settings._ui._toolbar._icon_size
 
     if not size:
       size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
@@ -202,7 +203,7 @@ class MainWindow( QMainWindow ):
     self.menu_connect.clear()
 
     worldsmanager = QApplication.instance().core.worlds
-    worlds = worldsmanager.knownWorldList()
+    worlds = worldsmanager.worldList()
 
     if not worlds:
 
@@ -309,13 +310,10 @@ class MainWindow( QMainWindow ):
 
     ## Save the main window's geometry when it's about to be closed.
 
-    config = QApplication.instance().core.config
+    settings = QApplication.instance().core.settings
 
-    size = ( self.size().width(), self.size().height() )
-    config._mainwindow_size = size
-
-    pos = ( self.pos().x(), self.pos().y() )
-    config._mainwindow_pos = pos
+    settings._ui._window._size = self.size()
+    settings._ui._window._pos  = self.pos()
 
     ## WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
     ## which sometimes causes a segfault when exiting. The following works
@@ -337,7 +335,7 @@ class MainWindow( QMainWindow ):
 
     worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
-    dialog = NewWorldDialog( world.conf, self )
+    dialog = NewWorldDialog( world.settings, self )
 
     if dialog.exec_():
 
@@ -351,7 +349,7 @@ class MainWindow( QMainWindow ):
 
     worldsmanager = QApplication.instance().core.worlds
     world  = worldsmanager.newAnonymousWorld()
-    dialog = QuickConnectDialog( world.conf, self )
+    dialog = QuickConnectDialog( world.settings, self )
 
     if dialog.exec_():
       QApplication.instance().core.openWorld( world )
@@ -381,5 +379,5 @@ class MainWindow( QMainWindow ):
 
     from AboutDialog import AboutDialog
 
-    config = QApplication.instance().core.config
-    AboutDialog( config, self ).exec_()
+    settings = QApplication.instance().core.settings
+    AboutDialog( settings, self ).exec_()

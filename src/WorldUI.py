@@ -34,6 +34,7 @@ from PyQt4.QtGui  import QTabWidget
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
+from pipeline           import ChunkData
 from ActionSet          import ActionSet
 from TabDelegate        import TabDelegate
 from WorldInputUI       import WorldInputUI
@@ -41,7 +42,6 @@ from Autocompleter      import Autocompleter
 from OutputManager      import OutputManager
 from SingleShotTimer    import SingleShotTimer
 from SplittableTextView import SplittableTextView
-from pipeline           import ChunkData
 
 class LED:
 
@@ -137,7 +137,7 @@ class WorldUI( QSplitter ):
     ## Setup splitter.
 
     self.setChildrenCollapsible( False )
-    self.setSizes( world.conf._splitter_sizes )
+    self.setSizes( world.settings._ui._splitter._sizes )
 
     self.splitterMoved.connect( self.saveSplitterPosition )
 
@@ -279,14 +279,14 @@ class WorldUI( QSplitter ):
     if not self.world:
       return
 
-    if self.world.conf._alert_on_activity:
+    if self.world.settings._ui._window._alert:
       QApplication.instance().alert( self.window() )
 
 
   @pyqtSlot()
   def saveSplitterPosition( self ):
 
-    self.world.conf._splitter_sizes = self.sizes()
+    self.world.settings._ui._splitter._sizes = self.sizes()
 
 
   def close( self ):

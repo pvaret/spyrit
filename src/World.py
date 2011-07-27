@@ -34,12 +34,12 @@ from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
 
-from ConfigObserver   import ConfigObserver
-from PlatformSpecific import platformSpecific
-from Utilities        import ensure_valid_filename
 from Logger           import create_logger_for_world
 from Globals          import CMDCHAR
+from Utilities        import ensure_valid_filename
 from SingleShotTimer  import SingleShotTimer
+from SettingsObserver import SettingsObserver
+from PlatformSpecific import platformSpecific
 
 from pipeline                import ChunkData
 from pipeline.SocketPipeline import SocketPipeline
@@ -61,17 +61,17 @@ class World( QObject ):
   disconnected = pyqtSignal( bool )
   nowLogging   = pyqtSignal( bool )
 
-  def __init__( self, conf=None ):
+  def __init__( self, settings=None ):
 
     QObject.__init__( self )
 
     worldsmanager = QApplication.instance().core.worlds
-    if not conf:
-      conf = worldsmanager.newWorldConf()
+    if not settings:
+      settings = worldsmanager.newWorldSettings()
 
-    self.conf    = conf
-    self.worldui = None
-    self.logger  = None
+    self.settings = settings
+    self.worldui  = None
+    self.logger   = None
 
     self.input = []
     self.input_flush = SingleShotTimer( self.flushPendingInput )
@@ -83,21 +83,22 @@ class World( QObject ):
 
     self.status = Status.DISCONNECTED
 
-    self.socketpipeline = SocketPipeline( conf )
+    self.socketpipeline = SocketPipeline( settings )
     self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
 
-    self.conf_observer = ConfigObserver( self.conf )
+    self.observer = SettingsObserver( self.settings._ui._toolbar )
 
 
   def title( self ):
 
-    conf = self.conf
-    return conf._name or u"(%s:%d)" % ( conf._host, conf._port )
+    settings = self.settings
+    return settings._name or u"(%s:%d)" \
+                          % ( settings._net._host, settings._net._port )
 
 
   def host( self ):
 
-    return self.conf._host
+    return self.settings._net._host
 
 
   def save( self ):
@@ -108,14 +109,8 @@ class World( QObject ):
   def setUI( self, worldui ):
 
     self.worldui = worldui
-    self.worldui.updateToolBarIcons( self.conf._toolbar_icon_size )
-    self.conf_observer.addCallback( "toolbar_icon_size",
-                                    self.worldui.updateToolBarIcons )
-
-
-  def isAnonymous( self ):
-
-    return self.conf.isAnonymous()
+    self.worldui.updateToolBarIcons( self.settings._ui._toolbar._icon_size )
+    self.observer.addCallback( "icon_size", self.worldui.updateToolBarIcons )
 
 
   def info( self, text ):
@@ -163,7 +158,7 @@ class World( QObject ):
 
     if self.status == Status.CONNECTED:
 
-      if self.conf._autolog or self.was_logging:
+      if self.settings._log._autostart or self.was_logging:
         self.startLogging()
 
     elif self.status == Status.DISCONNECTED:
@@ -174,8 +169,8 @@ class World( QObject ):
 
   def computeLogFileName( self ):
 
-    logfile = self.conf._logfile_name
-    logdir  = self.conf._logfile_dir
+    logfile = self.settings._log._file
+    logdir  = self.settings._log._dir
 
     logfile = time.strftime( logfile )
     logfile = logfile.replace( u"[WORLDNAME]", self.title() )
@@ -208,7 +203,7 @@ class World( QObject ):
 
   def startLogging( self ):
 
-    ## TODO: Prompt for a logfile name if none is recorded in config
+    ## TODO: Prompt for a logfile name if none is recorded in settings
 
     logfile = self.computeLogFileName()
 
@@ -370,3 +365,4 @@ class World( QObject ):
     self.worldui        = None
     self.socketpipeline = None
     self.logger         = None
+    self.observer       = None

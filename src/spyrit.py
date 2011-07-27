@@ -28,10 +28,10 @@ import sys
 
 def main( args ):
 
-  from Utilities import check_python_version
-  from Utilities import check_sip_version
-  from Utilities import check_pyqt4_installed
-  from Utilities import check_qt_version
+  from CheckVersions import check_python_version
+  from CheckVersions import check_sip_version
+  from CheckVersions import check_pyqt4_installed
+  from CheckVersions import check_qt_version
 
   for check in ( check_python_version,
                  check_sip_version,

@@ -21,40 +21,35 @@
 from PyQt4.QtCore import QObject
 from PyQt4.QtCore import pyqtSignal
 
-from World      import World
-from Utilities  import normalize_text
+from World        import World
+from Utilities    import normalize_text
+
+from SpyritSettings import WORLDS
 
 
 class WorldsManager( QObject ):
 
   worldListChanged = pyqtSignal()
 
-  def __init__( self, config ):
+  def __init__( self, settings ):
 
     QObject.__init__( self )
 
-    ## Create the section for worlds in the configuration if it doesn't exist
-    ## already.
+    self.worldsettings = settings[ WORLDS ]
 
-    if not config.hasSection( config._worlds_section ):
-      config.createSection( config._worlds_section )
-
-    self.worldconfig = config.getSection( config._worlds_section )
-
-    ## LEGACY: The following code manages the case of old configuration files
-    ## with a different world section naming convention. (v0.2 and before.)
-
-    for worldname, worldconf in list( self.worldconfig.sections.iteritems() ):
-
-      ## Note how we duplicate the .iteritems() iterator into a list: that's
-      ## because we'll be modifying some of its elements on the fly.
-
-      if not hasattr( worldconf, "_name" ):
-        worldconf._name = worldname
-
-      self.worldconfig.renameSection( worldname, self.normalize( worldname ) )
+    ## Safety measure: ensure all worlds have a valid name.
+    n = 0
+    for settings in self.getWorldNodes():
+      if not settings._name:
+        n += 1
+        settings._name = u"(Unnamed %d)" % n
 
     self.generateMappings()
+
+
+  def getWorldNodes( self ):
+
+    return self.worldsettings.nodes.values()
 
 
   def generateMappings( self ):
@@ -63,16 +58,16 @@ class WorldsManager( QObject ):
     ## their (host, port) connection pair.
 
     self.name_mapping = dict(
-                           ( self.normalize( conf._name ), conf )
-                           for conf in self.worldconfig.sections.itervalues()
-                         )
+                           ( self.normalize( settings._name ), settings )
+                           for settings in self.getWorldNodes()
+                        )
 
     self.hostport_mapping = {}
 
-    for conf in self.worldconfig.sections.itervalues():
+    for settings in self.getWorldNodes():
       self.hostport_mapping.setdefault(
-                                        ( conf._host, conf._port ), []
-                                      ).append( conf )
+                                        ( settings._net._host, settings._net._port ), []
+                                      ).append( settings )
 
 
   def normalize( self, name ):
@@ -80,69 +75,70 @@ class WorldsManager( QObject ):
     return normalize_text( name.strip() )
 
 
-  def knownWorldList( self ):
+  def worldList( self ):
 
-    return [ name
-               for dummy, name
-               in sorted (
-                           ( self.normalize( conf._name ), conf._name )
-                             for conf
-                             in self.worldconfig.sections.itervalues()
-                         )
-           ]
+    ## Return world names, sorted by normalized value.
+    worlds = ( world._name for world in self.getWorldNodes() )
+    return sorted( worlds, key=lambda s: self.normalize( s ) )
 
 
-  def newWorldConf( self, host="", port=0, ssl=False, name="" ):
+  def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
 
-    worldconf = self.worldconfig.createAnonymousSection()
+    ## TODO: Add createSection() to nodes that would do the right thing?
+    worldsettings = self.worldsettings.proto.build( self.worldsettings, '--' )
 
-    if host: worldconf._host = host
-    if port: worldconf._port = port
-    if name: worldconf._name = name
-    if ssl:  worldconf._ssl  = ssl
+    if name: worldsettings._name = name
+    if host: worldsettings._net._host = host
+    if port: worldsettings._net._port = port
+    if ssl:  worldsettings._net._ssl  = ssl
 
-    return worldconf
+    return worldsettings
 
 
   def saveWorld( self, world ):
 
-    if world.isAnonymous():
+    settings = world.settings
+    if settings in self.worldsettings.nodes.values():
+      ## World has already been saved, do nothing.
+      return
 
-      world.conf.saveAsSection( self.normalize( world.conf._name ) )
-      self.generateMappings()
+    ## TODO: Ensure unicity!
+    key = self.normalize( settings._name )
+    self.worldsettings.nodes[ key ] = settings
 
-      self.worldListChanged.emit()
+    self.generateMappings()
+    self.worldListChanged.emit()
 
 
-  def newWorld( self, conf ):
+  def newWorld( self, settings ):
 
-    return World( conf )
+    return World( settings )
 
 
   def newAnonymousWorld( self, host="", port=0, ssl=False ):
 
-    conf = self.newWorldConf( host, port, ssl )
-    return self.newWorld( conf )
+    settings = self.newWorldSettings( host, port, ssl )
+    return self.newWorld( settings )
 
 
   def lookupWorldByName( self, name ):
 
-    conf = self.name_mapping.get( self.normalize( name ) )
+    settings = self.name_mapping.get( self.normalize( name ) )
 
-    if conf:
-      return self.newWorld( conf )
+    if settings:
+      return self.newWorld( settings )
 
     return None
 
 
   def lookupWorldByHostPort( self, host, port ):
 
-    confs = self.hostport_mapping.get( ( host, port ) )
+    settings = self.hostport_mapping.get( ( host, port ) )
 
-    if confs and len( confs ) == 1:
+    if settings and len( settings ) == 1:
 
       ## One matching configuration found, and only one.
-      return self.newWorld( confs[ 0 ] )
+      return self.newWorld( settings[ 0 ] )
 
     return None
 

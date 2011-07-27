@@ -31,10 +31,9 @@ from AnsiFilter        import AnsiFilter
 from TelnetFilter      import TelnetFilter
 from TriggersFilter    import TriggersFilter
 from SingleShotTimer   import SingleShotTimer
+from SettingsObserver  import SettingsObserver
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
-
-from ConfigObserver import ConfigObserver
 
 from Messages  import messages
 from Utilities import check_ssl_is_available
@@ -45,7 +44,9 @@ import ChunkData
 
 class SocketPipeline:
 
-  def __init__( self, conf ):
+  def __init__( self, settings ):
+
+    self.net_settings = settings._net
 
     self.triggersmanager = QApplication.instance().core.triggers
 
@@ -53,30 +54,29 @@ class SocketPipeline:
 
     self.pipeline.addFilter( TelnetFilter )
     self.pipeline.addFilter( AnsiFilter )
-    self.pipeline.addFilter( UnicodeTextFilter, encoding=conf._world_encoding )
+    self.pipeline.addFilter( UnicodeTextFilter, encoding=self.net_settings._encoding )
     self.pipeline.addFilter( FlowControlFilter )
     self.pipeline.addFilter( TriggersFilter, manager=self.triggersmanager )
 
     self.using_ssl = False
     self.socket    = None
-    self.conf      = conf
     self.buffer    = []
 
     self.flush_timer = SingleShotTimer( self.flushBuffer )
 
-    self.observer = ConfigObserver( self.conf )
-    self.observer.addCallback( "world_encoding", self.setStreamEncoding )
+    self.observer = SettingsObserver( self.net_settings )
+    self.observer.addCallback( "encoding", self.setStreamEncoding )
 
 
   def setStreamEncoding( self ):
 
     if self.pipeline:
-      self.pipeline.notify( "encoding_changed", self.conf._world_encoding )
+      self.pipeline.notify( "encoding_changed", self.net_settings._encoding )
 
 
   def setupSocket( self ):
 
-    if self.conf._ssl and check_ssl_is_available():
+    if self.net_settings._ssl and check_ssl_is_available():
 
       self.using_ssl = True
       self.socket    = QSslSocket()
@@ -87,7 +87,7 @@ class SocketPipeline:
     else:
       self.socket = QTcpSocket()
 
-      if self.conf._ssl:  ## SSL was requested but is not available...
+      if self.net_settings._ssl:  ## SSL was requested but is not available...
         messages.warn( u"SSL functions not available; attempting" \
                        u"unencrypted connection instead..." )
 
@@ -103,11 +103,13 @@ class SocketPipeline:
 
     self.pipeline.resetInternalState()
 
+    params = ( self.net_settings._host, self.net_settings._port )
+
     if self.using_ssl:
-      self.socket.connectToHostEncrypted( self.conf._host, self.conf._port )
+      self.socket.connectToHostEncrypted( *params )
 
     else:
-      self.socket.connectToHost( self.conf._host, self.conf._port )
+      self.socket.connectToHost( *params )
 
 
   def disconnectFromHost( self ):

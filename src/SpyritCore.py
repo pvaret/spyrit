@@ -23,25 +23,23 @@
 
 from PyQt4.QtCore import pyqtSlot
 
-from Config          import Config
 from MainWindow      import MainWindow
 from SoundEngine     import SoundEngine
 from WorldsManager   import WorldsManager
 from TempResources   import TempResources
 from TriggersManager import TriggersManager
+
+from Globals         import CMDCHAR
+from Messages        import messages
+from SpyritSettings  import load_settings, save_settings
 from CommandRegistry import construct_command_registry
-
-from Globals     import CMDCHAR
-from ConfigPaths import CONFIG_FILE
-
-from Messages   import messages
 
 
 class SpyritCore:
 
-  def __init__( self, config, worlds, commands, triggers, tmprc, sound ):
+  def __init__( self, settings, worlds, commands, triggers, tmprc, sound ):
 
-    self.config   = config
+    self.settings = settings
     self.worlds   = worlds
     self.commands = commands
     self.triggers = triggers
@@ -52,7 +50,7 @@ class SpyritCore:
     ## Set up a MOTD to properly welcome our user:
 
     MOTD = (
-        u"Welcome to %s %s!" % ( config._app_name, config._app_version ),
+        u"Welcome to %s %s!" % ( settings._app._name, settings._app._version ),
         u"Type %shelp for help on available commands." % CMDCHAR
     )
 
@@ -64,8 +62,9 @@ class SpyritCore:
   @pyqtSlot()
   def atExit( self ):
 
-    self.config.save( CONFIG_FILE )  ## TODO: Take this out of this file.
     self.tmprc.cleanup()
+    self.triggers.save( self.settings )
+    save_settings( self.settings )
 
 
   def constructMainWindow( self ):
@@ -73,7 +72,7 @@ class SpyritCore:
     if self.mw:
       return
 
-    self.mw = MainWindow( self.config )
+    self.mw = MainWindow( self.settings )
     self.mw.show()
 
 
@@ -111,15 +110,15 @@ class SpyritCore:
 
 def construct_spyrit_core( application ):
 
-  config   = Config()
-  worlds   = WorldsManager( config )
+  settings = load_settings()
+  worlds   = WorldsManager( settings )
   tmprc    = TempResources()
   sound    = SoundEngine( tmprc )
-  triggers = TriggersManager( config )  ## TODO: Take this out of this module.
+  triggers = TriggersManager( settings )  ## TODO: Take this out of this module.
   commands = construct_command_registry()
 
   core = SpyritCore(
-           config=config,
+           settings=settings,
            worlds=worlds,
            commands=commands,
            triggers=triggers,

@@ -20,33 +20,35 @@
 ##
 
 
-from PyQt4.QtGui import QPixmap
+from PyQt4.QtGui import QPixmap, QLineEdit, QSpinBox, QCheckBox
 
-from Utilities          import check_ssl_is_available
+from Utilities            import check_ssl_is_available
+from SettingsPanel        import SettingsPanel
+from SettingsWidgetMapper import SettingsWidgetMapper, qlineedit_not_empty
+from PrettyPanelHeader    import PrettyPanelHeader
+from PrettyOptionDialog   import PrettyOptionDialog
 
-from PrettyOptionPanel  import ConfigMapper
-from PrettyPanelHeader  import PrettyPanelHeader
-from PrettyOptionDialog import PrettyOptionDialog
 
+def QuickConnectDialog( settings, parent=None ):
 
-def QuickConnectDialog( conf, parent=None ):
+    header = PrettyPanelHeader( u"Quick connect", QPixmap( ":/icon/connect" ) )
 
-    header = PrettyPanelHeader( u"Quick connect",
-                                  QPixmap( ":/icon/connect" ) )
+    mapper = SettingsWidgetMapper( settings )
+    panel  = SettingsPanel( mapper )
 
-    mapper = ConfigMapper( conf )
+    host_mapper = panel.addBoundRow( 'net.host', QLineEdit(), u"Server:" )
 
-    mapper.addGroup( u"Connection parameters", [
-                       mapper.lineedit( "host", u"&Server:" ),
-                       mapper.spinbox(  "port", u"&Port:" ),
-                     ] )
+    host_mapper.setValidator( qlineedit_not_empty )
+
+    port = QSpinBox()
+    port.setRange( 1, 65535 )
+    panel.addBoundRow( 'net.port', port, u"Port:" )
 
     if check_ssl_is_available():
-      mapper.addGroup( u"Encryption", [
-                         mapper.checkbox( "ssl", u"Use SSL &encryption"),
-                       ] )
+      panel.addBoundRow( 'net.ssl', QCheckBox( u"Use SSL &encryption" ) )
 
     dialog = PrettyOptionDialog( mapper,
+                                 panel,
                                  parent  = parent,
                                  header  = header,
                                  oklabel = u"Connect",

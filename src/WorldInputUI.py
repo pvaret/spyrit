@@ -31,7 +31,7 @@ from PyQt4.QtGui  import QKeySequence
 
 from ActionSet        import ActionSet
 from InputHistory     import InputHistory
-from ConfigObserver   import ConfigObserver
+from SettingsObserver import SettingsObserver
 
 
 
@@ -48,7 +48,7 @@ class WorldInputUI( QTextEdit ):
     self.setAcceptRichText( False )
 
     self.world    = world
-    self.conf     = world.conf
+    self.settings = world.settings
     self.history  = InputHistory( self, shouldsavehistory )
 
     self.actionset = ActionSet( self )
@@ -63,16 +63,9 @@ class WorldInputUI( QTextEdit ):
 
     ## And bind it to key changes:
 
-    self.observer = ConfigObserver( self.conf )
-    self.observer.addCallback(
-                            [
-                              "input_font_color",
-                              "input_font_name",
-                              "input_font_size",
-                              "input_background_color",
-                            ],
-                            self.refresh
-                          )
+    self.observer = SettingsObserver( self.settings._ui._input )
+    self.observer.addCallback( [ "font.color", "font.name", "font.size",
+                                 "background.color" ], self.refresh )
 
     self.returnPressed.connect( self.clearAndSend )
 
@@ -86,25 +79,26 @@ class WorldInputUI( QTextEdit ):
 
     style_elements = []
 
-    if self.conf._input_font_color:
+    input_settings = self.settings._ui._input
+    if input_settings._font._color:
 
       style_elements.append( u"color: %s" \
-                             % self.conf._input_font_color )
+                             % input_settings._font._color )
 
-    if self.conf._input_font_name:
+    if input_settings._font._name:
 
       style_elements.append( u"font-family: %s" \
-                             % self.conf._input_font_name )
+                             % input_settings._font._name )
 
-    if self.conf._input_font_size:
+    if input_settings._font._size:
 
       style_elements.append( u"font-size: %dpt" \
-                             % self.conf._input_font_size )
+                             % input_settings._font._size )
 
-    if self.conf._input_background_color:
+    if input_settings._background._color:
 
       style_elements.append( u"background-color: %s" \
-                             % self.conf._input_background_color )
+                             % input_settings._background._color )
 
     if style_elements:
       self.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
@@ -188,7 +182,7 @@ class WorldInputUI( QTextEdit ):
   def __del__( self ):
 
     self.world     = None
-    self.conf      = None
+    self.settings  = None
     self.history   = None
     self.commands  = None
     self.observer  = None

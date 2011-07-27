@@ -23,7 +23,7 @@
 import codecs
 
 from Globals       import ANSI_COLORS as COL
-from IniParser     import parse_settings, struct_to_ini
+from IniParser     import parse_settings, struct_to_ini, VERSION
 from Serializers   import Bool, Int, Str, List
 from Serializers   import Size, Point, Format, Pattern, KeySequence
 from SettingsPaths import SETTINGS_FILE, STATE_FILE, LOG_DIR, FILE_ENCODING
@@ -230,7 +230,8 @@ def load_settings():
 
 def save_settings( settings ):
 
-  settings_text = struct_to_ini( settings.dump() )
+  settings_text = "## version: %d\n" % ( VERSION ) \
+                + struct_to_ini( settings.dump() )
 
   try:
     writer = codecs.getwriter( FILE_ENCODING )
@@ -242,7 +243,8 @@ def save_settings( settings ):
 
 
   dump_predicate = lambda node: node.proto.metadata.get( "schema_id" ) == id( STATE_SCHEMA )
-  state_text = struct_to_ini( settings.dump( dump_predicate ) )
+  state_text = "## version: %d\n" % ( VERSION ) \
+             + struct_to_ini( settings.dump( dump_predicate ) )
 
   try:
     writer = codecs.getwriter( FILE_ENCODING )

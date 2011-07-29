@@ -38,7 +38,6 @@ from PyQt4.QtGui  import QApplication
 from WorldUI          import WorldUI
 from ActionSet        import ActionSet
 from SmartTabWidget   import SmartTabWidget
-from SettingsObserver import SettingsObserver
 
 
 class MainWindow( QMainWindow ):
@@ -153,9 +152,8 @@ class MainWindow( QMainWindow ):
 
     ## And bind it to the appropriate configuration keys:
 
-    self.observer = SettingsObserver( settings._ui )
-    self.observer.addCallback( "style", self.refreshStyle )
-    self.observer.addCallback( "toolbar.icon_size", self.refreshIcons )
+    settings._ui.onChange( "style", self.refreshStyle )
+    settings._ui.onChange( "toolbar.icon_size", self.refreshIcons )
 
     self.refreshMenuWorlds()
 

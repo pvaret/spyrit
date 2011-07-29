@@ -1,6 +1,5 @@
 This is an unordered list of features that need implementing sooner or later:
 
-* Replace SettingsObserver with simple function.
 * Simplify TabWidget, now that Qt already does what we need.
 * Use exception rather than return values in match action creation.
 * Better implementation of gagging, with GAG chunks instead of chunk deletion.

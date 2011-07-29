@@ -31,7 +31,6 @@ from AnsiFilter        import AnsiFilter
 from TelnetFilter      import TelnetFilter
 from TriggersFilter    import TriggersFilter
 from SingleShotTimer   import SingleShotTimer
-from SettingsObserver  import SettingsObserver
 from FlowControlFilter import FlowControlFilter
 from UnicodeTextFilter import UnicodeTextFilter
 
@@ -64,8 +63,7 @@ class SocketPipeline:
 
     self.flush_timer = SingleShotTimer( self.flushBuffer )
 
-    self.observer = SettingsObserver( self.net_settings )
-    self.observer.addCallback( "encoding", self.setStreamEncoding )
+    self.net_settings.onChange( "encoding", self.setStreamEncoding )
 
 
   def setStreamEncoding( self ):
@@ -223,4 +221,3 @@ class SocketPipeline:
 
     self.socket   = None
     self.pipeline = None
-    self.observer = None

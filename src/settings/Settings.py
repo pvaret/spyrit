@@ -314,6 +314,12 @@ class Node( DictAttrProxy ):
     return result
 
 
+  def onChange( self, key, callback ):
+
+    leaf = self.get( key )
+    leaf.notifier.add( callback )
+
+
 
 
 class NodeProto( object ):

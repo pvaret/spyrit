@@ -38,7 +38,6 @@ from Logger           import create_logger_for_world
 from Globals          import CMDCHAR
 from Utilities        import ensure_valid_filename
 from SingleShotTimer  import SingleShotTimer
-from SettingsObserver import SettingsObserver
 from PlatformSpecific import platformSpecific
 
 from pipeline                import ChunkData
@@ -86,8 +85,6 @@ class World( QObject ):
     self.socketpipeline = SocketPipeline( settings )
     self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
 
-    self.observer = SettingsObserver( self.settings._ui._toolbar )
-
 
   def title( self ):
 
@@ -110,7 +107,7 @@ class World( QObject ):
 
     self.worldui = worldui
     self.worldui.updateToolBarIcons( self.settings._ui._toolbar._icon_size )
-    self.observer.addCallback( "icon_size", self.worldui.updateToolBarIcons )
+    self.settings._ui._toolbar.onChange( "icon_size", self.worldui.updateToolBarIcons )
 
 
   def info( self, text ):
@@ -365,4 +362,3 @@ class World( QObject ):
     self.worldui        = None
     self.socketpipeline = None
     self.logger         = None
-    self.observer       = None

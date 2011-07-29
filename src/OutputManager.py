@@ -28,7 +28,6 @@ from PyQt4.QtGui import QTextCharFormat
 from Globals              import LEFTARROW
 from FormatStack          import FormatStack
 from SearchManager        import SearchManager
-from SettingsObserver     import SettingsObserver
 from QTextFormatFormatter import QTextFormatFormatter
 
 from pipeline             import ChunkData
@@ -51,8 +50,6 @@ class OutputManager:
 
     self.textcursor = QTextCursor( textview.document() )
 
-    self.observer = SettingsObserver( self.view_settings )
-
     self.textformat = QTextCharFormat()
     self.infoformat = QTextCharFormat()
 
@@ -62,10 +59,10 @@ class OutputManager:
     self.textformatmanager.setBaseFormat( self.view_settings._font._text_format )
     self.infoformatmanager.setBaseFormat( self.view_settings._font._info_format )
 
-    self.observer.addCallback( "font.text_format",
-                               self.textformatmanager.setBaseFormat )
-    self.observer.addCallback( "font.info_format",
-                               self.infoformatmanager.setBaseFormat )
+    self.view_settings.onChange( "font.text_format",
+                                 self.textformatmanager.setBaseFormat )
+    self.view_settings.onChange( "font.info_format",
+                                 self.infoformatmanager.setBaseFormat )
 
     self.searchmanager = SearchManager( textview, world.settings )
 
@@ -74,14 +71,14 @@ class OutputManager:
 
     self.refresh()
 
-    self.observer.addCallback( [ "font.name", "font.size", "background.color" ],
-                               self.refresh )
+    for key in [ "font.name", "font.size", "background.color" ]:
+      self.view_settings.onChange( key, self.refresh )
 
     self.textview.setSplitScrollback( self.view_settings[ "split_scroll" ] )
     self.textview.setPaging( self.view_settings[ "paging" ] )
 
-    self.observer.addCallback( "split_scroll", self.textview.setSplitScrollback )
-    self.observer.addCallback( "paging",       self.textview.setPaging )
+    self.view_settings.onChange( "split_scroll", self.textview.setSplitScrollback )
+    self.view_settings.onChange( "paging",       self.textview.setPaging )
 
 
   def refresh( self ):
@@ -189,5 +186,4 @@ class OutputManager:
     self.textcursor     = None
     self.charformat     = None
     self.infocharformat = None
-    self.observer       = None
     self.searchmanager  = None

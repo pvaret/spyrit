@@ -26,8 +26,6 @@ from PyQt4.QtGui  import QAction
 from PyQt4.QtGui  import QKeySequence
 from PyQt4.QtGui  import QApplication
 
-from SettingsObserver import SettingsObserver
-
 
 class ActionSet:
 
@@ -36,7 +34,6 @@ class ActionSet:
     self.parent = parent
 
     settings = QApplication.instance().core.settings
-    self.observer = SettingsObserver( settings._shortcuts )
     self.closures = []
 
     self.actions = {
@@ -114,7 +111,7 @@ class ActionSet:
     ## Call it once:
     set_action_shortcut()
 
-    self.observer.addCallback( action, set_action_shortcut )
+    settings.onChange( action, set_action_shortcut )
 
     ## Keep a reference to the closure, so it's not garbage-collected
     ## right away.
@@ -137,9 +134,3 @@ class ActionSet:
     self.parent.addAction( a )
 
     return a
-
-
-  def __del__( self ):
-
-    self.observer = None
-    self.closures = None

@@ -27,6 +27,39 @@ from Utilities    import normalize_text
 from SpyritSettings import WORLDS
 
 
+
+class WorldsSettings:
+  """
+  This class encapsulates the deep knowledge about settings objects that
+  WorldsManager requires.
+  """
+
+  def __init__( self, settings ):
+
+    self.settings = settings[ WORLDS ]
+
+
+  def getAllWorldSettings( self ):
+
+    return self.settings.nodes.values()
+
+
+  def newWorldSettings( self ):
+
+    ## TODO: Add createSection() to nodes that would do the right thing?
+    return self.settings.proto.build( self.settings, '*' )
+
+
+  def saveWorldSettings( self, key, settings ):
+
+    if settings in self.getAllWorldSettings():
+      ## World has already been saved, do nothing.
+      return
+
+    self.settings.nodes[ key ] = settings
+
+
+
 class WorldsManager( QObject ):
 
   worldListChanged = pyqtSignal()
@@ -35,21 +68,18 @@ class WorldsManager( QObject ):
 
     QObject.__init__( self )
 
-    self.worldsettings = settings[ WORLDS ]
+    self.ws = WorldsSettings( settings )
 
     ## Safety measure: ensure all worlds have a valid name.
     n = 0
-    for settings in self.getWorldNodes():
+
+    for settings in self.ws.getAllWorldSettings():
+
       if not settings._name:
         n += 1
         settings._name = u"(Unnamed %d)" % n
 
     self.generateMappings()
-
-
-  def getWorldNodes( self ):
-
-    return self.worldsettings.nodes.values()
 
 
   def generateMappings( self ):
@@ -59,12 +89,12 @@ class WorldsManager( QObject ):
 
     self.name_mapping = dict(
                            ( self.normalize( settings._name ), settings )
-                           for settings in self.getWorldNodes()
+                           for settings in self.ws.getAllWorldSettings()
                         )
 
     self.hostport_mapping = {}
 
-    for settings in self.getWorldNodes():
+    for settings in self.ws.getAllWorldSettings():
       self.hostport_mapping.setdefault(
                                         ( settings._net._host, settings._net._port ), []
                                       ).append( settings )
@@ -78,33 +108,28 @@ class WorldsManager( QObject ):
   def worldList( self ):
 
     ## Return world names, sorted by normalized value.
-    worlds = ( world._name for world in self.getWorldNodes() )
+    worlds = ( world._name for world in self.ws.getAllWorldSettings() )
     return sorted( worlds, key=lambda s: self.normalize( s ) )
 
 
   def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
 
-    ## TODO: Add createSection() to nodes that would do the right thing?
-    worldsettings = self.worldsettings.proto.build( self.worldsettings, '--' )
+    wsettings = self.ws.newWorldSettings()
 
-    if name: worldsettings._name = name
-    if host: worldsettings._net._host = host
-    if port: worldsettings._net._port = port
-    if ssl:  worldsettings._net._ssl  = ssl
+    if name: wsettings._name      = name
+    if host: wsettings._net._host = host
+    if port: wsettings._net._port = port
+    if ssl:  wsettings._net._ssl  = ssl
 
-    return worldsettings
+    return wsettings
 
 
   def saveWorld( self, world ):
 
     settings = world.settings
-    if settings in self.worldsettings.nodes.values():
-      ## World has already been saved, do nothing.
-      return
+    key = self.normalize( settings._name )  ## TODO: Ensure unicity!
 
-    ## TODO: Ensure unicity!
-    key = self.normalize( settings._name )
-    self.worldsettings.nodes[ key ] = settings
+    self.ws.saveWorldSettings( key, settings )
 
     self.generateMappings()
     self.worldListChanged.emit()
@@ -141,4 +166,3 @@ class WorldsManager( QObject ):
       return self.newWorld( settings[ 0 ] )
 
     return None
-

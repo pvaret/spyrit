@@ -29,58 +29,12 @@ from Utilities      import normalize_text
 from OrderedDict    import OrderedDict
 from SpyritSettings import MATCHES
 
-from pipeline import ChunkData
+from pipeline           import ChunkData
+from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 
 import Serializers
 
 
-
-
-
-
-def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
-
-  pos       = 0
-  new_chunk = None
-
-  for i, chunk in enumerate( chunkbuffer ):
-
-    if not new_chunk:  ## Pop the next chunk to insert...
-
-      if not new_chunks:  ## ... Assuming there is one, of course.
-        return
-
-      target_pos, new_chunk = new_chunks.pop( 0 )
-
-    chunk_type, payload = chunk
-
-    if chunk_type != ChunkData.TEXT:
-      continue
-
-    if pos == target_pos:
-
-      chunkbuffer.insert( i, new_chunk )
-      new_chunk = None
-      continue
-
-    elif target_pos - pos < len( payload ):
-
-      split_pos = target_pos - pos
-
-      chunkbuffer.pop( i )
-      chunkbuffer.insert( i,   ( ChunkData.TEXT, payload[ :split_pos ] ) )
-      chunkbuffer.insert( i+1, new_chunk )
-      chunkbuffer.insert( i+2, ( ChunkData.TEXT, payload[ split_pos: ] ) )
-
-      pos += split_pos
-      new_chunk = None
-      continue
-
-    else:
-      pos += len( payload )
-
-  if target_pos == pos:
-    chunkbuffer.append( new_chunk )
 
 
 class HighlightAction:

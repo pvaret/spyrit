@@ -35,9 +35,10 @@ from PyQt4.QtGui  import QMainWindow
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
-from WorldUI          import WorldUI
-from ActionSet        import ActionSet
-from SmartTabWidget   import SmartTabWidget
+from WorldUI        import WorldUI
+from ActionSet      import ActionSet
+from SmartTabWidget import TabWidget
+from SmartTabWidget import FallbackTabWidget
 
 
 class MainWindow( QMainWindow ):
@@ -69,8 +70,12 @@ class MainWindow( QMainWindow ):
     default_pane.setAlignment( Qt.AlignCenter )
     default_pane.setPixmap( QPixmap( ":/app/logo" ) )
 
-    self.setCentralWidget( SmartTabWidget( self, default_pane ) )
-    self.tabwidget = self.centralWidget().tabwidget
+    self.tabwidget = TabWidget( self )
+    self.tabwidget.setDocumentMode( True )
+    self.tabwidget.setMovable( True )
+
+    self.setCentralWidget(
+            FallbackTabWidget( self, self.tabwidget, default_pane ) )
 
     self.tabwidget.currentChanged.connect( self.setCurrentWorldToolbar )
 
@@ -79,16 +84,14 @@ class MainWindow( QMainWindow ):
 
     self.actionset = ActionSet( self )
 
-    self.action_about        = self.actionset.bindAction( "about",   self.actionAbout )
-    self.action_aboutqt      = self.actionset.bindAction( "aboutqt", QApplication.instance().aboutQt )
-    self.action_newworld     = self.actionset.bindAction( "newworld",
-                                                          self.actionNewWorld )
-    self.action_quickconnect = self.actionset.bindAction( "quickconnect",
-                                                          self.actionQuickConnect )
-    self.action_quit         = self.actionset.bindAction( "quit", self.close )
+    self.action_about        = self.actionset.bindAction( "about",        self.actionAbout )
+    self.action_aboutqt      = self.actionset.bindAction( "aboutqt",      QApplication.instance().aboutQt )
+    self.action_newworld     = self.actionset.bindAction( "newworld",     self.actionNewWorld )
+    self.action_quickconnect = self.actionset.bindAction( "quickconnect", self.actionQuickConnect )
+    self.action_quit         = self.actionset.bindAction( "quit",         self.close )
 
-    self.actionset.bindAction( "nexttab",     self.tabwidget.tabbar.nextTab )
-    self.actionset.bindAction( "previoustab", self.tabwidget.tabbar.previousTab )
+    self.actionset.bindAction( "nexttab",     self.tabwidget.nextTab )
+    self.actionset.bindAction( "previoustab", self.tabwidget.previousTab )
 
 
     ## Create menus.

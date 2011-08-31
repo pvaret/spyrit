@@ -35,10 +35,10 @@ from PyQt4.QtGui  import QMainWindow
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
-from WorldUI        import WorldUI
-from ActionSet      import ActionSet
-from SmartTabWidget import TabWidget
-from SmartTabWidget import FallbackTabWidget
+from WorldUI   import WorldUI
+from ActionSet import ActionSet
+from TabWidget import TabWidget
+from TabWidget import FallbackTabWidget
 
 
 class MainWindow( QMainWindow ):

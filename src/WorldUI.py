@@ -43,6 +43,7 @@ from OutputManager      import OutputManager
 from SingleShotTimer    import SingleShotTimer
 from SplittableTextView import SplittableTextView
 
+
 class LED:
 
   def __init__( self ):
@@ -74,9 +75,10 @@ class WorldUI( QSplitter ):
     self.world = world
     self.led   = LED()
 
-    self.tab = TabDelegate( self )
+    self.tab = TabDelegate( tabwidget, self )
 
     self.tab.tabChanged.connect( self.onTabChanged )
+    self.tab.tabCloseRequested.connect( self.close )
 
     self.blinker = QTimeLine( 200, self ) ## ms
     self.blinker.setFrameRange( 0, 3 )
@@ -153,6 +155,7 @@ class WorldUI( QSplitter ):
 
     self.actionset = ActionSet( self )
 
+    self.actionset.bindAction( "close",    self.close )
     self.actionset.bindAction( "stepup",   self.outputui.stepUp )
     self.actionset.bindAction( "stepdown", self.outputui.stepDown )
     self.actionset.bindAction( "pageup",   self.outputui.pageUp )
@@ -190,10 +193,6 @@ class WorldUI( QSplitter ):
 
     self.toolbar.addAction( connect_action )
     self.toolbar.addAction( disconnect_action )
-
-    self.toolbar.addAction(
-      self.actionset.bindAction( "close", self.close )
-    )
 
     self.toolbar.addSeparator()
 
@@ -289,6 +288,7 @@ class WorldUI( QSplitter ):
     self.world.settings._ui._splitter._sizes = self.sizes()
 
 
+  @pyqtSlot()
   def close( self ):
 
     if self.world.isConnected():

@@ -73,6 +73,7 @@ class MainWindow( QMainWindow ):
     self.tabwidget = TabWidget( self )
     self.tabwidget.setDocumentMode( True )
     self.tabwidget.setMovable( True )
+    self.tabwidget.setTabsClosable( True )
 
     self.setCentralWidget(
             FallbackTabWidget( self, self.tabwidget, default_pane ) )

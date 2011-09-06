@@ -39,20 +39,22 @@ class TabDelegate( QObject ):
               ])
 
 
-  tabChanged = pyqtSignal( bool )
+  tabChanged        = pyqtSignal( bool )
+  tabCloseRequested = pyqtSignal()
 
-  def __init__( self, widget ):
+  def __init__( self, tabwidget, widget ):
 
     QObject.__init__( self )
 
     self.widget    = widget
-    self.tabwidget = widget.parent()
+    self.tabwidget = tabwidget
 
     assert isinstance( self.tabwidget, QTabWidget )
 
     self.is_current_tab = False
 
     self.tabwidget.currentChanged.connect( self.onTabChanged )
+    self.tabwidget.tabCloseRequested.connect( self.onTabCloseRequested )
 
 
   @pyqtSlot( int )
@@ -66,6 +68,13 @@ class TabDelegate( QObject ):
 
       self.tabChanged.emit( is_now_current_tab )
       self.is_current_tab = is_now_current_tab
+
+
+  @pyqtSlot( int )
+  def onTabCloseRequested( self, i ):
+
+    if i == self.tabwidget.indexOf( self.widget ):
+      self.tabCloseRequested.emit()
 
 
   def __getattr__( self, attr ):

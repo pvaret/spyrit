@@ -24,8 +24,10 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QTimer
+from PyQt4.QtCore import QObject
 from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtCore import QTimeLine
+
 from PyQt4.QtGui  import QIcon
 from PyQt4.QtGui  import QStyle
 from PyQt4.QtGui  import QToolBar
@@ -63,6 +65,70 @@ class LED:
       return lit and self.DISCONNECTED_LIT or self.DISCONNECTED_UNLIT
 
 
+class TabIconBlinker( QObject ):
+
+  def __init__( self, world, tab, parent=None ):
+
+    QObject.__init__( self, parent )
+
+    self.led   = LED()
+    self.tab   = tab
+    self.world = world
+
+    self.visible = True
+
+    self.tab.tabChanged.connect( self.onTabChanged )
+
+    self.blinker = QTimeLine( 200, self ) ## ms
+    self.blinker.setFrameRange( 0, 3 )
+    self.blinker.frameChanged.connect( self.iconBlink )
+    self.blinker.finished.connect( self.steadyIcon )
+
+
+  def startIconBlink( self, chunk ):
+
+    ## Don't blink if already blinking:
+
+    if self.blinker.state() != QTimeLine.NotRunning:
+      return
+
+    self.blinker.start()
+
+
+  @pyqtSlot( int )
+  def iconBlink( self, frame ):
+
+    if not self.world:
+      return
+
+    led = self.led.select( connected = self.world.isConnected(),
+                           lit       = ( frame % 2 != 1 ) )
+    self.tab.setTabIcon( led )
+
+
+  @pyqtSlot()
+  def steadyIcon( self ):
+
+    if self.blinker.state() == QTimeLine.Running:
+      return
+
+    if not self.world:
+      return
+
+    led = self.led.select( connected = self.world.isConnected(),
+                           lit       = not self.visible )
+    self.tab.setTabIcon( led )
+
+
+  @pyqtSlot( bool )
+  def onTabChanged( self, is_now_visible ):
+
+    self.visible = is_now_visible
+
+    if is_now_visible:
+      self.steadyIcon()
+
+
 
 class WorldUI( QSplitter ):
 
@@ -73,22 +139,19 @@ class WorldUI( QSplitter ):
     assert isinstance( tabwidget, QTabWidget )
 
     self.world = world
-    self.led   = LED()
 
     self.tab = TabDelegate( tabwidget, self )
 
     self.tab.tabChanged.connect( self.onTabChanged )
     self.tab.tabCloseRequested.connect( self.close )
 
-    self.blinker = QTimeLine( 200, self ) ## ms
-    self.blinker.setFrameRange( 0, 3 )
-    self.blinker.frameChanged.connect( self.iconBlink )
-    self.blinker.finished.connect( self.steadyIcon )
+    self.blinker = TabIconBlinker( self.world, self.tab, self )
 
-    self.world.socketpipeline.addSink( self.startIconBlink,
+    self.world.socketpipeline.addSink( self.blinker.startIconBlink,
                                        ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
-    self.alert_timer = SingleShotTimer( self.windowAlert )
+    self.world.socketpipeline.addSink( self.windowAlert,
+                                       ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
     ## Setup input and output UI.
 
@@ -234,43 +297,6 @@ class WorldUI( QSplitter ):
 
       ## Ensure the currently visible world has focus.
       self.setFocus()
-      self.steadyIcon()
-
-
-  def startIconBlink( self, chunk ):
-
-    ## Don't blink if already blinking:
-
-    if self.blinker.state() != QTimeLine.NotRunning:
-      return
-
-    self.blinker.start()
-    self.alert_timer.start()
-
-
-  @pyqtSlot( int )
-  def iconBlink( self, frame ):
-
-    if not self.world:
-      return
-
-    led = self.led.select( connected = self.world.isConnected(),
-                           lit       = ( frame % 2 != 1 ) )
-    self.tab.setTabIcon( led )
-
-
-  @pyqtSlot()
-  def steadyIcon( self ):
-
-    if self.blinker.state() == QTimeLine.Running:
-      return
-
-    if not self.world:
-      return
-
-    led = self.led.select( connected = self.world.isConnected(),
-                           lit       = not self.isVisible() )
-    self.tab.setTabIcon( led )
 
 
   def windowAlert( self ):
@@ -366,3 +392,4 @@ class WorldUI( QSplitter ):
     self.tab              = None
     self.actionset        = None
     self.autocompleter    = None
+    self.blinker          = None

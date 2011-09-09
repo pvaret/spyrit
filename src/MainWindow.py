@@ -35,10 +35,12 @@ from PyQt4.QtGui  import QMainWindow
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
-from WorldUI   import WorldUI
-from ActionSet import ActionSet
-from TabWidget import TabWidget
-from TabWidget import FallbackTabWidget
+from WorldUI        import WorldUI
+from ActionSet      import ActionSet
+from TabWidget      import TabWidget
+from TabWidget      import FallbackTabWidget
+from TabDelegate    import TabDelegate
+from TabIconBlinker import TabIconBlinker
 
 
 class MainWindow( QMainWindow ):
@@ -265,7 +267,20 @@ class MainWindow( QMainWindow ):
 
     self.setUpdatesEnabled( False )
 
-    worldui = WorldUI( self.tabwidget, world )
+    worldui = WorldUI( world, self.tabwidget )
+    tab     = TabDelegate( self.tabwidget, worldui )
+
+    tab.tabChanged.connect( worldui.onTabChanged )
+    tab.tabCloseRequested.connect( worldui.close )
+
+    ## TODO: Take this out of here somehow. The world instance should emit a
+    ## signal when something new happened and requires a blink.
+    from pipeline import ChunkData
+
+    blinker = TabIconBlinker( world, tab )
+
+    world.socketpipeline.addSink( blinker.startIconBlink,
+                                  ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
     pos = self.tabwidget.addTab( worldui, world.title() )
     self.tabwidget.setCurrentIndex( pos )

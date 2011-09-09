@@ -24,131 +24,30 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QTimer
-from PyQt4.QtCore import QObject
 from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import QTimeLine
 
-from PyQt4.QtGui  import QIcon
 from PyQt4.QtGui  import QStyle
 from PyQt4.QtGui  import QToolBar
 from PyQt4.QtGui  import QSplitter
-from PyQt4.QtGui  import QTabWidget
 from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
 from pipeline           import ChunkData
 from ActionSet          import ActionSet
-from TabDelegate        import TabDelegate
 from WorldInputUI       import WorldInputUI
 from Autocompleter      import Autocompleter
 from OutputManager      import OutputManager
-from SingleShotTimer    import SingleShotTimer
 from SplittableTextView import SplittableTextView
-
-
-class LED:
-
-  def __init__( self ):
-
-    self.CONNECTED_UNLIT    = QIcon( ":/icon/unlit_green_led" )
-    self.CONNECTED_LIT      = QIcon( ":/icon/lit_green_led" )
-    self.DISCONNECTED_UNLIT = QIcon( ":/icon/unlit_red_led" )
-    self.DISCONNECTED_LIT   = QIcon( ":/icon/lit_red_led" )
-
-
-  def select( self, connected, lit ):
-
-    if connected:
-      return lit and self.CONNECTED_LIT or self.CONNECTED_UNLIT
-
-    else:
-      return lit and self.DISCONNECTED_LIT or self.DISCONNECTED_UNLIT
-
-
-class TabIconBlinker( QObject ):
-
-  def __init__( self, world, tab, parent=None ):
-
-    QObject.__init__( self, parent )
-
-    self.led   = LED()
-    self.tab   = tab
-    self.world = world
-
-    self.visible = True
-
-    self.tab.tabChanged.connect( self.onTabChanged )
-
-    self.blinker = QTimeLine( 200, self ) ## ms
-    self.blinker.setFrameRange( 0, 3 )
-    self.blinker.frameChanged.connect( self.iconBlink )
-    self.blinker.finished.connect( self.steadyIcon )
-
-
-  def startIconBlink( self, chunk ):
-
-    ## Don't blink if already blinking:
-
-    if self.blinker.state() != QTimeLine.NotRunning:
-      return
-
-    self.blinker.start()
-
-
-  @pyqtSlot( int )
-  def iconBlink( self, frame ):
-
-    if not self.world:
-      return
-
-    led = self.led.select( connected = self.world.isConnected(),
-                           lit       = ( frame % 2 != 1 ) )
-    self.tab.setTabIcon( led )
-
-
-  @pyqtSlot()
-  def steadyIcon( self ):
-
-    if self.blinker.state() == QTimeLine.Running:
-      return
-
-    if not self.world:
-      return
-
-    led = self.led.select( connected = self.world.isConnected(),
-                           lit       = not self.visible )
-    self.tab.setTabIcon( led )
-
-
-  @pyqtSlot( bool )
-  def onTabChanged( self, is_now_visible ):
-
-    self.visible = is_now_visible
-
-    if is_now_visible:
-      self.steadyIcon()
 
 
 
 class WorldUI( QSplitter ):
 
-  def __init__( self, tabwidget, world ):
+  def __init__( self, world, parent=None ):
 
-    QSplitter.__init__( self, Qt.Vertical, tabwidget )
-
-    assert isinstance( tabwidget, QTabWidget )
+    QSplitter.__init__( self, Qt.Vertical, parent )
 
     self.world = world
-
-    self.tab = TabDelegate( tabwidget, self )
-
-    self.tab.tabChanged.connect( self.onTabChanged )
-    self.tab.tabCloseRequested.connect( self.close )
-
-    self.blinker = TabIconBlinker( self.world, self.tab, self )
-
-    self.world.socketpipeline.addSink( self.blinker.startIconBlink,
-                                       ChunkData.PACKETBOUND | ChunkData.NETWORK )
 
     self.world.socketpipeline.addSink( self.windowAlert,
                                        ChunkData.PACKETBOUND | ChunkData.NETWORK )
@@ -349,12 +248,10 @@ class WorldUI( QSplitter ):
 
   def doClose( self ):
 
-    self.tab.removeTab()
     self.setParent( None )
 
     self.world.worldui               = None
     self.world.logger                = None
-    self.tab.widget                  = None
     self.output_manager.world        = None
     self.inputui.world               = None
     self.inputui.history.inputwidget = None
@@ -389,7 +286,6 @@ class WorldUI( QSplitter ):
     self.output_manager   = None
     self.actionset        = None
     self.toolbar          = None
-    self.tab              = None
     self.actionset        = None
     self.autocompleter    = None
     self.blinker          = None

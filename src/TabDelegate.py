@@ -44,7 +44,7 @@ class TabDelegate( QObject ):
 
   def __init__( self, tabwidget, widget ):
 
-    QObject.__init__( self )
+    QObject.__init__( self, parent=widget )
 
     self.widget    = widget
     self.tabwidget = tabwidget

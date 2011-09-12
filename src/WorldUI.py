@@ -25,6 +25,7 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtCore import QSize
 from PyQt4.QtCore import QTimer
 from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import pyqtSignal
 
 from PyQt4.QtGui  import QStyle
 from PyQt4.QtGui  import QToolBar
@@ -42,6 +43,8 @@ from SplittableTextView import SplittableTextView
 
 
 class WorldUI( QSplitter ):
+
+  requestAttention = pyqtSignal()
 
   def __init__( self, world, parent=None ):
 
@@ -205,6 +208,8 @@ class WorldUI( QSplitter ):
 
     if self.world.settings._ui._window._alert:
       QApplication.instance().alert( self.window() )
+
+    self.requestAttention.emit()
 
 
   @pyqtSlot()

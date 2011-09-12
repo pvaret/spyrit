@@ -273,14 +273,11 @@ class MainWindow( QMainWindow ):
     tab.tabChanged.connect( worldui.onTabChanged )
     tab.tabCloseRequested.connect( worldui.close )
 
-    ## TODO: Take this out of here somehow. The world instance should emit a
-    ## signal when something new happened and requires a blink.
-    from pipeline import ChunkData
+    blinker = TabIconBlinker( tab )
 
-    blinker = TabIconBlinker( world, tab )
-
-    world.socketpipeline.addSink( blinker.startIconBlink,
-                                  ChunkData.PACKETBOUND | ChunkData.NETWORK )
+    world.connected.connect( blinker.setLedOn )
+    world.disconnected.connect( blinker.setLedOff )
+    world.worldui.requestAttention.connect( blinker.startIconBlink )
 
     pos = self.tabwidget.addTab( worldui, world.title() )
     self.tabwidget.setCurrentIndex( pos )

@@ -19,17 +19,66 @@
 ## Holds our QTabWidget customizations.
 ##
 
+from PyQt4.QtCore import Qt
 from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui  import QWidget
+from PyQt4.QtGui  import QTabBar
 from PyQt4.QtGui  import QTabWidget
 from PyQt4.QtGui  import QStackedWidget
+
+
+
+class TabBar( QTabBar ):
+  "A QTabBar with a few added features."
+
+  def __init__( self, *args, **kwargs ):
+
+    QTabBar.__init__( self, *args, **kwargs )
+
+    self.last_middle_click_index = None
+
+
+  def mousePressEvent( self, e ):
+
+    if e.button() == Qt.MiddleButton and self.tabsClosable():
+
+      i = self.tabAt( e.pos() )
+      self.last_middle_click_index = i
+
+    QTabBar.mousePressEvent( self, e )
+
+
+  def mouseReleaseEvent( self, e ):
+
+    i = self.tabAt( e.pos() )
+
+    if e.button() == Qt.MiddleButton \
+       and self.tabsClosable() \
+       and i is not None \
+       and i == self.last_middle_click_index:
+
+        self.tabCloseRequested.emit( i )
+        e.accept()
+
+    else:
+      QTabBar.mouseReleaseEvent( self, e )
+
+    self.last_middle_click_index = None
+
 
 
 class TabWidget( QTabWidget ):
   "A QTabWidget with a few added features."
 
   numberOfTabChanged = pyqtSignal( int )
+
+  def __init__( self, *args, **kwargs ):
+
+    QTabWidget.__init__( self, *args, **kwargs )
+
+    self.setTabBar( TabBar( self ) )
+
 
   def tabInserted( self, i ):
 

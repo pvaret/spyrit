@@ -133,7 +133,6 @@ class SplittableTextView( QTextEdit ):
     self.setUndoRedoEnabled( False )
     self.setAutoFormatting( QTextEdit.AutoNone )
     self.viewport().setCursor( Qt.ArrowCursor )
-    self.setWordWrapMode( QTextOption.WrapAtWordBoundaryOrAnywhere )
 
     self.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
     self.setVerticalScrollBarPolicy(   Qt.ScrollBarAlwaysOn )
@@ -159,11 +158,20 @@ class SplittableTextView( QTextEdit ):
 
   def setWordWrapColumn( self, column ):
 
+    ## WORKAROUND: Normally we'd use WrapAtWordBoundaryOrAnywhere and leave the
+    ## scrollbar the heck alone. But that option doesn't work as advertised in
+    ## Qt 4.7 and so we have to use WordWrap instead, and account for the case
+    ## where a line doesn't fit in the view's width. Bummer.
+
     if column > 0:
       self.setLineWrapMode( self.FixedColumnWidth )
+      self.setWordWrapMode( QTextOption.WordWrap )
+      self.setHorizontalScrollBarPolicy( Qt.ScrollBarAsNeeded )
 
     else:
       self.setLineWrapMode( self.WidgetWidth )
+      self.setWordWrapMode( QTextOption.WrapAtWordBoundaryOrAnywhere )
+      self.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
 
     self.setLineWrapColumnOrWidth( column )
 

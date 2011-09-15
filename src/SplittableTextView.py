@@ -199,6 +199,29 @@ class SplittableTextView( QTextEdit ):
     self.previous_selection = sel.position(), sel.anchor()
 
 
+  def pinSelection( self ):
+
+    ## By default, if the selection is at text end, it expands when more text
+    ## is appended. We don't want this. So we need to set up the cursor so it
+    ## won't move on insert.
+
+    cur = self.textCursor()
+
+    if not cur.hasSelection():
+      return
+
+    ## setKeepPositionOnInsert() only works on position, not anchor, so we need
+    ## to ensure the anchor is at the start of the selection and the position
+    ## at the end. Feh.
+
+    start, end = cur.selectionStart(), cur.selectionEnd()
+    cur.setPosition( start )
+    cur.setPosition( end, cur.KeepAnchor )
+    cur.setKeepPositionOnInsert( True )
+
+    self.setTextCursor( cur )
+
+
   def setConfiguration( self, font_name, font_size, background_color ):
 
     if background_color:
@@ -381,6 +404,8 @@ class SplittableTextView( QTextEdit ):
     val   = self.scrollbar.value()
 
     res = QTextEdit.mouseReleaseEvent( self, self.remapMouseEvent( e ) )
+
+    self.pinSelection()
 
     self.scrollbar.setValue( val )
     self.scrollbar.blockSignals( block )

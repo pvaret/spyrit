@@ -70,9 +70,12 @@ class OutputManager:
     self.pending_newline = False
 
     self.refresh()
+    self.setWordWrapping()
 
     for key in [ "font.name", "font.size", "background.color" ]:
       self.view_settings.onChange( key, self.refresh )
+
+    self.view_settings.onChange( "wrap_column", self.setWordWrapping )
 
     self.textview.setSplitScrollback( self.view_settings[ "split_scroll" ] )
     self.textview.setPaging( self.view_settings[ "paging" ] )
@@ -86,6 +89,11 @@ class OutputManager:
     self.textview.setConfiguration( self.view_settings._font._name,
                                     self.view_settings._font._size,
                                     self.view_settings._background._color )
+
+
+  def setWordWrapping( self ):
+
+    self.textview.setWordWrapColumn( self.view_settings._wrap_column )
 
 
   def findInHistory( self, string ):

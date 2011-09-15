@@ -116,6 +116,7 @@ SETTINGS_SCHEMA = {
     ( 'ui.view.font.text_format',  { 'serializer': Format(), 'default': u"color: %s" % COL.lightgray } ),
     ( 'ui.view.font.info_format',  { 'serializer': Format(), 'default': u"italic ; color: %s" % COL.darkgray } ),
     ( 'ui.view.background.color',  { 'serializer': Str(),    'default': COL.black } ),
+    ( 'ui.view.wrap_column',       { 'serializer': Int(),    'default': 0 } ),
     ( 'ui.input.font.name',        { 'serializer': Str(),    'default': u"" } ),
     ( 'ui.input.font.size',        { 'serializer': Int(),    'default': 0 } ),
     ( 'ui.input.font.color',       { 'serializer': Str(),    'default': u"" } ),

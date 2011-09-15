@@ -40,6 +40,7 @@ from PyQt4.QtGui  import QScrollBar
 from PyQt4.QtGui  import QTextLayout
 from PyQt4.QtGui  import QMouseEvent
 from PyQt4.QtGui  import QPaintEvent
+from PyQt4.QtGui  import QTextOption
 from PyQt4.QtGui  import QApplication
 from PyQt4.QtGui  import QFontMetrics
 from PyQt4.QtGui  import QAbstractTextDocumentLayout
@@ -132,6 +133,7 @@ class SplittableTextView( QTextEdit ):
     self.setUndoRedoEnabled( False )
     self.setAutoFormatting( QTextEdit.AutoNone )
     self.viewport().setCursor( Qt.ArrowCursor )
+    self.setWordWrapMode( QTextOption.WrapAtWordBoundaryOrAnywhere )
 
     self.setHorizontalScrollBarPolicy( Qt.ScrollBarAlwaysOff )
     self.setVerticalScrollBarPolicy(   Qt.ScrollBarAlwaysOn )
@@ -153,6 +155,17 @@ class SplittableTextView( QTextEdit ):
     self.computeLineStep()
     self.more = LineCount( self )
     self.setMoreAnchor()
+
+
+  def setWordWrapColumn( self, column ):
+
+    if column > 0:
+      self.setLineWrapMode( self.FixedColumnWidth )
+
+    else:
+      self.setLineWrapMode( self.WidgetWidth )
+
+    self.setLineWrapColumnOrWidth( column )
 
 
   @pyqtSlot()

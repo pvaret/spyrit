@@ -325,6 +325,10 @@ class SplittableTextView( QTextEdit ):
   @pyqtSlot( int )
   def onScroll( self, pos ):
 
+    ## Scrollbar values are not reliable when the widget is not visible:
+    if not self.isVisible():
+      return
+
     self.atbottom = ( pos == self.scrollbar.maximum() )
 
     ## When the user moves back to the bottom of the view, paging is reset:

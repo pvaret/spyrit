@@ -272,6 +272,8 @@ class WorldUI( QSplitter ):
 
     self.world.socketpipeline.pipeline = None
     self.world.socketpipeline          = None
+    self.outputui                      = None
+    self.output_manager                = None
 
     self.world = None
     self.deleteLater()

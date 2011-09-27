@@ -309,8 +309,10 @@ class MainWindow( QMainWindow ):
         return
 
     ## Ensure all the current worlds cut their connections.
+    ## Note the use of list(), since the structure changes size during the
+    ## iteration.
 
-    for w in QApplication.instance().core.openworlds:
+    for w in list(QApplication.instance().core.openworlds):
 
       w.ensureWorldDisconnected()
       w.worldui.doClose()

@@ -297,11 +297,6 @@ class SplittableTextView( QTextEdit ):
     fm = QFontMetrics( font )
     leading = max( fm.leading(), 0 )
 
-    ## WORKAROUND: Qt versions < 4.6 omitted the leading altogether in line
-    ## height calculations. We account for this here.
-    if qt_version() < ( 4, 6 ):
-      leading = 0
-
     ## This here is the actual line height for this font. Phew.
     return int( line.height() + leading )
 

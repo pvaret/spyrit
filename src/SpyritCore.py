@@ -30,6 +30,7 @@ from TempResources   import TempResources
 from TriggersManager import TriggersManager
 
 from Globals         import CMDCHAR
+from WeakRef         import WeakSet
 from Messages        import messages
 from SpyritSettings  import load_settings, save_settings
 from CommandRegistry import construct_command_registry
@@ -46,6 +47,8 @@ class SpyritCore:
     self.tmprc    = tmprc
     self.sound    = sound
     self.mw       = None
+
+    self.openworlds = WeakSet()
 
     ## Set up a MOTD to properly welcome our user:
 
@@ -102,6 +105,7 @@ class SpyritCore:
 
   def openWorld( self, world ):
 
+    self.openworlds.add( world )
     self.mw.newWorldUI( world )
     world.connectToWorld()
 

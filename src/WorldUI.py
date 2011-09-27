@@ -258,9 +258,13 @@ class WorldUI( QSplitter ):
     self.world.worldui               = None
     self.world.logger                = None
     self.output_manager.world        = None
+    self.actionset.parent            = None
     self.inputui.world               = None
     self.inputui.history.inputwidget = None
-    self.actionset.parent            = None
+    self.inputui.history.actionset   = None
+    self.secondaryinputui.world               = None
+    self.secondaryinputui.history.inputwidget = None
+    self.secondaryinputui.history.actionset   = None
 
     for f in self.world.socketpipeline.pipeline.filters:
       f.context = None

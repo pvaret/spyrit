@@ -74,4 +74,3 @@ class PygameBackend:
 
     if self.mixer:
       self.mixer.quit()
-      self.mixer = None

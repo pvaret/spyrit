@@ -215,9 +215,3 @@ class SocketPipeline:
   def addSink( self, sink, types=ChunkData.ALL_TYPES ):
 
     self.pipeline.addSink( sink, types )
-
-
-  def __del__( self ):
-
-    self.socket   = None
-    self.pipeline = None

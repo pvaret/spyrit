@@ -185,13 +185,3 @@ class OutputManager:
 
     self.textcursor.insertText( LEFTARROW + " " + text, self.infoformat )
     self.pending_newline = True  ## There is always a new line after info text.
-
-
-  def __del__( self ):
-
-    self.world          = None
-    self.settings       = None
-    self.textcursor     = None
-    self.charformat     = None
-    self.infocharformat = None
-    self.searchmanager  = None

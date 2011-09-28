@@ -175,12 +175,3 @@ class WorldInputUI( QTextEdit ):
     ## focus.
 
     self.focusChanged.emit( self )
-
-
-  def __del__( self ):
-
-    self.world     = None
-    self.settings  = None
-    self.history   = None
-    self.commands  = None
-    self.actionset = None

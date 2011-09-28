@@ -355,10 +355,3 @@ class World( QObject ):
       self.input.append( line )
 
     self.input_flush.start()
-
-
-  def __del__( self ):
-
-    self.worldui        = None
-    self.socketpipeline = None
-    self.logger         = None

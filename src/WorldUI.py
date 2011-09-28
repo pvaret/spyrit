@@ -273,6 +273,8 @@ class WorldUI( QSplitter ):
     self.world.socketpipeline.pipeline = None
     self.world.socketpipeline          = None
     self.outputui                      = None
+    self.inputui                       = None
+    self.secondaryinputui              = None
     self.output_manager                = None
 
     self.world = None
@@ -287,16 +289,3 @@ class WorldUI( QSplitter ):
 
     QSplitter.setFocusProxy( self, widget )
 
-
-  def __del__( self ):
-
-    self.world            = None
-    self.inputui          = None
-    self.secondaryinputui = None
-    self.outputui         = None
-    self.output_manager   = None
-    self.actionset        = None
-    self.toolbar          = None
-    self.actionset        = None
-    self.autocompleter    = None
-    self.blinker          = None

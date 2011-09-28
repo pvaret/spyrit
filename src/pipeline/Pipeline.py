@@ -159,11 +159,3 @@ class Pipeline( QObject ):
       self.notification_registry[ notification ] = CallbackRegistry()
 
     self.notification_registry[ notification ].add( callback )
-
-
-  def __del__( self ):
-
-    self.filters = None
-    self.sinks   = None
-
-    self.notification_registry = None

@@ -129,9 +129,6 @@ class PlainLogger:
 
      self.stop()
 
-     self.world   = None
-     self.logfile = None
-
 
 
 

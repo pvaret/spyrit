@@ -114,11 +114,6 @@ class CommandRegistry:
       world.info( msg % e )
 
 
-  def __del__( self ):
-
-    self.commands = None
-
-
 
 def construct_command_registry():
 

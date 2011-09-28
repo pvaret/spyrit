@@ -87,10 +87,3 @@ class SearchManager:
       self.cursor = cursor
 
       return True
-
-
-  def __del__( self ):
-
-    self.cursor   = None
-    self.settings = None
-    self.textedit = None

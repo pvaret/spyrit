@@ -137,7 +137,7 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   if inspect.isclass( callable ):
 
     ## When a class is instantiated, what's really called is its __init__
-    ## method. In there is no such method, use a null function instead.
+    ## method. If there is no such method, use a null function instead.
     callable = getattr( callable, "__init__", lambda: None )
 
   expected_args, star_args, star_kwargs, defaults = \

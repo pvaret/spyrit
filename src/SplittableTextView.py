@@ -672,8 +672,3 @@ class SplittableTextView( QTextEdit ):
       y = self.viewport().height()
 
     self.more.setAnchor( x, y )
-
-
-  def __del__( self ):
-
-    self.scrollbar = None

@@ -32,7 +32,6 @@ from PyQt4.QtGui  import QPixmap
 from PyQt4.QtGui  import QToolBar
 from PyQt4.QtGui  import QToolButton
 from PyQt4.QtGui  import QMainWindow
-from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
 from WorldUI        import WorldUI
@@ -40,6 +39,7 @@ from ActionSet      import ActionSet
 from TabWidget      import TabWidget
 from TabWidget      import FallbackTabWidget
 from TabDelegate    import TabDelegate
+from ConfirmDialog  import confirmDialog
 from TabIconBlinker import TabIconBlinker
 
 
@@ -290,21 +290,11 @@ class MainWindow( QMainWindow ):
 
     if len( connectedworlds ) > 0:
 
-      messagebox = QMessageBox( self )
-
-      messagebox.setWindowTitle( u"Confirm quit" )
-      messagebox.setIcon( QMessageBox.Question )
-
-      messagebox.setText( ( u"You are still connected to <b>%s</b> world(s). "
-                            u"Close them and quit?" ) % len( connectedworlds ) )
-
-      messagebox.addButton( u"Quit", QMessageBox.AcceptRole )
-      messagebox.addButton( QMessageBox.Cancel )
-
-      result = messagebox.exec_()
-
-      if result == QMessageBox.Cancel:
-
+      if not confirmDialog( u"Confirm quit",
+                            u"You are still connected to <b>%s</b> world(s). " \
+                            u"Close them and quit?" % len( connectedworlds ),
+                            u"Quit",
+                            self ):
         event.ignore()
         return
 

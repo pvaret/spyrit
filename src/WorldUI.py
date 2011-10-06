@@ -30,7 +30,6 @@ from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui  import QStyle
 from PyQt4.QtGui  import QToolBar
 from PyQt4.QtGui  import QSplitter
-from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
 from pipeline           import ChunkData
@@ -38,6 +37,7 @@ from ActionSet          import ActionSet
 from WorldInputUI       import WorldInputUI
 from Autocompleter      import Autocompleter
 from OutputManager      import OutputManager
+from ConfirmDialog      import confirmDialog
 from SplittableTextView import SplittableTextView
 
 
@@ -223,10 +223,11 @@ class WorldUI( QSplitter ):
 
     if self.world.isConnected():
 
-      if not self.confirmDialog( u"Confirm close",
-                                 u"You are still connected to this world. " \
-                                 u"Disconnect and close this tab?",
-                                 u"Close tab" ):
+      if not confirmDialog( u"Confirm close",
+                            u"You are still connected to this world. " \
+                            u"Disconnect and close this tab?",
+                            u"Close tab",
+                            self ):
         return
 
     ## The following line is outside the above if statement because the world,
@@ -236,20 +237,6 @@ class WorldUI( QSplitter ):
 
     ## Then, schedule the closing of the world.
     QTimer.singleShot( 0, self.doClose )
-
-
-  def confirmDialog( self, title, msg, okbutton ):
-
-    messagebox = QMessageBox( self.window() )
-
-    messagebox.setIcon( QMessageBox.Question )
-    messagebox.setWindowTitle( title )
-    messagebox.setText( msg )
-
-    messagebox.addButton( okbutton, QMessageBox.AcceptRole )
-    messagebox.addButton( QMessageBox.Cancel )
-
-    return ( messagebox.exec_() != QMessageBox.Cancel )
 
 
   def doClose( self ):

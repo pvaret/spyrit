@@ -30,13 +30,13 @@ from PyQt4.QtCore import QObject
 from PyQt4.QtCore import pyqtSlot
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui  import QFileDialog
-from PyQt4.QtGui  import QMessageBox
 from PyQt4.QtGui  import QApplication
 
 
 from Logger           import create_logger_for_world
 from Globals          import CMDCHAR
 from Utilities        import ensure_valid_filename
+from ConfirmDialog    import confirmDialog
 from SingleShotTimer  import SingleShotTimer
 from PlatformSpecific import platformSpecific
 
@@ -125,9 +125,10 @@ class World( QObject ):
   def confirmDisconnectFromWorld( self ):
 
     if self.isConnected():
-      if not self.worldui.confirmDialog( u"Confirm disconnect",
-                                         u"Really disconnect from this world?",
-                                         u"Disconnect" ):
+      if not confirmDialog( u"Confirm disconnect",
+                            u"Really disconnect from this world?",
+                            u"Disconnect",
+                            self.worldui ):
         return
 
     self.disconnectFromWorld()

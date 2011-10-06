@@ -93,6 +93,7 @@ class MainWindow( QMainWindow ):
     self.action_quickconnect = self.actionset.bindAction( "quickconnect", self.actionQuickConnect )
     self.action_quit         = self.actionset.bindAction( "quit",         self.close )
 
+    self.actionset.bindAction( "closetab",    self.tabwidget.closeTab )
     self.actionset.bindAction( "nexttab",     self.tabwidget.nextTab )
     self.actionset.bindAction( "previoustab", self.tabwidget.previousTab )
 

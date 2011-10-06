@@ -59,7 +59,7 @@ def update_settings_1_to_2( struct ):
     ( 'shortcut_quit',           'shortcuts.quit'            ),
     ( 'shortcut_nexttab',        'shortcuts.nexttab'         ),
     ( 'shortcut_previoustab',    'shortcuts.previoustab'     ),
-    ( 'shortcut_close',          'shortcuts.close'           ),
+    ( 'shortcut_close',          'shortcuts.closetab'        ),
     ( 'shortcut_connect',        'shortcuts.connect'         ),
     ( 'shortcut_disconnect',     'shortcuts.disconnect'      ),
     ( 'shortcut_historyup',      'shortcuts.historyup'       ),

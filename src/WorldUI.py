@@ -120,7 +120,6 @@ class WorldUI( QSplitter ):
 
     self.actionset = ActionSet( self )
 
-    self.actionset.bindAction( "close",    self.close )
     self.actionset.bindAction( "stepup",   self.outputui.stepUp )
     self.actionset.bindAction( "stepdown", self.outputui.stepDown )
     self.actionset.bindAction( "pageup",   self.outputui.pageUp )

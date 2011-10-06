@@ -48,10 +48,10 @@ class ActionSet:
       "quit":            ( u"Quit",               ":/icon/quit"       ),
       "nexttab":         ( u"Next Tab",           None                ),
       "previoustab":     ( u"Previous Tab",       None                ),
+      "closetab":        ( u"Close Tab",          ":/icon/close"      ),
 
       ## Per-world actions
 
-      "close":           ( u"Close",              ":/icon/close"      ),
       "connect":         ( u"Connect",            ":/icon/connect"    ),
       "disconnect":      ( u"Disconnect",         ":/icon/disconnect" ),
       "historyup":       ( u"History up",         ":/icon/up"         ),

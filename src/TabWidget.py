@@ -112,6 +112,14 @@ class TabWidget( QTabWidget ):
       self.setCurrentIndex( i+1 )
 
 
+  def closeTab( self ):
+
+    i = self.currentIndex()
+    if i >= 0:
+      self.tabCloseRequested.emit( i )
+
+
+
 class FallbackTabWidget( QStackedWidget ):
   """A widget that takes a tabwidget and a fallback widget and displays the
   latter when the former has no tab."""

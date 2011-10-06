@@ -122,32 +122,20 @@ class World( QObject ):
       self.socketpipeline.connectToHost()
 
 
-  def disconnectFromWorld( self ):
+  def confirmDisconnectFromWorld( self ):
 
     if self.isConnected():
-
-      messagebox = QMessageBox( self.worldui.window() )
-      messagebox.setWindowTitle( u"Confirm disconnect" )
-      messagebox.setIcon( QMessageBox.Question )
-      messagebox.setText( u"Really disconnect from this world?" )
-      messagebox.addButton( u"Disconnect", QMessageBox.AcceptRole )
-      messagebox.addButton( QMessageBox.Cancel )
-
-      if messagebox.exec_() == QMessageBox.Cancel:
+      if not self.worldui.confirmDialog( u"Confirm disconnect",
+                                         u"Really disconnect from this world?",
+                                         u"Disconnect" ):
         return
 
-    self.ensureWorldDisconnected()
+    self.disconnectFromWorld()
 
 
-  def ensureWorldDisconnected( self ):
+  def disconnectFromWorld( self ):
 
-    ## TODO: Is this really necessary anymore?
-
-    if self.isConnected():
-      self.socketpipeline.disconnectFromHost()
-
-    else:
-      self.socketpipeline.abort()
+    self.socketpipeline.abort()
 
 
   @pyqtSlot()

@@ -312,9 +312,9 @@ class MainWindow( QMainWindow ):
     ## Note the use of list(), since the structure changes size during the
     ## iteration.
 
-    for w in list(QApplication.instance().core.openworlds):
+    for w in list( QApplication.instance().core.openworlds ):
 
-      w.ensureWorldDisconnected()
+      w.disconnectFromWorld()
       w.worldui.doClose()
 
     ## Save the main window's geometry when it's about to be closed.

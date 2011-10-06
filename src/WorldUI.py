@@ -134,7 +134,7 @@ class WorldUI( QSplitter ):
                                                    self.world.connectToWorld )
 
     disconnect_action = self.actionset.bindAction( "disconnect",
-                                                   self.world.disconnectFromWorld )
+                                                   self.world.confirmDisconnectFromWorld )
 
     connect_action.setEnabled( False )
     disconnect_action.setEnabled( False )
@@ -223,35 +223,38 @@ class WorldUI( QSplitter ):
 
     if self.world.isConnected():
 
-      messagebox = QMessageBox( self.window() )
-
-      messagebox.setWindowTitle( u"Confirm close" )
-      messagebox.setIcon( QMessageBox.Question )
-
-      messagebox.setText( u"You are still connected to this world. " \
-                          u"Disconnect and close this tab?" )
-
-      messagebox.addButton( u"Close tab", QMessageBox.AcceptRole )
-      messagebox.addButton( QMessageBox.Cancel )
-
-      result = messagebox.exec_()
-
-      if result == QMessageBox.Cancel:
+      if not self.confirmDialog( u"Confirm close",
+                                 u"You are still connected to this world. " \
+                                 u"Disconnect and close this tab?",
+                                 u"Close tab" ):
         return
 
-    ## The call to ensureWorldDisconnected below is done outside the above
-    ## if statement because the world, even if not connected, might be
-    ## *trying* to connect, and if so, we want to abort the attempt so that
-    ## we don't leak the connection. And ensureWorldDisconnected does just
-    ## that.
+    ## The following line is outside the above if statement because the world,
+    ## even if not connected, might be *trying* to connect.
 
-    self.world.ensureWorldDisconnected()
+    self.world.disconnectFromWorld()
 
     ## Then, schedule the closing of the world.
     QTimer.singleShot( 0, self.doClose )
 
 
+  def confirmDialog( self, title, msg, okbutton ):
+
+    messagebox = QMessageBox( self.window() )
+
+    messagebox.setIcon( QMessageBox.Question )
+    messagebox.setWindowTitle( title )
+    messagebox.setText( msg )
+
+    messagebox.addButton( okbutton, QMessageBox.AcceptRole )
+    messagebox.addButton( QMessageBox.Cancel )
+
+    return ( messagebox.exec_() != QMessageBox.Cancel )
+
+
   def doClose( self ):
+
+    self.world.stopLogging()
 
     self.setParent( None )
 

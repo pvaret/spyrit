@@ -1,10 +1,27 @@
 #!/bin/bash
 
-## Some elitist distros like Arch use python as an alias for Python 3. Make sure
-## we'll try our best to use Python 2.
+## Setup directories:
+
+_THIS_DIR=$(dirname $0)
+_OLD_DIR=$(pwd)
+
+
+
+## Try to find a dialog tool on the computer, to alert the user in case of
+## errors:
+
+_DIALOG=''
+
+[[ -z $_DIALOG && ! -z $(which kdialog 2>/dev/null) ]] && _DIALOG="kdialog --title=Spyrit --error="
+[[ -z $_DIALOG && ! -z $(which zenity 2>/dev/null) ]]  && _DIALOG="zenity --title=Spyrit --error --text="
+
+
+
+## In some bleeding-edge distros like Arch, 'python' point to Python 3 by
+## default. Make sure we'll try our best to use Python 2.
 
 _PYTHON=''
-_CANDIDATES="python2 python2.6 python2.7 python"
+_CANDIDATES="python2 python2.7 python2.6 python2.5 python"
 
 for _ALIAS in $_CANDIDATES ; do
   _PYTHON=$(which $_ALIAS 2>/dev/null)
@@ -13,16 +30,18 @@ for _ALIAS in $_CANDIDATES ; do
   fi
 done
 
-if [[ -z $_PYTHON ]] ; then
-  echo "No python executable not found, terribly sorry!"
+
+
+## Did we find a Python 2 install?
+
+if [[ -z $_PYTHON \
+      || ! $($_PYTHON -c "import sys ; print sys.version_info[0]") == "2" ]] ; then
+  errmsg="Couldn't find a Python 2 interpreter!"
+  echo $errmsg
+  [[ ! -z $_DIALOG ]] && $_DIALOG"$errmsg"
   exit 1
 fi
 
-
-## Setup directories:
-
-_THIS_DIR=$(dirname $0)
-_OLD_DIR=$(pwd)
 
 
 ## Build resources if needed.
@@ -44,6 +63,7 @@ if [[ $_BUILD_RESOURCES == "1" ]] ; then
 fi
 
 
+
 ## Launch Spyrit, but only check dependencies:
 
 cd $_THIS_DIR/src
@@ -52,12 +72,6 @@ errstate=$?
 cd $_OLD_DIR
 
 
-## Try to find a dialog tool on the computer:
-
-_DIALOG=''
-
-[[ -z $_DIALOG && ! -z $(which zenity 2>/dev/null) ]]  && _DIALOG="zenity --error --text="
-[[ -z $_DIALOG && ! -z $(which kdialog 2>/dev/null) ]] && _DIALOG="kdialog --error="
 
 
 ## Display the error.
@@ -67,6 +81,7 @@ if [[ $errstate != 0 ]] ; then
   [[ ! -z $_DIALOG ]] && $_DIALOG"$errmsg"
   exit $errstate
 fi
+
 
 
 ## Launch Spyrit for real.

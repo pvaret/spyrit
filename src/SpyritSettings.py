@@ -89,6 +89,7 @@ SHORTCUTS_SCHEMA = {
 WORLDS_SCHEMA = {
   'keys': (
     ( 'name',         { 'serializer': Str(),  'default': None } ),
+    ( 'connect_line', { 'serializer': Str(),  'default': None } ),
     ( 'net.encoding', { 'serializer': Str(),  'default': u"latin1" } ),
     ( 'net.host',     { 'serializer': Str(),  'default': u"" } ),
     ( 'net.port',     { 'serializer': Int(),  'default': 4201 } ),

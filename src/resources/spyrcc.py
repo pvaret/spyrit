@@ -273,7 +273,7 @@ class RCCResourceLibrary:
 
   ## Python version of PyRCC resource library object
 
-  def __init__( self, qrcFiles, opts ):
+  def __init__( self, qrcFiles, opts={} ):
 
     self.qrcFiles  = qrcFiles
     self.opts      = opts

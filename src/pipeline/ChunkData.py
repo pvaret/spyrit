@@ -123,6 +123,7 @@ ANSI_MAPPING = (
   ( "35", ( FORMAT_PROPERTIES.COLOR, ( COL.magenta,   COL.magenta_h ) ) ),
   ( "36", ( FORMAT_PROPERTIES.COLOR, ( COL.cyan,      COL.cyan_h ) ) ),
   ( "37", ( FORMAT_PROPERTIES.COLOR, ( COL.lightgray, COL.white ) ) ),
+  ( "38", ( FORMAT_PROPERTIES.COLOR, ( None,          None ) ) ),
   ( "39", ( FORMAT_PROPERTIES.COLOR, ( None,          COL.white ) ) ),
   ( "40", ( FORMAT_PROPERTIES.BACKGROUND, COL.black ) ),
   ( "41", ( FORMAT_PROPERTIES.BACKGROUND, COL.red ) ),
@@ -132,6 +133,7 @@ ANSI_MAPPING = (
   ( "45", ( FORMAT_PROPERTIES.BACKGROUND, COL.magenta ) ),
   ( "46", ( FORMAT_PROPERTIES.BACKGROUND, COL.cyan ) ),
   ( "47", ( FORMAT_PROPERTIES.BACKGROUND, COL.white ) ),
+  ( "48", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
   ( "49", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
 )
 

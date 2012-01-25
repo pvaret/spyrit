@@ -24,6 +24,7 @@
 import re
 
 from BaseFilter import BaseFilter
+from Globals    import ANSI_COLORS_EXTENDED
 from Globals    import FORMAT_PROPERTIES
 from Globals    import ESC
 
@@ -99,7 +100,22 @@ class AnsiFilter( BaseFilter ):
 
       format = {}
 
-      for param in parameters.split( ';' ):
+      list_params = parameters.split( ';' )
+
+      ## Try to catch special case of extended ANSI colors chunk
+
+      if len( list_params )   == 3 \
+         and list_params[0] in ["38", "48"] \
+         and list_params[1] == "5":
+
+        prop = ChunkData.ANSI_TO_FORMAT.get( list_params[0] )[0]
+        format[ prop ] = ANSI_COLORS_EXTENDED.get( int( list_params[2] ) )
+
+        yield ( ChunkData.ANSI, format )
+
+        continue
+
+      for param in list_params:
 
         if param == "0":  ## ESC [ 0 m -- reset the format!
 

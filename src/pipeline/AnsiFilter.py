@@ -72,23 +72,20 @@ class AnsiFilter( BaseFilter ):
 
     chunk_type, text = chunk
 
-    currentpos = 0
+    while text:
 
-    while True:
-
-      ansi = self.match.search( text, currentpos )
+      ansi = self.match.search( text )
 
       if not ansi:
 
         ## Done with the ANSI parsing in this chunk! Bail out.
         break
 
-      startmatch = ansi.start()
+      head, text = text[ :ansi.start() ], text[ ansi.end(): ]
 
-      if startmatch > currentpos:
-        yield ( ChunkData.BYTES, text[ currentpos:startmatch ] )
+      if head:
+        yield ( ChunkData.BYTES, head )
 
-      currentpos = ansi.end()
       parameters = ansi.groups() [0]
 
       if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
@@ -104,8 +101,8 @@ class AnsiFilter( BaseFilter ):
 
       ## Try to catch special case of extended ANSI colors chunk
 
-      if len( list_params )   == 3 \
-         and list_params[0] in ["38", "48"] \
+      if len( list_params ) == 3 \
+         and list_params[0] in [ "38", "48" ] \
          and list_params[1] == "5":
 
         prop = ChunkData.ANSI_TO_FORMAT.get( list_params[0] )[0]
@@ -131,6 +128,18 @@ class AnsiFilter( BaseFilter ):
         if not prop:  ## Unknown ANSI code. Ignore.
           continue
 
+        if prop == FORMAT_PROPERTIES.COLOR:
+
+          ( c_unhighlighted, c_highlighted ) = current_colors = value
+
+          if highlighted:
+            format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
+
+          else:
+            format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
+
+          continue
+
         if prop == FORMAT_PROPERTIES.BOLD:
 
           ## According to spec, this actually means highlighted colors.
@@ -145,19 +154,8 @@ class AnsiFilter( BaseFilter ):
           else:
             format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
 
-          continue
-
-        if prop == FORMAT_PROPERTIES.COLOR:
-
-          ( c_unhighlighted, c_highlighted ) = current_colors = value
-
-          if highlighted:
-            format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
-
-          else:
-            format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
-
-          continue
+          if False:   ## Ignore 'bold' meaning of this ANSI code?
+            continue  ## TODO: Make it a parameter.
 
         ## Other cases: italic, underline and such. Just pass the value along.
 
@@ -172,9 +170,9 @@ class AnsiFilter( BaseFilter ):
     self.current_colors = current_colors
     self.highlighted    = highlighted
 
-    if currentpos < len( text ):
+    if text:
 
-      possible_unfinished = self.unfinished.search( text, currentpos )
+      possible_unfinished = self.unfinished.search( text )
 
       if possible_unfinished:
 
@@ -184,10 +182,10 @@ class AnsiFilter( BaseFilter ):
 
         startmatch = possible_unfinished.start()
 
-        if startmatch > currentpos:
-          yield ( ChunkData.BYTES, text[ currentpos:startmatch ] )
+        if startmatch > 0:
+          yield ( ChunkData.BYTES, text[ :startmatch ] )
 
         self.postpone( ( ChunkData.BYTES, text[ startmatch: ] ) )
 
       else:
-        yield ( ChunkData.BYTES, text[ currentpos: ] )
+        yield ( ChunkData.BYTES, text )

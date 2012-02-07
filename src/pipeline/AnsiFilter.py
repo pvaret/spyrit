@@ -99,20 +99,25 @@ class AnsiFilter( BaseFilter ):
 
       list_params = parameters.split( ';' )
 
-      ## Try to catch special case of extended ANSI colors chunk
+      while list_params:
 
-      if len( list_params ) == 3 \
-         and list_params[0] in [ "38", "48" ] \
-         and list_params[1] == "5":
+        param = list_params.pop( 0 )
 
-        prop = ChunkData.ANSI_TO_FORMAT.get( list_params[0] )[0]
-        format[ prop ] = ANSI_COLORS_EXTENDED.get( int( list_params[2] ) )
+        ## Special case: extended 256 color codes require special treatment.
 
-        yield ( ChunkData.ANSI, format )
+        if len( list_params ) >= 2 and param in [ "38", "48" ]:
 
-        continue
+          prop = ChunkData.ANSI_TO_FORMAT.get( param )[0]
+          param = list_params.pop( 0 )
 
-      for param in list_params:
+          if param == "5":
+
+            color = ANSI_COLORS_EXTENDED.get( int( list_params.pop( 0 ) ) )
+            format[ prop ] = color
+
+            continue
+
+        ## Carry on with the standard cases.
 
         if param == "0":  ## ESC [ 0 m -- reset the format!
 

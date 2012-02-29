@@ -62,6 +62,13 @@ class TelnetFilter( BaseFilter ):
     +     "(?P<cmdopt>" + WILL + "|" + WONT + "|" + DO + "|" + DONT + ")"
     +     "(?P<opt>.)"
     +   ")"
+    +   "|"
+    +   "(?:"
+    +     SB
+    +     "(?P<subopt>.)"
+    +     "(?P<subparam>.*)"
+    +     IAC + SE
+    +   ")"
     + ")"
   )
 
@@ -69,6 +76,9 @@ class TelnetFilter( BaseFilter ):
       IAC
     + "("
     +   WILL + "|" + WONT + "|" + DO + "|" + DONT
+    +   "("
+    +     SB + ".{0,256}"
+    +   ")"
     + ")?"
     + "$"
   )
@@ -95,7 +105,7 @@ class TelnetFilter( BaseFilter ):
         command = parameters[ "cmd" ] or parameters[ "cmdopt" ]
         option  = parameters[ "opt" ]
 
-        if   command == self.IAC:
+        if command == self.IAC:
           ## This is an escaped IAC. Yield it as such.
           yield ( ChunkData.BYTES, self.IAC )
           continue

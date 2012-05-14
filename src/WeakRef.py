@@ -26,7 +26,7 @@ u"""
 
 """
 
-import new
+import types
 
 from weakref import ref, ReferenceError, WeakValueDictionary
 
@@ -174,7 +174,7 @@ class WeakCallableRef( object ):
       if None in ( fn, obj ):
         return None
 
-      return new.instancemethod( fn, obj, self._class )
+      return types.MethodType( fn, obj, self._class )
 
     elif self._fnref:
       return self._fnref()

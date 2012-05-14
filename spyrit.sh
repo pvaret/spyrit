@@ -21,7 +21,7 @@ _DIALOG=''
 ## default. Make sure we'll try our best to use Python 2.
 
 _PYTHON=''
-_CANDIDATES="python2 python2.7 python2.6 python2.5 python"
+_CANDIDATES="python2 python2.7 python"
 
 for _ALIAS in $_CANDIDATES ; do
   _PYTHON=$(which $_ALIAS 2>/dev/null)
@@ -87,7 +87,7 @@ fi
 ## Launch Spyrit for real.
 
 cd $_THIS_DIR/src
-$_PYTHON spyrit.py $@
+$_PYTHON -3 spyrit.py $@
 errstate=$?
 cd $_OLD_DIR
 

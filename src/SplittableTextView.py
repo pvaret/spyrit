@@ -360,7 +360,7 @@ class SplittableTextView( QTextEdit ):
     sb = self.scrollbar
     max, val, step = sb.maximum(), sb.value(), sb.singleStep()
 
-    return ( max - val + step - 1 ) / step
+    return ( max - val + step - 1 ) // step
 
 
   def remapMouseEvent( self, e ):

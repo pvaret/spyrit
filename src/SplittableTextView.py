@@ -498,7 +498,9 @@ class SplittableTextView( QTextEdit ):
     doc        = self.document()
     doc_height = doc.size().height()
 
-    p.setClipRect( clip_r )
+    if clip_r != e.rect():
+        p.setClipRect( clip_r )
+
     p.translate( 0, -doc_height + height )
 
     ## Draw the bottom of the document on the bottom half of the viewport.
@@ -511,7 +513,7 @@ class SplittableTextView( QTextEdit ):
     palette = self.palette()
 
     focus  = ( QApplication.instance().focusWidget() is self )
-    cgroup = not focus and QPalette.Inactive or QPalette.Active
+    cgroup = QPalette.Active if focus else QPalette.Inactive
 
     if cur.hasSelection():
 

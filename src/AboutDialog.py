@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2012 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2013 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -59,7 +59,7 @@ This software uses the <i><a
   Sans Mono</a> font. Additional icons imported from the <a
   href="http://www.oxygen-icons.org/">Oxygen</a> set.<br/>
 <br/>
-%(name)s is &#169;2007-2012 P. Varet, and licensed under the
+%(name)s is &#169;2007-2013 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
 """

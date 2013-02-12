@@ -33,7 +33,7 @@ class TriggersFilter( BaseFilter ):
 
   def __init__( self, context=None, manager=None ):
 
-    self.buffer  = []
+    self.buffer = []
     self.setManager( manager )
 
     BaseFilter.__init__( self, context )
@@ -43,11 +43,7 @@ class TriggersFilter( BaseFilter ):
 
     self.manager = manager
 
-    if manager is None:
-      self.processChunk = self.defaultProcessChunk
-
-    else:
-      self.processChunk = self.activatedProcessChunk
+    self.processChunk = self.noOp if manager is None else self.doProcessChunk
 
 
   def resetInternalState( self ):
@@ -56,12 +52,12 @@ class TriggersFilter( BaseFilter ):
     BaseFilter.resetInternalState( self )
 
 
-  def defaultProcessChunk( self, chunk ):
+  def noOp( self, chunk ):
 
     yield chunk
 
 
-  def activatedProcessChunk( self, chunk ):
+  def doProcessChunk( self, chunk ):
 
     self.buffer.append( chunk )
 

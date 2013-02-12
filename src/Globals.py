@@ -40,6 +40,7 @@ class FORMAT_PROPERTIES:
   UNDERLINE  = QTextFormat.TextUnderlineStyle
   COLOR      = QTextFormat.ForegroundBrush
   BACKGROUND = QTextFormat.BackgroundBrush
+  HREF       = QTextFormat.AnchorHref
 
 
 class ANSI_COLORS:

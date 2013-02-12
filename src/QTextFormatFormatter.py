@@ -33,70 +33,65 @@ class QTextFormatFormatter:
     self.qtextformat = qtextformat
     self.color_cache = {}
 
-    self.property_setter_mapping = {}
-
-    self._setupPropertyMapping()
-
-
-  def _setupPropertyMapping( self ):
-
-    for property, setter in (
+    self.property_setter_mapping = dict(
       ( FORMAT_PROPERTIES.COLOR     , self._setForegroundProperty ),
       ( FORMAT_PROPERTIES.BACKGROUND, self._setBackgroundProperty ),
       ( FORMAT_PROPERTIES.ITALIC    , self._setItalicProperty     ),
       ( FORMAT_PROPERTIES.UNDERLINE , self._setUnderlineProperty  ),
       ( FORMAT_PROPERTIES.BOLD      , self._setFontWeightProperty ),
-    ):
-      self.property_setter_mapping[ property ] = setter
+      ( FORMAT_PROPERTIES.HREF      , self._setHrefProperty       ),
+    )
 
 
-  def _setForegroundProperty( self, property, value ):
+  def _getCachedColor( self, value ):
 
     value = value.lower()
-
     color = self.color_cache.get( value )
 
     if color is None:
       color = self.color_cache.setdefault( value, QColor( value ) )
 
-    self.qtextformat.setForeground( color )
+    return color
 
 
-  def _setBackgroundProperty( self, property, value ):
+  def _setForegroundProperty( self, value ):
 
-    value = value.lower()
-
-    color = self.color_cache.get( value )
-
-    if color is None:
-      color = self.color_cache.setdefault( value, QColor( value ) )
-
-    self.qtextformat.setBackground( color )
+    self.qtextformat.setForeground( self._getCachedColor( value ) )
 
 
-  def _setUnderlineProperty( self, property, value ):
+  def _setBackgroundProperty( self, value ):
+
+    self.qtextformat.setBackground( self._getCachedColor( value ) )
+
+
+  def _setUnderlineProperty( self, value ):
 
     self.qtextformat.setFontUnderline( True )
 
 
-  def _setItalicProperty( self, property, value ):
+  def _setItalicProperty( self, value ):
 
     self.qtextformat.setFontItalic( True )
 
 
-  def _setFontWeightProperty( self, property, value ):
+  def _setFontWeightProperty( self, value ):
 
     self.qtextformat.setFontWeight( QFont.Black )
 
 
-  def clearProperty( self, property ):
+  def _setHrefProperty( self, value ):
 
-    self.qtextformat.clearProperty( property )
+    self.qtextformat.setAnchorHref( value )
 
 
-  def setProperty( self, property, value ):
+  def clearProperty( self, property_id ):
 
-    setter = self.property_setter_mapping.get( property )
+    self.qtextformat.clearProperty( property_id )
 
-    if setter:
-      setter( property, value )
+
+  def setProperty( self, property_id, value ):
+
+    setter = self.property_setter_mapping.get( property_id )
+
+    if setter is not None:
+      setter( value )

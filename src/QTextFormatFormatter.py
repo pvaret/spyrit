@@ -33,14 +33,14 @@ class QTextFormatFormatter:
     self.qtextformat = qtextformat
     self.color_cache = {}
 
-    self.property_setter_mapping = dict(
+    self.property_setter_mapping = dict((
       ( FORMAT_PROPERTIES.COLOR     , self._setForegroundProperty ),
       ( FORMAT_PROPERTIES.BACKGROUND, self._setBackgroundProperty ),
       ( FORMAT_PROPERTIES.ITALIC    , self._setItalicProperty     ),
       ( FORMAT_PROPERTIES.UNDERLINE , self._setUnderlineProperty  ),
       ( FORMAT_PROPERTIES.BOLD      , self._setFontWeightProperty ),
       ( FORMAT_PROPERTIES.HREF      , self._setHrefProperty       ),
-    )
+    ))
 
 
   def _getCachedColor( self, value ):

@@ -24,7 +24,7 @@ Follow the development on BitBucket: http://bitbucket.org/balinares/spyrit/
 PREREQUISITES
 -------------
 
-**Spyrit** requires Python 2.5 or later, Qt 4.7 or later, and the PyQt4 bindings.
+**Spyrit** requires Python 2.7 or later, Qt 4.7 or later, and the PyQt4 bindings.
 On Ubuntu and other Debian-like OS, install the package ``python-qt4`` and you will be good to go.
 
 On Windows, install Python 2.7 from http://www.python.org/ and the Windows binary PyQt4 package from http://www.riverbankcomputing.co.uk/software/pyqt/download for Python 2.7.

@@ -21,6 +21,8 @@
 ##
 
 
+from weakref import WeakSet
+
 from PyQt4.QtCore import pyqtSlot
 
 from MainWindow      import MainWindow
@@ -30,7 +32,6 @@ from TempResources   import TempResources
 from TriggersManager import TriggersManager
 
 from Globals         import CMDCHAR
-from WeakRef         import WeakSet
 from Messages        import messages
 from SpyritSettings  import load_settings, save_settings
 from CommandRegistry import construct_command_registry

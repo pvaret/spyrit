@@ -147,8 +147,8 @@ class World( QObject ):
       if self.settings._log._autostart or self.was_logging:
         self.startLogging()
 
-      if self.settings._connect_line:
-        self.socketpipeline.send( self.settings._connect_line + u"\r\n" )
+      if self.settings._net._login_script:
+        self.socketpipeline.send( self.settings._net._login_script + u"\n" )
 
     elif self.status == Status.DISCONNECTED:
 

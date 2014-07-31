@@ -88,11 +88,12 @@ SHORTCUTS_SCHEMA = {
 ## Schema for whole application and every world
 WORLDS_SCHEMA = {
   'keys': (
-    ( 'name',         { 'serializer': Str(),  'default': None } ),
-    ( 'net.encoding', { 'serializer': Str(),  'default': u"latin1" } ),
-    ( 'net.host',     { 'serializer': Str(),  'default': u"" } ),
-    ( 'net.port',     { 'serializer': Int(),  'default': 4201 } ),
-    ( 'net.ssl',      { 'serializer': Bool(), 'default': False } ),
+    ( 'name',             { 'serializer': Str(),  'default': None } ),
+    ( 'net.encoding',     { 'serializer': Str(),  'default': u"latin1" } ),
+    ( 'net.host',         { 'serializer': Str(),  'default': u"" } ),
+    ( 'net.login_script', { 'serializer': Str(),  'default': None } ),
+    ( 'net.port',         { 'serializer': Int(),  'default': 4201 } ),
+    ( 'net.ssl',          { 'serializer': Bool(), 'default': False } ),
   ),
   'inherit': '..',
 }
@@ -167,6 +168,7 @@ DESCRIPTIONS = {
   'ui.window.alert': u"animate taskbar when text is received from the server",
 
   #'net.encoding': u"server character encoding",
+  'net.login_script': u"arbitrary text to send on connect",
 
   'shortcuts.about':          u"shortcut: About... dialog",
   'shortcuts.aboutqt':        u"shortcut: About Qt... dialog",

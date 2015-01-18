@@ -14,11 +14,9 @@ ABOUT SPYRIT
 * Split screen when scrolling back.
 * /commands with full help (type ``/help`` from any session for a list).
 
-**Spyrit** is a work in progress, and there are still a number of things missing before we can release version 1.0, first and foremost, configuration screens. For now you can configure things with the ``/conf`` command.
+**Spyrit** is a work in progress, and there are still a number of things missing before we can release version 1.0, first and foremost, configuration screens. For now you can configure things with the ``/settings`` command.
 
 Website: http://spyrit.ierne.eu.org/
-
-Follow the development on BitBucket: http://bitbucket.org/balinares/spyrit/
 
 
 PREREQUISITES
@@ -43,7 +41,7 @@ Start **Spyrit** by running ``spyrit.sh`` in this directory.
 FEEDBACK
 --------
 
-**Spyrit** is still a work in progress. Some things stand to be improved, and others are outright missing. Please give us feedback by joining the user mailing list at https://lists.sourceforge.net/lists/listinfo/spyrit-users!
+**Spyrit** is still a work in progress. Some things stand to be improved, and others are outright missing. Please give us feedback on GitHub: https://github.com/pvaret/spyrit/issues
 
 
 **Spyrit** is (c) 2007-2013 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv2.

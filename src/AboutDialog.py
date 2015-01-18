@@ -43,13 +43,12 @@ ABOUT = u"""\
 <br/>
 Though it is still in development and far from complete, it tries really hard
   to be polished and pleasant to use. Thank you for trying it out! Feedback and
-  bug reports can be sent to
-  <a href="mailto:spyrit-devel@lists.sourceforge.net">
-  spyrit-devel@lists.sourceforge.net</a>.<br/>
+  bug reports can sent to <a href="https://github.com/pvaret/spyrit/issues">our
+  issue tracker</a>.<br/>
 <br/>
 Technically minded users can follow the development on <a
-  href="https://www.ohloh.net/p/spyrit">Ohloh</a> and get the latest source
-  code from <a href="http://bitbucket.org/balinares/spyrit">BitBucket</a>.<br/>
+  href="https://www.openhub.net/p/spyrit">OpenHub</a> and get the latest source
+  code from <a href="https://github.com/pvaret/spyrit">GitHub</a>.<br/>
 <br/>
 This software uses the <i><a
   href="http://code.activestate.com/recipes/473846/">winpath</a></i> module by

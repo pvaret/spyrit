@@ -196,7 +196,7 @@ bug in Spyrit, and we are terribly sorry. The error is:<br/>
 It occured on <b>line %(line)d</b> of file <b>%(filename)s</b>.<br/>
 <br/>
 We would be grateful if you would kindly send us the exact error message above
-to <a href="mailto:spyrit-devel@lists.sourceforge.net">spyrit-devel@lists.sourceforge.net</a>,
+to <a href="https://github.com/pvaret/spyrit/issues">our issue tracker</a>,
 so we can look into it.<br/>
 <br/>
 Spyrit will now close.</qt>

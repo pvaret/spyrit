@@ -1,9 +1,4 @@
-syntax:glob
-.svn
-.hgsvn
-.cvsignore
-*.pyc
-*.pyo
+*.py[co]
 *.e3p
 *.e3s
 *.e3t

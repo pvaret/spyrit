@@ -1,7 +1,4 @@
 
-SPYRIT
-======
-
 ABOUT SPYRIT
 ------------
 
@@ -44,4 +41,4 @@ FEEDBACK
 **Spyrit** is still a work in progress. Some things stand to be improved, and others are outright missing. Please give us feedback on GitHub: https://github.com/pvaret/spyrit/issues
 
 
-**Spyrit** is (c) 2007-2013 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv2.
+**Spyrit** is (c) 2007-2015 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv2.

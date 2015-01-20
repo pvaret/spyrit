@@ -21,12 +21,13 @@ This is an unordered list of features that need implementing sooner or later:
 * Aliases (/alias str 'send something to the world with [PARAMETERS]')
 * Clean up ActionSet with config/shortcut-aware QAction subclasses and no closures.
 * Fix paging when it starts off and is turned on later.
+* Move every setting (so, net.*) to the global scope. The distinction just isn't useful.
 
 Protocol support:
 
-* Telnet (non-trivial option negotiation: ECHO, TTYPE, GA, SGA, EOR, NAWS; see http://www.mudpedia.org/wiki/TELNET)
-* VT100 escape codes (even if we ignore them, they shouldn't be displayed! See http://www.mudpedia.org/wiki/VT100 & http://ascii-table.com/ansi-escape-sequences-vt-100.php).
-* 256 color ANSI (see http://www.mudpedia.org/wiki/Xterm_color)
+* Telnet (non-trivial option negotiation: ECHO, TTYPE, GA, SGA, EOR, NAWS; see http://www.mudpedia.org/mediawiki/index.php/TELNET)
+* VT100 escape codes (even if we ignore them, they shouldn't be displayed! See http://www.mudpedia.org/mediawiki/index.php/VT100 & http://ascii-table.com/ansi-escape-sequences-vt-100.php).
+* 256 color ANSI (see http://www.mudpedia.org/mediawiki/index.php/Xterm_color)
 * MCCP
 * MCP? MXP?
 * FANSI 2.0 (see http://fansi.org/)

@@ -148,10 +148,18 @@ class Str( BaseSerializer ):
 
   def deserialize( self, string ):
 
+    ## The empty string deserializes to None.
+    if not string:
+      return None
+
     return unquote( string )
 
 
   def serialize( self, string ):
+
+    ## None serializes to the empty string.
+    if string is None:
+      return u''
 
     return quote( string )
 

@@ -167,7 +167,7 @@ DESCRIPTIONS = {
 
   'ui.window.alert': u"animate taskbar when text is received from the server",
 
-  #'net.encoding': u"server character encoding",
+  'net.encoding':     u"server character encoding",
   'net.login_script': u"arbitrary text to send on connect",
 
   'shortcuts.about':          u"shortcut: About... dialog",

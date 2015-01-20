@@ -234,8 +234,15 @@ class SettingsCommand( BaseCommand ):
 
       for k in sorted( DESCRIPTIONS ):
 
-        if not all( s.get( k ).isEmpty() for s in ( settings, worldsettings ) ):
-          list_settings.append( k )
+        for context in ( settings, worldsettings ):
+
+          try:
+            if not context.get( k ).isEmpty():
+              list_settings.append( k )
+              break
+
+          except KeyError: ## Happens if a key exists only on worlds.
+            pass
 
       if not list_settings:
         world.info( u"All the settings have default values." )
@@ -261,16 +268,21 @@ class SettingsCommand( BaseCommand ):
 
     columns = [ list_settings ]
 
-    for node in ( None, settings, worldsettings ):
+    DEFAULT = object()  ## marker for the case of default values.
+
+    for node in ( DEFAULT, settings, worldsettings ):
 
       column = []
 
       for k in list_settings:
 
-        s = self._getSerializer( node or settings, k )
+        s = self._getSerializer( node if node is not DEFAULT else worldsettings, k )
 
-        if node is None:  ## Hackish: 'None' here means defaults.
-          value = s.serialize( settings.get( k ).proto.default_value )
+        if s is None:    ## The key doesn't exist in this context. This is
+          value = u" "   ## likely a world-only key.
+
+        elif node is DEFAULT:
+          value = s.serialize( worldsettings.get( k ).proto.default_value )
 
         else:
           value = s.serialize( node[ k ] ) if not node.get( k ).isEmpty() else u"-"

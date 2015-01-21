@@ -20,8 +20,8 @@
 ## aspects of searching the contents of a QTextEdit such as WorldOutputUI.
 ##
 
-from PyQt4.QtGui import QTextCursor
-from PyQt4.QtGui import QTextDocument
+from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextDocument
 
 
 class SearchManager:

@@ -46,6 +46,7 @@ fi
 
 ## Build resources if needed.
 
+_RCC=pyrcc5
 _BUILD_RESOURCES=0
 
 if [[ ! -e $_THIS_DIR/src/resources.py ]] ; then
@@ -57,9 +58,17 @@ if [[ $_THIS_DIR/src/resources/ -nt $_THIS_DIR/src/resources.py ]] ; then
 fi
 
 if [[ $_BUILD_RESOURCES == "1" ]] ; then
-  cd $_THIS_DIR/src
-  $_PYTHON resources/spyrcc.py resources/resources.qrc -o resources.py
-  cd $_OLD_DIR
+  hash $_RCC
+  if [[ $? == 0 ]] ; then
+    cd $_THIS_DIR/src
+    $_RCC resources/resources.qrc -o resources.py
+    cd $_OLD_DIR
+  else
+    ## pyrcc not found. :(
+    errmsg="$_RCC not found. Unable to compile graphical resources. Spyrit will still run, but it won't look good."
+    echo $errmsg
+    [[ ! -z $_DIALOG ]] && $_DIALOG"$errmsg"
+  fi
 fi
 
 

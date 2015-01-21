@@ -21,16 +21,16 @@
 ##
 
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QTimer
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import pyqtSignal
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSignal
 
-from PyQt4.QtGui  import QStyle
-from PyQt4.QtGui  import QToolBar
-from PyQt4.QtGui  import QSplitter
-from PyQt4.QtGui  import QApplication
+from PyQt5.QtWidgets import QStyle
+from PyQt5.QtWidgets import QToolBar
+from PyQt5.QtWidgets import QSplitter
+from PyQt5.QtWidgets import QApplication
 
 from pipeline           import ChunkData
 from ActionSet          import ActionSet

@@ -18,8 +18,8 @@
 ## looks up, creates or deletes world configuration objects.
 ##
 
-from PyQt4.QtCore import QObject
-from PyQt4.QtCore import pyqtSignal
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSignal
 
 from World        import World
 from Utilities    import normalize_text

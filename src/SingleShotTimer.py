@@ -21,7 +21,7 @@
 ## timers used once.
 ##
 
-from PyQt4.QtCore import QTimer
+from PyQt5.QtCore import QTimer
 
 
 class SingleShotTimer( QTimer ):

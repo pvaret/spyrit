@@ -20,13 +20,13 @@
 ## it later.
 ##
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui  import QLabel
-from PyQt4.QtGui  import QPixmap
-from PyQt4.QtGui  import QDialog
-from PyQt4.QtGui  import QPushButton
-from PyQt4.QtGui  import QTabWidget
-from PyQt4.QtGui  import QVBoxLayout
+from PyQt5.QtCore    import Qt
+from PyQt5.QtGui     import QPixmap
+from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QTabWidget
 
 from PrettyPanelHeader import PrettyPanelHeader
 

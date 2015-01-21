@@ -17,8 +17,8 @@ Silence Qt warnings:
 
 >>> def silent( *args ):
 ...   pass
->>> from PyQt4 import QtCore
->>> QtCore.qInstallMsgHandler( silent )
+>>> from PyQt5 import QtCore
+>>> QtCore.qInstallMessageHandler( silent )
 
 Setup a sink for the Pipeline:
 

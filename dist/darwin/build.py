@@ -19,9 +19,9 @@ IMGGLOB    = "%s-*.*.dmg %s-*.*.sparseimage" % ( APPNAME, APPNAME )
 
 APP        = [ os.path.join( "..", "..", "%s.py" % APPNAME ) ]
 ICON_FILE  = os.path.join( "..", "..", "resources", "spyrit-logo.icns" )
-INCLUDES   = [ "PyQt4._qt", "sip" ]
-OPTIONS    = { "argv_emulation": True, 
-               "iconfile": ICON_FILE, 
+INCLUDES   = [ "PyQt5._qt", "sip" ]
+OPTIONS    = { "argv_emulation": True,
+               "iconfile": ICON_FILE,
                "includes": INCLUDES }
 
 PRUNE      = [ ( "Frameworks", "phonon.framework" ),
@@ -37,11 +37,11 @@ PRUNE      = [ ( "Frameworks", "phonon.framework" ),
                ( "Frameworks", "QtWebKit.framework" ),
                ( "Frameworks", "QtXml.framework" ),
                ( "Frameworks", "QtXmlPatterns.framework" ),
-               ( "Frameworks", "QtGui.framework", "Versions", "4", 
+               ( "Frameworks", "QtGui.framework", "Versions", "5",
                  "QtGui_debug" ),
-               ( "Frameworks", "QtCore.framework", "Versions", "4", 
+               ( "Frameworks", "QtCore.framework", "Versions", "5",
                  "QtCore_debug" ),
-               ( "Frameworks", "QtNetwork.framework", "Versions", "4", 
+               ( "Frameworks", "QtNetwork.framework", "Versions", "5",
                  "QtNetwork_debug" ),
              ]
 
@@ -58,7 +58,7 @@ MOUNT      = "mount %s-%s.sparseimage -mountroot %s" \
            % ( APPNAME, VERSION, MOUNTROOT )
 EJECT      = "eject %s" % os.path.join( MOUNTROOT, APPNAME )
 DUSAGE     = "du"
-OVERHEAD   = 9.1  # Size already taken in empty DMG 
+OVERHEAD   = 9.1  # Size already taken in empty DMG
 APPDIR     = os.path.join( this_dir, "dist", "%s.app" % APPNAME, "Contents" )
 PACKDIR    = os.path.join( MOUNTROOT, "%s" % APPNAME, "%s.app" % APPNAME )
 
@@ -66,11 +66,11 @@ PACKDIR    = os.path.join( MOUNTROOT, "%s" % APPNAME, "%s.app" % APPNAME )
 def cleanup():
 
   ## Removes build and dist folders as well as old images before running setup.
-  
+
   os.system( " ".join( [ RM, "-rf", BUILDDIR ] ) )
   os.system( " ".join( [ RM, "-rf", DISTDIR ]  ) )
   os.system( " ".join( [ RM, "-f", IMGGLOB ]  ) )
-  
+
 
 def build():
 
@@ -89,12 +89,12 @@ def prune():
   ## Manually remove Frameworks or libraries we know will NOT be used. This
   ## is a dangerous solution at best but can lead up to a final image 50 to 60%
   ## smaller than the full set.
-  
+
   for path in PRUNE:
-  
+
     fullPath = os.path.join( APPDIR, *path )
     os.system( " ".join( [ RM, "-rf", fullPath ] ) )
-    
+
 
 def package():
 
@@ -105,22 +105,22 @@ def package():
   ## We first need to compute the necessary size for our final DMG.
   ## Then we'll resize our template DMG, mount it and copy the app. Then
   ## we unmount it, convert it to a compressed DMG and we're done.
-  
+
   appSize  = os.popen( " ".join( [ DUSAGE, "-sm", APPDIR ] ) ).read().split()[0]
   appSize  = float( appSize )
   fullSize = int( math.ceil( appSize + OVERHEAD ) )
-  
+
   os.system( " ".join( [ HDIUTIL, CONVERT2SP ] ) )
   os.system( " ".join( [ HDIUTIL, RESIZE % fullSize ] ) )
-  
+
   ## Custom mountpoint must exist
-  
+
   os.system( " ".join( [ MKDIR, MOUNTROOT ] ) )
-  
+
   os.system( " ".join( [ HDIUTIL, MOUNT ] ) )
   os.system( " ".join( [ CP, "-R", APPDIR, PACKDIR ] ) )
   os.system( " ".join( [ HDIUTIL, EJECT ] ) )
-  os.system( " ".join( [ HDIUTIL, CONVERT2DMG ] ) )  
+  os.system( " ".join( [ HDIUTIL, CONVERT2DMG ] ) )
 
 
 if __name__ == "__main__":

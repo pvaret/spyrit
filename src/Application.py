@@ -24,12 +24,12 @@
 import sys
 import locale
 
-from PyQt4.QtCore import QTimer
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import pyqtRemoveInputHook
-from PyQt4.QtGui  import QIcon
-from PyQt4.QtGui  import QApplication
-from PyQt4.QtGui  import QFontDatabase
+from PyQt5.QtGui     import QIcon
+from PyQt5.QtGui     import QFontDatabase
+from PyQt5.QtCore    import QTimer
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtCore    import pyqtRemoveInputHook
+from PyQt5.QtWidgets import QApplication
 
 
 from Messages   import messages

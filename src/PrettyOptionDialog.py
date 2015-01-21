@@ -23,9 +23,9 @@
 
 import sip
 
-from PyQt4.QtGui import QDialog
-from PyQt4.QtGui import QVBoxLayout
-from PyQt4.QtGui import QDialogButtonBox
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QDialogButtonBox
 
 from Separator import Separator
 

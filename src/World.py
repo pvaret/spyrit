@@ -26,11 +26,11 @@ import time
 
 from glob import glob
 
-from PyQt4.QtCore import QObject
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui  import QFileDialog
-from PyQt4.QtGui  import QApplication
+from PyQt5.QtCore    import QObject
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QApplication
 
 
 from Logger           import create_logger_for_world
@@ -297,8 +297,6 @@ class World( QObject ):
                                   filter  = u"Text files (*.log *.txt)" \
                                             u";;All files (*)"
                                 )
-
-      filename = unicode( filename )  ## QString -> unicode
 
     if not filename:
       return

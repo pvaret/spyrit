@@ -21,7 +21,7 @@
 ##
 
 
-from PyQt4.QtGui import QFrame
+from PyQt5.QtWidgets import QFrame
 
 
 class Separator( QFrame ):

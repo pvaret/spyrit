@@ -22,7 +22,12 @@
 ##
 
 
-from PyQt4.QtGui import QSound
+try:
+  from PyQt5.QtMultimedia import QSound
+
+except ImportError:
+  ## QtMultimedia is optional and may not be installed.
+  QSound = None
 
 
 class QSoundBackend:
@@ -31,7 +36,7 @@ class QSoundBackend:
 
   def isAvailable( self ):
 
-    return QSound.isAvailable()
+    return QSound is not None and QSound.isAvailable()
 
 
   def play( self, soundfile ):

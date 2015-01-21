@@ -31,9 +31,9 @@ u"""
 
 import re
 
-from PyQt4.QtGui  import QKeySequence
-from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QPoint
+from PyQt5.QtGui  import QKeySequence
+from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QPoint
 
 from Globals   import FORMAT_PROPERTIES
 from Matches   import RegexMatch, SmartMatch, MatchCreationError
@@ -298,7 +298,7 @@ class KeySequence( BaseSerializer ):
   def serialize( self, seq ):
 
     if seq is not None:
-      return unicode( seq.toString( QKeySequence.NativeText) )
+      return seq.toString( QKeySequence.NativeText)
 
     return u""
 

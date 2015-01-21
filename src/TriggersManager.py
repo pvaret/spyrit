@@ -22,7 +22,7 @@
 
 import os.path
 
-from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 from Matches        import load_match_by_type
 from Utilities      import normalize_text

@@ -20,11 +20,11 @@
 ## socket and manages connection/disconnection and everything.
 ##
 
-from PyQt4.QtCore    import pyqtSlot
-from PyQt4.QtGui     import QApplication
-from PyQt4.QtNetwork import QSslSocket
-from PyQt4.QtNetwork import QTcpSocket
-from PyQt4.QtNetwork import QAbstractSocket
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtNetwork import QSslSocket
+from PyQt5.QtNetwork import QTcpSocket
+from PyQt5.QtNetwork import QAbstractSocket
 
 from Pipeline          import Pipeline
 from AnsiFilter        import AnsiFilter

@@ -20,10 +20,10 @@
 ##
 
 
-from PyQt4.QtGui  import QIcon
-from PyQt4.QtCore import QObject
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import QTimeLine
+from PyQt5.QtGui  import QIcon
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import QTimeLine
 
 
 

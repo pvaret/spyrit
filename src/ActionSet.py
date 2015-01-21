@@ -20,11 +20,11 @@
 ## software.
 ##
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui  import QIcon
-from PyQt4.QtGui  import QAction
-from PyQt4.QtGui  import QKeySequence
-from PyQt4.QtGui  import QApplication
+from PyQt5.QtCore    import Qt
+from PyQt5.QtGui     import QIcon
+from PyQt5.QtGui     import QKeySequence
+from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QApplication
 
 
 class ActionSet:

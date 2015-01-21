@@ -19,13 +19,13 @@
 ## Holds our QTabWidget customizations.
 ##
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui  import QWidget
-from PyQt4.QtGui  import QTabBar
-from PyQt4.QtGui  import QTabWidget
-from PyQt4.QtGui  import QStackedWidget
+from PyQt5.QtCore    import Qt
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QTabBar
+from PyQt5.QtWidgets import QTabWidget
+from PyQt5.QtWidgets import QStackedWidget
 
 
 

@@ -30,12 +30,12 @@ def main( args ):
 
   from CheckVersions import check_python_version
   from CheckVersions import check_sip_version
-  from CheckVersions import check_pyqt4_installed
+  from CheckVersions import check_pyqt5_installed
   from CheckVersions import check_qt_version
 
   for check in ( check_python_version,
                  check_sip_version,
-                 check_pyqt4_installed,
+                 check_pyqt5_installed,
                  check_qt_version ):
 
     ok, msg = check()

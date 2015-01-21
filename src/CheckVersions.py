@@ -21,8 +21,8 @@
 
 
 REQUIRED_PYTHON_VERSION = ( 2, 7 )
-REQUIRED_SIP_VERSION    = ( 4, 5 )
-REQUIRED_QT_VERSION     = ( 4, 7 )
+REQUIRED_SIP_VERSION    = ( 4, 10 )
+REQUIRED_QT_VERSION     = ( 5, 2 )
 
 
 
@@ -38,14 +38,14 @@ def check_python_version():
 
 
 
-def check_pyqt4_installed():
+def check_pyqt5_installed():
 
   try:
-    import PyQt4
+    import PyQt5
     return True, None
 
   except ImportError:
-    return False, u"PyQt4 bindings required!"
+    return False, u"PyQt5 bindings required!"
 
 
 
@@ -69,7 +69,7 @@ def check_sip_version():
 
 def qt_version():
 
-  from PyQt4.QtCore import qVersion
+  from PyQt5.QtCore import qVersion
 
   ## Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
   return tuple( int( c ) for c in qVersion().split( "." )[ 0:2 ] )

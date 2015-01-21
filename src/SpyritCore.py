@@ -23,7 +23,7 @@
 
 from weakref import WeakSet
 
-from PyQt4.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot
 
 from MainWindow      import MainWindow
 from SoundEngine     import SoundEngine

@@ -21,12 +21,12 @@
 ##
 
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui  import QTextEdit
-from PyQt4.QtGui  import QFontMetrics
-from PyQt4.QtGui  import QKeySequence
+from PyQt5.QtCore    import Qt
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtGui     import QFontMetrics
+from PyQt5.QtGui     import QKeySequence
+from PyQt5.QtWidgets import QTextEdit
 
 
 from ActionSet        import ActionSet

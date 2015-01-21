@@ -42,7 +42,7 @@ BS = u"\\"
 
 def check_ssl_is_available():
 
-  from PyQt4 import QtNetwork
+  from PyQt5 import QtNetwork
   return QtNetwork.QSslSocket.supportsSsl()
 
 
@@ -208,8 +208,8 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
   import os.path
   import traceback
 
-  from PyQt4.QtGui import QMessageBox
-  from PyQt4.QtGui import QApplication
+  from PyQt5.QtWidgets import QMessageBox
+  from PyQt5.QtWidgets import QApplication
 
   app = QApplication.instance()
 

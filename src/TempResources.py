@@ -23,8 +23,8 @@
 
 import os
 
-from PyQt4.QtCore import QFile
-from PyQt4.QtCore import QTemporaryFile
+from PyQt5.QtCore import QFile
+from PyQt5.QtCore import QTemporaryFile
 
 
 class TempResources:
@@ -47,13 +47,13 @@ class TempResources:
 
   def new_temp_resource( self, fname ):
 
-    ## This creates the temp file if fname is a resource, but not if it
-    ## doesn't exist or is a real file.
+    ## This creates the temp file if fname is a resource, but not if that
+    ## resource is unknown, or turns out to be a real file.
 
     if not QFile.exists( fname ):
       return None
 
-    tmp = QTemporaryFile.createLocalFile( fname )
+    tmp = QTemporaryFile.createNativeFile( fname )
 
     if not tmp:
       return None
@@ -62,8 +62,9 @@ class TempResources:
     ## appropriate data for later use.
 
     tmp.close()
+    tmp.setAutoRemove( False )  ## We see to temp file removal on our own.
 
-    tmpfname = unicode( tmp.fileName() )
+    tmpfname = tmp.fileName()
     self.tmpfiles.add( tmpfname )
 
     return tmpfname

@@ -20,9 +20,9 @@
 ##
 
 
-from textwrap    import dedent
+from textwrap import dedent
 
-from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 from BaseCommand import BaseCommand
 from Globals     import CMDCHAR

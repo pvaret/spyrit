@@ -21,7 +21,7 @@
 ##
 
 
-from PyQt4.QtGui import QWidget, QFormLayout
+from PyQt5.QtWidgets import QWidget, QFormLayout
 
 
 class SettingsPanel( QWidget ):
@@ -40,7 +40,7 @@ class SettingsPanel( QWidget ):
 
   def addBoundRow( self, node_path, widget, label=None ):
 
-    ## WORKAROUND: Qt 4.7 truncates the widget if it's a QCheckBox with its own
+    ## WORKAROUND: Qt truncates the widget if it's a QCheckBox with its own
     ## text unless we do this:
     if label is None:
       label = u" "

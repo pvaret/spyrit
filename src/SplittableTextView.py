@@ -24,26 +24,26 @@
 
 import sip
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import QRect
-from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QPoint
-from PyQt4.QtCore import QRectF
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtGui  import QFont
-from PyQt4.QtGui  import QLabel
-from PyQt4.QtGui  import QCursor
-from PyQt4.QtGui  import QPainter
-from PyQt4.QtGui  import QPalette
-from PyQt4.QtGui  import QTextEdit
-from PyQt4.QtGui  import QScrollBar
-from PyQt4.QtGui  import QTextLayout
-from PyQt4.QtGui  import QMouseEvent
-from PyQt4.QtGui  import QPaintEvent
-from PyQt4.QtGui  import QTextOption
-from PyQt4.QtGui  import QApplication
-from PyQt4.QtGui  import QFontMetrics
-from PyQt4.QtGui  import QAbstractTextDocumentLayout
+from PyQt5.QtCore    import Qt
+from PyQt5.QtCore    import QRect
+from PyQt5.QtCore    import QSize
+from PyQt5.QtCore    import QPoint
+from PyQt5.QtCore    import QRectF
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtGui     import QFont
+from PyQt5.QtGui     import QCursor
+from PyQt5.QtGui     import QPainter
+from PyQt5.QtGui     import QPalette
+from PyQt5.QtGui     import QTextLayout
+from PyQt5.QtGui     import QMouseEvent
+from PyQt5.QtGui     import QPaintEvent
+from PyQt5.QtGui     import QTextOption
+from PyQt5.QtGui     import QFontMetrics
+from PyQt5.QtGui     import QAbstractTextDocumentLayout
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QTextEdit
+from PyQt5.QtWidgets import QScrollBar
+from PyQt5.QtWidgets import QApplication
 
 
 from CheckVersions    import qt_version
@@ -160,7 +160,7 @@ class SplittableTextView( QTextEdit ):
 
     ## WORKAROUND: Normally we'd use WrapAtWordBoundaryOrAnywhere and leave the
     ## scrollbar the heck alone. But that option doesn't work as advertised in
-    ## Qt 4.7 and so we have to use WordWrap instead, and account for the case
+    ## Qt 5.2+ and so we have to use WordWrap instead, and account for the case
     ## where a line doesn't fit in the view's width. Bummer.
 
     if column > 0:

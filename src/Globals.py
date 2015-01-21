@@ -26,8 +26,8 @@ u"""
 
 """
 
-from PyQt4.QtGui import QColor
-from PyQt4.QtGui import QTextFormat
+from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QTextFormat
 
 
 class FORMAT_PROPERTIES:

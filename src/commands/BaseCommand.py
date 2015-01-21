@@ -19,7 +19,7 @@
 ## Abstract base class for commands.
 ##
 
-from PyQt4.QtGui import QApplication
+from PyQt5.QtWidgets import QApplication
 
 from CommandParsing import parse_command
 from CommandParsing import parse_arguments

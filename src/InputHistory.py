@@ -20,7 +20,7 @@
 ## typed in the input widget.
 ##
 
-from PyQt4.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor
 
 
 class InputHistory:

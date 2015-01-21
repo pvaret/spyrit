@@ -21,17 +21,16 @@
 ##
 
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import QObject
-from PyQt4.QtCore import QString
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui  import QSpinBox
-from PyQt4.QtGui  import QLineEdit
-from PyQt4.QtGui  import QCheckBox
+from PyQt5.QtCore    import Qt
+from PyQt5.QtCore    import QObject
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtWidgets import QSpinBox
+from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QCheckBox
 
 
-qlineedit_not_empty = lambda qlineedit: qlineedit.text().size() > 0
+qlineedit_not_empty = lambda qlineedit: len( qlineedit.text() ) > 0
 
 
 class BaseWidgetMapper( QObject ):
@@ -55,10 +54,7 @@ class BaseWidgetMapper( QObject ):
     self.validator = None
 
 
-  ## WORKAROUND: PyQt 4.7.4 fails to connect signals with a QObject subclass as
-  ## their argument to this slot, so we comment out the slot declaration for
-  ## now. :/
-  #@pyqtSlot( object )
+  @pyqtSlot( object )
   def emitValueChanged( self, widget_value ):
 
     assert( isinstance( widget_value, self.widget_value_class ) )
@@ -109,7 +105,7 @@ class QLineEditMapper( BaseWidgetMapper ):
   widget_class         = QLineEdit
   widget_value_setter  = QLineEdit.setText
   widget_signal_name   = "textEdited"
-  widget_value_class   = QString
+  widget_value_class   = unicode
   settings_value_class = unicode
 
   def widgetToSettingsValue( self, widget_value ):
@@ -119,7 +115,7 @@ class QLineEditMapper( BaseWidgetMapper ):
 
   def settingsToWidgetValue( self, settings_value ):
 
-    return QString( settings_value )
+    return unicode( settings_value )
 
 
 

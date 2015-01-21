@@ -27,7 +27,7 @@ import bisect
 
 from collections import deque
 
-from PyQt4.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor
 
 from pipeline    import ChunkData
 from Utilities   import normalize_text
@@ -200,14 +200,12 @@ class Autocompleter:
     self.selectCurrentWord( tc )
     prefix = tc.selectedText()
 
-    if prefix.isEmpty():
+    if not prefix:
 
       self.textedit   = None
       self.matchstate = None
 
       return
-
-    prefix = unicode( prefix )  ## Turn QString into Python string.
 
     ## Try to determine if we were previously cycling through a match list.
     ## This is not the textbook perfect way to do this; but then, the textbook

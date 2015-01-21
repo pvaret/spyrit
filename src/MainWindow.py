@@ -19,20 +19,20 @@
 ## Holds the MainWindow class, which contains all the core GUI of the program.
 ##
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtCore import QSize
-from PyQt4.QtCore import QVariant
-from PyQt4.QtCore import pyqtSlot
-from PyQt4.QtGui  import QIcon
-from PyQt4.QtGui  import QMenu
-from PyQt4.QtGui  import QLabel
-from PyQt4.QtGui  import QStyle
-from PyQt4.QtGui  import QAction
-from PyQt4.QtGui  import QPixmap
-from PyQt4.QtGui  import QToolBar
-from PyQt4.QtGui  import QToolButton
-from PyQt4.QtGui  import QMainWindow
-from PyQt4.QtGui  import QApplication
+from PyQt5.QtCore    import Qt
+from PyQt5.QtCore    import QSize
+from PyQt5.QtCore    import QVariant
+from PyQt5.QtCore    import pyqtSlot
+from PyQt5.QtGui     import QIcon
+from PyQt5.QtGui     import QPixmap
+from PyQt5.QtWidgets import QMenu
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QStyle
+from PyQt5.QtWidgets import QAction
+from PyQt5.QtWidgets import QToolBar
+from PyQt5.QtWidgets import QToolButton
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QApplication
 
 from WorldUI        import WorldUI
 from ActionSet      import ActionSet
@@ -371,7 +371,7 @@ class MainWindow( QMainWindow ):
 
     if not action: return
 
-    worldname = unicode( action.data().toString() )
+    worldname = action.data()
     QApplication.instance().core.openWorldByName( worldname )
 
 

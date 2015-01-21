@@ -22,8 +22,8 @@
 
 from Globals import FORMAT_PROPERTIES
 
-from PyQt4.QtGui import QColor
-from PyQt4.QtGui import QFont
+from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QFont
 
 
 class QTextFormatFormatter:

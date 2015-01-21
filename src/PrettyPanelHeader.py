@@ -20,11 +20,11 @@
 ## a pretty header suitable for option panels and such.
 ##
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui  import QFrame
-from PyQt4.QtGui  import QLabel
-from PyQt4.QtGui  import QHBoxLayout
-from PyQt4.QtGui  import QSizePolicy
+from PyQt5.QtCore    import Qt
+from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QSizePolicy
 
 
 class PrettyPanelHeader( QFrame ):

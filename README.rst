@@ -19,10 +19,10 @@ Website: http://spyrit.ierne.eu.org/
 PREREQUISITES
 -------------
 
-**Spyrit** requires Python 2.7 or later, Qt 4.7 or later, and the PyQt4 bindings.
-On Ubuntu and other Debian-like OS, install the package ``python-qt4`` and you will be good to go.
+**Spyrit** requires Python 2.7 or later, Qt 5.2 or later, and the PyQt5 bindings.
+On Ubuntu and other Debian-like OS, install the package ``python-qt5`` and you will be good to go.
 
-On Windows, install Python 2.7 from http://www.python.org/ and the Windows binary PyQt4 package from http://www.riverbankcomputing.co.uk/software/pyqt/download for Python 2.7.
+On Windows, install Python 2.7 from http://www.python.org/ and the Windows binary PyQt5 package from http://www.riverbankcomputing.com/software/pyqt/download5 for Python 2.7.
 
 Windows and Mac OS X users may want to download the latest binary release for their OS from our Website instead.
 

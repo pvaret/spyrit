@@ -25,18 +25,19 @@ import time
 
 from os.path import basename, dirname, isdir
 
-from FormatStack import FormatStack
-from Globals     import FORMAT_PROPERTIES
 from Globals     import ESC
+from Globals     import FORMAT_PROPERTIES
 from Globals     import compute_closest_ansi_color
+from FormatStack import FormatStack
 
-from pipeline    import ChunkData
+from pipeline.ChunkData import ChunkType
+from pipeline.ChunkData import FlowControl
 
 from SingleShotTimer import SingleShotTimer
 
 class PlainLogger:
 
-  log_chunk_types = ChunkData.TEXT | ChunkData.FLOWCONTROL
+  log_chunk_types = ChunkType.TEXT | ChunkType.FLOWCONTROL
   encoding = "utf-8"
 
 
@@ -61,10 +62,10 @@ class PlainLogger:
 
     chunk_type, payload = chunk
 
-    if chunk_type == ChunkData.TEXT:
+    if chunk_type == ChunkType.TEXT:
       self.doLogText( payload )
 
-    elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
+    elif chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
       self.doLogText( u"\n" )
 
     else:
@@ -186,7 +187,7 @@ class AnsiFormatter:
 class AnsiLogger( PlainLogger ):
 
   log_chunk_types = PlainLogger.log_chunk_types \
-                  | ChunkData.HIGHLIGHT | ChunkData.ANSI
+                  | ChunkType.HIGHLIGHT | ChunkType.ANSI
 
 
   def __init__( self, *args ):
@@ -200,7 +201,7 @@ class AnsiLogger( PlainLogger ):
 
     chunk_type, payload = chunk
 
-    if chunk_type & ( ChunkData.HIGHLIGHT | ChunkData.ANSI ):
+    if chunk_type & ( ChunkType.HIGHLIGHT | ChunkType.ANSI ):
       self.format_stack.processChunk( chunk )
 
     else:

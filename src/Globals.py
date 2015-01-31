@@ -41,6 +41,8 @@ class FORMAT_PROPERTIES:
   COLOR      = QTextFormat.ForegroundBrush
   BACKGROUND = QTextFormat.BackgroundBrush
   HREF       = QTextFormat.AnchorHref
+  REVERSED = None
+  BLINK    = None
 
 
 class ANSI_COLORS:

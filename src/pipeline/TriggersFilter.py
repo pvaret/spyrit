@@ -23,9 +23,10 @@
 ##
 
 
-from BaseFilter import BaseFilter
+from .BaseFilter import BaseFilter
 
-import ChunkData
+from .ChunkData import ChunkType
+from .ChunkData import FlowControl
 
 
 
@@ -63,12 +64,12 @@ class TriggersFilter( BaseFilter ):
 
     chunk_type, _ = chunk
 
-    if chunk_type in ( ChunkData.NETWORK, ChunkData.PROMPTSWEEP ) \
-       or chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
+    if chunk_type in ( ChunkType.NETWORK, ChunkType.PROMPTSWEEP ) \
+       or chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
 
       line = u"".join( chunk[1]
                        for chunk in self.buffer
-                       if chunk[0] == ChunkData.TEXT )
+                       if chunk[0] == ChunkType.TEXT )
 
 
       if line:

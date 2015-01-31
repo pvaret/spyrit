@@ -20,7 +20,7 @@
 ##
 
 
-from . import ChunkData
+from .ChunkData import ChunkType
 
 
 def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
@@ -39,7 +39,7 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
 
     chunk_type, payload = chunk
 
-    if chunk_type != ChunkData.TEXT:
+    if chunk_type != ChunkType.TEXT:
       continue
 
     if pos == target_pos:
@@ -53,9 +53,9 @@ def insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks ):
       split_pos = target_pos - pos
 
       chunkbuffer.pop( i )
-      chunkbuffer.insert( i,   ( ChunkData.TEXT, payload[ :split_pos ] ) )
+      chunkbuffer.insert( i,   ( ChunkType.TEXT, payload[ :split_pos ] ) )
       chunkbuffer.insert( i+1, new_chunk )
-      chunkbuffer.insert( i+2, ( ChunkData.TEXT, payload[ split_pos: ] ) )
+      chunkbuffer.insert( i+2, ( ChunkType.TEXT, payload[ split_pos: ] ) )
 
       pos += split_pos
       new_chunk = None

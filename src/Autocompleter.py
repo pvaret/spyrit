@@ -29,8 +29,9 @@ from collections import deque
 
 from PyQt5.QtGui import QTextCursor
 
-from pipeline    import ChunkData
-from Utilities   import normalize_text
+from pipeline.ChunkData import ChunkType
+from pipeline.ChunkData import FlowControl
+from Utilities          import normalize_text
 
 
 
@@ -295,10 +296,10 @@ class Autocompleter:
 
     chunk_type, payload = chunk
 
-    if chunk_type == ChunkData.TEXT:
+    if chunk_type == ChunkType.TEXT:
       self.buffer.append( payload )
 
-    elif chunk == ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ):
+    elif chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
 
       data     = u"".join( self.buffer )
       self.buffer = []

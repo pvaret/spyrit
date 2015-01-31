@@ -25,21 +25,22 @@
 
 import re
 
-import ChunkData
+from .ChunkData import ChunkType
+from .ChunkData import FlowControl
 
-from BaseFilter import BaseFilter
+from .BaseFilter import BaseFilter
 
 
 class FlowControlFilter( BaseFilter ):
 
-  relevant_types = ChunkData.TEXT
+  relevant_types = ChunkType.TEXT
 
   match        = re.compile( ur'(\r|\n)' )
   unix_like_cr = re.compile( ur'(?<!\r)\n' )
 
   chunkmapping = {
-    u'\n': ( ChunkData.FLOWCONTROL, ChunkData.LINEFEED ),
-    u'\r': ( ChunkData.FLOWCONTROL, ChunkData.CARRIAGERETURN ),
+    u'\n': ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ),
+    u'\r': ( ChunkType.FLOWCONTROL, FlowControl.CARRIAGERETURN ),
   }
 
 
@@ -61,7 +62,7 @@ class FlowControlFilter( BaseFilter ):
         text = tail
 
         if head:
-          yield ( ChunkData.TEXT, head )
+          yield ( ChunkType.TEXT, head )
 
         yield self.chunkmapping[ fc.group() ]
 
@@ -71,7 +72,7 @@ class FlowControlFilter( BaseFilter ):
         break
 
     if text:
-      yield ( ChunkData.TEXT, text )
+      yield ( ChunkType.TEXT, text )
 
 
   def formatForSending( self, data ):

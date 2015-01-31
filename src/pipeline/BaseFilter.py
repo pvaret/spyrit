@@ -21,7 +21,9 @@
 ##
 
 
-import ChunkData
+from .ChunkData import ChunkType
+from .ChunkData import concat_chunks
+from .ChunkData import ChunkTypeMismatch
 
 
 class BaseFilter:
@@ -29,7 +31,7 @@ class BaseFilter:
   ## This class attribute lists the chunk types that this filter will process.
   ## Those unlisted will be passed down the filter chain untouched.
 
-  relevant_types = ChunkData.ALL_TYPES
+  relevant_types = ChunkType.all()
 
 
   def __init__( self, context=None ):
@@ -82,7 +84,7 @@ class BaseFilter:
 
     chunk_type, _ = chunk
 
-    if chunk_type == ChunkData.PACKETBOUND:
+    if chunk_type == ChunkType.PACKETBOUND:
       ## This chunk type is a special case, and is never merged with other
       ## chunks.
       return chunk
@@ -94,9 +96,9 @@ class BaseFilter:
 
     try:
       ## And try to merge it with the new chunk.
-      chunk = ChunkData.concat_chunks( postponed, chunk )
+      chunk = concat_chunks( postponed, chunk )
 
-    except ChunkData.ChunkTypeMismatch:
+    except ChunkTypeMismatch:
       ## If they're incompatible, it means the postponed chunk was really
       ## complete, so we send it downstream.
       self.sink( postponed )

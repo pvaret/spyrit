@@ -20,6 +20,8 @@
 ## through our pipeline.
 ##
 
+from enum import IntEnum
+
 
 class ChunkTypeMismatch( Exception ):
   """\
@@ -32,32 +34,22 @@ class ChunkTypeMismatch( Exception ):
 
 ## Define chunk types:
 
-CHUNK_TYPES = dict(
-  NETWORK     = 1 << 0,
-  PACKETBOUND = 1 << 1,
-  PROMPTSWEEP = 1 << 2,
-  BYTES       = 1 << 3,
-  TELNET      = 1 << 4,
-  ANSI        = 1 << 5,
-  FLOWCONTROL = 1 << 6,
-  TEXT        = 1 << 7,
-  HIGHLIGHT   = 1 << 8,
+class ChunkType( IntEnum ):
 
-  ALL_TYPES   = ( 1 << 9 ) - 1
-)
+  NETWORK     = 1 << 0
+  PACKETBOUND = 1 << 1
+  PROMPTSWEEP = 1 << 2
+  BYTES       = 2 << 3
+  TELNET      = 1 << 4
+  ANSI        = 1 << 5
+  FLOWCONTROL = 1 << 6
+  TEXT        = 1 << 7
+  HIGHLIGHT   = 1 << 8
 
-## Make entries available directly from module namespace:
-globals().update( CHUNK_TYPES )
+  @classmethod
+  def all( cls ):
 
-
-def chunk_type_list():
-
-  type = 0x01
-
-  while type < ALL_TYPES:
-
-    yield type
-    type = type << 1
+    return sum( ct.value for ct in cls )
 
 
 
@@ -90,12 +82,11 @@ def chunk_repr( chunk ):
 
   chunk_type, payload = chunk
 
-  if chunk_type not in CHUNK_TYPES.values():
+  if not isinstance( chunk_type, ChunkType ):
     type_str = u"(unknown)"
 
   else:
-    type_str = [ k for k, v in CHUNK_TYPES.iteritems()
-                 if v == chunk_type ].pop()
+    type_str = chunk_type.name
 
   if payload is None:
     return u"<Chunk: %s>" % type_str
@@ -112,9 +103,12 @@ ANSI_MAPPING = (
   ( "1",  ( FORMAT_PROPERTIES.BOLD,      True ) ),
   ( "3",  ( FORMAT_PROPERTIES.ITALIC,    True ) ),
   ( "4",  ( FORMAT_PROPERTIES.UNDERLINE, True ) ),
+  ( "5",  ( FORMAT_PROPERTIES.BLINK,     True ) ),
+  ( "7",  ( FORMAT_PROPERTIES.REVERSED,  True ) ),
   ( "22", ( FORMAT_PROPERTIES.BOLD,      False ) ),
   ( "23", ( FORMAT_PROPERTIES.ITALIC,    False ) ),
   ( "24", ( FORMAT_PROPERTIES.UNDERLINE, False ) ),
+
   ( "30", ( FORMAT_PROPERTIES.COLOR, ( COL.black,     COL.darkgray ) ) ),
   ( "31", ( FORMAT_PROPERTIES.COLOR, ( COL.red,       COL.red_h ) ) ),
   ( "32", ( FORMAT_PROPERTIES.COLOR, ( COL.green,     COL.green_h ) ) ),
@@ -123,8 +117,11 @@ ANSI_MAPPING = (
   ( "35", ( FORMAT_PROPERTIES.COLOR, ( COL.magenta,   COL.magenta_h ) ) ),
   ( "36", ( FORMAT_PROPERTIES.COLOR, ( COL.cyan,      COL.cyan_h ) ) ),
   ( "37", ( FORMAT_PROPERTIES.COLOR, ( COL.lightgray, COL.white ) ) ),
+  ## Extended 256 color format:
   ( "38", ( FORMAT_PROPERTIES.COLOR, ( None,          None ) ) ),
+  ## Reset:
   ( "39", ( FORMAT_PROPERTIES.COLOR, ( None,          COL.white ) ) ),
+
   ( "40", ( FORMAT_PROPERTIES.BACKGROUND, COL.black ) ),
   ( "41", ( FORMAT_PROPERTIES.BACKGROUND, COL.red ) ),
   ( "42", ( FORMAT_PROPERTIES.BACKGROUND, COL.green ) ),
@@ -133,7 +130,9 @@ ANSI_MAPPING = (
   ( "45", ( FORMAT_PROPERTIES.BACKGROUND, COL.magenta ) ),
   ( "46", ( FORMAT_PROPERTIES.BACKGROUND, COL.cyan ) ),
   ( "47", ( FORMAT_PROPERTIES.BACKGROUND, COL.white ) ),
+  ## Extended 256 color format:
   ( "48", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
+  ## Reset:
   ( "49", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
 )
 
@@ -144,52 +143,40 @@ ANSI_TO_FORMAT = dict( ANSI_MAPPING )
 
 ## Network-related data:
 
-NETWORK_STATE = dict(
-  DISCONNECTED  = 0,
-  RESOLVING     = 1,
-  CONNECTING    = 2,
-  CONNECTED     = 3,
-  ENCRYPTED     = 4,
-  DISCONNECTING = 5,
+class NetworkState( IntEnum ):
+  DISCONNECTED  = 0
+  RESOLVING     = 1
+  CONNECTING    = 2
+  CONNECTED     = 3
+  ENCRYPTED     = 4
+  DISCONNECTING = 5
 
-  CONNECTIONREFUSED = 6,
-  HOSTNOTFOUND      = 7,
-  TIMEOUT           = 8,
-  OTHERERROR        = 9,
-)
-
-## Make entries available directly from module namespace:
-globals().update( NETWORK_STATE )
+  CONNECTIONREFUSED = 6
+  HOSTNOTFOUND      = 7
+  TIMEOUT           = 8
+  OTHERERROR        = 9
 
 
 ## Packet-related data:
 
-PACKET_BOUNDARY = dict(
-  START = 0,
-  END   = 1,
-)
+class PacketBoundary( IntEnum ):
+  START = 0
+  END   = 1
 
-## Make entries available directly from module namespace:
-globals().update( PACKET_BOUNDARY )
-
-thePacketStartChunk = ( PACKETBOUND, START )
-thePacketEndChunk   = ( PACKETBOUND, END )
+thePacketStartChunk = ( ChunkType.PACKETBOUND, PacketBoundary.START )
+thePacketEndChunk   = ( ChunkType.PACKETBOUND, PacketBoundary.END )
 
 
 
 ## Prompt-sweeper chunk:
 
-thePromptSweepChunk = ( PROMPTSWEEP, None )
+thePromptSweepChunk = ( ChunkType.PROMPTSWEEP, None )
 
 
 
 
 ## Flow control data:
 
-FLOW_CONTROL = dict(
-  LINEFEED       = 0,
-  CARRIAGERETURN = 1,
-)
-
-## Make entries available directly from module namespace:
-globals().update( FLOW_CONTROL )
+class FlowControl( IntEnum ):
+  LINEFEED       = 0
+  CARRIAGERETURN = 1

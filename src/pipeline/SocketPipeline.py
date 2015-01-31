@@ -26,18 +26,19 @@ from PyQt5.QtNetwork import QSslSocket
 from PyQt5.QtNetwork import QTcpSocket
 from PyQt5.QtNetwork import QAbstractSocket
 
-from Pipeline          import Pipeline
-from AnsiFilter        import AnsiFilter
-from TelnetFilter      import TelnetFilter
-from TriggersFilter    import TriggersFilter
-from SingleShotTimer   import SingleShotTimer
-from FlowControlFilter import FlowControlFilter
-from UnicodeTextFilter import UnicodeTextFilter
+from .Pipeline          import Pipeline
+from .AnsiFilter        import AnsiFilter
+from .TelnetFilter      import TelnetFilter
+from .TriggersFilter    import TriggersFilter
+from .FlowControlFilter import FlowControlFilter
+from .UnicodeTextFilter import UnicodeTextFilter
 
-from Messages  import messages
-from Utilities import check_ssl_is_available
+from .ChunkData import ChunkType
+from .ChunkData import NetworkState
 
-import ChunkData
+from Messages        import messages
+from Utilities       import check_ssl_is_available
+from SingleShotTimer import SingleShotTimer
 
 
 
@@ -127,23 +128,23 @@ class SocketPipeline:
     self.flushBuffer()
 
     if   state == QAbstractSocket.HostLookupState:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.RESOLVING ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.RESOLVING ) )
 
     elif state == QAbstractSocket.ConnectingState:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTING ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.CONNECTING ) )
 
     elif state == QAbstractSocket.ConnectedState:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTED ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.CONNECTED ) )
 
     elif state == QAbstractSocket.UnconnectedState:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.DISCONNECTED ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.DISCONNECTED ) )
 
 
   @pyqtSlot()
   def reportEncrypted( self ):
 
     self.flushBuffer()
-    self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.ENCRYPTED ) )
+    self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.ENCRYPTED ) )
 
 
   @pyqtSlot( "QAbstractSocket::SocketError" )
@@ -152,19 +153,19 @@ class SocketPipeline:
     self.flushBuffer()
 
     if   error == QAbstractSocket.ConnectionRefusedError:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.CONNECTIONREFUSED ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.CONNECTIONREFUSED ) )
 
     elif error == QAbstractSocket.HostNotFoundError:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.HOSTNOTFOUND ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.HOSTNOTFOUND ) )
 
     elif error == QAbstractSocket.SocketTimeoutError:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.TIMEOUT ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.TIMEOUT ) )
 
     elif error == QAbstractSocket.RemoteHostClosedError:
       pass  ## It's okay, we handle it as a disconnect.
 
     else:
-      self.pipeline.feedChunk( ( ChunkData.NETWORK, ChunkData.OTHERERROR ) )
+      self.pipeline.feedChunk( ( ChunkType.NETWORK, NetworkState.OTHERERROR ) )
 
 
   @pyqtSlot( "const QList<QSslError> &" )
@@ -212,6 +213,6 @@ class SocketPipeline:
     self.socket.flush()
 
 
-  def addSink( self, sink, types=ChunkData.ALL_TYPES ):
+  def addSink( self, sink, types=ChunkType.all() ):
 
     self.pipeline.addSink( sink, types )

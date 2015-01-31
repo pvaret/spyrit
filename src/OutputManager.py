@@ -30,7 +30,9 @@ from FormatStack          import FormatStack
 from SearchManager        import SearchManager
 from QTextFormatFormatter import QTextFormatFormatter
 
-from pipeline             import ChunkData
+from pipeline.ChunkData import ChunkType
+from pipeline.ChunkData import FlowControl
+from pipeline.ChunkData import NetworkState
 
 
 ## This is used a lot, so define it right away.
@@ -105,56 +107,56 @@ class OutputManager:
 
     chunk_type, payload = chunk
 
-    if chunk_type == ChunkData.TEXT:
+    if chunk_type == ChunkType.TEXT:
       self.insertText( payload )
 
-    elif chunk_type == ChunkData.FLOWCONTROL:
+    elif chunk_type == ChunkType.FLOWCONTROL:
       self.processFlowControlChunk( payload )
 
-    elif chunk_type == ChunkData.NETWORK:
+    elif chunk_type == ChunkType.NETWORK:
       self.processNetworkChunk( payload )
 
 
   def processFlowControlChunk( self, event ):
 
-    if event == ChunkData.LINEFEED:
+    if event == FlowControl.LINEFEED:
       self.insertNewLine()
 
 
   def processNetworkChunk( self, event ):
 
-    if   event == ChunkData.CONNECTING:
+    if   event == NetworkState.CONNECTING:
       self.insertInfoText( u"Connecting..." )
 
-    elif event == ChunkData.CONNECTED:
+    elif event == NetworkState.CONNECTED:
 
       if not self.was_connected:
         self.insertInfoText( u"Connected!" )
         self.was_connected = True
 
-    elif event == ChunkData.ENCRYPTED:
+    elif event == NetworkState.ENCRYPTED:
       self.insertInfoText( u"SSL encryption started." )
 
-    elif event == ChunkData.DISCONNECTED:
+    elif event == NetworkState.DISCONNECTED:
 
       if self.was_connected:
         self.insertInfoText( u"Connection closed." )
         self.was_connected = False
 
-    elif event == ChunkData.RESOLVING:
+    elif event == NetworkState.RESOLVING:
       self.insertInfoText( u"Resolving %s ..." % self.world.host() )
 
 
-    elif event == ChunkData.CONNECTIONREFUSED:
+    elif event == NetworkState.CONNECTIONREFUSED:
       self.insertInfoText( u"Connection refused." )
 
-    elif event == ChunkData.HOSTNOTFOUND:
+    elif event == NetworkState.HOSTNOTFOUND:
       self.insertInfoText( u"Host not found." )
 
-    elif event == ChunkData.TIMEOUT:
+    elif event == NetworkState.TIMEOUT:
       self.insertInfoText( u"Network timeout." )
 
-    elif event == ChunkData.OTHERERROR:
+    elif event == NetworkState.OTHERERROR:
       self.insertInfoText( u"Network error." )
 
 

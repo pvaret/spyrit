@@ -40,7 +40,8 @@ from ConfirmDialog    import confirmDialog
 from SingleShotTimer  import SingleShotTimer
 from PlatformSpecific import platformSpecific
 
-from pipeline                import ChunkData
+from pipeline.ChunkData      import ChunkType
+from pipeline.ChunkData      import NetworkState
 from pipeline.SocketPipeline import SocketPipeline
 
 
@@ -83,7 +84,7 @@ class World( QObject ):
     self.status = Status.DISCONNECTED
 
     self.socketpipeline = SocketPipeline( settings )
-    self.socketpipeline.addSink( self.sink, ChunkData.NETWORK )
+    self.socketpipeline.addSink( self.sink, ChunkType.NETWORK )
 
 
   def title( self ):
@@ -229,21 +230,21 @@ class World( QObject ):
 
     _, payload = chunk
 
-    if   payload in ( ChunkData.RESOLVING, ChunkData.CONNECTING ):
+    if   payload in ( NetworkState.RESOLVING, NetworkState.CONNECTING ):
       self.status = Status.CONNECTING
 
-    elif payload == ChunkData.CONNECTED:
+    elif payload == NetworkState.CONNECTED:
       self.status = Status.CONNECTED
 
-    elif payload == ChunkData.DISCONNECTING:
+    elif payload == NetworkState.DISCONNECTING:
       self.status = Status.DISCONNECTING
 
     elif payload in (
-                      ChunkData.DISCONNECTED,
-                      ChunkData.CONNECTIONREFUSED,
-                      ChunkData.HOSTNOTFOUND,
-                      ChunkData.TIMEOUT,
-                      ChunkData.OTHERERROR,
+                      NetworkState.DISCONNECTED,
+                      NetworkState.CONNECTIONREFUSED,
+                      NetworkState.HOSTNOTFOUND,
+                      NetworkState.TIMEOUT,
+                      NetworkState.OTHERERROR,
                     ):
 
       self.status = Status.DISCONNECTED

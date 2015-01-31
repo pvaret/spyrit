@@ -26,7 +26,7 @@
 from collections import defaultdict
 from OrderedDict import OrderedDict
 
-from pipeline    import ChunkData
+from pipeline.ChunkData import ChunkType
 
 
 BASE = 0
@@ -45,10 +45,10 @@ class FormatStack:
 
     chunk_type, payload = chunk
 
-    if chunk_type == ChunkData.ANSI:
+    if chunk_type == ChunkType.ANSI:
       self._applyFormat( ANSI, payload )
 
-    elif chunk_type == ChunkData.HIGHLIGHT:
+    elif chunk_type == ChunkType.HIGHLIGHT:
 
       id, format = payload
       self._applyFormat( id, format )

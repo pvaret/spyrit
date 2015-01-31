@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QToolBar
 from PyQt5.QtWidgets import QSplitter
 from PyQt5.QtWidgets import QApplication
 
-from pipeline           import ChunkData
+from pipeline.ChunkData import ChunkType
 from ActionSet          import ActionSet
 from WorldInputUI       import WorldInputUI
 from Autocompleter      import Autocompleter
@@ -53,7 +53,7 @@ class WorldUI( QSplitter ):
     self.world = world
 
     self.world.socketpipeline.addSink( self.windowAlert,
-                                       ChunkData.PACKETBOUND | ChunkData.NETWORK )
+                                       ChunkType.PACKETBOUND | ChunkType.NETWORK )
 
     ## Setup input and output UI.
 
@@ -83,13 +83,13 @@ class WorldUI( QSplitter ):
     self.world.socketpipeline.pipeline.flushEnd.connect( self.outputui.repaint )
 
     world.socketpipeline.addSink( self.output_manager.processChunk,
-                                    ChunkData.TEXT
-                                  | ChunkData.FLOWCONTROL
-                                  | ChunkData.NETWORK )
+                                    ChunkType.TEXT
+                                  | ChunkType.FLOWCONTROL
+                                  | ChunkType.NETWORK )
 
     world.socketpipeline.addSink( self.output_manager.textformatmanager.processChunk,
-                                    ChunkData.ANSI
-                                  | ChunkData.HIGHLIGHT )
+                                    ChunkType.ANSI
+                                  | ChunkType.HIGHLIGHT )
 
     self.setFocusProxy( self.inputui )
 

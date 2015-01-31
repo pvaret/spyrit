@@ -23,17 +23,17 @@
 
 import codecs
 
-from Messages       import messages
-from BaseFilter     import BaseFilter
+from Messages import messages
 
-import ChunkData
+from .BaseFilter import BaseFilter
+from .ChunkData  import ChunkType
 
 
 
 
 class UnicodeTextFilter( BaseFilter ):
 
-  relevant_types = ChunkData.BYTES
+  relevant_types = ChunkType.BYTES
 
 
   def __init__( self, context, encoding ):
@@ -79,7 +79,7 @@ class UnicodeTextFilter( BaseFilter ):
     text = self.decoder.decode( payload )
 
     if text:
-      yield ( ChunkData.TEXT, text )
+      yield ( ChunkType.TEXT, text )
 
 
   def formatForSending( self, data ):

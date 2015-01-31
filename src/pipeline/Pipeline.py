@@ -24,7 +24,9 @@
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal
 
-import ChunkData
+from .ChunkData import ChunkType
+from .ChunkData import thePromptSweepChunk
+from .ChunkData import thePacketStartChunk, thePacketEndChunk
 
 from SingleShotTimer  import SingleShotTimer
 from CallbackRegistry import CallbackRegistry
@@ -44,7 +46,7 @@ class Pipeline( QObject ):
     self.filters      = []
     self.outputBuffer = []
     self.sinks        = dict( ( type, CallbackRegistry() )
-                              for type in ChunkData.chunk_type_list() )
+                              for type in ChunkType )
 
     self.notification_registry = {}
 
@@ -59,18 +61,21 @@ class Pipeline( QObject ):
 
     while packet:
 
+      ## Splitting the packet into chunks of limited size makes for slightly
+      ## slower processing overall, but better responsiveness, when processing
+      ## large packets.
       bytes, packet = packet[ :blocksize ], packet[ blocksize: ]
 
-      self.feedChunk( ChunkData.thePacketStartChunk, autoflush=False )
-      self.feedChunk( ( ChunkData.BYTES, bytes ), autoflush=False )
-      self.feedChunk( ChunkData.thePacketEndChunk )
+      self.feedChunk( thePacketStartChunk, autoflush=False )
+      self.feedChunk( ( ChunkType.BYTES, bytes ), autoflush=False )
+      self.feedChunk( thePacketEndChunk )
 
     self.prompt_timer.start()
 
 
   def sweepPrompt( self ):
 
-    self.feedChunk( ChunkData.thePromptSweepChunk )
+    self.feedChunk( thePromptSweepChunk )
 
 
   def feedChunk( self, chunk, autoflush=True ):
@@ -121,11 +126,11 @@ class Pipeline( QObject ):
     self.filters.append( filter )
 
 
-  def addSink( self, callback, types=ChunkData.ALL_TYPES ):
+  def addSink( self, callback, types=ChunkType.all() ):
 
     ## 'callback' should be a callable that accepts and handles a chunk.
 
-    for type in ChunkData.chunk_type_list():
+    for type in ChunkType:
 
       if type & types:
         self.sinks[ type ].add( callback )

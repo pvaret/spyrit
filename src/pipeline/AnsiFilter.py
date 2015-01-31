@@ -23,17 +23,18 @@
 
 import re
 
-from BaseFilter import BaseFilter
-from Globals    import ANSI_COLORS_EXTENDED
-from Globals    import FORMAT_PROPERTIES
-from Globals    import ESC
+from Globals import ANSI_COLORS_EXTENDED
+from Globals import FORMAT_PROPERTIES
+from Globals import ESC
 
-import ChunkData
+from .BaseFilter import BaseFilter
+from .ChunkData  import ChunkType
+from .ChunkData  import ANSI_TO_FORMAT
 
 
 class AnsiFilter( BaseFilter ):
 
-  relevant_types = ChunkData.BYTES
+  relevant_types = ChunkType.BYTES
 
   ## For the time being, we only catch the SGR (Set Graphics Rendition) part
   ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
@@ -62,7 +63,7 @@ class AnsiFilter( BaseFilter ):
   def defaultColors( self ):
 
     return ( False,  ## highlight
-             ChunkData.ANSI_TO_FORMAT.get( "39" )[1] ) ## default colors
+             ANSI_TO_FORMAT.get( "39" )[1] ) ## default colors
 
 
   def processChunk( self, chunk ):
@@ -84,13 +85,13 @@ class AnsiFilter( BaseFilter ):
       head, text = text[ :ansi.start() ], text[ ansi.end(): ]
 
       if head:
-        yield ( ChunkData.BYTES, head )
+        yield ( ChunkType.BYTES, head )
 
       parameters = ansi.groups() [0]
 
       if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
 
-        yield ( ChunkData.ANSI, {} )
+        yield ( ChunkType.ANSI, {} )
 
         highlighted, current_colors = self.defaultColors()
         continue
@@ -107,7 +108,7 @@ class AnsiFilter( BaseFilter ):
 
         if len( list_params ) >= 2 and param in [ "38", "48" ]:
 
-          prop = ChunkData.ANSI_TO_FORMAT.get( param )[0]
+          prop = ANSI_TO_FORMAT.get( param )[0]
           param = list_params.pop( 0 )
 
           if param == "5":
@@ -121,14 +122,14 @@ class AnsiFilter( BaseFilter ):
 
         if param == "0":  ## ESC [ 0 m -- reset the format!
 
-          yield ( ChunkData.ANSI, {} )
+          yield ( ChunkType.ANSI, {} )
 
           highlighted, current_colors = self.defaultColors()
           format = {}
 
           continue
 
-        prop, value = ChunkData.ANSI_TO_FORMAT.get( param, ( None, None ) )
+        prop, value = ANSI_TO_FORMAT.get( param, ( None, None ) )
 
         if not prop:  ## Unknown ANSI code. Ignore.
           continue
@@ -167,7 +168,7 @@ class AnsiFilter( BaseFilter ):
         format[ prop ] = value
 
       if format:
-        yield ( ChunkData.ANSI, format )
+        yield ( ChunkType.ANSI, format )
 
 
     ## Done searching for complete ANSI sequences.
@@ -188,9 +189,9 @@ class AnsiFilter( BaseFilter ):
         startmatch = possible_unfinished.start()
 
         if startmatch > 0:
-          yield ( ChunkData.BYTES, text[ :startmatch ] )
+          yield ( ChunkType.BYTES, text[ :startmatch ] )
 
-        self.postpone( ( ChunkData.BYTES, text[ startmatch: ] ) )
+        self.postpone( ( ChunkType.BYTES, text[ startmatch: ] ) )
 
       else:
-        yield ( ChunkData.BYTES, text )
+        yield ( ChunkType.BYTES, text )

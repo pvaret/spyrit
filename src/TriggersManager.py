@@ -29,7 +29,7 @@ from Utilities      import normalize_text
 from OrderedDict    import OrderedDict
 from SpyritSettings import MATCHES
 
-from pipeline           import ChunkData
+from pipeline.ChunkData import ChunkType
 from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 
 import Serializers
@@ -76,8 +76,8 @@ class HighlightAction:
     hl = self.highlight
 
     new_chunks = [
-      ( start, ( ChunkData.HIGHLIGHT, ( id( hl ), hl ) ) ),
-      ( end,   ( ChunkData.HIGHLIGHT, ( id( hl ), {} ) ) ),
+      ( start, ( ChunkType.HIGHLIGHT, ( id( hl ), hl ) ) ),
+      ( end,   ( ChunkType.HIGHLIGHT, ( id( hl ), {} ) ) ),
     ]
 
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
@@ -151,9 +151,9 @@ class GagAction:
 
       chunk_type, _ = chunk
 
-      if chunk_type in ( ChunkData.TEXT,
-                         ChunkData.FLOWCONTROL,
-                         ChunkData.HIGHLIGHT ):
+      if chunk_type in ( ChunkType.TEXT,
+                         ChunkType.FLOWCONTROL,
+                         ChunkType.HIGHLIGHT ):
         del chunkbuffer[ i ]
 
 

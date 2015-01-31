@@ -24,14 +24,14 @@
 
 import re
 
-from BaseFilter     import BaseFilter
+from .BaseFilter import BaseFilter
 
-import ChunkData
+from .ChunkData import ChunkType
 
 
 class TelnetFilter( BaseFilter ):
 
-  relevant_types = ChunkData.BYTES
+  relevant_types = ChunkType.BYTES
 
   SE   = chr( 240 )  ## End option subnegotiation
   NOP  = chr( 241 )  ## No operation
@@ -98,7 +98,7 @@ class TelnetFilter( BaseFilter ):
         text = text[ telnet.end():   ]
 
         if head:
-          yield ( ChunkData.BYTES, head )
+          yield ( ChunkType.BYTES, head )
 
         parameters = telnet.groupdict()
 
@@ -107,7 +107,7 @@ class TelnetFilter( BaseFilter ):
 
         if command == self.IAC:
           ## This is an escaped IAC. Yield it as such.
-          yield ( ChunkData.BYTES, self.IAC )
+          yield ( ChunkType.BYTES, self.IAC )
           continue
 
         ## TODO: Implement other commands?
@@ -124,10 +124,10 @@ class TelnetFilter( BaseFilter ):
     if text:
       if self.unfinished.search( text ): ## Remaining text contains an
                                          ## unfinished Telnet sequence!
-        self.postpone( ( ChunkData.BYTES, text ) )
+        self.postpone( ( ChunkType.BYTES, text ) )
 
       else:
-        yield ( ChunkData.BYTES, text )
+        yield ( ChunkType.BYTES, text )
 
 
   def formatForSending( self, data ):

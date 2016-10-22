@@ -23,6 +23,7 @@
 
 from weakref import WeakSet
 
+from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot
 
 from MainWindow      import MainWindow
@@ -37,9 +38,11 @@ from SpyritSettings  import load_settings, save_settings
 from CommandRegistry import construct_command_registry
 
 
-class SpyritCore:
+class SpyritCore( QObject ):
 
   def __init__( self, settings, worlds, commands, triggers, tmprc, sound ):
+
+    QObject.__init__( self )
 
     self.settings = settings
     self.worlds   = worlds

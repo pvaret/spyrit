@@ -2,7 +2,7 @@
 
 ## Setup directories:
 
-_THIS_DIR="$(dirname $(readlink "$0"))"
+_THIS_DIR="$(dirname $(readlink -e "$0"))"
 _OLD_DIR=$(pwd)
 
 

@@ -20,6 +20,7 @@
 ## socket and manages connection/disconnection and everything.
 ##
 
+from PyQt5.QtCore    import QObject
 from PyQt5.QtCore    import pyqtSlot
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtNetwork import QSslSocket
@@ -42,9 +43,11 @@ from SingleShotTimer import SingleShotTimer
 
 
 
-class SocketPipeline:
+class SocketPipeline( QObject ):
 
   def __init__( self, settings ):
+
+    QObject.__init__( self )
 
     self.net_settings = settings._net
 

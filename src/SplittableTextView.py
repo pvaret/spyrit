@@ -24,22 +24,24 @@
 
 import sip
 
-from PyQt5.QtCore    import Qt
-from PyQt5.QtCore    import QRect
-from PyQt5.QtCore    import QSize
-from PyQt5.QtCore    import QPoint
-from PyQt5.QtCore    import QRectF
-from PyQt5.QtCore    import pyqtSlot
-from PyQt5.QtGui     import QFont
-from PyQt5.QtGui     import QCursor
-from PyQt5.QtGui     import QPainter
-from PyQt5.QtGui     import QPalette
-from PyQt5.QtGui     import QTextLayout
-from PyQt5.QtGui     import QMouseEvent
-from PyQt5.QtGui     import QPaintEvent
-from PyQt5.QtGui     import QTextOption
-from PyQt5.QtGui     import QFontMetrics
-from PyQt5.QtGui     import QAbstractTextDocumentLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QRect
+from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QRectF
+from PyQt5.QtCore import pyqtSlot
+
+from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QCursor
+from PyQt5.QtGui import QPainter
+from PyQt5.QtGui import QPalette
+from PyQt5.QtGui import QTextLayout
+from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtGui import QPaintEvent
+from PyQt5.QtGui import QTextOption
+from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtGui import QAbstractTextDocumentLayout
+
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtWidgets import QScrollBar
@@ -50,12 +52,14 @@ from CheckVersions    import qt_version
 from SingleShotTimer  import SingleShotTimer
 from PlatformSpecific import platformSpecific
 
+from QTextEditWithClickableLinks import QTextEditWithClickableLinks
+
 
 class LineCount( QLabel ):
 
   def __init__( self, parent ):
 
-    QLabel.__init__( self, parent )
+    super( LineCount, self ).__init__( parent )
 
     self.setAutoFillBackground( True )
     self.setAlignment( Qt.AlignHCenter | Qt.AlignVCenter )
@@ -120,14 +124,14 @@ class LineCount( QLabel ):
 
 
 
-class SplittableTextView( QTextEdit ):
+class SplittableTextView( QTextEditWithClickableLinks ):
 
   SPLIT_FACTOR = 0.84  ## Corresponds to 1/6th of the height.
 
 
   def __init__( self, parent=None ):
 
-    QTextEdit.__init__( self, parent )
+    super( SplittableTextView, self ).__init__( parent )
 
     self.setReadOnly( True )
     self.setUndoRedoEnabled( False )
@@ -382,7 +386,7 @@ class SplittableTextView( QTextEdit ):
 
   def mouseMoveEvent( self, e ):
 
-    return QTextEdit.mouseMoveEvent( self, self.remapMouseEvent( e ) )
+    return super( SplittableTextView, self ).mouseMoveEvent( self.remapMouseEvent( e ) )
 
 
   def mousePressEvent( self, e ):
@@ -405,7 +409,7 @@ class SplittableTextView( QTextEdit ):
       cur = self.cursorForPosition( e.pos() )
       self.setTextCursor( cur )
 
-    res = QTextEdit.mousePressEvent( self, self.remapMouseEvent( e ) )
+    res = super( SplittableTextView, self ).mousePressEvent( self.remapMouseEvent( e ) )
 
     self.scrollbar.setValue( val )
     self.scrollbar.blockSignals( block )
@@ -423,7 +427,7 @@ class SplittableTextView( QTextEdit ):
     block = self.scrollbar.blockSignals( True )
     val   = self.scrollbar.value()
 
-    res = QTextEdit.mouseReleaseEvent( self, self.remapMouseEvent( e ) )
+    res = super( SplittableTextView, self ).mouseReleaseEvent( self.remapMouseEvent( e ) )
 
     self.pinSelection()
 
@@ -435,7 +439,7 @@ class SplittableTextView( QTextEdit ):
 
   def mouseDoubleClickEvent( self, e ):
 
-    return QTextEdit.mouseDoubleClickEvent( self, self.remapMouseEvent( e ) )
+    return super( SplittableTextView, self ).mouseDoubleClickEvent( self.remapMouseEvent( e ) )
 
 
   def splitY( self ):
@@ -462,7 +466,7 @@ class SplittableTextView( QTextEdit ):
 
     if self.atbottom or not self.split_scrollback:
 
-      QTextEdit.paintEvent( self, e )
+      super( SplittableTextView, self ).paintEvent( e )
       return
 
     ## Draw the top half of the viewport if necessary.
@@ -470,7 +474,7 @@ class SplittableTextView( QTextEdit ):
     top_r = e.rect().intersected( self.splitTopRect() )
 
     if not top_r.isEmpty():
-      QTextEdit.paintEvent( self, QPaintEvent( top_r ) )
+      super( SplittableTextView, self ).paintEvent( QPaintEvent( top_r ) )
 
     ## Likewise the bottom half.
     ## Create painter.
@@ -629,7 +633,7 @@ class SplittableTextView( QTextEdit ):
 
   def resizeEvent( self, e ):
 
-    res = QTextEdit.resizeEvent( self, e )
+    res = super( SplittableTextView, self ).resizeEvent( e )
 
     self.onRangeChanged( self.scrollbar.minimum(), self.scrollbar.maximum() )
     self.setMoreAnchor()
@@ -645,7 +649,7 @@ class SplittableTextView( QTextEdit ):
     ## It is only used in our own code to ensure cursor visibility in case of
     ## split scrollback.
 
-    QTextEdit.ensureCursorVisible( self )
+    super( SplittableTextView, self ).ensureCursorVisible()
 
     if self.split_scrollback and not self.atbottom:
 

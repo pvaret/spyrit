@@ -77,8 +77,8 @@ if __name__ == "__main__":
     if include_list and not any( pattern in f for pattern in include_list ):
       continue
 
-    failed, run = doctest.testfile( f, report=True,
-                                    optionflags=OPTIONS, encoding="utf-8" )
+    failed, run = doctest.testfile(
+      f, report=True, optionflags=OPTIONS, encoding="utf-8" )
 
     if run > 0:
       print "--", f

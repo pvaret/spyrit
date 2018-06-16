@@ -24,7 +24,10 @@ import os.path
 
 from PyQt5.QtWidgets import QApplication
 
+from Matches        import RegexMatch
 from Matches        import load_match_by_type
+from Globals        import URL_RE
+from Globals        import FORMAT_PROPERTIES
 from Utilities      import normalize_text
 from OrderedDict    import OrderedDict
 from SpyritSettings import MATCHES
@@ -169,6 +172,61 @@ class GagAction:
 
 
 
+class LinkAction:
+
+  name = "link"
+
+  @classmethod
+  def factory( cls, url=None ):
+
+    return cls( url ), None
+
+
+  def __init__( self, url=None ):
+
+    self.url= url
+
+
+  def __call__( self, match, chunkbuffer ):
+
+    start, end = match.span()
+
+    if start == end:
+      return
+
+    url = self.url
+
+    if url is None:
+      url = match.group( 0 )
+
+    ## TODO: Allow URL substitutions?
+
+    href = {
+        FORMAT_PROPERTIES.HREF:      url,
+        FORMAT_PROPERTIES.COLOR:     "#1947C4",
+        FORMAT_PROPERTIES.UNDERLINE: True,
+    }
+
+    new_chunks = [
+      ( start, ( ChunkType.HIGHLIGHT, ( id( href ), href ) ) ),
+      ( end,   ( ChunkType.HIGHLIGHT, ( id( href ), {} ) ) ),
+    ]
+
+    insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
+
+
+  def __repr__( self ):
+
+    return u"" if self.url is None else self.url
+
+
+  def __unicode__( self ):
+
+    return u"link"
+
+
+
+
 class MatchGroup:
 
   def __init__( self, name ):
@@ -181,17 +239,27 @@ class MatchGroup:
   def addMatch( self, match ):
 
     self.matches.append( match )
+    return self
 
 
   def addAction( self, action ):
 
     self.actions[ action.name ] = action
+    return self
 
 
   def __len__( self ):
 
     return len( self.matches )
 
+
+
+DEFAULT_MATCHES = [
+    ## TODO: Make it possible to match several times per line.
+    MatchGroup( "*HTTP_LINKS*" )
+        .addMatch( RegexMatch( URL_RE ) )
+        .addAction( LinkAction() ),
+]
 
 
 class TriggersManager:
@@ -289,6 +357,9 @@ class TriggersManager:
     elif actionname == "highlight":
       action = HighlightAction
 
+    elif actionname == "link":
+      action = LinkAction
+
     elif actionname == "play":
       action = PlayAction
 
@@ -348,7 +419,7 @@ class TriggersManager:
 
   def findMatches( self, line ):
 
-    for matchgroup in sorted( self.groups.itervalues() ):
+    for matchgroup in DEFAULT_MATCHES + sorted( self.groups.itervalues() ):
       for match in matchgroup.matches:
 
         result = match.match( line )

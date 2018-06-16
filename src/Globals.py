@@ -311,7 +311,7 @@ ANSI_COLORS_EXTENDED = {
   230: "#ffffd7",
   231: "#ffffff",
 
-  ## Shades of grey:
+  ## 24 shades of grey:
   232: "#080808",
   233: "#121212",
   234: "#1c1c1c",
@@ -339,6 +339,44 @@ ANSI_COLORS_EXTENDED = {
 
 }
 
+
+
+## A regex to match URLs:
+
+def re_group( regex ):
+
+    return r"(?:%s)" % regex
+
+
+def re_optional( regex ):
+
+  return re_group( regex ) + "?"
+
+
+def re_either( *regexes ):
+
+    return re_group( r"|".join( regexes ) )
+
+
+URL_RE = (
+  r"\b"
+  + re_either (
+      re_either(  ## Recognizable prefix
+        r"https?://",
+        r"www\.",
+      )
+      + re_group( r"[\d\w_-]+\." ) + "*\w+", ## Host
+      re_group(r"\d{1,3}\.") + r"{3}" + r"\d{1,3}"  ## IP
+    )
+  + re_optional( r":\d+" ) ## Port
+  + re_optional(
+      r"/"
+      + re_optional(
+          re_optional( r"[a-zA-Z0-9.#/!?&=-]+" )
+          + r"[a-zA-Z0-9#/&_=-]"
+        )
+    )
+)
 
 
 def compute_closest_ansi_color( rgb ):

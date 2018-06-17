@@ -372,8 +372,8 @@ URL_RE = (
   + re_optional(
       r"/"
       + re_optional(
-          re_optional( r"[a-zA-Z0-9.#/!?&=-]+" )
-          + r"[a-zA-Z0-9#/&_=-]"
+          re_optional( r"[a-zA-Z0-9~.#/!?&=-]+" )
+          + r"[a-zA-Z0-9~#/&_=-]"
         )
     )
 )

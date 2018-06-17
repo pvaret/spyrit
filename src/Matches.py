@@ -74,12 +74,12 @@ class RegexMatch:
     return pattern
 
 
-  def match( self, string ):
+  def matches( self, string ):
 
     if not self.regex:
       return None
 
-    return self.regex.search( string )
+    return list( self.regex.finditer( string ) )
 
 
   def matchtokens( self ):

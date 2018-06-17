@@ -42,6 +42,8 @@ import Serializers
 
 class HighlightAction:
 
+  multiple_matches_per_line = True
+
   @classmethod
   def factory( cls, format, token=None ):
 
@@ -102,6 +104,9 @@ class PlayAction:
 
   name = "play"
 
+  ## Don't try to play several sounds at once even if several matches are found.
+  multiple_matches_per_line = False
+
   @classmethod
   def factory( cls, soundfile=None ):
 
@@ -140,6 +145,9 @@ class GagAction:
 
   name = "gag"
 
+  ## If a line is gagged, all processing stops right away.
+  multiple_matches_per_line = False
+
   @classmethod
   def factory( cls ):
 
@@ -175,6 +183,7 @@ class GagAction:
 class LinkAction:
 
   name = "link"
+  multiple_matches_per_line = True
 
   @classmethod
   def factory( cls, url=None ):
@@ -255,7 +264,6 @@ class MatchGroup:
 
 
 DEFAULT_MATCHES = [
-    ## TODO: Make it possible to match several times per line.
     MatchGroup( "*HTTP_LINKS*" )
         .addMatch( RegexMatch( URL_RE ) )
         .addAction( LinkAction() ),
@@ -422,16 +430,23 @@ class TriggersManager:
     for matchgroup in DEFAULT_MATCHES + sorted( self.groups.itervalues() ):
       for match in matchgroup.matches:
 
-        result = match.match( line )
-
-        if result:
+        for result in match.matches( line ):
           yield matchgroup, result
 
 
   def performMatchingActions( self, line, chunkbuffer ):
 
+    already_performed_on_this_line = set()
+
     for matchgroup, matchresult in self.findMatches( line ):
       for action in matchgroup.actions.itervalues():
+
+        ## TODO: make this cleaner. Using the class is not nice.
+        action_class = str( action.__class__ )
+        if action_class in already_performed_on_this_line \
+            and not action.multiple_matches_per_line:
+          continue
+        already_performed_on_this_line.add( action_class )
 
         action( matchresult, chunkbuffer )
 

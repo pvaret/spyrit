@@ -20,7 +20,9 @@
 ##
 
 
-from BaseCommand import BaseCommand
+from __future__ import absolute_import
+
+from .BaseCommand import BaseCommand
 
 
 class FindCommand( BaseCommand ):

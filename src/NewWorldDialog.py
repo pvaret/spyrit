@@ -19,6 +19,8 @@
 ## This class holds the dialog that lets the user create a new world.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtGui     import QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSpinBox, QCheckBox
 

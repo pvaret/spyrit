@@ -27,6 +27,7 @@ u"""
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QTextFormat

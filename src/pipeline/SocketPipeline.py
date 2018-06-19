@@ -20,6 +20,8 @@
 ## socket and manages connection/disconnection and everything.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtCore    import QObject
 from PyQt5.QtCore    import pyqtSlot
 from PyQt5.QtWidgets import QApplication

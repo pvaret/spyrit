@@ -20,10 +20,12 @@
 ##
 
 
+from __future__ import absolute_import
+
 from PyQt5.QtWidgets import QApplication
 
 from Utilities      import format_as_table
-from BaseCommand    import BaseCommand
+from .BaseCommand    import BaseCommand
 from SpyritSettings import DESCRIPTIONS
 
 

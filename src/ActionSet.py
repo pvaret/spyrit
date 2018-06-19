@@ -20,6 +20,8 @@
 ## software.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtCore    import Qt
 from PyQt5.QtGui     import QIcon
 from PyQt5.QtGui     import QKeySequence

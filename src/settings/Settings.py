@@ -20,6 +20,8 @@
 ##
 
 
+from __future__ import absolute_import
+
 from CallbackRegistry import CallbackRegistry
 
 class __NoValue( object ):

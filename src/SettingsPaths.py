@@ -20,6 +20,8 @@
 ## on the OS.
 ##
 
+from __future__ import absolute_import
+
 import os.path
 
 from PlatformSpecific import platformSpecific

@@ -20,6 +20,8 @@
 ## aspects of searching the contents of a QTextEdit such as WorldOutputUI.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtGui import QTextDocument
 

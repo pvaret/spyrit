@@ -22,6 +22,8 @@
 ## specific behavior from the client.
 ##
 
+from __future__ import absolute_import
+
 import re
 
 from .BaseFilter import BaseFilter

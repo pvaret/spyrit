@@ -20,6 +20,8 @@
 ##
 
 
+from __future__ import absolute_import
+
 REQUIRED_PYTHON_VERSION = ( 2, 7 )
 REQUIRED_SIP_VERSION    = ( 4, 10 )
 REQUIRED_QT_VERSION     = ( 5, 2 )

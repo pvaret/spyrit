@@ -21,6 +21,8 @@
 ## timers used once.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtCore import QTimer
 
 

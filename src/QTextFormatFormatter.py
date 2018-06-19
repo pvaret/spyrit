@@ -20,6 +20,8 @@
 ## specifically, a QTextFormat, as used in our output UI.
 ##
 
+from __future__ import absolute_import
+
 from Globals import FORMAT_PROPERTIES
 
 from PyQt5.QtGui import QColor

@@ -20,11 +20,13 @@
 ##
 
 
+from __future__ import absolute_import
+
 from textwrap import dedent
 
 from PyQt5.QtWidgets import QApplication
 
-from BaseCommand import BaseCommand
+from .BaseCommand import BaseCommand
 from Globals     import CMDCHAR
 from Globals     import HELP
 

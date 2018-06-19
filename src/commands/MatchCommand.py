@@ -20,8 +20,10 @@
 ##
 
 
+from __future__ import absolute_import
+
 from Matches     import MatchCreationError
-from BaseCommand import BaseCommand
+from .BaseCommand import BaseCommand
 
 
 class MatchCommand( BaseCommand ):

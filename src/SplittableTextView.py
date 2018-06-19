@@ -22,6 +22,8 @@
 ##
 
 
+from __future__ import absolute_import
+
 import sip
 
 from PyQt5.QtCore import Qt

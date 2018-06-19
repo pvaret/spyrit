@@ -20,6 +20,8 @@
 ##
 
 
+from __future__ import absolute_import
+
 import codecs
 
 from Globals       import ANSI_COLORS as COL

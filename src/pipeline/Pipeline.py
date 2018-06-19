@@ -21,6 +21,8 @@
 ## It works by assembling a series of Filters.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal
 

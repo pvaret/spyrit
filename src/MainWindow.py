@@ -19,6 +19,8 @@
 ## Holds the MainWindow class, which contains all the core GUI of the program.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtCore    import Qt
 from PyQt5.QtCore    import QSize
 from PyQt5.QtCore    import QVariant

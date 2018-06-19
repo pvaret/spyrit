@@ -20,11 +20,13 @@
 ##
 
 
+from __future__ import absolute_import
+
 import os.path
 
 from PyQt5.QtWidgets import QApplication
 
-from BaseCommand import BaseCommand
+from .BaseCommand import BaseCommand
 from Utilities   import format_as_table
 
 

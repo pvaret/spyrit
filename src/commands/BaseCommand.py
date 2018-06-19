@@ -19,10 +19,12 @@
 ## Abstract base class for commands.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtWidgets import QApplication
 
-from CommandParsing import parse_command
-from CommandParsing import parse_arguments
+from .CommandParsing import parse_command
+from .CommandParsing import parse_arguments
 from Globals        import HELP, CMDCHAR
 
 

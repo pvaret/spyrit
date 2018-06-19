@@ -20,6 +20,8 @@
 ## given world's configuration.
 ##
 
+from __future__ import absolute_import
+
 import os.path
 
 from PyQt5.QtWidgets import QApplication

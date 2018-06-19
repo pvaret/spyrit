@@ -20,6 +20,8 @@
 ## the same interaction between mouse and links as in QTextBrowser.
 ##
 
+from __future__ import absolute_import
+
 from PyQt5.QtCore    import Qt
 from PyQt5.QtCore    import QUrl
 from PyQt5.QtCore    import QPoint

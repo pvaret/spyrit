@@ -21,6 +21,8 @@
 ##
 
 
+from __future__ import absolute_import
+
 from Globals                  import CMDCHAR
 from Globals                  import HELP
 from commands.CommandParsing  import parse_command

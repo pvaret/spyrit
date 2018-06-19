@@ -20,9 +20,11 @@
 ##
 
 
+from __future__ import absolute_import
+
 from PyQt5.QtWidgets import QApplication
 
-from BaseCommand import BaseCommand
+from .BaseCommand import BaseCommand
 
 
 class SessionCommand( BaseCommand ):

@@ -21,6 +21,8 @@
 ##
 
 
+from __future__ import absolute_import
+
 import sip
 
 from PyQt5.QtWidgets import QDialog

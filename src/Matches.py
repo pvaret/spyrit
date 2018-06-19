@@ -55,7 +55,7 @@ class RegexMatch:
     try:
       self.regex = re.compile( regex )
 
-    except re.error, e:
+    except re.error as e:
       self.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
       self.error = unicode( e )
 

@@ -73,7 +73,7 @@ class MatchCommand( BaseCommand ):
     try:
       match = mgr.createMatch( pattern, type )
 
-    except MatchCreationError, e:
+    except MatchCreationError as e:
       world.info( unicode( e ) )
       return
 

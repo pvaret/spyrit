@@ -282,7 +282,7 @@ class World( QObject ):
     try:
       return open( filename, mode )  ## NB: filename can be unicode. That's OK!
 
-    except ( IOError, OSError ), e:
+    except ( IOError, OSError ) as e:
 
       errormsg = str( e ).decode( local_encoding, "replace" )
       self.info( u"Error: %s: %s" % ( basename, errormsg ) )

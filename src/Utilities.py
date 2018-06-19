@@ -28,6 +28,12 @@ u"""
 
 from __future__ import print_function
 
+## Python 3 compatibility
+try:
+  unichr
+except NameError:
+  unichr = chr
+
 
 DEFAULT_ESCAPES = {
   u'\n': u'n',

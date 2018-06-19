@@ -31,6 +31,12 @@ from __future__ import print_function
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QTextFormat
 
+## Python 3 compatibility
+try:
+  unichr
+except NameError:
+  unichr = chr
+
 
 class FORMAT_PROPERTIES:
 

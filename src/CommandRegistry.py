@@ -109,7 +109,7 @@ class CommandRegistry:
     try:
       return execute( cmd_callable, args, kwargs )
 
-    except ExecuteError, e:
+    except ExecuteError as e:
       msg = u"Command error: %s"
       world.info( msg % e )
 

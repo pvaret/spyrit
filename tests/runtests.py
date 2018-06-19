@@ -1,6 +1,9 @@
 #!/usr/bin/python
 ## -*- coding: utf-8 -*-
 
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import os
 import sys
 import doctest
@@ -26,7 +29,7 @@ def is_rst_doctest( fname ):
   if not fname.lower().endswith( ".rst" ):
     return False
 
-  data = file( fname ).read( 4096 )
+  data = open( fname ).read( 4096 ).decode( "utf-8" )
 
   for line in data.split( "\n" ):
     if line.lstrip( "." ).strip() == ":doctest:":
@@ -40,7 +43,7 @@ def is_python_module_doctest( fname ):
   if not fname.lower().endswith( ".py" ):
     return False
 
-  data = file( fname ).read( 4096 )
+  data = open( fname ).read( 4096 ).decode( "utf-8" )
 
   for line in data.split( "\n" ):
     if line.lstrip( "." ).strip() == ":doctest:":
@@ -81,6 +84,6 @@ if __name__ == "__main__":
       f, report=True, optionflags=OPTIONS, encoding="utf-8" )
 
     if run > 0:
-      print "--", f
-      print "Ran %d tests, %d failed." % ( run, failed )
-      print
+      print( "--", f )
+      print( "Ran %d tests, %d failed." % ( run, failed ) )
+      print()

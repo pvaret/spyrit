@@ -21,6 +21,8 @@
 ## downstream.
 ##
 
+from __future__ import unicode_literals
+
 import re
 
 from Globals import ANSI_COLORS_EXTENDED
@@ -39,16 +41,15 @@ class AnsiFilter( BaseFilter ):
   ## For the time being, we only catch the SGR (Set Graphics Rendition) part
   ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
 
-  CSI8b = "\x9b"
+  CSI8b = b"\x9b"
 
-  CSI = "(?:" + ESC + r"\[" + "|" + CSI8b + ")"
+  CSI = b"(?:" + ESC + br"\[" + b"|" + CSI8b + b")"
 
-  match = re.compile( CSI + r"((?:\d+;?)*)" + "m" )
+  match = re.compile( CSI + br"((?:\d+;?)*)" + b"m" )
 
-  unfinished = re.compile( "|".join( [ "(" + code + "$)" for code in
-                               ESC,
-                               CSI + r"[\d;]*"
-                         ] ) )
+  unfinished = re.compile(
+    b"|".join( [ b"(" + code + b"$)" for code in ( ESC, CSI + br"[\d;]*" ) ] )
+  )
 
 
   def resetInternalState( self ):
@@ -63,7 +64,7 @@ class AnsiFilter( BaseFilter ):
   def defaultColors( self ):
 
     return ( False,  ## highlight
-             ANSI_TO_FORMAT.get( "39" )[1] ) ## default colors
+             ANSI_TO_FORMAT.get( b"39" )[1] ) ## default colors
 
 
   def processChunk( self, chunk ):
@@ -87,7 +88,7 @@ class AnsiFilter( BaseFilter ):
       if head:
         yield ( ChunkType.BYTES, head )
 
-      parameters = ansi.groups() [0]
+      parameters = bytes( ansi.groups() [0] )
 
       if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
 
@@ -98,7 +99,7 @@ class AnsiFilter( BaseFilter ):
 
       format = {}
 
-      list_params = parameters.split( ';' )
+      list_params = parameters.split( b';' )
 
       while list_params:
 
@@ -106,12 +107,12 @@ class AnsiFilter( BaseFilter ):
 
         ## Special case: extended 256 color codes require special treatment.
 
-        if len( list_params ) >= 2 and param in [ "38", "48" ]:
+        if len( list_params ) >= 2 and param in [ b"38", b"48" ]:
 
           prop = ANSI_TO_FORMAT.get( param )[0]
           param = list_params.pop( 0 )
 
-          if param == "5":
+          if param == b"5":
 
             color = ANSI_COLORS_EXTENDED.get( int( list_params.pop( 0 ) ) )
             format[ prop ] = color
@@ -120,7 +121,7 @@ class AnsiFilter( BaseFilter ):
 
         ## Carry on with the standard cases.
 
-        if param == "0":  ## ESC [ 0 m -- reset the format!
+        if param == b"0":  ## ESC [ 0 m -- reset the format!
 
           yield ( ChunkType.ANSI, {} )
 

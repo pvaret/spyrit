@@ -63,9 +63,10 @@ def concat_chunks( chunk1, chunk2 ):
   ## Only chunks of the same type and whose data are strings can be
   ## concatenated.
   if chunk1_type != chunk2_type \
-                 or type( chunk2_payload ) not in ( type( "" ), type( u"" ) ):
+                 or type( chunk2_payload ) not in \
+                        ( type( b"" ), type( u"" ), bytearray ):
 
-    raise ChunkTypeMismatch( "Trying to concat %d chunk with %d chunk!" % \
+    raise ChunkTypeMismatch( "Trying to concat %d chunk with %d chunk!" %
                              ( chunk1_type, chunk2_type ) )
 
   ## The chunks are compatible, so we concatenate their data.
@@ -100,40 +101,40 @@ from Globals import FORMAT_PROPERTIES
 from Globals import ANSI_COLORS as COL
 
 ANSI_MAPPING = (
-  ( "1",  ( FORMAT_PROPERTIES.BOLD,      True ) ),
-  ( "3",  ( FORMAT_PROPERTIES.ITALIC,    True ) ),
-  ( "4",  ( FORMAT_PROPERTIES.UNDERLINE, True ) ),
-  ( "5",  ( FORMAT_PROPERTIES.BLINK,     True ) ),
-  ( "7",  ( FORMAT_PROPERTIES.REVERSED,  True ) ),
-  ( "22", ( FORMAT_PROPERTIES.BOLD,      False ) ),
-  ( "23", ( FORMAT_PROPERTIES.ITALIC,    False ) ),
-  ( "24", ( FORMAT_PROPERTIES.UNDERLINE, False ) ),
+  ( b"1",  ( FORMAT_PROPERTIES.BOLD,      True ) ),
+  ( b"3",  ( FORMAT_PROPERTIES.ITALIC,    True ) ),
+  ( b"4",  ( FORMAT_PROPERTIES.UNDERLINE, True ) ),
+  ( b"5",  ( FORMAT_PROPERTIES.BLINK,     True ) ),
+  ( b"7",  ( FORMAT_PROPERTIES.REVERSED,  True ) ),
+  ( b"22", ( FORMAT_PROPERTIES.BOLD,      False ) ),
+  ( b"23", ( FORMAT_PROPERTIES.ITALIC,    False ) ),
+  ( b"24", ( FORMAT_PROPERTIES.UNDERLINE, False ) ),
 
-  ( "30", ( FORMAT_PROPERTIES.COLOR, ( COL.black,     COL.darkgray ) ) ),
-  ( "31", ( FORMAT_PROPERTIES.COLOR, ( COL.red,       COL.red_h ) ) ),
-  ( "32", ( FORMAT_PROPERTIES.COLOR, ( COL.green,     COL.green_h ) ) ),
-  ( "33", ( FORMAT_PROPERTIES.COLOR, ( COL.yellow,    COL.yellow_h ) ) ),
-  ( "34", ( FORMAT_PROPERTIES.COLOR, ( COL.blue,      COL.blue_h ) ) ),
-  ( "35", ( FORMAT_PROPERTIES.COLOR, ( COL.magenta,   COL.magenta_h ) ) ),
-  ( "36", ( FORMAT_PROPERTIES.COLOR, ( COL.cyan,      COL.cyan_h ) ) ),
-  ( "37", ( FORMAT_PROPERTIES.COLOR, ( COL.lightgray, COL.white ) ) ),
+  ( b"30", ( FORMAT_PROPERTIES.COLOR, ( COL.black,     COL.darkgray ) ) ),
+  ( b"31", ( FORMAT_PROPERTIES.COLOR, ( COL.red,       COL.red_h ) ) ),
+  ( b"32", ( FORMAT_PROPERTIES.COLOR, ( COL.green,     COL.green_h ) ) ),
+  ( b"33", ( FORMAT_PROPERTIES.COLOR, ( COL.yellow,    COL.yellow_h ) ) ),
+  ( b"34", ( FORMAT_PROPERTIES.COLOR, ( COL.blue,      COL.blue_h ) ) ),
+  ( b"35", ( FORMAT_PROPERTIES.COLOR, ( COL.magenta,   COL.magenta_h ) ) ),
+  ( b"36", ( FORMAT_PROPERTIES.COLOR, ( COL.cyan,      COL.cyan_h ) ) ),
+  ( b"37", ( FORMAT_PROPERTIES.COLOR, ( COL.lightgray, COL.white ) ) ),
   ## Extended 256 color format:
-  ( "38", ( FORMAT_PROPERTIES.COLOR, ( None,          None ) ) ),
+  ( b"38", ( FORMAT_PROPERTIES.COLOR, ( None,          None ) ) ),
   ## Reset:
-  ( "39", ( FORMAT_PROPERTIES.COLOR, ( None,          COL.white ) ) ),
+  ( b"39", ( FORMAT_PROPERTIES.COLOR, ( None,          COL.white ) ) ),
 
-  ( "40", ( FORMAT_PROPERTIES.BACKGROUND, COL.black ) ),
-  ( "41", ( FORMAT_PROPERTIES.BACKGROUND, COL.red ) ),
-  ( "42", ( FORMAT_PROPERTIES.BACKGROUND, COL.green ) ),
-  ( "43", ( FORMAT_PROPERTIES.BACKGROUND, COL.yellow ) ),
-  ( "44", ( FORMAT_PROPERTIES.BACKGROUND, COL.blue ) ),
-  ( "45", ( FORMAT_PROPERTIES.BACKGROUND, COL.magenta ) ),
-  ( "46", ( FORMAT_PROPERTIES.BACKGROUND, COL.cyan ) ),
-  ( "47", ( FORMAT_PROPERTIES.BACKGROUND, COL.white ) ),
+  ( b"40", ( FORMAT_PROPERTIES.BACKGROUND, COL.black ) ),
+  ( b"41", ( FORMAT_PROPERTIES.BACKGROUND, COL.red ) ),
+  ( b"42", ( FORMAT_PROPERTIES.BACKGROUND, COL.green ) ),
+  ( b"43", ( FORMAT_PROPERTIES.BACKGROUND, COL.yellow ) ),
+  ( b"44", ( FORMAT_PROPERTIES.BACKGROUND, COL.blue ) ),
+  ( b"45", ( FORMAT_PROPERTIES.BACKGROUND, COL.magenta ) ),
+  ( b"46", ( FORMAT_PROPERTIES.BACKGROUND, COL.cyan ) ),
+  ( b"47", ( FORMAT_PROPERTIES.BACKGROUND, COL.white ) ),
   ## Extended 256 color format:
-  ( "48", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
+  ( b"48", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
   ## Reset:
-  ( "49", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
+  ( b"49", ( FORMAT_PROPERTIES.BACKGROUND, None ) ),
 )
 
 ANSI_TO_FORMAT = dict( ANSI_MAPPING )

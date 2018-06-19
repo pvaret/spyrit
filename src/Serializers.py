@@ -29,6 +29,9 @@ u"""
 
 """
 
+from __future__ import print_function
+
+
 import re
 
 from PyQt5.QtGui  import QKeySequence
@@ -49,13 +52,13 @@ def split( string, sep=u',', esc=BS, quotes=u'"' ):
 
   Only split if the separator is not escaped or inside a quoted section.
 
-  >>> print len( list( split( u' "A", "B" ' ) ) )
+  >>> print( len( list( split( u' "A", "B" ' ) ) ) )
   2
 
-  >>> print len( list( split( ur' "A"\, "B" ') ) )
+  >>> print( len( list( split( ur' "A"\, "B" ') ) ) )
   1
 
-  >>> print len( list( split( u' "A, B" ') ) )
+  >>> print( len( list( split( u' "A, B" ') ) ) )
   1
 
   """

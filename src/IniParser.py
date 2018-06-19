@@ -26,6 +26,8 @@ u"""
 
 """
 
+from __future__ import print_function
+
 
 import re
 
@@ -294,7 +296,7 @@ def struct_to_ini( struct, depth=0 ):
 
   >>> keys = { u'key1': u"1", u'key2': "2" }
   >>> sections = { 'subsection': ( { u'otherkey': u'3' }, {} ) }
-  >>> print struct_to_ini( ( keys, sections ) )
+  >>> print( struct_to_ini( ( keys, sections ) ) )
   key1 = 1
   key2 = 2
   <BLANKLINE>

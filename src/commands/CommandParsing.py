@@ -26,6 +26,8 @@ u"""
 
 """
 
+from __future__ import print_function
+
 
 import re
 
@@ -42,12 +44,12 @@ def tokenize( line ):
   u"""\
   Split a line of text into a list of tokens, respecting quotes.
 
-  >>> print tokenize('''   "A B" C="D 'E'" F   ''')
+  >>> print( tokenize( '''   "A B" C="D 'E'" F   ''' ) )
   ['A B', "C=D 'E'", 'F']
 
   Does the right thing even in complex cases:
 
-  >>> print tokenize('''   '' "''" "'"   ''')
+  >>> print( tokenize( '''   '' "''" "'"   ''' ) )
   ['', "''", "'"]
 
   """

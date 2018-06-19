@@ -26,6 +26,8 @@ u"""
 
 """
 
+from __future__ import print_function
+
 import types
 
 from weakref import ref, ReferenceError
@@ -58,7 +60,7 @@ class WeakCallableRef( object ):
   And a little function to tell us when a ref is deleted:
 
   >>> def call_on_expire( ref ):
-  ...   print "Deleted %r!" % ref
+  ...   print( "Deleted %r!" % ref )
 
   Ok. And now, let's create the weakrefs.
 
@@ -68,13 +70,13 @@ class WeakCallableRef( object ):
 
   The original callable can be retrieved by calling the weakref:
 
-  >>> print func_ref()  #doctest: +ELLIPSIS
+  >>> print( func_ref() )  #doctest: +ELLIPSIS
   <function test1 at ...>
 
-  >>> print bound_meth_ref()  #doctest: +ELLIPSIS
+  >>> print( bound_meth_ref() )  #doctest: +ELLIPSIS
   <bound method TestClass.test2 ...>
 
-  >>> print static_meth_ref()  #doctest: +ELLIPSIS
+  >>> print( static_meth_ref() )  #doctest: +ELLIPSIS
   <function test3 ...>
 
   When the original callable disappears, the notification function is
@@ -91,8 +93,12 @@ class WeakCallableRef( object ):
 
   And if called, the weakrefs must now return None:
 
-  >>> print func_ref(), bound_meth_ref(), static_meth_ref()
-  None None None
+  >>> print( func_ref() )
+  None
+  >>> print( bound_meth_ref() )
+  None
+  >>> print( static_meth_ref() )
+  None
 
   """
 
@@ -176,7 +182,7 @@ class WeakCallable:
   ReferenceError.
 
   >>> def test1():
-  ...   print "Function called!"
+  ...   print( "Function called!" )
 
   >>> test_ref = WeakCallable( test1 )
   >>> test_ref()

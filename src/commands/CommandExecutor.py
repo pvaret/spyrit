@@ -28,6 +28,8 @@ u"""\
 
 """
 
+from __future__ import print_function
+
 import inspect
 
 
@@ -54,39 +56,40 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   Let us see how it works:
 
   >>> ok, msg = match_args_to_function( simple, ( 'a', 'b' ), {} )
-  >>> print ok
+  >>> print( ok )
   True
 
   >>> ok, msg = match_args_to_function( simple, ( 'a', ), {} )
-  >>> print ok
+  >>> print( ok )
   True
 
   >>> ok, msg = match_args_to_function( simple, (), {} )
-  >>> print ok  ## Missing argument a!
+  >>> print( ok )  ## Missing argument a!
   False
 
   >>> ok, msg = match_args_to_function( simple, (), { 'a': 1 } )
-  >>> print ok  ## Passing kwargs also works.
+  >>> print( ok )  ## Passing kwargs also works.
   True
 
   >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'c': 1 } )
-  >>> print ok  ## Passing an unexpected argument doesn't, though.
+  >>> print( ok )  ## Passing an unexpected argument doesn't, though.
   False
 
   >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'a': 1 } )
-  >>> print ok  ## Neither does passing an already provided argument.
+  >>> print( ok )  ## Neither does passing an already provided argument.
   False
 
   >>> ok, msg = match_args_to_function( simple, ( 'a', 'b', 'c' ), {} )
-  >>> print ok  ## And neither does passing too many arguments.
+  >>> print( ok )  ## And neither does passing too many arguments.
   False
 
   >>> ok, msg = match_args_to_function( simple_args, ( 'a', 'b', 'c' ), {} )
-  >>> print ok  ## Unless the function accepts *args.
+  >>> print( ok )  ## Unless the function accepts *args.
   True
 
-  >>> ok, msg = match_args_to_function( simple_kwargs, ( 'a', 'b' ), { 'c': 1 } )
-  >>> print ok  ## Or the function accepts **kwargs.
+  >>> ok, msg = match_args_to_function(
+  ...     simple_kwargs, ( 'a', 'b' ), { 'c': 1 } )
+  >>> print( ok )  ## Or the function accepts **kwargs.
   True
 
   Class instantiations and method calls also work:
@@ -107,25 +110,25 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   ...     pass
 
   >>> ok, msg = match_args_to_function( A1, (), {} )
-  >>> print ok  ## It works even with no __init__ method defined.
+  >>> print( ok )  ## It works even with no __init__ method defined.
   True
 
   >>> ok, msg = match_args_to_function( A2, ( 'a' ), {} )
-  >>> print ok  ## If __init__ exists, its spec is used.
+  >>> print( ok )  ## If __init__ exists, its spec is used.
   True
 
   >>> a = A2( 'a' )
 
   >>> ok, msg = match_args_to_function( a.method, ( 'a' ), {} )
-  >>> print ok  ## Instance methods work like you'd expect.
+  >>> print( ok )  ## Instance methods work like you'd expect.
   True
 
   >>> ok, msg = match_args_to_function( a.classmethod, ( 'a' ), {} )
-  >>> print ok  ## But so do class methods.
+  >>> print( ok )  ## But so do class methods.
   True
 
   >>> ok, msg = match_args_to_function( a.staticmethod, ( 'a' ), {} )
-  >>> print ok  ## And static methods.
+  >>> print( ok )  ## And static methods.
   True
 
   """

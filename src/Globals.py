@@ -26,6 +26,8 @@ u"""
 
 """
 
+from __future__ import print_function
+
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QTextFormat
 
@@ -387,17 +389,17 @@ def compute_closest_ansi_color( rgb ):
 
   Exact match:
 
-  >>> print compute_closest_ansi_color( "#d7875f" )
+  >>> print( compute_closest_ansi_color( "#d7875f" ) )
   173
 
   Approximative match:
 
-  >>> print compute_closest_ansi_color( "#d6885e" )
+  >>> print( compute_closest_ansi_color( "#d6885e" ) )
   173
 
   In case several matches are found, return the earliest:
 
-  >>> print compute_closest_ansi_color( "#ffffff" )
+  >>> print( compute_closest_ansi_color( "#ffffff" ) )
   15
 
   """

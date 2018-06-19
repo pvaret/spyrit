@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from __future__ import print_function
+
 import sys
 import time
 import socket
@@ -20,7 +22,7 @@ if __name__ == "__main__":
   except ( IndexError, ValueError ):
     port = DEFAULT_PORT
 
-  data = file( fname ).read()
+  data = open( fname ).read()
 
   s = socket.socket()
 
@@ -29,7 +31,8 @@ if __name__ == "__main__":
   s.bind( ( "127.0.0.1", port ) )
   s.listen( 5 )
 
-  print "Running on port %d. Enter 'stop' in client to stop the server." % port
+  print( "Running on port %d. Enter 'stop' in client to stop the server."
+           % port )
 
   while True:
 
@@ -50,4 +53,4 @@ if __name__ == "__main__":
     if "stop" in msg.lower(): break
 
   s.close()
-  print "Server stopped."
+  print( "Server stopped." )

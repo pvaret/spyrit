@@ -21,20 +21,22 @@
 ## By default, the class only prints to stdout.
 ##
 
+from __future__ import print_function
+
 
 class Messages:
 
   def info( self, txt ):
-    print u"INFO:", txt
+    print( u"INFO:", txt )
 
   def debug( self, txt ):
-    print u"DEBUG:", txt
+    print( u"DEBUG:", txt )
 
   def warn( self, txt ):
-    print u"WARN:", txt
+    print( u"WARN:", txt )
 
   def error( self, txt ):
-    print u"ERROR:", txt
+    print( u"ERROR:", txt )
 
 
 

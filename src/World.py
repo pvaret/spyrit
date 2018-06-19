@@ -280,7 +280,7 @@ class World( QObject ):
     basename = os.path.basename( filename )
 
     try:
-      return file( filename, mode )  ## NB: filename can be unicode. That's OK!
+      return open( filename, mode )  ## NB: filename can be unicode. That's OK!
 
     except ( IOError, OSError ), e:
 

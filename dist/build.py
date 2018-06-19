@@ -1,6 +1,8 @@
 #!/usr/bin/python
 ## -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import sys
 import imp
 import bz2
@@ -52,7 +54,7 @@ class embedded_module_importer:
     if path:
       mod.__path__ = path
 
-    exec code in mod.__dict__
+    exec( code, mod.__dict__ )
 
     return mod
 
@@ -71,12 +73,12 @@ def get_timestamp_long():
 
 def make_source_archive( filename ):
 
-  return base64.encodestring( bz2.compress( file( filename ).read() ) )
+  return base64.encodestring( bz2.compress( open( filename ).read() ) )
 
 
 #def make_bytecode( filename ):
 #
-#  m  = compile( file( filename ).read(), filename, 'exec' )
+#  m  = compile( open( filename ).read(), filename, 'exec' )
 # #  bc = imp.get_magic() + get_timestamp_long() + marshal.dumps( m )
 #  bc = bz2.compress( marshal.dumps( m ) )
 #
@@ -126,10 +128,10 @@ def build( scriptname, outputname=None ):
   os.chdir( p )
 
   if not outputname:
-    print output
+    print( output )
 
   else:
-    file( outputname, "wb" ).write( output )
+    open( outputname, "wb" ).write( output )
 
 
 def main():

@@ -26,6 +26,8 @@ u"""
 
 """
 
+from __future__ import print_function
+
 
 DEFAULT_ESCAPES = {
   u'\n': u'n',
@@ -53,7 +55,7 @@ def quote( string, esc=BS ):
 
   >>> STR = u'''Carriage
   ... return.'''
-  >>> print quote( STR )
+  >>> print( quote( STR ) )
   Carriage\nreturn.
 
   """
@@ -73,7 +75,7 @@ def unquote( string, esc=BS ):
   ur"""
   Unquote a string. Reverse operation to quote().
 
-  >>> print unquote( ur'It\'s okay.\nYes.' )
+  >>> print( unquote( ur'It\'s okay.\nYes.' ) )
   It's okay.
   Yes.
 
@@ -143,7 +145,7 @@ def remove_accents( string, translation_table=UNICODE_TRANSLATION_TABLE ):
   u"""\
   Filters the diacritics off Latin characters in the given Unicode string.
 
-  >>> print remove_accents( u"Touché!" )
+  >>> print( remove_accents( u"Touché!" ) )
   Touche!
 
   """
@@ -173,7 +175,7 @@ def ensure_valid_filename( filename ):
 
   Note: the filename must be given as Unicode.
 
-  >>> print ensure_valid_filename( u'(127.0.0.1:*).log' )
+  >>> print( ensure_valid_filename( u'(127.0.0.1:*).log' ) )
   (127.0.0.1__).log
 
   """
@@ -237,11 +239,11 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
                         CRASH_MSG % args,
                         buttons=QMessageBox.Close )
 
-  print "Spyrit has closed due to an error. This is the full error report:"
-  print
-  print "".join( traceback.format_exception( exc_type,
-                                             exc_value,
-                                             exc_traceback ) )
+  print( "Spyrit has closed due to an error. This is the full error report:" )
+  print( "" )
+  print( "".join( traceback.format_exception( exc_type,
+                                              exc_value,
+                                              exc_traceback ) ) )
   if app:
     app.core.atExit()
 
@@ -252,8 +254,8 @@ def format_as_table( columns, headers ):
   u"""\
   Format a set of columns and headers as a table.
 
-  >>> print format_as_table( columns=( [ 'item 1' ], [ 'item 2' ] ),
-  ...                        headers=[ 'Header A', 'Header B' ] )
+  >>> print( format_as_table( columns=( [ 'item 1' ], [ 'item 2' ] ),
+  ...                         headers=[ 'Header A', 'Header B' ] ) )
   Header A    Header B
   --------    --------
   item 1      item 2

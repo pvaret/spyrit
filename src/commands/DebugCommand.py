@@ -61,7 +61,7 @@ class DebugCommand( BaseCommand ):
     if not f:
       return
 
-    exec f.read()
+    exec( f.read() )
 
 
   def cmd_load( self, world, filename=None, blocksize=None ):

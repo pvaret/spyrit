@@ -29,7 +29,10 @@ def is_rst_doctest( fname ):
   if not fname.lower().endswith( ".rst" ):
     return False
 
-  data = open( fname ).read( 4096 ).decode( "utf-8" )
+  data = open( fname ).read( 4096 )
+  ## Python 3 compatibility:
+  if type( data ) != type( u'' ):
+      data = data.decode( "utf-8" )
 
   for line in data.split( "\n" ):
     if line.lstrip( "." ).strip() == ":doctest:":
@@ -43,7 +46,10 @@ def is_python_module_doctest( fname ):
   if not fname.lower().endswith( ".py" ):
     return False
 
-  data = open( fname ).read( 4096 ).decode( "utf-8" )
+  data = open( fname ).read( 4096 )
+  ## Python 3 compatibility:
+  if type( data ) != type( u'' ):
+      data = data.decode( "utf-8" )
 
   for line in data.split( "\n" ):
     if line.lstrip( "." ).strip() == ":doctest:":

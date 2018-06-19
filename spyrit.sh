@@ -35,7 +35,7 @@ done
 ## Did we find a Python 2 install?
 
 if [[ -z $_PYTHON \
-      || ! $($_PYTHON -c "import sys ; print sys.version_info[0]") == "2" ]] ; then
+      || ! $($_PYTHON -c "import sys ; print( sys.version_info[0] )") == "2" ]] ; then
   errmsg="Couldn't find a Python 2 interpreter!"
   echo $errmsg
   [[ ! -z $_DIALOG ]] && $_DIALOG"$errmsg"

@@ -27,6 +27,8 @@ u"""
 
 """
 
+from __future__ import print_function
+
 
 import inspect
 
@@ -79,16 +81,16 @@ class CallbackRegistry:
 
   At first, it's empty:
 
-  >>> print len( reg )
+  >>> print( len( reg ) )
   0
 
   Let's populate it:
 
   >>> def callback( arg ):
-  ...   print "Callback called with argument: %s" % arg
+  ...   print( "Callback called with argument: %s" % arg )
 
   >>> reg.add( callback )
-  >>> print len( reg )
+  >>> print( len( reg ) )
   1
 
   The registry can trigger the call of all its callbacks with the given
@@ -102,7 +104,7 @@ class CallbackRegistry:
 
   >>> del callback
   >>> reg.triggerAll( "Hello again!" )  ## nothing happens!
-  >>> print len( reg )
+  >>> print( len( reg ) )
   0
 
   """

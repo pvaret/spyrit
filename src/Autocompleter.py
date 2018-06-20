@@ -35,6 +35,11 @@ from pipeline.ChunkData import ChunkType
 from pipeline.ChunkData import FlowControl
 from Utilities          import normalize_text
 
+try:
+  ## Python 3 compatibility.
+  unicode
+except NameError:
+  unicode = str
 
 
 MAX_WORD_LIST_LENGTH = 1000

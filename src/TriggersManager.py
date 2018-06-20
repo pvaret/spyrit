@@ -95,10 +95,15 @@ class HighlightAction:
     return Serializers.Format().serialize( self.highlight )
 
 
-  def __unicode__( self ):
+  def toString( self ):
 
     return u"highlight" + ( u" (%s)" % self.token if self.token else u"" ) \
            + u": " + Serializers.Format().serialize( self.highlight )
+
+
+  def __unicode__( self ):
+
+    raise NotImplementedError( "This method doesn't exist anymore!" )
 
 
 
@@ -137,9 +142,14 @@ class PlayAction:
     return self.soundfile or ""
 
 
-  def __unicode__( self ):
+  def toString( self ):
 
     return self.name + u": " + ( self.soundfile or "pop" )
+
+
+  def __unicode__( self ):
+
+    raise NotImplementedError( "This method doesn't exist anymore!" )
 
 
 
@@ -175,9 +185,14 @@ class GagAction:
     return u""
 
 
-  def __unicode__( self ):
+  def toString( self ):
 
     return u"gag"
+
+
+  def __unicode__( self ):
+
+    raise NotImplementedError( "This method doesn't exist anymore!" )
 
 
 
@@ -231,9 +246,14 @@ class LinkAction:
     return u"" if self.url is None else self.url
 
 
-  def __unicode__( self ):
+  def toString( self ):
 
     return u"link"
+
+
+  def __unicode__( self ):
+
+    raise NotImplementedError( "This method doesn't exist anymore!" )
 
 
 
@@ -348,7 +368,7 @@ class TriggersManager:
                                  if g.isdigit() ]
       new_group_number = min( i for i in range( 1, len( self.groups ) + 2 )
                               if i not in existing_number_groups )
-      group = unicode( new_group_number )
+      group = u"%d" % new_group_number
 
     key = normalize_text( group.strip() )
 
@@ -443,8 +463,10 @@ class TriggersManager:
     for matchgroup, matchresult in self.findMatches( line ):
       for action in matchgroup.actions.itervalues():
 
-        ## TODO: make this cleaner. Using the class is not nice.
-        action_class = str( action.__class__ )
+        ## TODO: make this cleaner. Using the class is not nice. Ideally we'd
+        ## overhaul the action serialization system and reserve the 'name'
+        ## attribute for this.
+        action_class = id( action.__class__ )
         if action_class in already_performed_on_this_line \
             and not action.multiple_matches_per_line:
           continue

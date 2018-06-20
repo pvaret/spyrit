@@ -190,7 +190,7 @@ class SocketPipeline( QObject ):
   @pyqtSlot()
   def readSocket( self ):
 
-    data = str( self.socket.readAll() )
+    data = bytes( self.socket.readAll() )
     self.buffer.append( data )
 
     self.flush_timer.start()
@@ -205,7 +205,7 @@ class SocketPipeline( QObject ):
 
   def send( self, data ):
 
-    assert isinstance( data, unicode )
+    assert isinstance( data, type( u"" ) )
 
     if not self.socket.state() == self.socket.ConnectedState:
 

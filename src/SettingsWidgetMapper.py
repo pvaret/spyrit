@@ -32,6 +32,12 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QCheckBox
 
 
+try:
+  ## Python 3 compatibility.
+  unicode
+except NameError:
+  unicode = str
+
 qlineedit_not_empty = lambda qlineedit: len( qlineedit.text() ) > 0
 
 

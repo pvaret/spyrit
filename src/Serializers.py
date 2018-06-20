@@ -120,7 +120,7 @@ class BaseSerializer( object ):
 
   def deserializeDefault( self, default ):
 
-    if type( default ) is unicode:
+    if type( default ) is type( u"" ):
       default = self.deserialize( default )
 
     return default
@@ -141,7 +141,7 @@ class Int( BaseSerializer ):
   def serialize( self, int_ ):
 
     if isinstance( int_, int ):
-      return unicode( int_ )
+      return u"%d" % int_
 
     return u''
 

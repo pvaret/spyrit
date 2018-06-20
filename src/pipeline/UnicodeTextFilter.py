@@ -41,7 +41,7 @@ class UnicodeTextFilter( BaseFilter ):
   def __init__( self, context, encoding ):
 
     self.decoder  = None
-    self.encoding = "ascii"
+    self.encoding = u"ascii"
 
     BaseFilter.__init__( self, context )
 
@@ -51,6 +51,7 @@ class UnicodeTextFilter( BaseFilter ):
 
   def setEncoding( self, encoding ):
 
+    assert type( encoding ) is type( u"" )
     encoding = encoding.encode( "ascii", "ignore" )  ## unicode -> str
 
     try:
@@ -58,7 +59,7 @@ class UnicodeTextFilter( BaseFilter ):
 
     except LookupError:
 
-      messages.warn( u"Unknown encoding '%s'; reverting to Latin1." \
+      messages.warn( u"Unknown encoding '%s'; reverting to Latin1."
                      % encoding )
       encoding = "latin1"
 

@@ -76,7 +76,7 @@ class MatchCommand( BaseCommand ):
       match = mgr.createMatch( pattern, type )
 
     except MatchCreationError as e:
-      world.info( unicode( e ) )
+      world.info( u"%s" % e )
       return
 
     mgr.createOrGetMatchGroup( group ).addMatch( match )
@@ -348,13 +348,13 @@ class MatchCommand( BaseCommand ):
         if i == 0:
           msg.append( u"  Patterns:" )
 
-        msg.append( u"    #%d: " % ( i + 1 ) + unicode( m ) )
+        msg.append( u"    #%d: " % ( i + 1 ) + m.toString() )
 
       for i, a in enumerate( matchgroup.actions.itervalues() ):
 
         if i == 0:
           msg.append( u"  Actions:" )
 
-        msg.append( u"    #%d: " % ( i + 1 ) + unicode( a ) )
+        msg.append( u"    #%d: " % ( i + 1 ) + a.toString() )
 
     world.info( u"\n".join( msg ) )

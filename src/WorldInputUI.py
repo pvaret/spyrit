@@ -144,6 +144,12 @@ class WorldInputUI( QTextEdit ):
   @pyqtSlot()
   def clearAndSend( self ):
 
+    try:
+      ## Python 3 compatibility.
+      unicode
+    except NameError:
+      unicode = str
+
     text = unicode( self.toPlainText() )
 
     self.clear()

@@ -204,7 +204,7 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
     if kwarg in actual_args:
 
       ## Argument has already been populated! Abort.
-      if not isinstance( kwarg, unicode ):
+      if not isinstance( kwarg, type( u"" ) ):
         kwarg = kwarg.decode( "utf-8" )
 
       return False, u"Parameter %s given several times!" % kwarg
@@ -217,7 +217,7 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
       else:
         ## If not: unknown argument.
-        if not isinstance( kwarg, unicode ):
+        if not isinstance( kwarg, type( u"" ) ):
           kwarg = kwarg.decode( "utf-8" )
 
         return False, u"%s: unknown parameter!" % kwarg

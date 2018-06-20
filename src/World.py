@@ -289,7 +289,7 @@ class World( QObject ):
 
     except ( IOError, OSError ) as e:
 
-      errormsg = str( e ).decode( local_encoding, "replace" )
+      errormsg = u"%s" % e
       self.info( u"Error: %s: %s" % ( basename, errormsg ) )
       return None
 

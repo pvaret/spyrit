@@ -59,7 +59,7 @@ class RegexMatch:
 
     except re.error as e:
       self.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
-      self.error = unicode( e )
+      self.error = u"%s" % e
 
 
   def setPattern( self, pattern ):
@@ -99,9 +99,14 @@ class RegexMatch:
     return self.matchtype + u':' + self.pattern
 
 
-  def __unicode__( self ):
+  def toString( self ):
 
     return u"'" + self.pattern + u"' (regex)"
+
+
+  def __unicode__( self ):
+
+    raise NotImplementedError( "This method doesn't exist anymore!" )
 
 
 
@@ -201,9 +206,14 @@ class SmartMatch( RegexMatch ):
     return re.escape( string )
 
 
-  def __unicode__( self ):
+  def toString( self ):
 
     return u"'" + self.pattern + u"'"
+
+
+  def __unicode__( self ):
+
+    raise NotImplementedError( "This method doesn't exist anymore!" )
 
 
 

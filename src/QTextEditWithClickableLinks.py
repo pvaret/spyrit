@@ -29,6 +29,12 @@ from PyQt5.QtCore    import pyqtSignal
 from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtGui     import QDesktopServices
 
+try:
+  ## Python 3 compatibility.
+  unicode
+except NameError:
+  unicode = str
+
 
 class QTextEditWithClickableLinks( QTextEdit ):
 

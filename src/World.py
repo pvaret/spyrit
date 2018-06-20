@@ -26,6 +26,9 @@ from __future__ import absolute_import
 import os
 import time
 
+## Python 3 compatibility
+from io import open
+
 from glob import glob
 
 from PyQt5.QtCore    import QObject
@@ -275,7 +278,7 @@ class World( QObject ):
     return QFileDialog.getOpenFileName( self.worldui, caption, dir, filter )
 
 
-  def openFileOrErr( self, filename, mode='r' ):
+  def openFileOrErr( self, filename, mode='rb' ):
 
     local_encoding = QApplication.instance().local_encoding
     filename = os.path.expanduser( filename )

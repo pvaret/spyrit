@@ -22,6 +22,9 @@
 
 from __future__ import absolute_import
 
+## Python 3 compatibility
+from io import open
+
 import codecs
 
 from Globals       import ANSI_COLORS as COL
@@ -209,7 +212,7 @@ def load_settings():
 
   try:
     reader = codecs.getreader( FILE_ENCODING )
-    settings_text = reader( open( SETTINGS_FILE ), 'ignore' ).read()
+    settings_text = reader( open( SETTINGS_FILE, 'rb' ), 'ignore' ).read()
 
   except ( LookupError, IOError, OSError ):
     settings_text = u""
@@ -221,7 +224,7 @@ def load_settings():
 
   try:
     reader = codecs.getreader( FILE_ENCODING )
-    state_text = reader( open( STATE_FILE ), 'ignore' ).read()
+    state_text = reader( open( STATE_FILE, 'rb' ), 'ignore' ).read()
 
   except ( LookupError, IOError, OSError ):
     state_text = u""
@@ -240,7 +243,7 @@ def save_settings( settings ):
 
   try:
     writer = codecs.getwriter( FILE_ENCODING )
-    writer( open( SETTINGS_FILE, 'w' ), 'ignore' ).write( settings_text )
+    writer( open( SETTINGS_FILE, 'wb' ), 'ignore' ).write( settings_text )
 
   except ( LookupError, IOError, OSError ):
     ## Well shucks.
@@ -253,7 +256,7 @@ def save_settings( settings ):
 
   try:
     writer = codecs.getwriter( FILE_ENCODING )
-    writer( open( STATE_FILE, 'w' ), 'ignore' ).write( state_text )
+    writer( open( STATE_FILE, 'wb' ), 'ignore' ).write( state_text )
 
   except ( LookupError, IOError, OSError ):
     ## Well shucks too.

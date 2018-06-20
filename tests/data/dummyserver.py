@@ -3,6 +3,9 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+## Python 3 compatibility
+from io import open
+
 import sys
 import time
 import socket
@@ -23,7 +26,7 @@ if __name__ == "__main__":
   except ( IndexError, ValueError ):
     port = DEFAULT_PORT
 
-  data = open( fname ).read()
+  data = open( fname, 'rb' ).read()
 
   s = socket.socket()
 

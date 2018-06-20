@@ -4,6 +4,9 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+## Python 3 compatibility
+from io import open
+
 import sys
 import imp
 import bz2
@@ -69,17 +72,17 @@ import MAIN
 
 def get_timestamp_long():
 
-  return struct.pack( "l", long( time.time() ) )
+  return struct.pack( "l", int( time.time() ) )
 
 
 def make_source_archive( filename ):
 
-  return base64.encodestring( bz2.compress( open( filename ).read() ) )
+  return base64.encodestring( bz2.compress( open( filename, 'rb' ).read() ) )
 
 
 #def make_bytecode( filename ):
 #
-#  m  = compile( open( filename ).read(), filename, 'exec' )
+#  m  = compile( open( filename, 'rb' ).read(), filename, 'exec' )
 # #  bc = imp.get_magic() + get_timestamp_long() + marshal.dumps( m )
 #  bc = bz2.compress( marshal.dumps( m ) )
 #

@@ -27,12 +27,26 @@ __revision__  = "$Rev$"
 __date__      = "$Date$"
 __copyright__ = "Python license"
 
+## Modified 2018/06/19 for Python 3 compatibility.
+
+
+import os
 
 try:
-  # standard library modules
-  import _winreg, os
-
+  # Python 2 import.
+  import _winreg as winreg
 except ImportError:
+  pass
+
+try:
+  # Python 3 import.
+  import winreg
+except ImportError:
+  pass
+
+try:
+  winreg
+except NameError:
   ## Well, whoops. Presumably we're not running Windows. Pass silently.
   pass
 
@@ -44,8 +58,8 @@ else:
   USER_SHELL_FOLDERS = \
     r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
 
-  HKCU = _winreg.HKEY_CURRENT_USER
-  HKLM = _winreg.HKEY_LOCAL_MACHINE
+  HKCU = winreg.HKEY_CURRENT_USER
+  HKLM = winreg.HKEY_LOCAL_MACHINE
 
 
 
@@ -84,10 +98,10 @@ else:
     if possible.
     """
 
-    key = _winreg.OpenKey( key, subkey )
+    key = winreg.OpenKey( key, subkey )
 
     try:
-      ret = _winreg.QueryValueEx( key, name )
+      ret = winreg.QueryValueEx( key, name )
 
     except WindowsError:
       return None
@@ -96,7 +110,7 @@ else:
 
       key.Close()
 
-      if ret[1] == _winreg.REG_EXPAND_SZ:
+      if ret[1] == winreg.REG_EXPAND_SZ:
         return expandvars( ret[0] )
 
       else:
@@ -157,7 +171,7 @@ else:
   def get_shellfolders( branch=HKCU, key=SHELL_FOLDERS ):
     """Return mapping of shell folder names (current user) to paths."""
 
-    key     = _winreg.OpenKey( branch, key )
+    key     = winreg.OpenKey( branch, key )
     folders = {}
     i       = 0
 
@@ -165,9 +179,9 @@ else:
 
       try:
 
-        ret = _winreg.EnumValue(key, i)
+        ret = winreg.EnumValue(key, i)
 
-        if ret[2] == _winreg.REG_EXPAND_SZ:
+        if ret[2] == winreg.REG_EXPAND_SZ:
           folders[ ret[0] ] = expandvars( ret[1] )
 
         else:

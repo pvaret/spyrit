@@ -31,6 +31,7 @@ u"""
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
@@ -46,7 +47,7 @@ from Utilities import quote, unquote, BS
 
 
 def split( string, sep=u',', esc=BS, quotes=u'"' ):
-  ur"""
+  r"""
   Splits a string along the given single-character separator (by default, a
   comma).
 
@@ -55,7 +56,7 @@ def split( string, sep=u',', esc=BS, quotes=u'"' ):
   >>> print( len( list( split( u' "A", "B" ' ) ) ) )
   2
 
-  >>> print( len( list( split( ur' "A"\, "B" ') ) ) )
+  >>> print( len( list( split( r' "A"\, "B" ') ) ) )
   1
 
   >>> print( len( list( split( u' "A, B" ') ) ) )
@@ -239,7 +240,7 @@ class Format( BaseSerializer ):
 
     l = []
 
-    for k, v in d.iteritems():
+    for k, v in d.items():
 
       if   k == FORMAT_PROPERTIES.COLOR:
         l.insert( 0, u"color: %s" % v )
@@ -314,7 +315,7 @@ class KeySequence( BaseSerializer ):
 
 class Size( BaseSerializer ):
 
-  SEP = ur'[x,]'
+  SEP = r'[x,]'
 
   def serialize( self, size ):
 

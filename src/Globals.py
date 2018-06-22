@@ -28,6 +28,7 @@ u"""
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QTextFormat
@@ -434,7 +435,7 @@ def compute_closest_ansi_color( rgb ):
 
 ## Special characters:
 
-ESC       = "\x1b"
+ESC       = b"\x1b"
 LEFTARROW = unichr( 0x2192 )
 
 

@@ -3,6 +3,7 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 ## Python 3 compatibility
 from io import open
@@ -124,7 +125,7 @@ def build( scriptname, outputname=None ):
   mf.run_script( os.path.basename( scriptname ) )
 
   libs = [ ( name, mod.__file__, mod.__path__ )
-               for ( name, mod ) in mf.modules.iteritems()
+               for ( name, mod ) in mf.modules.items()
                if mod.__file__ ]
 
   output = make_launcher( mainname, libs )

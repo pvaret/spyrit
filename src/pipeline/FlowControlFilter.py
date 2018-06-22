@@ -24,6 +24,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
@@ -37,8 +38,8 @@ class FlowControlFilter( BaseFilter ):
 
   relevant_types = ChunkType.TEXT
 
-  match        = re.compile( ur'(\r|\n)' )
-  unix_like_cr = re.compile( ur'(?<!\r)\n' )
+  match        = re.compile( r'(\r|\n)' )
+  unix_like_cr = re.compile( r'(?<!\r)\n' )
 
   chunkmapping = {
     u'\n': ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ),

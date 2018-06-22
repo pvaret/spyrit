@@ -23,6 +23,7 @@
 ##
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
@@ -31,58 +32,66 @@ from .BaseFilter import BaseFilter
 from .ChunkData import ChunkType
 
 
+def bytechr( i ):
+  if type( chr( 32 ) ) is type( u"" ):
+    ## Python 3 compatibility.
+    return bytes( [ i ] )
+  else:
+    return chr( i )
+
+
 class TelnetFilter( BaseFilter ):
 
   relevant_types = ChunkType.BYTES
 
-  SE   = chr( 240 )  ## End option subnegotiation
-  NOP  = chr( 241 )  ## No operation
-  DM   = chr( 242 )  ## Data mark for Synch operation
-  BRK  = chr( 243 )  ## Break
-  IP   = chr( 244 )  ## Interrupt process
-  AO   = chr( 245 )  ## Abort output
-  AYT  = chr( 246 )  ## Are You There function
-  EC   = chr( 247 )  ## Erase character
-  EL   = chr( 248 )  ## Erase line
-  GA   = chr( 249 )  ## Go ahead
-  SB   = chr( 250 )  ## Begin option subnegotiation
+  SE   = bytechr( 240 )  ## End option subnegotiation
+  NOP  = bytechr( 241 )  ## No operation
+  DM   = bytechr( 242 )  ## Data mark for Synch operation
+  BRK  = bytechr( 243 )  ## Break
+  IP   = bytechr( 244 )  ## Interrupt process
+  AO   = bytechr( 245 )  ## Abort output
+  AYT  = bytechr( 246 )  ## Are You There function
+  EC   = bytechr( 247 )  ## Erase character
+  EL   = bytechr( 248 )  ## Erase line
+  GA   = bytechr( 249 )  ## Go ahead
+  SB   = bytechr( 250 )  ## Begin option subnegotiation
 
-  WILL = chr( 251 )
-  WONT = chr( 252 )
-  DO   = chr( 253 )
-  DONT = chr( 254 )
+  WILL = bytechr( 251 )
+  WONT = bytechr( 252 )
+  DO   = bytechr( 253 )
+  DONT = bytechr( 254 )
 
-  IAC  = chr( 255 )
+  IAC  = bytechr( 255 )
 
   match = re.compile(
       IAC
-    + "(?:"
-    +   "(?P<cmd>" + "|".join( [ NOP, DM, BRK, IP, AO,
-                                 AYT, EC, EL, GA, IAC ] ) + ")"
-    +   "|"
-    +   "(?:"
-    +     "(?P<cmdopt>" + WILL + "|" + WONT + "|" + DO + "|" + DONT + ")"
-    +     "(?P<opt>.)"
-    +   ")"
-    +   "|"
-    +   "(?:"
+    + b"(?:"
+    +   b"(?P<cmd>" + b"|".join( [ NOP, DM, BRK, IP, AO,
+                                   AYT, EC, EL, GA, IAC ] ) + b")"
+    +   b"|"
+    +   b"(?:"
+    +     b"(?P<cmdopt>" + WILL + b"|" + WONT + b"|" + DO + b"|" + DONT + b")"
+    +     b"(?P<opt>.)"
+    +   b")"
+    +   b"|"
+    +   b"(?:"
     +     SB
-    +     "(?P<subopt>.)"
-    +     "(?P<subparam>.*)"
+    +     b"(?P<subopt>.)"
+    +     b"(?P<subparam>.*)"
     +     IAC + SE
-    +   ")"
-    + ")"
+    +   b")"
+    + b")"
   )
 
   unfinished = re.compile(
       IAC
-    + "("
-    +   WILL + "|" + WONT + "|" + DO + "|" + DONT
-    +   "("
-    +     SB + ".{0,256}"
-    +   ")"
-    + ")?"
-    + "$"
+    + b"("
+    +   WILL + b"|" + WONT + b"|" + DO + b"|" + DONT
+    +   b"("
+    +     SB + b".{0,256}"
+    +   b")"
+    + b")?"
+    + b"$"
   )
 
 

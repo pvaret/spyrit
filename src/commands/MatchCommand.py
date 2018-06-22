@@ -21,6 +21,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from Matches     import MatchCreationError
 from .BaseCommand import BaseCommand
@@ -305,7 +306,7 @@ class MatchCommand( BaseCommand ):
 
       group = matchgroup.name
       tokens = sorted( ( tok, value )
-                         for tok, value in matchresult.groupdict().iteritems()
+                         for tok, value in matchresult.groupdict().items()
                          if value is not None )
 
       if tokens:
@@ -337,7 +338,7 @@ class MatchCommand( BaseCommand ):
     if mgr.isEmpty():
       msg.append( u"  None." )
 
-    for key, matchgroup in sorted( mgr.groups.iteritems() ):
+    for key, matchgroup in sorted( mgr.groups.items() ):
 
       group = matchgroup.name
 

@@ -71,7 +71,7 @@ class FormatStack:
       self._clearFormat( id )
       return
 
-    for property, value in format.iteritems():
+    for property, value in format.items():
 
       stack = self.stacks[ property ]
 
@@ -107,7 +107,7 @@ class FormatStack:
 
   def _clearFormat( self, id ):
 
-    for property, stack in self.stacks.iteritems():
+    for property, stack in self.stacks.items():
 
       if id in stack:
 

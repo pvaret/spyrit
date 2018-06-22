@@ -28,6 +28,7 @@ u"""
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
@@ -138,7 +139,7 @@ def parse_settings_version( text ):
   ## If not found, version is assumed to be the latest.
   version = VERSION
 
-  v = re.compile( ur'^\#*\s*version\s*:\s*(?P<version>\d+)\s*$' )
+  v = re.compile( r'^\#*\s*version\s*:\s*(?P<version>\d+)\s*$' )
 
   ## Look for version tag in first few lines:
   for i, line in enumerate( text.split( u'\n' ) ):
@@ -211,7 +212,7 @@ def ini_to_struct( ini_text ):
   structure.
 
   >>> from pprint import pprint
-  >>> pprint( ini_to_struct( ur'''
+  >>> pprint( ini_to_struct( r'''
   ...
   ... key1 = 1
   ... key2 = 2
@@ -310,12 +311,12 @@ def struct_to_ini( struct, depth=0 ):
 
   keys, sections = struct
 
-  for k, v in sorted( keys.iteritems() ):
+  for k, v in sorted( keys.items() ):
     output += "%s%s = %s\n" % ( INDENT*depth, k, v )
 
   depth += 1
 
-  for k, substruct in sorted( sections.iteritems() ):
+  for k, substruct in sorted( sections.items() ):
     output += u'\n'
     output += INDENT * depth
     output += u'[' * depth

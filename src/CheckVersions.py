@@ -21,6 +21,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 REQUIRED_PYTHON_VERSION = ( 2, 7 )
 REQUIRED_SIP_VERSION    = ( 4, 10 )

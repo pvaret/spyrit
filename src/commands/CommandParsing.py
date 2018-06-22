@@ -28,14 +28,15 @@ u"""
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
-QUOTED = re.compile( ur'([^"\'\s]*)' +     ## Anything but space or quote
-                     ur'(?:'         +     ## Non-grouping match...
-                       ur'"(.*?)"' + u'|' + ur"'(.*?)'" +  ## Anything quoted
-                     ur')'           +
-                     ur'([^"\'\s]*)' )     ## Anything but space or quote
+QUOTED = re.compile( r'([^"\'\s]*)' +     ## Anything but space or quote
+                     r'(?:'         +     ## Non-grouping match...
+                       r'"(.*?)"' + u'|' + r"'(.*?)'" +  ## Anything quoted
+                     r')'           +
+                     r'([^"\'\s]*)' )     ## Anything but space or quote
 
 KWARG_SEP = u"="
 

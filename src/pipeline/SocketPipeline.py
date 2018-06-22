@@ -21,6 +21,7 @@
 ##
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from PyQt5.QtCore    import QObject
 from PyQt5.QtCore    import pyqtSlot
@@ -198,7 +199,7 @@ class SocketPipeline( QObject ):
 
   def flushBuffer( self ):
 
-    data = ''.join( self.buffer )
+    data = b''.join( self.buffer )
     del self.buffer[:]
     self.pipeline.feedBytes( data )
 

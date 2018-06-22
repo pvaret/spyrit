@@ -22,6 +22,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from Globals                  import CMDCHAR
 from Globals                  import HELP

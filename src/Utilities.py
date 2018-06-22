@@ -28,6 +28,7 @@ u"""
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 ## Python 3 compatibility
 try:
@@ -57,7 +58,7 @@ def check_ssl_is_available():
 
 
 def quote( string, esc=BS ):
-  ur"""
+  r"""
   Escapes typical control characters in the given string.
 
   >>> STR = u'''Carriage
@@ -71,7 +72,7 @@ def quote( string, esc=BS ):
   string = string.replace( esc, esc + esc )
 
   ## Then escape the rest:
-  for from_, to in DEFAULT_ESCAPES.iteritems():
+  for from_, to in DEFAULT_ESCAPES.items():
     string = string.replace( from_, esc + to )
 
   return string
@@ -79,14 +80,14 @@ def quote( string, esc=BS ):
 
 
 def unquote( string, esc=BS ):
-  ur"""
+  r"""
   Unquote a string. Reverse operation to quote().
 
-  >>> print( unquote( ur'It\'s okay.\nYes.' ) )
+  >>> print( unquote( r'It\'s okay.\nYes.' ) )
   It's okay.
   Yes.
 
-  >>> STR = ur'''This \\ 'is'
+  >>> STR = r'''This \\ 'is'
   ... a "test".\n'''
   >>> unquote( quote( STR ) ) == STR
   True
@@ -95,7 +96,7 @@ def unquote( string, esc=BS ):
 
   result    = []
   in_escape = False
-  escapes   = dict( ( v, k ) for ( k, v ) in DEFAULT_ESCAPES.iteritems() )
+  escapes   = dict( ( v, k ) for ( k, v ) in DEFAULT_ESCAPES.items() )
 
   for c in string:
 
@@ -189,7 +190,8 @@ def ensure_valid_filename( filename ):
 
   assert type( filename ) is type( u'' )  ## Only accept Unicode strings.
 
-  invalid_char_codes = range( 32 )
+  ## Note the list cast for Python 3 compatibility.
+  invalid_char_codes = list( range( 32 ) )
   invalid_char_codes.extend( ord( c ) for c in u'<>:"/\\|?*' )
 
   translation_table = dict( ( c, u'_' ) for c in invalid_char_codes )

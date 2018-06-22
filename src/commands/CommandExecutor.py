@@ -30,6 +30,7 @@ u"""\
 
 from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import inspect
 
@@ -199,7 +200,7 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
   ## STEP 2: Apply named args.
 
-  for kwarg, kwvalue in provided_kwargs.iteritems():
+  for kwarg, kwvalue in provided_kwargs.items():
 
     if kwarg in actual_args:
 
@@ -227,7 +228,7 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
   ## STEP 3: Apply default values.
 
-  for default_arg, default_value in kw_defaults.iteritems():
+  for default_arg, default_value in kw_defaults.items():
 
     if default_arg not in actual_args:
       actual_args[ default_arg ] = default_value

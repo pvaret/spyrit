@@ -21,6 +21,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from CallbackRegistry import CallbackRegistry
 
@@ -296,7 +297,7 @@ class Node( DictAttrProxy ):
 
       elif isinstance( node, nodeclass ):
 
-        for node_key, node in sorted( node.nodes.iteritems() ):
+        for node_key, node in sorted( node.nodes.items() ):
 
           if node.isEmpty():
             continue
@@ -488,7 +489,7 @@ class Settings( Node ):
       current_settings, struct = stack.pop( 0 )
       keys, sections = struct
 
-      for key, value in keys.iteritems():
+      for key, value in keys.items():
 
         try:
           node = current_settings.get( key )
@@ -503,7 +504,7 @@ class Settings( Node ):
         value = serializer.deserialize( value )
         node.setValue( value )
 
-      for section, struct in sections.iteritems():
+      for section, struct in sections.items():
 
         try:
           node = current_settings.get( section )

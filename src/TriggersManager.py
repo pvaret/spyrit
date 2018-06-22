@@ -21,6 +21,7 @@
 ##
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os.path
 
@@ -304,7 +305,7 @@ class TriggersManager:
 
     all_groups = settings[ MATCHES ]
 
-    for groupname, node in all_groups.nodes.iteritems():
+    for groupname, node in all_groups.nodes.items():
 
       matches = node.get( 'match' ).value() or []
 
@@ -491,7 +492,7 @@ class TriggersManager:
     except KeyError:
       pass
 
-    for groupname, matchgroup in self.groups.iteritems():
+    for groupname, matchgroup in self.groups.items():
 
       node = settings[ MATCHES ].get( groupname )
       node[ 'match' ] = matchgroup.matches

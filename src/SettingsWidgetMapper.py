@@ -22,6 +22,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from PyQt5.QtCore    import Qt
 from PyQt5.QtCore    import QObject
@@ -62,7 +63,9 @@ class BaseWidgetMapper( QObject ):
     self.validator = None
 
 
-  @pyqtSlot( object )
+  @pyqtSlot( int )
+  @pyqtSlot( bool )
+  @pyqtSlot( unicode )
   def emitValueChanged( self, widget_value ):
 
     assert( isinstance( widget_value, self.widget_value_class ) )

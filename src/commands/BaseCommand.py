@@ -20,6 +20,7 @@
 ##
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from PyQt5.QtWidgets import QApplication
 
@@ -54,7 +55,7 @@ class BaseCommand( object ):
     commands = QApplication.instance().core.commands
 
     ## TODO: Clean this up; store cmd name when registering it.
-    cmdname = [ k for k, v in commands.commands.iteritems()
+    cmdname = [ k for k, v in commands.commands.items()
                 if v is self ][0]
 
     if args or kwargs:

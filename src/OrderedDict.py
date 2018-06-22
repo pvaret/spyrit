@@ -22,6 +22,7 @@
 
 
 # 07/07/2010 P. Varet: Added insert() and last() methods.
+# 22/06/2018 P. Varet: Added some Python 3 compatibility.
 
 
 
@@ -99,9 +100,9 @@ class OrderedDict(dict, DictMixin):
     pop = DictMixin.pop
     values = DictMixin.values
     items = DictMixin.items
-    iterkeys = DictMixin.iterkeys
-    itervalues = DictMixin.itervalues
-    iteritems = DictMixin.iteritems
+    iterkeys = DictMixin.keys
+    itervalues = DictMixin.values
+    iteritems = DictMixin.items
 
     def __repr__(self):
         if not self:

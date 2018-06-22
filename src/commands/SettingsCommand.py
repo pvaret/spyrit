@@ -21,6 +21,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from PyQt5.QtWidgets import QApplication
 
@@ -193,7 +194,7 @@ class SettingsCommand( BaseCommand ):
 
     output = u"Available settings:\n"
 
-    for setting, desc in sorted( DESCRIPTIONS.iteritems() ):
+    for setting, desc in sorted( DESCRIPTIONS.items() ):
       output += setting.ljust( max_len + 2 )
       output += desc
       output += '\n'

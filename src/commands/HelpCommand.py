@@ -21,6 +21,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from textwrap import dedent
 
@@ -120,7 +121,7 @@ class HelpCommand( BaseCommand ):
 
     ljust = max( len( c ) for c in cmd.subcmds.keys() ) + 2
 
-    for subcmdname, subcmd in sorted( cmd.subcmds.iteritems() ):
+    for subcmdname, subcmd in sorted( cmd.subcmds.items() ):
 
       doc = subcmd.__doc__
 

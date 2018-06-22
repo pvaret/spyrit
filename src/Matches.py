@@ -27,6 +27,7 @@
 
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
@@ -89,7 +90,7 @@ class RegexMatch:
     if not self.regex:
       return None
 
-    tokens = sorted( [ ( v, k ) for k, v in self.regex.groupindex.iteritems() ] )
+    tokens = sorted( [ ( v, k ) for k, v in self.regex.groupindex.items() ] )
 
     return [ tok[1] for tok in tokens ]
 
@@ -115,14 +116,14 @@ class RegexMatch:
 ## or asterisks, if they aren't preceded by an odd number of backslashes.
 
 
-TOKEN = ur' *\w+ *' ## Non-null word with optional surrounding space.
+TOKEN = r' *\w+ *' ## Non-null word with optional surrounding space.
 
-BS      = ur'\\' ## Backslash
-ASTER   = ur'\*' ## Asterisk
-PERCENT = ur'\%' ## Percent sign
+BS      = r'\\' ## Backslash
+ASTER   = r'\*' ## Asterisk
+PERCENT = r'\%' ## Percent sign
 
-LSB   = ur'\[' ## Left square bracket
-RSB   = ur'\]' ## Right square bracket
+LSB   = r'\[' ## Left square bracket
+RSB   = r'\]' ## Right square bracket
 
 PARSER = re.compile(
     u'(?:'                      ## Either...
@@ -183,7 +184,7 @@ class SmartMatch( RegexMatch ):
         tokens.add( token )
 
         ## Named match for any non-null string, non-greedy.
-        regex.append( ur"(?P<%s>.+?)" % token )
+        regex.append( r"(?P<%s>.+?)" % token )
 
     return u''.join( regex )
 

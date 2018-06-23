@@ -137,7 +137,7 @@ class CallbackRegistry:
 
   def triggerAll( self, *args ):
 
-    for fnref in self.__registry.itervalues():
+    for fnref in self.__registry.values():
 
       fn = fnref()
       if fn is not None:

@@ -23,7 +23,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-from enum import IntEnum
+from localenum import IntEnum
 
 
 class ChunkTypeMismatch( Exception ):
@@ -34,7 +34,6 @@ class ChunkTypeMismatch( Exception ):
   pass
 
 
-
 ## Define chunk types:
 
 class ChunkType( IntEnum ):
@@ -42,7 +41,7 @@ class ChunkType( IntEnum ):
   NETWORK     = 1 << 0
   PACKETBOUND = 1 << 1
   PROMPTSWEEP = 1 << 2
-  BYTES       = 2 << 3
+  BYTES       = 1 << 3
   TELNET      = 1 << 4
   ANSI        = 1 << 5
   FLOWCONTROL = 1 << 6

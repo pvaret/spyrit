@@ -1,146 +1,217 @@
-# Copyright (c) 2009 Raymond Hettinger
-#
-# Permission is hereby granted, free of charge, to any person
-# obtaining a copy of this software and associated documentation files
-# (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge,
-# publish, distribute, sublicense, and/or sell copies of the Software,
-# and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
-#
-#     The above copyright notice and this permission notice shall be
-#     included in all copies or substantial portions of the Software.
-#
-#     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-#     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-#     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-#     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-#     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-#     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-#     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-#     OTHER DEALINGS IN THE SOFTWARE.
+# -*- coding: utf-8 -*-
+
+## Copyright (c) 2007-2018 Pascal Varet <p.varet@gmail.com>
+##
+## This file is part of Spyrit.
+##
+## Spyrit is free software; you can redistribute it and/or modify it under the
+## terms of the GNU General Public License version 2 as published by the Free
+## Software Foundation.
+##
+## You should have received a copy of the GNU General Public License along with
+## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+## Fifth Floor, Boston, MA  02110-1301  USA
+##
+
+##
+## OrderedDict.py
+##
+## A dict-like class that remembers the order of its keys.
+##
+
+"""
+:doctest:
+
+>>> from OrderedDict import *
+
+"""
+
+class OrderedDict( object ):
+  """
+  A dict class the remembers the insertion order of its elements.
+
+  >>> def make_example_dict():
+  ...   d = OrderedDict()
+  ...   d[ 'a' ] = 1
+  ...   d[ 'b' ] = 2
+  ...   d[ 'c' ] = 3
+  ...   d[ 'd' ] = 4
+  ...   return d
+
+  >>> def print_in_order( d ):
+  ...   print (
+  ...     '{'
+  ...   + ', '.join(
+  ...       ( '%s:%s' % ( repr( k ), repr( v ) ) for k, v in d.items() )
+  ...     )
+  ...   + '}'
+  ...   )
+  >>> print_in_order( make_example_dict() )
+  {'a':1, 'b':2, 'c':3, 'd':4}
+
+  """
+
+  def __init__( self ):
+
+    self.__dict = {}
+    self.__ordered_keys = []
+
+  def __setitem__( self, key, value ):
+    """
+    >>> d = make_example_dict()
+    >>> d[ 'e' ] = 5
+    >>> print_in_order( d )
+    {'a':1, 'b':2, 'c':3, 'd':4, 'e':5}
+
+    >>> d[ 'c' ] = 5
+    >>> print_in_order( d )
+    {'a':1, 'b':2, 'c':5, 'd':4, 'e':5}
+
+    """
+
+    ## Setting an already existing key does not change its position.
+    if key not in self.__dict:
+      self.__ordered_keys.append( key )
+
+    self.__dict[ key ] = value
+
+  def __getitem__( self, key ):
+    """
+    >>> d = make_example_dict()
+    >>> d[ 'b' ]
+    2
+    >>> d[ 'e' ]  #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    KeyError: ...
+
+    """
+
+    if key not in self.__dict:
+      raise KeyError( key )
+
+    return self.__dict[ key ]
+
+  def __delitem__( self, key ):
+    """
+    >>> d = make_example_dict()
+    >>> del d[ 'c' ]
+    >>> print_in_order( d )
+    {'a':1, 'b':2, 'd':4}
+
+    >>> del d[ 'c' ]  #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    KeyError: ...
+
+    """
+
+    if key not in self.__dict:
+      raise KeyError( key )
+
+    del self.__dict[ key ]
+    self.__ordered_keys.remove( key )
+
+  def __contains__( self, key ):
+    """
+    >>> d = make_example_dict()
+    >>> 'a' in d
+    True
+    >>> 'e' in d
+    False
+
+    """
+
+    return key in self.__dict
+
+  def __iter__( self ):
+    """
+    >>> d = make_example_dict()
+    >>> for k in iter( d ):
+    ...   print( k )
+    a
+    b
+    c
+    d
+
+    """
+
+    return iter( self.__ordered_keys )
+
+  def values( self ):
+    """
+    >>> d = make_example_dict()
+    >>> for v in d.values():
+    ...   print( v )
+    1
+    2
+    3
+    4
 
 
-# 07/07/2010 P. Varet: Added insert() and last() methods.
-# 22/06/2018 P. Varet: Added some Python 3 compatibility.
+    """
 
+    return ( self.__dict[ k ] for k in self.__ordered_keys )
 
+  def setdefault( self, key, defaultvalue ):
+    """
+    >>> d = make_example_dict()
+    >>> print( d.setdefault( 'a', 5 ) )
+    1
+    >>> print( d.setdefault( 'e', 6 ) )
+    6
+    >>> print_in_order( d )
+    {'a':1, 'b':2, 'c':3, 'd':4, 'e':6}
 
-from UserDict import DictMixin
+    """
 
-class OrderedDict(dict, DictMixin):
+    if key not in self:
+      self[ key ] = defaultvalue
 
-    def __init__(self, *args, **kwds):
-        if len(args) > 1:
-            raise TypeError('expected at most 1 arguments, got %d' % len(args))
-        try:
-            self.__end
-        except AttributeError:
-            self.clear()
-        self.update(*args, **kwds)
+    return self[ key ]
 
-    def clear(self):
-        self.__end = end = []
-        end += [None, end, end]         # sentinel node for doubly linked list
-        self.__map = {}                 # key --> [key, prev, next]
-        dict.clear(self)
+  def items( self ):
+    """
+    >>> d = make_example_dict()
+    >>> for k, v in d.items():
+    ...   print( ( k, v ) )
+    ('a', 1)
+    ('b', 2)
+    ('c', 3)
+    ('d', 4)
 
-    def __setitem__(self, key, value):
-        if key not in self:
-            end = self.__end
-            curr = end[1]
-            curr[2] = end[1] = self.__map[key] = [key, curr, end]
-        dict.__setitem__(self, key, value)
+    """
 
-    def __delitem__(self, key):
-        dict.__delitem__(self, key)
-        key, prev, next = self.__map.pop(key)
-        prev[2] = next
-        next[1] = prev
+    return ( ( k, self.__dict[ k ] ) for k in self.__ordered_keys )
 
-    def __iter__(self):
-        end = self.__end
-        curr = end[2]
-        while curr is not end:
-            yield curr[0]
-            curr = curr[2]
+  def insert( self, index, key, value ):
+    """
+    >>> d = make_example_dict()
+    >>> d.insert( 2, 'e', 5 )
+    >>> print_in_order( d )
+    {'a':1, 'b':2, 'e':5, 'c':3, 'd':4}
 
-    def __reversed__(self):
-        end = self.__end
-        curr = end[1]
-        while curr is not end:
-            yield curr[0]
-            curr = curr[1]
+    """
 
-    def popitem(self, last=True):
-        if not self:
-            raise KeyError('dictionary is empty')
-        if last:
-            key = reversed(self).next()
-        else:
-            key = iter(self).next()
-        value = self.pop(key)
-        return key, value
+    if key in self.__dict:
+      del self[ key ]
 
-    def __reduce__(self):
-        items = [[k, self[k]] for k in self]
-        tmp = self.__map, self.__end
-        del self.__map, self.__end
-        inst_dict = vars(self).copy()
-        self.__map, self.__end = tmp
-        if inst_dict:
-            return (self.__class__, (items,), inst_dict)
-        return self.__class__, (items,)
+    self.__dict[ key ] = value
+    self.__ordered_keys.insert( index, key )
 
-    def keys(self):
-        return list(self)
+  def lastvalue( self ):
+    """
+    >>> d = make_example_dict()
+    >>> print( d.lastvalue() )
+    4
 
-    setdefault = DictMixin.setdefault
-    update = DictMixin.update
-    pop = DictMixin.pop
-    values = DictMixin.values
-    items = DictMixin.items
-    iterkeys = DictMixin.keys
-    itervalues = DictMixin.values
-    iteritems = DictMixin.items
+    >>> d = OrderedDict()
+    >>> print( d.lastvalue() )
+    None
 
-    def __repr__(self):
-        if not self:
-            return '%s()' % (self.__class__.__name__,)
-        return '%s(%r)' % (self.__class__.__name__, self.items())
+    """
 
-    def copy(self):
-        return self.__class__(self)
+    if not self.__ordered_keys:
+      return None
 
-    @classmethod
-    def fromkeys(cls, iterable, value=None):
-        d = cls()
-        for key in iterable:
-            d[key] = value
-        return d
-
-    def __eq__(self, other):
-        if isinstance(other, OrderedDict):
-            if len(self) != len(other):
-                return False
-            for p, q in  zip(self.items(), other.items()):
-                if p != q:
-                    return False
-            return True
-        return dict.__eq__(self, other)
-
-    def __ne__(self, other):
-        return not self == other
-
-    def insert(self, index, key, value):
-      dict.__setitem__(self, key, value)
-      curr = self.__end
-      while index:
-          index -= 1
-          curr = curr[2]
-      next = curr[2]
-      next[1] = curr[2] = self.__map[key] = [key, curr, next]
-
-
-    def last(self):
-      return self.get(self.__end[1][0])
+    return self.__dict[ self.__ordered_keys[ -1 ] ]

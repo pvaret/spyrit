@@ -75,7 +75,7 @@ class FormatStack:
 
       stack = self.stacks[ property ]
 
-      old_end_value = stack.last()
+      old_end_value = stack.lastvalue()
 
       if value:
 
@@ -93,7 +93,7 @@ class FormatStack:
         else:
           continue
 
-      new_end_value = stack.last()
+      new_end_value = stack.lastvalue()
 
       if new_end_value == old_end_value:
         continue
@@ -111,9 +111,9 @@ class FormatStack:
 
       if id in stack:
 
-        old_end_value = stack.last()
+        old_end_value = stack.lastvalue()
         del stack[ id ]
-        new_end_value = stack.last()
+        new_end_value = stack.lastvalue()
 
         if new_end_value == old_end_value:
           continue

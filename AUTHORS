@@ -16,5 +16,4 @@ ATTRIBUTION
 ===========
 
 winpath module (http://code.activestate.com/recipes/473846/) -- Chris Arndt
-OrderedDict (http://pypi.python.org/pypi/ordereddict) -- Raymond Hettinger
 enum module (https://pypi.python.org/pypi/enum34) -- Ethan Furman

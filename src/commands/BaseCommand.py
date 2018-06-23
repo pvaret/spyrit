@@ -59,7 +59,7 @@ class BaseCommand( object ):
                 if v is self ][0]
 
     if args or kwargs:
-        arg1 = ( list( args ) + kwargs.keys() )[0]
+        arg1 = ( list( args ) + list( kwargs.keys() ) )[0]
         world.info( u"Unknown argument '%s' for command %s!" \
                     % ( arg1, cmdname ) )
 

@@ -53,7 +53,6 @@ class UnicodeTextFilter( BaseFilter ):
   def setEncoding( self, encoding ):
 
     assert type( encoding ) is type( u"" )
-    encoding = encoding.encode( "ascii", "ignore" )  ## unicode -> str
 
     try:
       codecs.lookup( encoding )

@@ -41,8 +41,6 @@ from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 import Serializers
 
 
-
-
 class HighlightAction:
 
   multiple_matches_per_line = True
@@ -297,7 +295,7 @@ class TriggersManager:
 
   def __init__( self, settings ):
 
-    self.groups = {}
+    self.groups = OrderedDict()
     self.load( settings )
 
 
@@ -450,9 +448,8 @@ class TriggersManager:
 
   def findMatches( self, line ):
 
-    for matchgroup in DEFAULT_MATCHES + sorted( self.groups.itervalues() ):
+    for matchgroup in DEFAULT_MATCHES + list( self.groups.values() ):
       for match in matchgroup.matches:
-
         for result in match.matches( line ):
           yield matchgroup, result
 
@@ -462,7 +459,7 @@ class TriggersManager:
     already_performed_on_this_line = set()
 
     for matchgroup, matchresult in self.findMatches( line ):
-      for action in matchgroup.actions.itervalues():
+      for action in matchgroup.actions.values():
 
         ## TODO: make this cleaner. Using the class is not nice. Ideally we'd
         ## overhaul the action serialization system and reserve the 'name'
@@ -478,7 +475,7 @@ class TriggersManager:
 
   def isEmpty( self ):
 
-    return len( self.groups ) == 0
+    return not self.groups
 
 
   def save( self, settings ):
@@ -497,5 +494,5 @@ class TriggersManager:
       node = settings[ MATCHES ].get( groupname )
       node[ 'match' ] = matchgroup.matches
 
-      for action in matchgroup.actions.itervalues():
+      for action in matchgroup.actions.values():
         node[ action.name ] = repr( action )

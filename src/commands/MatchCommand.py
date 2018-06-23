@@ -351,7 +351,7 @@ class MatchCommand( BaseCommand ):
 
         msg.append( u"    #%d: " % ( i + 1 ) + m.toString() )
 
-      for i, a in enumerate( matchgroup.actions.itervalues() ):
+      for i, a in enumerate( matchgroup.actions.values() ):
 
         if i == 0:
           msg.append( u"  Actions:" )

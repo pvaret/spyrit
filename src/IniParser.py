@@ -119,7 +119,7 @@ def update_settings_1_to_2( struct ):
   for from_, to in REPLACE:
     replace_value( keys, from_, to )
 
-    for subsection in worlds.itervalues():
+    for subsection in worlds.values():
       replace_value( subsection[0], from_, to )
 
   replace_value( sections, u'Worlds', u'worlds' )
@@ -212,7 +212,7 @@ def ini_to_struct( ini_text ):
   structure.
 
   >>> from pprint import pprint
-  >>> pprint( ini_to_struct( r'''
+  >>> input = r'''
   ...
   ... key1 = 1
   ... key2 = 2
@@ -228,12 +228,15 @@ def ini_to_struct( ini_text ):
   ... [ section2 ]
   ...   compound.key5 = 5
   ...
-  ... ''' ) )  #doctest: +NORMALIZE_WHITESPACE
-  ({u'key1': u'1', u'key2': u'2'},
-   {u'section1': ({},
-                  {u'subsection1': ({u'key3': u'"This is a string"'},
-                                    {})}),
-    u'section2': ({u'compound.key5': u'5'}, {})})
+  ... '''
+  >>> output = \
+  ...   ({u'key1': u'1', u'key2': u'2'},
+  ...    {u'section1': ({},
+  ...                   {u'subsection1': ({u'key3': u'"This is a string"'},
+  ...                                     {})}),
+  ...     u'section2': ({u'compound.key5': u'5'}, {})})
+  >>> output == ini_to_struct( input )
+  True
 
   """
 

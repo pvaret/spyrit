@@ -55,12 +55,11 @@ Technically minded users can follow the development on <a
 <br/>
 This software uses the <i><a
   href="http://code.activestate.com/recipes/473846/">winpath</a></i> module by
-  Chris Arndt, the <a href="https://pypi.python.org/pypi/enum34">enum</a>
-  module by Ethan Furman, and a modified version of Raymond Hettinger's <i><a
-  href="http://pypi.python.org/pypi/ordereddict">OrderedDict</a></i>. Special
-  characters imported from the <a href="http://dejavu.sourceforge.net/">DejaVu
-  Sans Mono</a> font. Additional icons imported from the <a
-  href="http://www.oxygen-icons.org/">Oxygen</a> set.<br/>
+  Chris Arndt, and the <a href="https://pypi.python.org/pypi/enum34">enum</a>
+  module by Ethan Furman. Special characters imported from the <a
+  href="http://dejavu.sourceforge.net/">DejaVu Sans Mono</a> font. Additional
+  icons imported from the <a href="http://www.oxygen-icons.org/">Oxygen</a>
+  set.<br/>
 <br/>
 %(name)s is &#169;2007-2018 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU

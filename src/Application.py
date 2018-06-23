@@ -107,7 +107,9 @@ class Application( QApplication ):
 
     for arg in self.args[ 1: ]:
 
-      arg = arg.decode( self.local_encoding, "replace" )
+      ## Python 3 compatibility:
+      if type( arg ) is type( b"" ):
+        arg = arg.decode( self.local_encoding, "replace" )
 
       if u":" in arg:  ## This is probably a 'server:port' argument.
 

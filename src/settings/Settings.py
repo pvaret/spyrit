@@ -266,7 +266,7 @@ class Node( DictAttrProxy ):
 
   def isEmpty( self ):
 
-    return all( node.isEmpty() for node in self.nodes.itervalues() )
+    return all( node.isEmpty() for node in self.nodes.values() )
 
 
   def dump( self, predicate=dump_predicate ):

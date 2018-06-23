@@ -58,50 +58,48 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   Let us see how it works:
 
   >>> ok, msg = match_args_to_function( simple, ( 'a', 'b' ), {} )
-  >>> print( ok )
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )
+  True : None
 
   >>> ok, msg = match_args_to_function( simple, ( 'a', ), {} )
-  >>> print( ok )
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )
+  True : None
 
   >>> ok, msg = match_args_to_function( simple, (), {} )
-  >>> print( ok )  ## Missing argument a!
-  False
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Missing argument a!
+  False : Too few parameters! (Missing parameter 'a')
 
   >>> ok, msg = match_args_to_function( simple, (), { 'a': 1 } )
-  >>> print( ok )  ## Passing kwargs also works.
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Passing kwargs also works.
+  True : None
 
   >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'c': 1 } )
-  >>> print( ok )  ## Passing an unexpected argument doesn't, though.
-  False
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Passing an unexpected argument
+  ...                                   ## doesn't, though.
+  False : c: unknown parameter!
 
   >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'a': 1 } )
-  >>> print( ok )  ## Neither does passing an already provided argument.
-  False
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Neither does passing a redundant
+  ...                                   ## argument.
+  False : Parameter 'a' passed several times!
 
   >>> ok, msg = match_args_to_function( simple, ( 'a', 'b', 'c' ), {} )
-  >>> print( ok )  ## And neither does passing too many arguments.
-  False
+  >>> print( "%s : %s" % ( ok, msg ) )  ## And neither does passing too many
+  ...                                   ## arguments.
+  False : Too many parameters! (Did you forget some quotation marks?)
 
   >>> ok, msg = match_args_to_function( simple_args, ( 'a', 'b', 'c' ), {} )
-  >>> print( ok )  ## Unless the function accepts *args.
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Unless the function accepts *args.
+  True : None
 
   >>> ok, msg = match_args_to_function(
   ...     simple_kwargs, ( 'a', 'b' ), { 'c': 1 } )
-  >>> print( ok )  ## Or the function accepts **kwargs.
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Or the function accepts **kwargs.
+  True : None
 
-  Class instantiations and method calls also work:
+  Class method calls also work:
 
-  >>> class A1:
-  ...   pass
-
-  >>> class A2:
-  ...   def __init__( self, a ):
-  ...     pass
+  >>> class A( object ):
   ...   def method( self, a ):
   ...     pass
   ...   @classmethod
@@ -111,42 +109,40 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   ...   def staticmethod( a ):
   ...     pass
 
-  >>> ok, msg = match_args_to_function( A1, (), {} )
-  >>> print( ok )  ## It works even with no __init__ method defined.
-  True
+  First, note that this does not work on class instanciations:
 
-  >>> ok, msg = match_args_to_function( A2, ( 'a' ), {} )
-  >>> print( ok )  ## If __init__ exists, its spec is used.
-  True
+  >>> match_args_to_function( A, (), {} )
+  Traceback (most recent call last):
+    ...
+  TypeError: Tried to call match_args_to_function on a class!
 
-  >>> a = A2( 'a' )
+  >>> a = A()
 
   >>> ok, msg = match_args_to_function( a.method, ( 'a' ), {} )
-  >>> print( ok )  ## Instance methods work like you'd expect.
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )  ## Instance methods work like you'd
+  ...                                   ## expect.
+  True : None
 
   >>> ok, msg = match_args_to_function( a.classmethod, ( 'a' ), {} )
-  >>> print( ok )  ## But so do class methods.
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )  ## But so do class methods.
+  True : None
 
   >>> ok, msg = match_args_to_function( a.staticmethod, ( 'a' ), {} )
-  >>> print( ok )  ## And static methods.
-  True
+  >>> print( "%s : %s" % ( ok, msg ) )  ## And static methods.
+  True : None
 
   """
 
-  ## When a class is called, the actual method invoked is __init__. The
-  ## downside of this approach: this function fails if the class doesn't bear
-  ## an __init__ method, or if its __init__ method is a C builtin. Be careful.
-
   if inspect.isclass( callable ):
+    raise TypeError( u"Tried to call match_args_to_function on a class!" )
 
-    ## When a class is instantiated, what's really called is its __init__
-    ## method. If there is no such method, use a null function instead.
-    callable = getattr( callable, "__init__", lambda: None )
-
-  expected_args, star_args, star_kwargs, defaults = \
-                                           inspect.getargspec( callable )
+  ## TODO: replace with inspect.signature in Python 3.
+  try:
+    expected_args, star_args, star_kwargs, defaults = \
+                                             inspect.getargspec( callable )
+  except TypeError:
+    raise TypeError( u"Tried to call match_args_to_function on a non-Python "
+                      "function!" )
 
   ## Reminder:
   ##   - expected_args is the list of the callable's arguments.
@@ -208,7 +204,7 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
       if not isinstance( kwarg, type( u"" ) ):
         kwarg = kwarg.decode( "utf-8" )
 
-      return False, u"Parameter %s given several times!" % kwarg
+      return False, u"Parameter '%s' passed several times!" % kwarg
 
     if kwarg not in expected_args:
 

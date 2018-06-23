@@ -23,9 +23,7 @@ LAUNCHER_STUB = """\
 ## -*- coding: utf-8 -*-
 
 
-
 EMBEDDED_MODULES = %(modules)s
-
 
 
 import sys
@@ -36,15 +34,15 @@ import base64
 
 class embedded_module_importer:
 
-  def find_module( s, fullname, path=None ):
+  def find_module( self, fullname, path=None ):
 
     if fullname == "MAIN":
       fullname = "__main__"
 
-    return EMBEDDED_MODULES.has_key( fullname ) and s or None
+    return self if fullname in EMBEDDED_MODULES else None
 
 
-  def load_module( s, fullname ):
+  def load_module( self, fullname ):
 
     if fullname == "MAIN":
       fullname = "__main__"
@@ -55,7 +53,7 @@ class embedded_module_importer:
 
     mod = sys.modules.setdefault( fullname, imp.new_module( fullname ) )
     mod.__file__ = filename
-    mod.__loader__ = s
+    mod.__loader__ = self
     if path:
       mod.__path__ = path
 
@@ -66,7 +64,12 @@ class embedded_module_importer:
 
 sys.meta_path.append( embedded_module_importer() )
 
-import MAIN
+try:
+  import MAIN
+except KeyError:
+  ## The name rewriting trick we do here confuses the Python 3 import machinery,
+  ## which works but reports a spurious KeyError.
+  pass
 """
 
 

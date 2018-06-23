@@ -27,16 +27,28 @@ from __future__ import print_function
 class Messages:
 
   def info( self, txt ):
-    print( u"INFO:", txt )
+    try:
+      print( u"INFO:", txt )
+    except IOError:
+      pass
 
   def debug( self, txt ):
-    print( u"DEBUG:", txt )
+    try:
+      print( u"DEBUG:", txt )
+    except IOError:
+      pass
 
   def warn( self, txt ):
-    print( u"WARN:", txt )
+    try:
+      print( u"WARN:", txt )
+    except IOError:
+      pass
 
   def error( self, txt ):
-    print( u"ERROR:", txt )
+    try:
+      print( u"ERROR:", txt )
+    except IOError:
+      pass
 
 
 

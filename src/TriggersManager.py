@@ -295,9 +295,14 @@ class TriggersManager:
 
   def __init__( self, settings ):
 
+    self.actionregistry = {}
     self.groups = OrderedDict()
     self.load( settings )
 
+  def registerAction( self, actionname, action ):
+
+    assert actionname not in self.actionregistry
+    self.actionregistry[ actionname ] = action
 
   def load( self, settings ):
 
@@ -376,23 +381,10 @@ class TriggersManager:
 
   def loadAction( self, actionname, args, kwargs ):
 
-    ## TODO: Make this less hardcody. We can do it. We have the technology.
-
     from commands.CommandExecutor import match_args_to_function
 
-    if actionname == "gag":
-      action = GagAction
-
-    elif actionname == "highlight":
-      action = HighlightAction
-
-    elif actionname == "link":
-      action = LinkAction
-
-    elif actionname == "play":
-      action = PlayAction
-
-    else:
+    action = self.actionregistry.get( actionname )
+    if action is None:
       return None, u"%s: No such action!" % actionname
 
     factory = action.factory
@@ -496,3 +488,12 @@ class TriggersManager:
 
       for action in matchgroup.actions.values():
         node[ action.name ] = repr( action )
+
+
+def construct_triggersmanager( settings ):
+  t = TriggersManager( settings )
+  t.registerAction( "gag",       GagAction )
+  t.registerAction( "highlight", HighlightAction )
+  t.registerAction( "link",      LinkAction )
+  t.registerAction( "play",      PlayAction )
+  return t

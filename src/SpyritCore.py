@@ -32,11 +32,11 @@ from MainWindow      import MainWindow
 from SoundEngine     import SoundEngine
 from WorldsManager   import WorldsManager
 from TempResources   import TempResources
-from TriggersManager import TriggersManager
 
 from Globals         import CMDCHAR
 from Messages        import messages
 from SpyritSettings  import load_settings, save_settings
+from TriggersManager import construct_triggersmanager
 from CommandRegistry import construct_command_registry
 
 
@@ -124,7 +124,7 @@ def construct_spyrit_core( application ):
   worlds   = WorldsManager( settings )
   tmprc    = TempResources()
   sound    = SoundEngine( tmprc )
-  triggers = TriggersManager( settings )  ## TODO: Take this out of this module.
+  triggers = construct_triggersmanager( settings )
   commands = construct_command_registry()
 
   core = SpyritCore(

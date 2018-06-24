@@ -302,7 +302,7 @@ class KeySequence( BaseSerializer ):
   def serialize( self, seq ):
 
     if seq is not None:
-      return seq.toString( QKeySequence.NativeText)
+      return seq.toString( QKeySequence.NativeText )
 
     return u""
 

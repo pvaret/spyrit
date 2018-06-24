@@ -207,7 +207,8 @@ class Leaf( object ):
 
 class Node( DictAttrProxy ):
 
-  dump_predicate = lambda node: not node.proto.metadata.get( "exclude_from_dump" )
+  dump_predicate = \
+          lambda node: not node.proto.metadata.get( "exclude_from_dump" )
 
   def __init__( self, container ):
 

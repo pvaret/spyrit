@@ -13,8 +13,6 @@ ABOUT SPYRIT
 
 **Spyrit** is a work in progress, and there are still a number of things missing before we can release version 1.0, first and foremost, configuration screens. For now you can configure things with the ``/settings`` command.
 
-Website: http://spyrit.ierne.eu.org/
-
 
 PREREQUISITES
 -------------

@@ -41,26 +41,41 @@ from PlatformSpecific import PlatformSpecific
 default_font = PlatformSpecific.default_font
 
 
+def for_all_keys( key_schema ):
+  return { 'keys': ( ( u'*', key_schema ), ) }
+
+def for_all_sections( section_schema ):
+  return { 'sections': ( ( u'*', section_schema ), ) }
+
+
 ## World section name
 WORLDS = u'worlds'
 
 ## Matches section name
-MATCHES = u'matches'
+TRIGGERS = u'triggers'
+
+## Shortcuts section name
+SHORTCUTS = u'shortcuts'
 
 ## Schema for matches
-MATCHES_SCHEMA = {
-  'keys': (
-    ( 'match',       { 'serializer': List( Pattern() ) } ),
-    #( 'gag',         { 'serializer': Bool() } ),
-    #( 'play',        { 'serializer': Str() } ),
-    #( 'highlight',   { 'serializer': Format() } ),
-    #( 'highlight_*', { 'serializer': Format() } ),
-    ( 'gag',         { 'serializer': Str() } ),
-    ( 'play',        { 'serializer': Str() } ),
-    ( 'highlight',   { 'serializer': Str() } ),
-    ( 'highlight_*', { 'serializer': Str() } ),
-  )
+TRIGGERS_SCHEMA = {
+  'sections': (
+    ( 'matches', for_all_keys( { 'serializer': Pattern() } ) ),
+
+    ( 'actions', {
+        'keys': (
+          ( 'gag',  { 'serializer': Bool() } ),
+          ( 'play', { 'serializer': Str() } ),
+          ( 'link', { 'serializer': Str() } ),
+        ),
+        'sections': (
+          ( 'highlights', for_all_keys( { 'serializer': Format() } ) ),
+        ),
+      }
+    ),
+  ),
 }
+
 
 ## Schema for keyboard shortcuts
 SHORTCUTS_SCHEMA = {
@@ -132,9 +147,9 @@ SETTINGS_SCHEMA = {
     ( 'ui.input.save_history',     { 'serializer': Int(),    'default': 10 } ),
   ),
   'sections': (
-    (  MATCHES + u'.*', MATCHES_SCHEMA ),
-    (  WORLDS + u'.*',  WORLDS_SCHEMA ),
-    ( 'shortcuts',      SHORTCUTS_SCHEMA ),
+    ( TRIGGERS, for_all_sections( TRIGGERS_SCHEMA ) ),
+    ( WORLDS,   for_all_sections( WORLDS_SCHEMA ) ),
+    ( SHORTCUTS, SHORTCUTS_SCHEMA ),
   )
 }
 
@@ -143,7 +158,7 @@ STATE_SCHEMA = {
   'default_metadata': { 'exclude_from_dump': True },
   'keys': (
     ( 'ui.window.pos',     { 'serializer': Point() } ),
-    ( 'ui.window.size',    { 'serializer': Size(),        'default': u"800x600" } ),
+    ( 'ui.window.size',    { 'serializer': Size(),        'default': u"1200x900" } ),
     ( 'ui.splitter.sizes', { 'serializer': List( Int() ), 'default': [ 1000, 100, 100 ] } ),
     ( 'ui.input.history',  { 'serializer': List( Str() ), 'default': u"" } ),
   ),
@@ -176,28 +191,28 @@ DESCRIPTIONS = {
   'net.encoding':     u"server character encoding",
   'net.login_script': u"arbitrary text to send on connect",
 
-  'shortcuts.about':          u"shortcut: About... dialog",
-  'shortcuts.aboutqt':        u"shortcut: About Qt... dialog",
-  'shortcuts.newworld':       u"shortcut: New World... dialog",
-  'shortcuts.quickconnect':   u"shortcut: Quick Connect... dialog",
-  'shortcuts.quit':           u"shortcut: quit the application",
-  'shortcuts.nexttab':        u"shortcut: switch to the next tab",
-  'shortcuts.previoustab':    u"shortcut: switch to the previous tab",
-  'shortcuts.closetab':       u"shortcut: close the current tab",
-  'shortcuts.connect':        u"shortcut: reconnect to the current world",
-  'shortcuts.disconnect':     u"shortcut: disconnect from the current world",
-  'shortcuts.historyup':      u"shortcut: previous entry in input history",
-  'shortcuts.historydown':    u"shortcut: next entry in input history",
-  'shortcuts.autocomplete':   u"shortcut: autocomplete current word in input field",
-  'shortcuts.pageup':         u"shortcut: scroll one page up",
-  'shortcuts.pagedown':       u"shortcut: scroll one page down",
-  'shortcuts.stepup':         u"shortcut: scroll one line up",
-  'shortcuts.stepdown':       u"shortcut: scroll one line down",
-  'shortcuts.home':           u"shortcut: scroll to the beginning of output",
-  'shortcuts.end':            u"shortcut: scroll to the end of output",
-  'shortcuts.startlog':       u"shortcut: start logging output",
-  'shortcuts.stoplog':        u"shortcut: stop logging output",
-  'shortcuts.toggle2ndinput': u"shortcut: toggle secondary input field",
+  SHORTCUTS + '.about':          u"shortcut: About... dialog",
+  SHORTCUTS + '.aboutqt':        u"shortcut: About Qt... dialog",
+  SHORTCUTS + '.newworld':       u"shortcut: New World... dialog",
+  SHORTCUTS + '.quickconnect':   u"shortcut: Quick Connect... dialog",
+  SHORTCUTS + '.quit':           u"shortcut: quit the application",
+  SHORTCUTS + '.nexttab':        u"shortcut: switch to the next tab",
+  SHORTCUTS + '.previoustab':    u"shortcut: switch to the previous tab",
+  SHORTCUTS + '.closetab':       u"shortcut: close the current tab",
+  SHORTCUTS + '.connect':        u"shortcut: reconnect to the current world",
+  SHORTCUTS + '.disconnect':     u"shortcut: disconnect from the current world",
+  SHORTCUTS + '.historyup':      u"shortcut: previous entry in input history",
+  SHORTCUTS + '.historydown':    u"shortcut: next entry in input history",
+  SHORTCUTS + '.autocomplete':   u"shortcut: autocomplete current word",
+  SHORTCUTS + '.pageup':         u"shortcut: scroll one page up",
+  SHORTCUTS + '.pagedown':       u"shortcut: scroll one page down",
+  SHORTCUTS + '.stepup':         u"shortcut: scroll one line up",
+  SHORTCUTS + '.stepdown':       u"shortcut: scroll one line down",
+  SHORTCUTS + '.home':           u"shortcut: scroll to the beginning of output",
+  SHORTCUTS + '.end':            u"shortcut: scroll to the end of output",
+  SHORTCUTS + '.startlog':       u"shortcut: start logging output",
+  SHORTCUTS + '.stoplog':        u"shortcut: stop logging output",
+  SHORTCUTS + '.toggle2ndinput': u"shortcut: toggle secondary input field",
 
 }
 
@@ -251,6 +266,7 @@ def save_settings( settings ):
     pass
 
 
+  ## Only dump the 'state' part of the structure.
   dump_predicate = lambda node: node.proto.metadata.get( "schema_id" ) == id( STATE_SCHEMA )
   state_text = "## version: %d\n" % ( VERSION ) \
              + struct_to_ini( settings.dump( dump_predicate ) )

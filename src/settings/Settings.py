@@ -242,6 +242,11 @@ class Node( DictAttrProxy ):
     return node
 
 
+  def __iter__( self ):
+
+    return iter( self.nodes )
+
+
   def __getitem__( self, key ):
 
     node = self.get( key )
@@ -454,7 +459,7 @@ class Settings( Node ):
       current_proto.inherit = current_schema_def.get( 'inherit' )
       section_metadata      = current_schema_def.get( 'default_metadata' ) or {}
 
-      for key, metadata in current_schema_def.get( 'keys' ):
+      for key, metadata in current_schema_def.get( 'keys', () ):
 
         new_proto = current_proto.new( key, klass=leafclass, nodeclass=nodeclass )
 
@@ -470,7 +475,8 @@ class Settings( Node ):
 
         new_proto.default_value = default
 
-      for section_key, sub_schema_def in current_schema_def.get( 'sections', () ):
+      for section_key, sub_schema_def \
+          in current_schema_def.get( 'sections', () ):
 
         new_proto = current_proto
 

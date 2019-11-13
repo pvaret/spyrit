@@ -91,16 +91,16 @@ class WorldsManager( QObject ):
     ## their (host, port) connection pair.
 
     self.name_mapping = dict(
-                           ( self.normalize( settings._name ), settings )
-                           for settings in self.ws.getAllWorldSettings()
-                        )
+      ( self.normalize( settings._name ), settings )
+      for settings in self.ws.getAllWorldSettings()
+    )
 
     self.hostport_mapping = {}
 
     for settings in self.ws.getAllWorldSettings():
       self.hostport_mapping.setdefault(
-                                        ( settings._net._host, settings._net._port ), []
-                                      ).append( settings )
+        ( settings._net._host, settings._net._port ), []
+      ).append( settings )
 
 
   def normalize( self, name ):

@@ -37,7 +37,7 @@ RE_KEYVALUE = re.compile( r"^(\w(?:[-.]?\w+)*)\s*=\s*(.*)", re.UNICODE )
 
 INDENT = u"  "
 
-VERSION = 2
+VERSION = 3
 
 
 
@@ -128,15 +128,105 @@ def update_settings_1_to_2( struct ):
   return struct
 
 
+def update_settings_2_to_3( struct ):
+  """
+  >>> match_struct = {
+  ...   'match':          'match test',
+  ...   'gag':            'gag test',
+  ...   'play':           'play test',
+  ...   'highlight':      'highlight test 1',
+  ...   'highlight_test': 'highlight test 2',
+  ... }
+  >>> struct = ( {}, {
+  ...   'matches': ( {}, { '0': ( match_struct, {} ) } ),
+  ...   'worlds': ( {}, {
+  ...     'test world': ( {}, { 'matches': ( {}, { '0': ( match_struct, {} ) } ) } )
+  ...   } )
+  ... } )
+  >>> struct = update_settings_2_to_3( struct )
+  >>> expected_triggers_section = ( {}, { '1':
+  ... ( {},
+  ...   { 'matches': ( { '1': 'match test' }, {} ),
+  ...     'actions': ( {
+  ...         'gag': 'gag test',
+  ...         'play': 'play test',
+  ...       }, {
+  ...         'highlights': ( {
+  ...             '__line__': 'highlight test 1',
+  ...             'test': 'highlight test 2',
+  ...         }, {} ) } ) }
+  ... ) } )
+  >>> expected = ( {}, {
+  ...   'worlds': ( {}, {
+  ...     'test world': ( {}, { 'triggers': expected_triggers_section } ) } ),
+  ...   'triggers': expected_triggers_section,
+  ... } )
+  >>> struct == expected
+  True
+
+  """
+
+  def update_matches( schema ):
+    from Serializers import List, Str
+    matches_keys = {}
+    actions_keys = {}
+    highlights_keys = {}
+    new_schema = {
+      'matches': ( matches_keys, {} ),
+      'actions': ( actions_keys,
+                   { 'highlights': ( highlights_keys, {} ) },
+      ) ,
+    }
+    for k, v in schema[ 0 ].items():
+      if k in ( "gag", "play" ):
+        actions_keys[ k ] = v
+      elif k.startswith( "highlight" ):
+        if k == "highlight":
+          highlights_keys[ "__line__" ] = v
+        elif "_" in k:
+          _, k = k.split( "_" )
+          highlights_keys[ k ] = v
+      elif k == "match":
+        matches = List( Str() ).deserialize( v )
+        for i, v in enumerate( matches ):
+          matches_keys[ str( i+1 ) ] = v
+    return ( {}, new_schema )
+
+  def update_all( struct ):
+    _, sections = struct
+
+    if "matches" in sections:
+      match_section = sections[ "matches" ]
+      new_trigger_sections = []
+      for _, subsection in sorted( match_section[ 1 ].items() ):
+        new_trigger_sections.append( update_matches( subsection ) )
+      del sections[ "matches" ]
+      sections[ "triggers" ] = (
+        {}, { str( i+1 ): trigger_section
+              for i, trigger_section in enumerate( new_trigger_sections ) }
+      )
+
+    for section, schema in sections.items():
+      if section == "triggers":
+        continue
+      update_all( schema )
+
+  update_all( struct )
+  return struct
+
+
 SETTINGS_UPDATERS = {
     1: ( update_settings_1_to_2, 2 ),
+    2: ( update_settings_2_to_3, 3 ),
 }
 
 
 
 def parse_settings_version( text ):
 
-  ## If not found, version is assumed to be the latest.
+  ## If not found, version is assumed to be the latest. This is not ideal, but
+  ## if we're not sure what version a given configuration file is, best not to
+  ## touch it.
   version = VERSION
 
   v = re.compile( r'^\#*\s*version\s*:\s*(?P<version>\d+)\s*$' )

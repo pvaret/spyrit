@@ -33,7 +33,7 @@ from Globals        import URL_RE
 from Globals        import FORMAT_PROPERTIES
 from Utilities      import normalize_text
 from OrderedDict    import OrderedDict
-from SpyritSettings import MATCHES
+from SpyritSettings import TRIGGERS
 
 from pipeline.ChunkData import ChunkType
 from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
@@ -43,6 +43,7 @@ import Serializers
 
 class HighlightAction:
 
+  name = u"highlight"
   multiple_matches_per_line = True
 
   @classmethod
@@ -57,8 +58,6 @@ class HighlightAction:
 
 
   def __init__( self, format, token=None ):
-
-    self.name = '_'.join( ( "highlight", token ) ) if token else "highlight"
 
     self.highlight = format
     self.token     = token
@@ -96,7 +95,7 @@ class HighlightAction:
 
   def toString( self ):
 
-    return u"highlight" + ( u" (%s)" % self.token if self.token else u"" ) \
+    return self.name + ( u" (%s)" % self.token if self.token else u"" ) \
            + u": " + Serializers.Format().serialize( self.highlight )
 
 
@@ -108,16 +107,16 @@ class HighlightAction:
 
 class PlayAction:
 
-  name = "play"
+  name = u"play"
 
   ## Don't try to play several sounds at once even if several matches are found.
   multiple_matches_per_line = False
+
 
   @classmethod
   def factory( cls, soundfile=None ):
 
     if soundfile:
-
       soundfile = os.path.expanduser( soundfile )
 
       if not os.path.isfile( soundfile ):
@@ -154,10 +153,11 @@ class PlayAction:
 
 class GagAction:
 
-  name = "gag"
+  name = u"gag"
 
   ## If a line is gagged, all processing stops right away.
   multiple_matches_per_line = False
+
 
   @classmethod
   def factory( cls ):
@@ -167,10 +167,12 @@ class GagAction:
 
   def __call__( self, match, chunkbuffer ):
 
+    ## TODO: (here and everywhere else): process buffer in order by adding
+    ## updated chunks to a new buffer and then substituting buffer contents
+    ## in-place.
     for i in reversed( range( len( chunkbuffer ) ) ):
 
       chunk = chunkbuffer[ i ]
-
       chunk_type, _ = chunk
 
       if chunk_type in ( ChunkType.TEXT,
@@ -186,7 +188,7 @@ class GagAction:
 
   def toString( self ):
 
-    return u"gag"
+    return self.name
 
 
   def __unicode__( self ):
@@ -195,11 +197,11 @@ class GagAction:
 
 
 
-
 class LinkAction:
 
-  name = "link"
+  name = u"link"
   multiple_matches_per_line = True
+
 
   @classmethod
   def factory( cls, url=None ):
@@ -247,13 +249,12 @@ class LinkAction:
 
   def toString( self ):
 
-    return u"link"
+    return self.name
 
 
   def __unicode__( self ):
 
     raise NotImplementedError( "This method doesn't exist anymore!" )
-
 
 
 
@@ -285,75 +286,51 @@ class MatchGroup:
 
 
 DEFAULT_MATCHES = [
+    ## Given the match group a name that contains non-alphanumeric character so
+    ## that it can't conflict with user-defined match groups.
+    ## TODO: Maybe allow anonymous groups for internal usage?
     MatchGroup( "*HTTP_LINKS*" )
         .addMatch( RegexMatch( URL_RE ) )
         .addAction( LinkAction() ),
 ]
 
 
+
 class TriggersManager:
 
   def __init__( self, settings ):
 
-    self.actionregistry = {}
+    self.actionregistry = OrderedDict()
     self.groups = OrderedDict()
     self.load( settings )
 
-  def registerAction( self, actionname, action ):
+
+  def registerActionClass( self, actionname, action ):
 
     assert actionname not in self.actionregistry
     self.actionregistry[ actionname ] = action
 
+
   def load( self, settings ):
 
-    all_groups = settings[ MATCHES ]
+    all_groups = settings[ TRIGGERS ]
 
     for groupname, node in all_groups.nodes.items():
 
-      matches = node.get( 'match' ).value() or []
+      matchgroup = self.createOrGetMatchGroup( groupname )
 
-      matchgroup = None
+      ## Match keys should only be ints.
+      matches = sorted( [ ( int( k ), node[ k ] ) for k in node if k.isnum() ] )
 
-      for match in matches:
+      for _, m in matches:
+        if m:
+          matchgroup.addMatch( m )
 
-        if not match:
-          continue
-
-        if not matchgroup:
-          matchgroup = self.createOrGetMatchGroup( groupname )
-
-        matchgroup.addMatch( match )
-
-      if not matchgroup:  ## No match created, presumably due to errors.
-        continue
-
-      if 'gag' in node.nodes:
-
-        action, _ = GagAction.factory()
-        if action:
-          matchgroup.addAction( action )
-
-        continue  ## If there's a gag, ignore all other actions!
-
-      if 'play' in node.nodes:
-
-        action, _ = PlayAction.factory( node.get( 'play' ).value() )
-        if action:
-          matchgroup.addAction( action )
-
-      highlight_keys = [ k for k in node.nodes if k.startswith( "highlight" ) ]
-
-      for k in highlight_keys:
-
-        if '_' in k:
-          token = k.split( '_', 1 )[ -1 ]
-
-        else:
-          token = None
-
-        action, _ = HighlightAction.factory( node[ k ], token )
-        if action:
-          matchgroup.addAction( action )
+      for actionname, action_class in self.actionregistry.items():
+        if actionname in node:
+          action, _ = action_class.factory( node[ actionname ] )
+          if action:
+            matchgroup.addAction( action )
 
 
   def createMatch( self, pattern, type=u"smart" ):
@@ -379,6 +356,8 @@ class TriggersManager:
     return self.groups.setdefault( key, MatchGroup( group ) )
 
 
+  # TODO: Consider renaming this to loadFromArgs (for instance) and factory()
+  # to loadFromSettingsNode.
   def loadAction( self, actionname, args, kwargs ):
 
     from commands.CommandExecutor import match_args_to_function
@@ -476,24 +455,25 @@ class TriggersManager:
     ## configuration.
 
     try:
-      del settings.nodes[ MATCHES ]
+      del settings.nodes[ TRIGGERS ]
 
     except KeyError:
       pass
 
     for groupname, matchgroup in self.groups.items():
 
-      node = settings[ MATCHES ].get( groupname )
+      node = settings[ TRIGGERS ].get( groupname )
       node[ 'match' ] = matchgroup.matches
 
       for action in matchgroup.actions.values():
         node[ action.name ] = repr( action )
 
 
+
 def construct_triggersmanager( settings ):
   t = TriggersManager( settings )
-  t.registerAction( "gag",       GagAction )
-  t.registerAction( "highlight", HighlightAction )
-  t.registerAction( "link",      LinkAction )
-  t.registerAction( "play",      PlayAction )
+  t.registerActionClass( "gag",       GagAction )
+  t.registerActionClass( "highlight", HighlightAction )
+  t.registerActionClass( "link",      LinkAction )
+  t.registerActionClass( "play",      PlayAction )
   return t

@@ -27,10 +27,18 @@ import os.path
 
 from PlatformSpecific import platformSpecific
 
-SETTINGS_DIR  = platformSpecific.get_settings_dir()
-SETTINGS_FILE = platformSpecific.get_settings_file()
-STATE_FILE    = platformSpecific.get_state_file()
-LOG_DIR       = os.path.join( SETTINGS_DIR, "logs" )
+SETTINGS_DIR             = platformSpecific.get_settings_dir()
+SETTINGS_FILE            = platformSpecific.get_settings_file()
+SETTINGS_FILE_CANDIDATES = [
+    os.path.join( dir, platformSpecific.CONFIG_FILE )
+    for dir in [ SETTINGS_DIR ] + platformSpecific.get_old_settings_dirs()
+]
+STATE_FILE            = platformSpecific.get_state_file()
+STATE_FILE_CANDIDATES = [
+    os.path.join( dir, platformSpecific.STATE_FILE )
+    for dir in [ SETTINGS_DIR ] + platformSpecific.get_old_settings_dirs()
+]
+LOG_DIR = os.path.join( SETTINGS_DIR, "logs" )
 
 FILE_ENCODING = "UTF-8"
 

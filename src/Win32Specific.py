@@ -29,12 +29,14 @@ import winpaths
 
 class Win32Specific:
 
-  CONFIG_DIR  = "Spyrit"
-  CONFIG_FILE = "Spyrit.ini"
-  STATE_FILE  = "spyrit.state"
+  CONFIG_DIR      = "Spyrit"
+  OLD_CONFIG_DIRS = []
+  CONFIG_FILE     = "Spyrit.ini"
+  STATE_FILE      = "spyrit.state"
 
   should_repaint_on_scroll = False
   default_font             = u"Courier New"
+
 
   def get_homedir( self ):
     return winpaths.get_homedir()
@@ -42,6 +44,13 @@ class Win32Specific:
 
   def get_settings_dir( self ):
     return os.path.join( winpaths.get_appdata(), self.CONFIG_DIR )
+
+
+  def get_old_settings_dirs( self ):
+    return [
+      os.path.join( winpaths.get_appdata(), dir )
+      for dir in self.OLD_CONFIG_DIRS
+    ]
 
 
   def get_settings_file( self ):

@@ -33,10 +33,12 @@ from IniParser     import parse_settings, struct_to_ini, VERSION
 from Serializers   import Bool, Int, Str, List
 from Serializers   import Size, Point, Format, Pattern, KeySequence
 from SettingsPaths import SETTINGS_FILE, STATE_FILE, LOG_DIR, FILE_ENCODING
+from SettingsPaths import SETTINGS_FILE_CANDIDATES, STATE_FILE_CANDIDATES
 
 from settings.Settings import Settings
 
 from PlatformSpecific import PlatformSpecific
+
 
 default_font = PlatformSpecific.default_font
 
@@ -48,21 +50,19 @@ def for_all_sections( section_schema ):
   return { 'sections': ( ( u'*', section_schema ), ) }
 
 
-## World section name
-WORLDS = u'worlds'
-
-## Matches section name
-TRIGGERS = u'triggers'
-
-## Shortcuts section name
+## Section names.
+WORLDS    = u'worlds'
+TRIGGERS  = u'triggers'
+MATCHES   = u'matches'
+ACTIONS   = u'actions'
 SHORTCUTS = u'shortcuts'
 
 ## Schema for matches
 TRIGGERS_SCHEMA = {
   'sections': (
-    ( 'matches', for_all_keys( { 'serializer': Pattern() } ) ),
+    ( MATCHES, for_all_keys( { 'serializer': Pattern() } ) ),
 
-    ( 'actions', {
+    ( ACTIONS, {
         'keys': (
           ( 'gag',  { 'serializer': Bool() } ),
           ( 'play', { 'serializer': Str() } ),
@@ -217,36 +217,31 @@ DESCRIPTIONS = {
 }
 
 
+def find_and_read( file_candidates, encoding=FILE_ENCODING ):
+  for filename in file_candidates:
+    try:
+      reader = codecs.getreader( encoding )
+      return filename, reader( open( filename, 'rb' ), 'ignore' ).read()
 
+    except ( LookupError, IOError, OSError ):
+      pass
+
+  return None, u""
 
 
 def load_settings():
-
   settings = Settings()
   settings.loadSchema( SETTINGS_SCHEMA )
   settings.loadSchema( STATE_SCHEMA )
 
-  try:
-    reader = codecs.getreader( FILE_ENCODING )
-    settings_text = reader( open( SETTINGS_FILE, 'rb' ), 'ignore' ).read()
-
-  except ( LookupError, IOError, OSError ):
-    settings_text = u""
+  found_settings_file, settings_text = find_and_read( SETTINGS_FILE_CANDIDATES )
 
   settings_struct = parse_settings( settings_text )
-
   settings.restore( settings_struct )
 
-
-  try:
-    reader = codecs.getreader( FILE_ENCODING )
-    state_text = reader( open( STATE_FILE, 'rb' ), 'ignore' ).read()
-
-  except ( LookupError, IOError, OSError ):
-    state_text = u""
+  found_state_file, state_text = find_and_read( STATE_FILE_CANDIDATES )
 
   state_struct = parse_settings( state_text )
-
   settings.restore( state_struct )
 
   return settings

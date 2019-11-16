@@ -189,7 +189,7 @@ def update_settings_2_to_3( struct ):
       elif k == "match":
         matches = List( Str() ).deserialize( v )
         for i, v in enumerate( matches ):
-          matches_keys[ str( i+1 ) ] = v
+          matches_keys[ unicode( i+1 ) ] = v
     return ( {}, new_schema )
 
   def update_all( struct ):
@@ -202,7 +202,7 @@ def update_settings_2_to_3( struct ):
         new_trigger_sections.append( update_matches( subsection ) )
       del sections[ "matches" ]
       sections[ "triggers" ] = (
-        {}, { str( i+1 ): trigger_section
+        {}, { unicode( i+1 ): trigger_section
               for i, trigger_section in enumerate( new_trigger_sections ) }
       )
 

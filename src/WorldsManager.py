@@ -50,7 +50,7 @@ class WorldsSettings:
   def newWorldSettings( self ):
 
     ## TODO: Add createSection() to nodes that would do the right thing?
-    return self.settings.proto.build( self.settings, '*' )
+    return self.settings.proto.build( '*', self.settings )
 
 
   def saveWorldSettings( self, key, settings ):

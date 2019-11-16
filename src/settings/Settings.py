@@ -31,6 +31,9 @@ class __NoValue( object ):
 
 NO_VALUE = __NoValue()
 
+## A dummy key name for the root node of the settings.
+ROOT = '@'
+
 
 from fnmatch import fnmatchcase
 
@@ -145,13 +148,28 @@ class DictAttrProxy( object ):
 
 class Leaf( object ):
 
-  def __init__( self, container ):
+  def __init__( self, key, container ):
 
+    self.key            = key
     self.inherit        = None
     self.notifier       = CallbackRegistry()
     self.own_value      = NO_VALUE
     self.container      = container
     self.fallback_value = None
+
+
+  def __repr__( self ):
+
+    key_path = ".".join( self.getFullPath() )
+    return u"Leaf <%s>: %r" % ( key_path, self.own_value )
+
+
+  def getFullPath( self ):
+
+    if self.container is None:
+      return []
+
+    return self.container.getFullPath() + [ self.key ]
 
 
   def setInherit( self, inherit ):
@@ -210,12 +228,26 @@ class Node( DictAttrProxy ):
   dump_predicate = \
           lambda node: not node.proto.metadata.get( "exclude_from_dump" )
 
-  def __init__( self, container ):
+  def __init__( self, key, container ):
 
+    self.key       = key
     self.proto     = None
     self.nodes     = {}
     self.inherit   = None
     self.container = container
+
+
+  def __repr__( self ):
+
+    return u"Node <%s>" % ".".join( self.getFullPath() )
+
+
+  def getFullPath( self ):
+
+    if self.container is None:
+      return []
+
+    return self.container.getFullPath() + [ self.key ]
 
 
   def setInherit( self, inherit ):
@@ -236,7 +268,7 @@ class Node( DictAttrProxy ):
       if self.proto is None:
         raise
 
-    node = self.proto.build( self, key )
+    node = self.proto.build( key, self )
     self.nodes[ key ] = node
 
     return node
@@ -273,6 +305,11 @@ class Node( DictAttrProxy ):
   def isEmpty( self ):
 
     return all( node.isEmpty() for node in self.nodes.values() )
+
+
+  def setValue( self, _ ):
+
+    raise KeyError( "Tried to set a value on non-leaf node %r!" % self )
 
 
   def dump( self, predicate=dump_predicate ):
@@ -329,14 +366,13 @@ class Node( DictAttrProxy ):
     leaf.notifier.add( callback )
 
 
-
-
 class NodeProto( object ):
 
   PROPAGATE_METADATA = [ 'nodeclass', 'leafclass' ]
 
-  def __init__( self, klass ):
+  def __init__( self, key, klass ):
 
+    self.key           = key
     self.nodes         = MatchingDict()
     self.klass         = klass
     self.inherit       = None
@@ -357,11 +393,12 @@ class NodeProto( object ):
 
     if "." in key:
       key, subkey = key.split( ".", 1 )
-      return self.new( key, klass=nodeclass, nodeclass=nodeclass ).new( subkey, klass=klass, nodeclass=nodeclass )
+      return ( self.new( key, klass=nodeclass, nodeclass=nodeclass )
+                   .new( subkey, klass=klass, nodeclass=nodeclass ) )
 
     if key not in self.nodes:
 
-      new_node = NodeProto( klass )
+      new_node = NodeProto( key, klass )
 
       for prop in self.PROPAGATE_METADATA:
         new_node.metadata[ prop ] = self.metadata[ prop ]
@@ -371,7 +408,7 @@ class NodeProto( object ):
     return self.nodes[ key ]
 
 
-  def build( self, container, key ):
+  def build( self, key, container ):
 
     node = None
     inherit_container = None
@@ -405,7 +442,7 @@ class NodeProto( object ):
     else:
       raise KeyError( key )
 
-    node = proto.klass( container )
+    node = proto.klass( key, container )
     node.proto = proto
     node.fallback_value = proto.default_value
 
@@ -423,12 +460,6 @@ class NodeProto( object ):
     return node
 
 
-
-
-
-
-
-
 class Settings( Node ):
 
   nodeclass = Node
@@ -437,9 +468,9 @@ class Settings( Node ):
 
   def __init__( self ):
 
-    super( Settings, self ).__init__( None )
+    super( Settings, self ).__init__( ROOT, None )
 
-    self.proto = NodeProto( self.__class__ )
+    self.proto = NodeProto( ROOT, self.__class__ )
 
     self.proto.metadata[ 'nodeclass' ] = self.nodeclass
     self.proto.metadata[ 'leafclass' ] = self.leafclass
@@ -521,5 +552,3 @@ class Settings( Node ):
 
         if isinstance( node, self.nodeclass ):
           stack.append( ( node, struct ) )
-
-

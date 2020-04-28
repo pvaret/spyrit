@@ -23,6 +23,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+## TODO: Update those, they're so old we can't test against them anymore.
+
 REQUIRED_PYTHON_VERSION = ( 2, 7 )
 REQUIRED_SIP_VERSION    = ( 4, 10 )
 REQUIRED_QT_VERSION     = ( 5, 2 )
@@ -58,7 +60,10 @@ def check_sip_version():
     import sip
 
   except ImportError:
-    return False, u"SIP v%d.%d required!" % REQUIRED_SIP_VERSION
+    try:
+      from PyQt5 import sip
+    except ImportError:
+      return False, u"SIP v%d.%d required!" % REQUIRED_SIP_VERSION
 
   v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." )[:2] )
 

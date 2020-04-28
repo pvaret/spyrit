@@ -32,6 +32,14 @@ from __future__ import unicode_literals
 
 import re
 
+
+try:
+  ## Python 3 compatibility.
+  unicode
+except NameError:
+  unicode = str
+
+
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
 RE_KEYVALUE = re.compile( r"^(\w(?:[-.]?\w+)*)\s*=\s*(.*)", re.UNICODE )
 

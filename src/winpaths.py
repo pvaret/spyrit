@@ -45,6 +45,12 @@ except ImportError:
   pass
 
 try:
+  ## Python 3 compatibility.
+  unicode
+except NameError:
+  unicode = str
+
+try:
   winreg
 except NameError:
   ## Well, whoops. Presumably we're not running Windows. Pass silently.

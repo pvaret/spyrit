@@ -19,6 +19,12 @@
 ## Implements the core settings paraphernalia.
 ##
 
+u"""
+:doctest:
+
+>>> from settings.Settings import *
+
+"""
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
@@ -39,6 +45,23 @@ from fnmatch import fnmatchcase
 
 
 class MatchingDict( dict ):
+  u"""\
+  A dictionary whose keys are glob patterns, and where key lookup is matched
+  against those patterns.
+
+  >>> m = MatchingDict()
+  >>> m[ "ab?" ] = 1
+  >>> m[ "de*" ] = 2
+  >>> print( m[ "abc" ] )
+  1
+  >>> print( m[ "defg" ] )
+  2
+  >>> print( "abcd" in m )
+  False
+  >>> print( "defg" in m )
+  True
+
+  """
 
   def __contains__( self, key ):
 
@@ -158,10 +181,15 @@ class Leaf( object ):
     self.fallback_value = None
 
 
+  def isLeaf( self ):
+
+    return True
+
+
   def __repr__( self ):
 
     key_path = ".".join( self.getFullPath() )
-    return u"Leaf <%s>: %r" % ( key_path, self.own_value )
+    return u"<Leaf %s>: %r" % ( key_path, self.own_value )
 
 
   def getFullPath( self ):
@@ -237,9 +265,14 @@ class Node( DictAttrProxy ):
     self.container = container
 
 
+  def isLeaf( self ):
+
+    return False
+
+
   def __repr__( self ):
 
-    return u"Node <%s>" % ".".join( self.getFullPath() )
+    return u"<Node %s>" % ( ".".join( self.getFullPath() ) or "." )
 
 
   def getFullPath( self ):
@@ -297,6 +330,18 @@ class Node( DictAttrProxy ):
     node.delValue()
 
 
+  def asDict( self ):
+
+    ret = {}
+    for k, v in self.nodes.items():
+      if v.isLeaf():
+        ret[ k ] = v.value()
+      else:
+        ret[ k ] = v.asDict()
+
+    return ret
+
+
   def value( self ):
 
     return self
@@ -307,9 +352,18 @@ class Node( DictAttrProxy ):
     return all( node.isEmpty() for node in self.nodes.values() )
 
 
-  def setValue( self, _ ):
+  def setValue( self, value ):
 
-    raise KeyError( "Tried to set a value on non-leaf node %r!" % self )
+    if not isinstance( value, dict ):
+      raise ValueError( "Expected a dictionary-type value for key %s; "
+                        "got: %r" % ( self.getFullPath(), value ) )
+
+    try:
+      for k, v in value.items():
+        self.get( k ).setValue( v )
+    except KeyError:
+      raise ValueError( "Expected a dict matching the schema for key %s; "
+                        "got %r" % ( self.getFullPath(), value ) )
 
 
   def dump( self, predicate=dump_predicate ):
@@ -492,7 +546,8 @@ class Settings( Node ):
 
       for key, metadata in current_schema_def.get( 'keys', () ):
 
-        new_proto = current_proto.new( key, klass=leafclass, nodeclass=nodeclass )
+        new_proto = current_proto.new(
+            key, klass=leafclass, nodeclass=nodeclass )
 
         new_proto.metadata.update( section_metadata )
         new_proto.metadata.update( metadata )

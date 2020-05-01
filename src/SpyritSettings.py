@@ -59,6 +59,9 @@ SHORTCUTS = u'shortcuts'
 
 ## Schema for matches
 TRIGGERS_SCHEMA = {
+  'keys': (
+    ( 'name', { 'serializer': Str(), 'default': None } ),
+  ),
   'sections': (
     ( MATCHES, for_all_keys( { 'serializer': Pattern() } ) ),
 

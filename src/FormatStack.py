@@ -26,6 +26,8 @@
 from __future__ import absolute_import
 
 from collections import defaultdict
+## TODO: Remove custom OrderedDict, use that from collections. (Requires a
+## replacement for the .lastvalue() method.)
 from OrderedDict import OrderedDict
 
 from pipeline.ChunkData import ChunkType

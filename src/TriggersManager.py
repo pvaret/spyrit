@@ -25,6 +25,8 @@ from __future__ import unicode_literals
 
 import os.path
 
+from collections import OrderedDict
+
 from PyQt5.QtWidgets import QApplication
 
 from Matches        import RegexMatch
@@ -32,8 +34,7 @@ from Matches        import load_match_by_type
 from Globals        import URL_RE
 from Globals        import FORMAT_PROPERTIES
 from Utilities      import normalize_text
-from OrderedDict    import OrderedDict
-from SpyritSettings import TRIGGERS
+from SpyritSettings import TRIGGERS, MATCHES, ACTIONS
 
 from pipeline.ChunkData import ChunkType
 from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
@@ -41,62 +42,82 @@ from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 import Serializers
 
 
+try:
+  ## Python 3 compatibility.
+  unicode
+except NameError:
+  unicode = str
+
+
+_LINE = u"__line__"
+
+
 class HighlightAction:
 
-  name = u"highlight"
+  name = u"highlights"
   multiple_matches_per_line = True
 
   @classmethod
-  def factory( cls, format, token=None ):
-
-    format = Serializers.Format().deserialize( format )
+  def factory( cls, format ):
+    # TODO: !! This in fact no longer works with the /match command. Fix it.
+    # This may be tricky because that command expects one highlight = one token,
+    # whereas in the new design the highlight action takes care of all the
+    # highlights in the group.
 
     if not format:
       return None, u"Invalid format!"
 
-    return cls( format, token ), None
+    return cls( format ), None
 
 
-  def __init__( self, format, token=None ):
+  def __init__( self, format ):
 
-    self.highlight = format
-    self.token     = token
+    self.highlights = format
 
 
   def __call__( self, match, chunkbuffer ):
 
-    if not self.token:
-      start, end = match.span()
+    for token, hl in self.highlights.items():
+      if token == _LINE:
+        start, end = match.span()
 
-    else:
+      else:
 
-      if self.token not in match.groupdict():
-        return
+        if token not in match.groupdict():
+          continue
 
-      start, end = match.span( self.token )
+        start, end = match.span( self.token )
 
-    if start == end:
-      return
+      if start == end:
+        continue
 
-    hl = self.highlight
+      new_chunks = [
+        ( start, ( ChunkType.HIGHLIGHT, ( id( hl ), hl ) ) ),
+        ( end,   ( ChunkType.HIGHLIGHT, ( id( hl ), {} ) ) ),
+      ]
 
-    new_chunks = [
-      ( start, ( ChunkType.HIGHLIGHT, ( id( hl ), hl ) ) ),
-      ( end,   ( ChunkType.HIGHLIGHT, ( id( hl ), {} ) ) ),
-    ]
-
-    insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
+      insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
-  def __repr__( self ):
+  def params( self ):
 
-    return Serializers.Format().serialize( self.highlight )
+    return self.highlights
 
 
   def toString( self ):
 
-    return self.name + ( u" (%s)" % self.token if self.token else u"" ) \
-           + u": " + Serializers.Format().serialize( self.highlight )
+    hls = []
+    format = Serializers.Format()
+
+    if _LINE in self.highlights:
+      hls.append( format.serialize( self.highlights[ _LINE ] ) )
+
+    for token, highlight in sorted( self.highlights.items() ):
+      if token == _LINE:
+        continue
+      hls.append( u"[%s]: %s" %  ( token, format.serialize( highlight ) ) )
+
+    return self.name + u": " + u" ; ".join( hls )
 
 
   def __unicode__( self ):
@@ -135,7 +156,7 @@ class PlayAction:
     QApplication.instance().core.sound.play( self.soundfile or ":/sound/pop" )
 
 
-  def __repr__( self ):
+  def params( self ):
 
     return self.soundfile or ""
 
@@ -160,9 +181,12 @@ class GagAction:
 
 
   @classmethod
-  def factory( cls ):
+  def factory( cls, enabled ):
 
-    return cls(), None
+    if enabled:
+      return cls(), None
+
+    return None, None
 
 
   def __call__( self, match, chunkbuffer ):
@@ -181,9 +205,9 @@ class GagAction:
         del chunkbuffer[ i ]
 
 
-  def __repr__( self ):
+  def params( self ):
 
-    return u""
+    return True
 
 
   def toString( self ):
@@ -211,7 +235,7 @@ class LinkAction:
 
   def __init__( self, url=None ):
 
-    self.url= url
+    self.url = url
 
 
   def __call__( self, match, chunkbuffer ):
@@ -242,14 +266,14 @@ class LinkAction:
     insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
 
 
-  def __repr__( self ):
+  def params( self ):
 
     return u"" if self.url is None else self.url
 
 
   def toString( self ):
 
-    return self.name
+    return ( self.name + u": " + self.url ) if self.url else self.name
 
 
   def __unicode__( self ):
@@ -298,11 +322,10 @@ DEFAULT_MATCHES = [
 
 class TriggersManager:
 
-  def __init__( self, settings ):
+  def __init__( self ):
 
     self.actionregistry = OrderedDict()
     self.groups = OrderedDict()
-    self.load( settings )
 
 
   def registerActionClass( self, actionname, action ):
@@ -313,24 +336,28 @@ class TriggersManager:
 
   def load( self, settings ):
 
+    def children_in_order( node ):
+      children = sorted( [ ( int( k ), node[ k ] )
+                           for k in node if k.isnumeric() ] )
+      return [ child for _, child in children ]
+
+    ## TODO: Handle per-world settings.
     all_groups = settings[ TRIGGERS ]
 
-    for groupname, node in all_groups.nodes.items():
+    for trigger in children_in_order( all_groups ):
+      group = self.findOrCreateTrigger( trigger._name )
 
-      matchgroup = self.createOrGetMatchGroup( groupname )
+      for match in children_in_order( trigger[ MATCHES ] ):
+        group.addMatch( match )
 
-      ## Match keys should only be ints.
-      matches = sorted( [ ( int( k ), node[ k ] ) for k in node if k.isnum() ] )
-
-      for _, m in matches:
-        if m:
-          matchgroup.addMatch( m )
-
-      for actionname, action_class in self.actionregistry.items():
-        if actionname in node:
-          action, _ = action_class.factory( node[ actionname ] )
-          if action:
-            matchgroup.addAction( action )
+      for action_type, action_params in trigger[ ACTIONS ].asDict().items():
+        if not action_type in self.actionregistry:
+          ## Well bummer. Corrupted settings? Not much we can do.
+          continue
+        action_class = self.actionregistry[ action_type ]
+        action, _ = action_class.factory( action_params )
+        if action:
+          group.addAction( action )
 
 
   def createMatch( self, pattern, type=u"smart" ):
@@ -338,7 +365,7 @@ class TriggersManager:
     return load_match_by_type( pattern, type )
 
 
-  def createOrGetMatchGroup( self, group=None ):
+  def findOrCreateTrigger( self, group=None ):
 
     if group is None:
 
@@ -454,6 +481,7 @@ class TriggersManager:
     ## Configuration is about to be saved. Serialize our current setup into the
     ## configuration.
 
+    ## TODO: Handle per-world settings.
     try:
       del settings.nodes[ TRIGGERS ]
 
@@ -463,17 +491,18 @@ class TriggersManager:
     for groupname, matchgroup in self.groups.items():
 
       node = settings[ TRIGGERS ].get( groupname )
-      node[ 'match' ] = matchgroup.matches
+      for i, match in enumerate( matchgroup.matches ):
+        node[ MATCHES ][ unicode( i+1 ) ] = match
 
       for action in matchgroup.actions.values():
-        node[ action.name ] = repr( action )
-
+        node[ ACTIONS ][ action.name ] = action.params()
 
 
 def construct_triggersmanager( settings ):
-  t = TriggersManager( settings )
-  t.registerActionClass( "gag",       GagAction )
-  t.registerActionClass( "highlight", HighlightAction )
-  t.registerActionClass( "link",      LinkAction )
-  t.registerActionClass( "play",      PlayAction )
+  t = TriggersManager()
+  t.registerActionClass( "gag",        GagAction )
+  t.registerActionClass( "highlights", HighlightAction )
+  t.registerActionClass( "link",       LinkAction )
+  t.registerActionClass( "play",       PlayAction )
+  t.load( settings )
   return t

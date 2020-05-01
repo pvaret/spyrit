@@ -80,7 +80,7 @@ class MatchCommand( BaseCommand ):
       world.info( u"%s" % e )
       return
 
-    mgr.createOrGetMatchGroup( group ).addMatch( match )
+    mgr.findOrCreateTrigger( group ).addMatch( match )
     world.info( u"Match added." )
 
 
@@ -217,7 +217,7 @@ class MatchCommand( BaseCommand ):
       world.info( msg )
       return
 
-    mgr.createOrGetMatchGroup( group ).addAction( act )
+    mgr.findOrCreateTrigger( group ).addAction( act )
 
     world.info( u"Action '%s' added to match pattern group '%s'." \
                 % ( action, group ) )
@@ -252,7 +252,7 @@ class MatchCommand( BaseCommand ):
 
     number = int( number )
 
-    size = len( mgr.createOrGetMatchGroup( group ).actions )
+    size = len( mgr.findOrCreateTrigger( group ).actions )
 
     if number > size:
 

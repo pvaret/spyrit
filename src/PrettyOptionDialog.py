@@ -23,8 +23,6 @@
 
 from __future__ import absolute_import
 
-import sip
-
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QDialogButtonBox
@@ -64,7 +62,7 @@ class PrettyOptionDialog( QDialog ):
   def relayout( self ):
 
     if self.layout():
-      sip.delete( self.layout() )
+      return
 
     self.setLayout( QVBoxLayout( self ) )
 

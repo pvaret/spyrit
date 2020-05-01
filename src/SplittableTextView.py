@@ -25,7 +25,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import sip
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QRect
@@ -609,7 +608,7 @@ class SplittableTextView( QTextEditWithClickableLinks ):
 
     menu = self.createStandardContextMenu()
     menu.exec_( e.globalPos() )
-    sip.delete( menu )
+    menu.deleteLater()
 
 
   def stepUp( self ):

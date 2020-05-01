@@ -51,5 +51,4 @@ class Messages:
       pass
 
 
-
 messages = Messages()

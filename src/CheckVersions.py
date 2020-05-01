@@ -23,12 +23,8 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-## TODO: Update those, they're so old we can't test against them anymore.
-
-REQUIRED_PYTHON_VERSION = ( 2, 7 )
-REQUIRED_SIP_VERSION    = ( 4, 10 )
-REQUIRED_QT_VERSION     = ( 5, 2 )
-
+REQUIRED_PYTHON_VERSION = ( 3, 6 )
+REQUIRED_QT_VERSION     = ( 5, 6 )
 
 
 def check_python_version():
@@ -37,7 +33,7 @@ def check_python_version():
   v = sys.version_info[ 0:2 ]
 
   if v >= REQUIRED_PYTHON_VERSION:
-    return True, None
+    return True, u"🗸 Found Python v%s.%s." % v
 
   return False, u"Python v%d.%d required!" % REQUIRED_PYTHON_VERSION
 
@@ -47,31 +43,11 @@ def check_pyqt5_installed():
 
   try:
     import PyQt5
-    return True, None
+    import PyQt5.QtCore
+    return True, u"🗸 Found PyQt v%s." % PyQt5.QtCore.PYQT_VERSION_STR
 
   except ImportError:
     return False, u"PyQt5 bindings required!"
-
-
-
-def check_sip_version():
-
-  try:
-    import sip
-
-  except ImportError:
-    try:
-      from PyQt5 import sip
-    except ImportError:
-      return False, u"SIP v%d.%d required!" % REQUIRED_SIP_VERSION
-
-  v = tuple( int( c ) for c in sip.SIP_VERSION_STR.split( "." )[:2] )
-
-  if v >= REQUIRED_SIP_VERSION:
-    return True, None
-
-  else:
-    return False, u"SIP v%d.%d required!" % REQUIRED_SIP_VERSION
 
 
 
@@ -89,7 +65,7 @@ def check_qt_version():
   v = qt_version()
 
   if v >= REQUIRED_QT_VERSION:
-    return True, None
+    return True, u"🗸 Found Qt v%s.%s." % v[ 0:2 ]
 
   else:
     return False, u"Qt v%d.%d required!" % REQUIRED_QT_VERSION

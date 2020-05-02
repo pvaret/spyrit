@@ -38,7 +38,6 @@ INDENT = u"  "
 VERSION = 3
 
 
-
 def replace_value( dict_, key_before, key_after ):
 
   if key_before in dict_:
@@ -49,70 +48,69 @@ def replace_value( dict_, key_before, key_after ):
     del dict_[ key_before ]
 
 
-
 def update_settings_1_to_2( struct ):
 
   REPLACE = [
-    ( 'shortcut_about',          'shortcuts.about'           ),
-    ( 'shortcut_aboutqt',        'shortcuts.aboutqt'         ),
-    ( 'shortcut_newworld',       'shortcuts.newworld'        ),
-    ( 'shortcut_quickconnect',   'shortcuts.quickconnect'    ),
-    ( 'shortcut_quit',           'shortcuts.quit'            ),
-    ( 'shortcut_nexttab',        'shortcuts.nexttab'         ),
-    ( 'shortcut_previoustab',    'shortcuts.previoustab'     ),
-    ( 'shortcut_close',          'shortcuts.closetab'        ),
-    ( 'shortcut_connect',        'shortcuts.connect'         ),
-    ( 'shortcut_disconnect',     'shortcuts.disconnect'      ),
-    ( 'shortcut_historyup',      'shortcuts.historyup'       ),
-    ( 'shortcut_historydown',    'shortcuts.historydown'     ),
-    ( 'shortcut_autocomplete',   'shortcuts.autocomplete'    ),
-    ( 'shortcut_pageup',         'shortcuts.pageup'          ),
-    ( 'shortcut_pagedown',       'shortcuts.pagedown'        ),
-    ( 'shortcut_stepup',         'shortcuts.stepup'          ),
-    ( 'shortcut_stepdown',       'shortcuts.stepdown'        ),
-    ( 'shortcut_home',           'shortcuts.home'            ),
-    ( 'shortcut_end',            'shortcuts.end'             ),
-    ( 'shortcut_startlog',       'shortcuts.startlog'        ),
-    ( 'shortcut_stoplog',        'shortcuts.stoplog'         ),
-    ( 'shortcut_toggle2ndinput', 'shortcuts.toggle2ndinput'  ),
-    ( 'app_name',                'app.name'                  ),
-    ( 'app_version',             'app.version'               ),
-    ( 'widget_style',            'ui.style'                  ),
-    ( 'mainwindow_min_size',     'ui.window.min_size'        ),
-    ( 'mainwindow_pos',          'ui.window.pos'             ),
-    ( 'alert_on_activity',       'ui.window.alert'           ),
-    ( 'mainwindow_size',         'ui.window.size'            ),
-    ( 'toolbar_icon_size',       'ui.toolbar.icon_size'      ),
-    ( 'split_scrollback',        'ui.view.split_scroll'      ),
-    ( 'paging',                  'ui.view.paging'            ),
-    ( 'info_format',             'ui.view.font.info_format'  ),
-    ( 'output_font_name',        'ui.view.font.name'         ),
-    ( 'output_font_size',        'ui.view.font.size'         ),
-    ( 'output_background_color', 'ui.view.background.color'  ),
-    ( 'output_format',           'ui.view.font.text_format'  ),
-    ( 'input_font_name',         'ui.input.font.name'        ),
-    ( 'input_font_size',         'ui.input.font.size'        ),
-    ( 'input_font_color',        'ui.input.font.color'       ),
-    ( 'input_background_color',  'ui.input.background.color' ),
-    ( 'max_history_length',      'ui.input.max_history'      ),
-    ( 'save_input_history',      'ui.input.save_history'     ),
-    ( 'input_history',           'ui.input.history'          ),
-    ( 'splitter_sizes',          'ui.splitter.sizes'         ),
-    ( 'world_encoding',          'net.encoding'              ),
-    ( 'host',                    'net.host'                  ),
-    ( 'port',                    'net.port'                  ),
-    ( 'ssl',                     'net.ssl'                   ),
-    ( 'logfile_name',            'log.file'                  ),
-    ( 'logfile_dir',             'log.dir'                   ),
-    ( 'autolog',                 'log.autostart'             ),
-    ( 'log_ansi',                'log.ansi'                  ),
+      ( 'shortcut_about',          'shortcuts.about'           ),
+      ( 'shortcut_aboutqt',        'shortcuts.aboutqt'         ),
+      ( 'shortcut_newworld',       'shortcuts.newworld'        ),
+      ( 'shortcut_quickconnect',   'shortcuts.quickconnect'    ),
+      ( 'shortcut_quit',           'shortcuts.quit'            ),
+      ( 'shortcut_nexttab',        'shortcuts.nexttab'         ),
+      ( 'shortcut_previoustab',    'shortcuts.previoustab'     ),
+      ( 'shortcut_close',          'shortcuts.closetab'        ),
+      ( 'shortcut_connect',        'shortcuts.connect'         ),
+      ( 'shortcut_disconnect',     'shortcuts.disconnect'      ),
+      ( 'shortcut_historyup',      'shortcuts.historyup'       ),
+      ( 'shortcut_historydown',    'shortcuts.historydown'     ),
+      ( 'shortcut_autocomplete',   'shortcuts.autocomplete'    ),
+      ( 'shortcut_pageup',         'shortcuts.pageup'          ),
+      ( 'shortcut_pagedown',       'shortcuts.pagedown'        ),
+      ( 'shortcut_stepup',         'shortcuts.stepup'          ),
+      ( 'shortcut_stepdown',       'shortcuts.stepdown'        ),
+      ( 'shortcut_home',           'shortcuts.home'            ),
+      ( 'shortcut_end',            'shortcuts.end'             ),
+      ( 'shortcut_startlog',       'shortcuts.startlog'        ),
+      ( 'shortcut_stoplog',        'shortcuts.stoplog'         ),
+      ( 'shortcut_toggle2ndinput', 'shortcuts.toggle2ndinput'  ),
+      ( 'app_name',                'app.name'                  ),
+      ( 'app_version',             'app.version'               ),
+      ( 'widget_style',            'ui.style'                  ),
+      ( 'mainwindow_min_size',     'ui.window.min_size'        ),
+      ( 'mainwindow_pos',          'ui.window.pos'             ),
+      ( 'alert_on_activity',       'ui.window.alert'           ),
+      ( 'mainwindow_size',         'ui.window.size'            ),
+      ( 'toolbar_icon_size',       'ui.toolbar.icon_size'      ),
+      ( 'split_scrollback',        'ui.view.split_scroll'      ),
+      ( 'paging',                  'ui.view.paging'            ),
+      ( 'info_format',             'ui.view.font.info_format'  ),
+      ( 'output_font_name',        'ui.view.font.name'         ),
+      ( 'output_font_size',        'ui.view.font.size'         ),
+      ( 'output_background_color', 'ui.view.background.color'  ),
+      ( 'output_format',           'ui.view.font.text_format'  ),
+      ( 'input_font_name',         'ui.input.font.name'        ),
+      ( 'input_font_size',         'ui.input.font.size'        ),
+      ( 'input_font_color',        'ui.input.font.color'       ),
+      ( 'input_background_color',  'ui.input.background.color' ),
+      ( 'max_history_length',      'ui.input.max_history'      ),
+      ( 'save_input_history',      'ui.input.save_history'     ),
+      ( 'input_history',           'ui.input.history'          ),
+      ( 'splitter_sizes',          'ui.splitter.sizes'         ),
+      ( 'world_encoding',          'net.encoding'              ),
+      ( 'host',                    'net.host'                  ),
+      ( 'port',                    'net.port'                  ),
+      ( 'ssl',                     'net.ssl'                   ),
+      ( 'logfile_name',            'log.file'                  ),
+      ( 'logfile_dir',             'log.dir'                   ),
+      ( 'autolog',                 'log.autostart'             ),
+      ( 'log_ansi',                'log.ansi'                  ),
 
-    ( 'worlds_section',          None                        ),
-    ( 'matches_section',         None                        ),
+      ( 'worlds_section',          None                        ),
+      ( 'matches_section',         None                        ),
   ]
 
   keys, sections = struct
-  worlds = sections.get( u'Worlds', ( None, {} ) ) [1]
+  worlds = sections.get( u'Worlds', ( None, {} ) )[1]
 
   for from_, to in REPLACE:
     replace_value( keys, from_, to )
@@ -138,7 +136,9 @@ def update_settings_2_to_3( struct ):
   >>> struct = ( {}, {
   ...   'matches': ( {}, { '0': ( match_struct, {} ) } ),
   ...   'worlds': ( {}, {
-  ...     'test world': ( {}, { 'matches': ( {}, { '0': ( match_struct, {} ) } ) } )
+  ...     'test world': ( {},
+  ...                     { 'matches': ( {},
+  ...                                    { '0': ( match_struct, {} ) } ) } )
   ...   } )
   ... } )
   >>> struct = update_settings_2_to_3( struct )
@@ -170,10 +170,11 @@ def update_settings_2_to_3( struct ):
     actions_keys = {}
     highlights_keys = {}
     new_schema = {
-      'matches': ( matches_keys, {} ),
-      'actions': ( actions_keys,
-                   { 'highlights': ( highlights_keys, {} ) },
-      ) ,
+        'matches': ( matches_keys, {} ),
+        'actions': (
+            actions_keys,
+            { 'highlights': ( highlights_keys, {} ) },
+        ),
     }
     for k, v in schema[ 0 ].items():
       if k in ( "gag", "play" ):
@@ -187,7 +188,7 @@ def update_settings_2_to_3( struct ):
       elif k == "match":
         matches = List( Str() ).deserialize( v )
         for i, v in enumerate( matches ):
-          matches_keys[ str( i+1 ) ] = v
+          matches_keys[ str( i + 1 ) ] = v
     return ( {}, new_schema )
 
   def update_all( struct ):
@@ -200,8 +201,8 @@ def update_settings_2_to_3( struct ):
         new_trigger_sections.append( update_matches( subsection ) )
       del sections[ "matches" ]
       sections[ "triggers" ] = (
-        {}, { str( i+1 ): trigger_section
-              for i, trigger_section in enumerate( new_trigger_sections ) }
+          {}, { str( i + 1 ): trigger_section
+                for i, trigger_section in enumerate( new_trigger_sections ) }
       )
 
     for section, schema in sections.items():
@@ -217,7 +218,6 @@ SETTINGS_UPDATERS = {
     1: ( update_settings_1_to_2, 2 ),
     2: ( update_settings_2_to_3, 3 ),
 }
-
 
 
 def parse_settings_version( text ):
@@ -244,7 +244,6 @@ def parse_settings_version( text ):
   return version
 
 
-
 def parse_settings( text ):
 
   version = parse_settings_version( text )
@@ -264,7 +263,6 @@ def parse_settings( text ):
       break
 
   return struct
-
 
 
 def parse_ini_line( line ):
@@ -291,7 +289,6 @@ def parse_ini_line( line ):
     return result
 
   return None
-
 
 
 def ini_to_struct( ini_text ):
@@ -375,8 +372,6 @@ def ini_to_struct( ini_text ):
   return struct
 
 
-
-
 def struct_to_ini( struct, depth=0 ):
 
   """Takes a programmatic structure and generates an INI representation for it.
@@ -403,7 +398,7 @@ def struct_to_ini( struct, depth=0 ):
   keys, sections = struct
 
   for k, v in sorted( keys.items() ):
-    output += "%s%s = %s\n" % ( INDENT*depth, k, v )
+    output += "%s%s = %s\n" % ( INDENT * depth, k, v )
 
   depth += 1
 

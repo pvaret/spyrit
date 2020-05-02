@@ -1,138 +1,153 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-import sys
+import argparse
 import bz2
-import time
-import struct
 import base64
 import os.path
+
+from modulefinder import ModuleFinder
+from typing import List
+from typing import Text
+from typing import Tuple
 
 
 LAUNCHER_STUB = """\
 #!/usr/bin/env python
-## -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
+import base64
+import bz2
+import importlib.abc
+import importlib.util
+import sys
 
 EMBEDDED_MODULES = %(modules)s
 
 
-import sys
-import imp
-import bz2
-import base64
+class EmbeddedModuleLoader( importlib.abc.SourceLoader ):
+
+  def __init__( self, modules ):
+
+    super( EmbeddedModuleLoader, self ).__init__()
+    self.modules = modules
+    self.sources = {}
+
+  def get_filename( self, fullname ):
+
+    if fullname not in self.modules:
+      raise ImportError( fullname )
+
+    path, data = self.modules[ fullname ]
+    self.sources.setdefault(
+        path, bz2.decompress( base64.decodebytes( data ) ) )
+    return path
+
+  def get_data( self, path ):
+
+    return self.sources[ path ]
 
 
-class embedded_module_importer:
+class EmbeddedModuleFinder( importlib.abc.MetaPathFinder ):
 
-  def find_module( self, fullname, path=None ):
+  def __init__( self, modules ):
 
-    if fullname == "MAIN":
+    super( EmbeddedModuleFinder, self ).__init__()
+    self.loader = EmbeddedModuleLoader( modules )
+    self.modules = modules
+
+  def find_spec( self, fullname, path, target=None ):
+
+    # We cannot import __main__ because that's already the name of the launcher
+    # stub module. So instead we import a module with a dummy name from the
+    # toplevel, and replace that with __main__ once inside the embedded module
+    # finder.
+    if fullname == "@BOOTSTRAP@":
       fullname = "__main__"
 
-    return self if fullname in EMBEDDED_MODULES else None
+    if fullname in self.modules:
+      return importlib.util.spec_from_file_location(
+          fullname, loader=self.loader )
+
+    return None
 
 
-  def load_module( self, fullname ):
-
-    if fullname == "MAIN":
-      fullname = "__main__"
-
-    filename, path, source = EMBEDDED_MODULES[ fullname ]
-    source = bz2.decompress( base64.decodebytes( source ) )
-    code   = compile( source, filename, 'exec' )
-
-    mod = sys.modules.setdefault( fullname, imp.new_module( fullname ) )
-    mod.__file__ = filename
-    mod.__loader__ = self
-    if path:
-      mod.__path__ = path
-
-    exec( code, mod.__dict__ )
-
-    return mod
+sys.meta_path.append( EmbeddedModuleFinder( EMBEDDED_MODULES ) )
+importlib.import_module( "@BOOTSTRAP@" )"""
 
 
-sys.meta_path.append( embedded_module_importer() )
-
-try:
-  import MAIN
-except KeyError:
-  ## The name rewriting trick we do here confuses the Python 3 import
-  ## machinery, which works but reports a spurious KeyError.
-  pass
-"""
-
-
-def get_timestamp_long():
-
-  return struct.pack( "l", int( time.time() ) )
-
-
-def make_source_archive( filename ):
+def make_source_archive( filename: Text ) -> bytes:
 
   return base64.encodebytes( bz2.compress( open( filename, 'rb' ).read() ) )
 
 
-def compile_module_dict( modules ):
+def compile_module_dict( modules: List[ Tuple[ Text, Text ] ] ) -> Text:
 
   mods = []
 
-  for ( modulename, filename, path ) in sorted( modules ):
+  for ( modulename, filename ) in sorted( modules ):
+    if not filename:
+      continue
+
     bc = make_source_archive( filename )
-    mods.append( "  %s: ( %s, %s, %s )" % ( repr( modulename ),
-                                            repr( filename ),
-                                            repr( path or '' ),
-                                            repr( bc ) ) )
+    mods.append( "    %s: ( %s, b\"\"\"\\\n%s\"\"\" )"
+                 % ( repr( modulename ),
+                     repr( filename ),
+                     bc.decode( "latin1" ) ) )
 
   return "{\n%s\n}" % ",\n".join( mods )
 
 
-def make_launcher( main, modules ):
+def make_launcher( modules: List[ Tuple[ Text, Text ] ] ):
 
-  return LAUNCHER_STUB % { 'modules': compile_module_dict( modules ) }
+  return LAUNCHER_STUB % { "modules": compile_module_dict( modules ) }
 
 
-def build( scriptname, outputname=None ):
+def build( inputname: Text, outputname: Text = None, verbose: bool = True ):
 
-  mainname, ext = os.path.splitext( scriptname )
+  dirname, scriptname = os.path.split( inputname )
+  previous_dir = os.path.abspath( os.getcwd() )
 
-  from modulefinder import ModuleFinder
+  if dirname:
+    os.chdir( dirname )
 
-  p = os.path.abspath( os.getcwd() )
+  mf = ModuleFinder( path=[ "." ] )
+  mf.run_script( scriptname )
 
-  if os.path.dirname( scriptname ):
-    os.chdir( os.path.dirname( scriptname ) )
+  # Type checking wrongly thinks that Module object have no __file__ or
+  # __path__ attributes. :/
+  libs: List[ Tuple[ Text, Text ] ]
+  libs = [ ( name, mod.__file__ )  # type: ignore
+           for ( name, mod ) in mf.modules.items() ]
 
-  mf = ModuleFinder( [ "." ] )
-  mf.run_script( os.path.basename( scriptname ) )
+  if verbose:
+    mf.report()
 
-  libs = [ ( name, mod.__file__, mod.__path__ )
-           for ( name, mod ) in mf.modules.items()
-           if mod.__file__ ]
-
-  output = make_launcher( mainname, libs )
-
-  os.chdir( p )
+  output = make_launcher( libs )
+  os.chdir( previous_dir )
 
   if not outputname:
     print( output )
 
   else:
-    open( outputname, "wb" ).write( output )
+    open( outputname, "w" ).write( output )
 
 
 def main():
 
-  if not len( sys.argv ) > 1:
-    return
+  parser = argparse.ArgumentParser(
+      description="Builds all of a Python script's Python dependencies into a "
+                  "single Python file." )
+  parser.add_argument( "input", metavar="INPUT.py",
+                       help="the input python file" )
+  parser.add_argument( "output", metavar="OUTPUT.py", nargs="?",
+                       help="the output python file", default=None )
+  parser.add_argument( "-v", "--verbose", action="store_true",
+                       help="display information on the collected modules" )
 
-  if len( sys.argv ) > 2:
-    build( sys.argv[1], sys.argv[2] )
+  args = parser.parse_args()
 
-  else:
-    build( sys.argv[1] )
+  return build( args.input, args.output, args.verbose )
 
 
 if __name__ == "__main__":

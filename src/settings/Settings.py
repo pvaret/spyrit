@@ -19,18 +19,22 @@
 ## Implements the core settings paraphernalia.
 ##
 
-u"""
+"""
 :doctest:
 
 >>> from settings.Settings import *
 
 """
 
+from fnmatch import fnmatchcase
+
 from CallbackRegistry import CallbackRegistry
+
 
 class __NoValue( object ):
   def __repr__( self ):
     return '<NO VALUE>'
+
 
 NO_VALUE = __NoValue()
 
@@ -38,11 +42,8 @@ NO_VALUE = __NoValue()
 ROOT = '@'
 
 
-from fnmatch import fnmatchcase
-
-
 class MatchingDict( dict ):
-  u"""\
+  """
   A dictionary whose keys are glob patterns, and where key lookup is matched
   against those patterns.
 
@@ -69,7 +70,6 @@ class MatchingDict( dict ):
     except KeyError:
       return False
 
-
   def __getitem__( self, key ):
 
     try:
@@ -84,9 +84,8 @@ class MatchingDict( dict ):
     raise KeyError( key )
 
 
-## TODO: Move this out of this file.
 class DictAttrProxy( object ):
-  u"""
+  """
   This class is meant to be inherited from by dict-like subclasses, and makes
   the dict's keys accessible as attributes. Use it as a parent class, and you
   can then access:
@@ -98,10 +97,9 @@ class DictAttrProxy( object ):
 
   """
 
-
   @staticmethod
   def validatedAttr( attr ):
-    u"""
+    """
     Static method. Determines whether the parameter begins with one
     underscore '_' but not two. Returns None otherwise.
     Attributes beginning with one underscore will be looked up as items on
@@ -109,14 +107,13 @@ class DictAttrProxy( object ):
 
     """
 
-    if len( attr ) >= 2 \
-      and attr.startswith( "_" ) \
-      and not attr.startswith( "__" ):
+    if ( len( attr ) >= 2
+         and attr.startswith( "_" )
+         and not attr.startswith( "__" ) ):
 
         return attr[ 1: ]
 
     return None
-
 
   def __getattr__( self, attr ):
 
@@ -134,7 +131,6 @@ class DictAttrProxy( object ):
     except KeyError:
       raise AttributeError( attr )
 
-
   def __setattr__( self, attr, value ):
 
     vattr = self.validatedAttr( attr )
@@ -145,7 +141,6 @@ class DictAttrProxy( object ):
     else:
       ## If this is a 'normal' attribute, treat it the normal way.
       object.__setattr__( self, attr, value )
-
 
   def __delattr__( self, attr ):
 
@@ -165,7 +160,6 @@ class DictAttrProxy( object ):
       raise AttributeError( attr )
 
 
-
 class Leaf( object ):
 
   def __init__( self, key, container ):
@@ -177,17 +171,14 @@ class Leaf( object ):
     self.container      = container
     self.fallback_value = None
 
-
   def isLeaf( self ):
 
     return True
 
-
   def __repr__( self ):
 
     key_path = ".".join( self.getFullPath() )
-    return u"<Leaf %s>: %r" % ( key_path, self.own_value )
-
+    return "<Leaf %s>: %r" % ( key_path, self.own_value )
 
   def getFullPath( self ):
 
@@ -195,7 +186,6 @@ class Leaf( object ):
       return []
 
     return self.container.getFullPath() + [ self.key ]
-
 
   def setInherit( self, inherit ):
 
@@ -205,12 +195,10 @@ class Leaf( object ):
       inherit.notifier.add( self.propagate )
       self.fallback_value = inherit.value()
 
-
   def value( self ):
 
-    return self.own_value if self.own_value is not NO_VALUE \
-           else self.fallback_value
-
+    return ( self.own_value if self.own_value is not NO_VALUE
+             else self.fallback_value )
 
   def setValue( self, value ):
 
@@ -225,11 +213,9 @@ class Leaf( object ):
     if self.notifier and ( new_value != prev_value ):
       self.notifier.triggerAll( new_value )
 
-
   def delValue( self ):
 
     self.setValue( NO_VALUE )
-
 
   def propagate( self, new_value ):
 
@@ -239,19 +225,17 @@ class Leaf( object ):
     if self.value() != prev_value:
       self.notifier.triggerAll( new_value )
 
-
   def isEmpty( self ):
 
     return self.own_value is NO_VALUE
 
 
+def default_dump_predicate( node ):
 
+  return not node.proto.metadata.get( "exclude_from_dump" )
 
 
 class Node( DictAttrProxy ):
-
-  dump_predicate = \
-          lambda node: not node.proto.metadata.get( "exclude_from_dump" )
 
   def __init__( self, key, container ):
 
@@ -261,16 +245,13 @@ class Node( DictAttrProxy ):
     self.inherit   = None
     self.container = container
 
-
   def isLeaf( self ):
 
     return False
 
-
   def __repr__( self ):
 
-    return u"<Node %s>" % ( ".".join( self.getFullPath() ) or "." )
-
+    return "<Node %s>" % ( ".".join( self.getFullPath() ) or "." )
 
   def getFullPath( self ):
 
@@ -279,11 +260,9 @@ class Node( DictAttrProxy ):
 
     return self.container.getFullPath() + [ self.key ]
 
-
   def setInherit( self, inherit ):
 
     self.inherit = inherit
-
 
   def get( self, key ):
 
@@ -303,29 +282,24 @@ class Node( DictAttrProxy ):
 
     return node
 
-
   def __iter__( self ):
 
     return iter( self.nodes )
-
 
   def __getitem__( self, key ):
 
     node = self.get( key )
     return node.value()
 
-
   def __setitem__( self, key, value ):
 
     node = self.get( key )
     node.setValue( value )
 
-
   def __delitem__( self, key ):
 
     node = self.get( key )
     node.delValue()
-
 
   def asDict( self ):
 
@@ -338,16 +312,13 @@ class Node( DictAttrProxy ):
 
     return ret
 
-
   def value( self ):
 
     return self
 
-
   def isEmpty( self ):
 
     return all( node.isEmpty() for node in self.nodes.values() )
-
 
   def setValue( self, value ):
 
@@ -362,14 +333,10 @@ class Node( DictAttrProxy ):
       raise ValueError( "Expected a dict matching the schema for key %s; "
                         "got %r" % ( self.getFullPath(), value ) )
 
-
-  def dump( self, predicate=dump_predicate ):
+  def dump( self, predicate=default_dump_predicate ):
 
     stack = [ ( self, "" ) ]
     result = ( {}, {} )
-
-    nodeclass = self.proto.metadata[ 'nodeclass' ]
-    leafclass = self.proto.metadata[ 'leafclass' ]
 
     KEYS     = 0
     SECTIONS = 1
@@ -378,9 +345,7 @@ class Node( DictAttrProxy ):
 
       node, key = stack.pop( 0 )
 
-      ## TODO: Do away with 'isinstance'.
-
-      if isinstance( node, leafclass ):
+      if node.isLeaf():
 
         serializer = node.proto.metadata.get( 'serializer' )
 
@@ -389,7 +354,7 @@ class Node( DictAttrProxy ):
 
         result[ KEYS ][ key ] = serializer.serialize( node.value() )
 
-      elif isinstance( node, nodeclass ):
+      else:
 
         for node_key, node in sorted( node.nodes.items() ):
 
@@ -410,7 +375,6 @@ class Node( DictAttrProxy ):
 
     return result
 
-
   def onChange( self, key, callback ):
 
     leaf = self.get( key )
@@ -430,7 +394,6 @@ class NodeProto( object ):
     self.metadata      = {}
     self.default_value = None
 
-
   def get( self, key ):
 
     if "." in key:
@@ -438,7 +401,6 @@ class NodeProto( object ):
       return self.get( key ).get( subkey )
 
     return self.nodes[ key ]
-
 
   def new( self, key, klass, nodeclass ):
 
@@ -457,7 +419,6 @@ class NodeProto( object ):
       self.nodes[ key ] = new_node
 
     return self.nodes[ key ]
-
 
   def build( self, key, container ):
 
@@ -479,7 +440,8 @@ class NodeProto( object ):
       inherit_pattern = self.inherit
       inherit_container = container
 
-      while inherit_container is not None and inherit_pattern.startswith( "." ):
+      while ( inherit_container is not None
+              and inherit_pattern.startswith( "." ) ):
 
         inherit_pattern = inherit_pattern[ 1: ]
         inherit_container = inherit_container.container
@@ -506,7 +468,7 @@ class NodeProto( object ):
 
       ## Sanity test:
       assert ( type( inherit_node ) is type( node ) ), \
-             u"Type mismatch in Settings hierarchy!"
+          "Type mismatch in Settings hierarchy!"
 
     return node
 
@@ -516,7 +478,6 @@ class Settings( Node ):
   nodeclass = Node
   leafclass = Leaf
 
-
   def __init__( self ):
 
     super( Settings, self ).__init__( ROOT, None )
@@ -525,7 +486,6 @@ class Settings( Node ):
 
     self.proto.metadata[ 'nodeclass' ] = self.nodeclass
     self.proto.metadata[ 'leafclass' ] = self.leafclass
-
 
   def loadSchema( self, schema_def ):
 
@@ -539,7 +499,7 @@ class Settings( Node ):
       current_proto, current_schema_def = pending_schema_defs.pop( 0 )
 
       current_proto.inherit = current_schema_def.get( 'inherit' )
-      section_metadata      = current_schema_def.get( 'default_metadata' ) or {}
+      section_metadata  = current_schema_def.get( 'default_metadata' ) or {}
 
       for key, metadata in current_schema_def.get( 'keys', () ):
 
@@ -558,17 +518,17 @@ class Settings( Node ):
 
         new_proto.default_value = default
 
-      for section_key, sub_schema_def \
-          in current_schema_def.get( 'sections', () ):
+      for section_key, sub_schema_def in \
+              current_schema_def.get( 'sections', () ):
 
         new_proto = current_proto
 
         for key in section_key.split( "." ):
-          new_proto = new_proto.new( key, klass=nodeclass, nodeclass=nodeclass )
+          new_proto = new_proto.new(
+              key, klass=nodeclass, nodeclass=nodeclass )
           new_proto.metadata[ 'is_section' ] = True
 
         pending_schema_defs.append( ( new_proto, sub_schema_def ) )
-
 
   def restore( self, settings_struct ):
 

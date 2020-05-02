@@ -20,9 +20,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from PyQt5.QtGui     import QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSpinBox, QCheckBox
 

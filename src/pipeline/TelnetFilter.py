@@ -22,8 +22,6 @@
 ## specific behavior from the client.
 ##
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 import re
 
@@ -33,11 +31,7 @@ from .ChunkData import ChunkType
 
 
 def bytechr( i ):
-  if type( chr( 32 ) ) is type( u"" ):
-    ## Python 3 compatibility.
-    return bytes( [ i ] )
-  else:
-    return chr( i )
+  return bytes( [ i ] )
 
 
 class TelnetFilter( BaseFilter ):
@@ -145,4 +139,3 @@ class TelnetFilter( BaseFilter ):
 
     ## Escape the character 0xff in accordance with the telnet specification.
     return data.replace( self.IAC, self.IAC * 2 )
-

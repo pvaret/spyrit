@@ -20,15 +20,11 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from PyQt5.QtWidgets import QApplication
 
 from Utilities      import format_as_table
-from .BaseCommand    import BaseCommand
+from .BaseCommand   import BaseCommand
 from SpyritSettings import DESCRIPTIONS
-
 
 
 class SettingsCommand( BaseCommand ):

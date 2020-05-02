@@ -26,16 +26,6 @@ u"""
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-## Python 3 compatibility
-try:
-  unichr
-except NameError:
-  unichr = chr
-
 
 DEFAULT_ESCAPES = {
   u'\n': u'n',
@@ -129,7 +119,7 @@ def make_unicode_translation_table():
   for i in range( 0x1FFF ):
 
     try:
-      c = unichr( i )
+      c = chr( i )
 
     except ValueError:
       continue
@@ -190,9 +180,8 @@ def ensure_valid_filename( filename ):
 
   assert type( filename ) is type( u'' )  ## Only accept Unicode strings.
 
-  ## Note the list cast for Python 3 compatibility.
-  invalid_char_codes = list( range( 32 ) )
-  invalid_char_codes.extend( ord( c ) for c in u'<>:"/\\|?*' )
+  invalid_char_codes = [ ord( c ) for c in u'<>:"/\\|?*' ]
+  invalid_char_codes.extend( range( 32 ) )
 
   translation_table = dict( ( c, u'_' ) for c in invalid_char_codes )
 

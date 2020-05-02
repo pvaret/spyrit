@@ -20,12 +20,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-## Python 3 compatibility
-from io import open
-
 import codecs
 
 from Globals       import ANSI_COLORS as COL

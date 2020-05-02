@@ -26,17 +26,11 @@ u"""
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 import sys
 import types
 
 from weakref import ref
-
-## Python 3 compatibility.
-IS_PY3 = sys.version_info.major >= 3
 
 
 class WeakCallableRef( object ):
@@ -119,18 +113,18 @@ class WeakCallableRef( object ):
     self._callback = callback
     self._fnname   = ""
 
-    obj = getattr( fn, "__self__" if IS_PY3 else "im_self", None )
+    obj = getattr( fn, "__self__", None )
 
     if obj is not None:  ## fn is a bound method
-      func = getattr( fn, "__func__" if IS_PY3 else "im_func" )
+      func = getattr( fn, "__func__" )
       self._objref = ref( obj,  self.markDead )
       self._fnref  = ref( func, self.markDead )
-      self._class  = getattr( fn, "__class__" if IS_PY3 else "im_class" )
-      self._fnname = getattr( func, "__name__" if IS_PY3 else "func_name" )
+      self._class  = getattr( fn, "__class__" )
+      self._fnname = getattr( func, "__name__" )
 
     else:  ## fn is a static method or a plain function
       self._fnref  = ref( fn, self.markDead )
-      self._fnname = getattr( fn, "__name__" if IS_PY3 else "func_name" )
+      self._fnname = getattr( fn, "__name__" )
 
 
   def markDead( self, objref ):
@@ -160,10 +154,7 @@ class WeakCallableRef( object ):
       if None in ( fn, obj ):
         return None
 
-      if IS_PY3:
-        return types.MethodType( fn, obj )
-      else:
-        return types.MethodType( fn, obj, self._class )
+      return types.MethodType( fn, obj )
 
     elif self._fnref:
       return self._fnref()

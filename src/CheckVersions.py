@@ -20,9 +20,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 REQUIRED_PYTHON_VERSION = ( 3, 6 )
 REQUIRED_QT_VERSION     = ( 5, 6 )
 

@@ -21,9 +21,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import sys
 import locale
 
@@ -106,10 +103,6 @@ class Application( QApplication ):
     ## by Qt itself.
 
     for arg in self.args[ 1: ]:
-
-      ## Python 3 compatibility:
-      if type( arg ) is type( b"" ):
-        arg = arg.decode( self.local_encoding, "replace" )
 
       if u":" in arg:  ## This is probably a 'server:port' argument.
 

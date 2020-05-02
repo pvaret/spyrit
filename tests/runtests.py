@@ -1,12 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 ## -*- coding: utf-8 -*-
-
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-## Python 3 compatibility
-from io import open
 
 import os
 import sys
@@ -21,7 +14,6 @@ OPTIONS = ( doctest.NORMALIZE_WHITESPACE
           | doctest.ELLIPSIS
           | doctest.DONT_ACCEPT_TRUE_FOR_1
           | doctest.IGNORE_EXCEPTION_DETAIL
-
           | doctest.REPORT_NDIFF
           | doctest.REPORT_ONLY_FIRST_FAILURE )
 

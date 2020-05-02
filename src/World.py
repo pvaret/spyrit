@@ -21,14 +21,8 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import os
 import time
-
-## Python 3 compatibility
-from io import open
 
 from glob import glob
 
@@ -49,8 +43,6 @@ from PlatformSpecific import platformSpecific
 from pipeline.ChunkData      import ChunkType
 from pipeline.ChunkData      import NetworkState
 from pipeline.SocketPipeline import SocketPipeline
-
-
 
 
 class Status:

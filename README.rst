@@ -17,10 +17,11 @@ ABOUT SPYRIT
 PREREQUISITES
 -------------
 
-**Spyrit** requires Python 2.7 or later, Qt 5.2 or later, and the PyQt5 bindings.
-On Ubuntu and other Debian-like OS, install the package ``python-qt5`` and you will be good to go.
+**Spyrit** requires Python 3.6 or later, Qt 5.6 or later, and the PyQt5 bindings.
+On Ubuntu and other Debian-like OS, install the package ``python3-pyqt5`` and you will be good to go.
+Alternatively, install it with pip: ``pip install PyQt5``
 
-On Windows, install Python 2.7 from http://www.python.org/ and the Windows binary PyQt5 package from http://www.riverbankcomputing.com/software/pyqt/download5 for Python 2.7.
+On Windows, install Python 3.6 or later from http://www.python.org/ and the Windows binary PyQt5 package from http://www.riverbankcomputing.com/software/pyqt/download5 for Python 3.6.
 
 Windows and Mac OS X users may want to download the latest binary release for their OS from our Website instead.
 
@@ -39,4 +40,4 @@ FEEDBACK
 **Spyrit** is still a work in progress. Some things stand to be improved, and others are outright missing. Please give us feedback on GitHub: https://github.com/pvaret/spyrit/issues
 
 
-**Spyrit** is (c) 2007-2018 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv2.
+**Spyrit** is (c) 2007-2020 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv2.

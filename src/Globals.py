@@ -26,18 +26,9 @@ u"""
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QTextFormat
-
-## Python 3 compatibility
-try:
-  unichr
-except NameError:
-  unichr = chr
 
 
 class FORMAT_PROPERTIES:
@@ -436,7 +427,7 @@ def compute_closest_ansi_color( rgb ):
 ## Special characters:
 
 ESC       = b"\x1b"
-LEFTARROW = unichr( 0x2192 )
+LEFTARROW = chr( 0x2192 )
 
 
 ## Command-related globals.

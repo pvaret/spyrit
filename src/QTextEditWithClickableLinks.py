@@ -20,7 +20,6 @@
 ## the same interaction between mouse and links as in QTextBrowser.
 ##
 
-from __future__ import absolute_import
 
 from PyQt5.QtCore    import Qt
 from PyQt5.QtCore    import QUrl
@@ -29,16 +28,10 @@ from PyQt5.QtCore    import pyqtSignal
 from PyQt5.QtWidgets import QTextEdit
 from PyQt5.QtGui     import QDesktopServices
 
-try:
-  ## Python 3 compatibility.
-  unicode
-except NameError:
-  unicode = str
-
 
 class QTextEditWithClickableLinks( QTextEdit ):
 
-  linkClicked = pyqtSignal( unicode )
+  linkClicked = pyqtSignal( str )
 
   def __init__( self, parent=None ):
 

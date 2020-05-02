@@ -22,9 +22,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 import re
 import bisect
 
@@ -35,12 +32,6 @@ from PyQt5.QtGui import QTextCursor
 from pipeline.ChunkData import ChunkType
 from pipeline.ChunkData import FlowControl
 from Utilities          import normalize_text
-
-try:
-  ## Python 3 compatibility.
-  unicode
-except NameError:
-  unicode = str
 
 
 MAX_WORD_LIST_LENGTH = 1000
@@ -149,7 +140,7 @@ class Autocompleter:
 
     tc.movePosition( QTextCursor.EndOfLine,
                      QTextCursor.KeepAnchor )
-    line_end = unicode( tc.selectedText() )
+    line_end = str( tc.selectedText() )
 
     m = self.endwordmatch.findall( line_end )
     if m: word_after = m[ 0 ]
@@ -161,7 +152,7 @@ class Autocompleter:
 
     tc.movePosition( QTextCursor.StartOfLine,
                      QTextCursor.KeepAnchor )
-    line_start = unicode( tc.selectedText() )
+    line_start = str( tc.selectedText() )
 
     m = self.startwordmatch.findall( line_start )
     if m: word_before = m[ 0 ]

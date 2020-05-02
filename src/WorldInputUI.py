@@ -21,9 +21,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from PyQt5.QtCore    import Qt
 from PyQt5.QtCore    import pyqtSlot
 from PyQt5.QtCore    import pyqtSignal
@@ -145,13 +142,7 @@ class WorldInputUI( QTextEdit ):
   @pyqtSlot()
   def clearAndSend( self ):
 
-    try:
-      ## Python 3 compatibility.
-      unicode
-    except NameError:
-      unicode = str
-
-    text = unicode( self.toPlainText() )
+    text = str( self.toPlainText() )
 
     self.clear()
 

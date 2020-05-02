@@ -21,8 +21,6 @@
 ##
 
 
-from __future__ import absolute_import
-
 import os
 
 from PyQt5.QtCore import QFile

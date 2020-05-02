@@ -20,8 +20,6 @@
 ## given world's configuration.
 ##
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 import os.path
 
@@ -40,13 +38,6 @@ from pipeline.ChunkData import ChunkType
 from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 
 import Serializers
-
-
-try:
-  ## Python 3 compatibility.
-  unicode
-except NameError:
-  unicode = str
 
 
 _LINE = u"__line__"
@@ -492,7 +483,7 @@ class TriggersManager:
 
       node = settings[ TRIGGERS ].get( groupname )
       for i, match in enumerate( matchgroup.matches ):
-        node[ MATCHES ][ unicode( i+1 ) ] = match
+        node[ MATCHES ][ str( i+1 ) ] = match
 
       for action in matchgroup.actions.values():
         node[ ACTIONS ][ action.name ] = action.params()

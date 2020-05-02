@@ -18,8 +18,6 @@
 ## looks up, creates or deletes world configuration objects.
 ##
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal

@@ -26,9 +26,6 @@ u"""
 
 """
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from CallbackRegistry import CallbackRegistry
 
 class __NoValue( object ):

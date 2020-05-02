@@ -22,37 +22,19 @@ __all__ = [
 
 __module__    = "winpaths"
 __author__    = "Christopher Arndt"
-__version__   = "0.1"
+__version__   = "0.2"
 __revision__  = "$Rev$"
 __date__      = "$Date$"
 __copyright__ = "Python license"
 
-## Modified 2018/06/19 for Python 3 compatibility.
+## Modified 2020/05/01 to remove Python 2 compatibility code.
 
 
 import os
 
 try:
-  # Python 2 import.
-  import _winreg as winreg
-except ImportError:
-  pass
-
-try:
-  # Python 3 import.
   import winreg
 except ImportError:
-  pass
-
-try:
-  ## Python 3 compatibility.
-  unicode
-except NameError:
-  unicode = str
-
-try:
-  winreg
-except NameError:
   ## Well, whoops. Presumably we're not running Windows. Pass silently.
   pass
 
@@ -218,4 +200,4 @@ else:
   def get_windir():
     """Convenience function to get path to windows installation directory."""
 
-    return unicode( os.environ[ "WINDIR" ] )
+    return str( os.environ[ "WINDIR" ] )

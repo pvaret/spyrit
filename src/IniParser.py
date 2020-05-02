@@ -26,18 +26,8 @@ u"""
 
 """
 
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 import re
-
-
-try:
-  ## Python 3 compatibility.
-  unicode
-except NameError:
-  unicode = str
 
 
 RE_SECTION  = re.compile( r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE )
@@ -197,7 +187,7 @@ def update_settings_2_to_3( struct ):
       elif k == "match":
         matches = List( Str() ).deserialize( v )
         for i, v in enumerate( matches ):
-          matches_keys[ unicode( i+1 ) ] = v
+          matches_keys[ str( i+1 ) ] = v
     return ( {}, new_schema )
 
   def update_all( struct ):
@@ -210,7 +200,7 @@ def update_settings_2_to_3( struct ):
         new_trigger_sections.append( update_matches( subsection ) )
       del sections[ "matches" ]
       sections[ "triggers" ] = (
-        {}, { unicode( i+1 ): trigger_section
+        {}, { str( i+1 ): trigger_section
               for i, trigger_section in enumerate( new_trigger_sections ) }
       )
 
@@ -327,12 +317,12 @@ def ini_to_struct( ini_text ):
   ...   compound.key5 = 5
   ...
   ... '''
-  >>> output = \
-  ...   ({u'key1': u'1', u'key2': u'2'},
-  ...    {u'section1': ({},
-  ...                   {u'subsection1': ({u'key3': u'"This is a string"'},
-  ...                                     {})}),
-  ...     u'section2': ({u'compound.key5': u'5'}, {})})
+  >>> output = (
+  ...   {u'key1': u'1', u'key2': u'2'},
+  ...   {u'section1': ({},
+  ...                  {u'subsection1': ({u'key3': u'"This is a string"'},
+  ...                                    {})}),
+  ...    u'section2': ({u'compound.key5': u'5'}, {})})
   >>> output == ini_to_struct( input )
   True
 

@@ -21,9 +21,6 @@
 ##
 
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
 from PyQt5.QtCore    import Qt
 from PyQt5.QtCore    import QObject
 from PyQt5.QtCore    import pyqtSlot
@@ -32,12 +29,6 @@ from PyQt5.QtWidgets import QSpinBox
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QCheckBox
 
-
-try:
-  ## Python 3 compatibility.
-  unicode
-except NameError:
-  unicode = str
 
 qlineedit_not_empty = lambda qlineedit: len( qlineedit.text() ) > 0
 
@@ -65,7 +56,7 @@ class BaseWidgetMapper( QObject ):
 
   @pyqtSlot( int )
   @pyqtSlot( bool )
-  @pyqtSlot( unicode )
+  @pyqtSlot( str )
   def emitValueChanged( self, widget_value ):
 
     assert( isinstance( widget_value, self.widget_value_class ) )
@@ -116,17 +107,17 @@ class QLineEditMapper( BaseWidgetMapper ):
   widget_class         = QLineEdit
   widget_value_setter  = QLineEdit.setText
   widget_signal_name   = "textEdited"
-  widget_value_class   = unicode
-  settings_value_class = unicode
+  widget_value_class   = str
+  settings_value_class = str
 
   def widgetToSettingsValue( self, widget_value ):
 
-    return unicode( widget_value )
+    return str( widget_value )
 
 
   def settingsToWidgetValue( self, settings_value ):
 
-    return unicode( settings_value )
+    return str( settings_value )
 
 
 

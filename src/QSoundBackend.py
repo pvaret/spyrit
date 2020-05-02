@@ -22,8 +22,6 @@
 ##
 
 
-from __future__ import absolute_import
-
 try:
   from PyQt5.QtMultimedia import QSound
 

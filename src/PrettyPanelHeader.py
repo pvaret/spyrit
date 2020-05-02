@@ -20,8 +20,6 @@
 ## a pretty header suitable for option panels and such.
 ##
 
-from __future__ import absolute_import
-from __future__ import unicode_literals
 
 from PyQt5.QtCore    import Qt
 from PyQt5.QtWidgets import QFrame

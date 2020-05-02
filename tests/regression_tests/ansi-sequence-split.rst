@@ -1,7 +1,5 @@
 .. :doctest:
 
->>> from __future__ import print_function
-
 REGRESSION: When an ANSI line is split by the prompt sweeper, if it happens
 in the middle of an ANSI sequence, then that sequence isn't parsed properly.
 

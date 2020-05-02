@@ -17,11 +17,8 @@ _DIALOG=''
 
 
 
-## In some bleeding-edge distros like Arch, 'python' point to Python 3 by
-## default. Make sure we'll try our best to use Python 2.
-
 _PYTHON=''
-_CANDIDATES="python2 python2.7 python"
+_CANDIDATES="python3 python"
 
 for _ALIAS in $_CANDIDATES ; do
   _PYTHON=$(which $_ALIAS 2>/dev/null)
@@ -32,11 +29,11 @@ done
 
 
 
-## Did we find a Python 2 install?
+## Did we find a Python 3 install?
 
 if [[ -z $_PYTHON \
-      || ! $($_PYTHON -c "import sys ; print( sys.version_info[0] )") == "2" ]] ; then
-  errmsg="Couldn't find a Python 2 interpreter!"
+      || ! $($_PYTHON -c "import sys ; print( sys.version_info[0] )") == "3" ]] ; then
+  errmsg="Couldn't find a Python 3 interpreter!"
   echo $errmsg
   [[ ! -z $_DIALOG ]] && $_DIALOG"$errmsg"
   exit 1
@@ -96,7 +93,7 @@ fi
 ## Launch Spyrit for real.
 
 cd $_THIS_DIR/src
-$_PYTHON -3 spyrit.py $@
+$_PYTHON spyrit.py $@
 errstate=$?
 cd $_OLD_DIR
 

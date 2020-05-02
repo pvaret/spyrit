@@ -21,7 +21,6 @@
 ## available backend.
 ##
 
-from __future__ import absolute_import
 
 HAS_PYGAME=False
 

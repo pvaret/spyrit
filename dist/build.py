@@ -1,14 +1,12 @@
-#!/usr/bin/python
-## -*- coding: utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 
 import sys
-import imp
 import bz2
 import time
 import struct
 import base64
-import marshal
 import os.path
 
 
@@ -42,7 +40,7 @@ class embedded_module_importer:
       fullname = "__main__"
 
     filename, path, source = EMBEDDED_MODULES[ fullname ]
-    source = bz2.decompress( base64.decodestring( source ) )
+    source = bz2.decompress( base64.decodebytes( source ) )
     code   = compile( source, filename, 'exec' )
 
     mod = sys.modules.setdefault( fullname, imp.new_module( fullname ) )
@@ -61,11 +59,10 @@ sys.meta_path.append( embedded_module_importer() )
 try:
   import MAIN
 except KeyError:
-  ## The name rewriting trick we do here confuses the Python 3 import machinery,
-  ## which works but reports a spurious KeyError.
+  ## The name rewriting trick we do here confuses the Python 3 import
+  ## machinery, which works but reports a spurious KeyError.
   pass
 """
-
 
 
 def get_timestamp_long():
@@ -75,16 +72,7 @@ def get_timestamp_long():
 
 def make_source_archive( filename ):
 
-  return base64.encodestring( bz2.compress( open( filename, 'rb' ).read() ) )
-
-
-#def make_bytecode( filename ):
-#
-#  m  = compile( open( filename, 'rb' ).read(), filename, 'exec' )
-# #  bc = imp.get_magic() + get_timestamp_long() + marshal.dumps( m )
-#  bc = bz2.compress( marshal.dumps( m ) )
-#
-#  return bc
+  return base64.encodebytes( bz2.compress( open( filename, 'rb' ).read() ) )
 
 
 def compile_module_dict( modules ):
@@ -92,7 +80,6 @@ def compile_module_dict( modules ):
   mods = []
 
   for ( modulename, filename, path ) in sorted( modules ):
-    #bc = make_bytecode( filename )
     bc = make_source_archive( filename )
     mods.append( "  %s: ( %s, %s, %s )" % ( repr( modulename ),
                                             repr( filename ),
@@ -122,8 +109,8 @@ def build( scriptname, outputname=None ):
   mf.run_script( os.path.basename( scriptname ) )
 
   libs = [ ( name, mod.__file__, mod.__path__ )
-               for ( name, mod ) in mf.modules.items()
-               if mod.__file__ ]
+           for ( name, mod ) in mf.modules.items()
+           if mod.__file__ ]
 
   output = make_launcher( mainname, libs )
 

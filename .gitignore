@@ -1,4 +1,5 @@
 *.py[co]
+.mypy_cache/
 *.e3p
 *.e3s
 *.e3t

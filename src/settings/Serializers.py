@@ -22,7 +22,7 @@
 ##
 
 
-u"""
+"""
 :doctest:
 
 >>> from Serializers import *
@@ -31,32 +31,46 @@ u"""
 
 
 import re
+import abc
 
-from PyQt5.QtGui  import QKeySequence
-from PyQt5.QtCore import QSize
+from typing import Any
+from typing import Dict
+from typing import Generic
+from typing import Iterable
+from typing import List as ListType
+from typing import Optional
+from typing import Text
+from typing import TypeVar
+
 from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QKeySequence
 
-from Globals   import FORMAT_PROPERTIES
-from Matches   import RegexMatch, SmartMatch, MatchCreationError
-from Utilities import quote, unquote, BS
+from Globals import FORMAT_PROPERTIES
+from Matches import BaseMatch
+from Matches import MatchCreationError
+from Matches import RegexMatch
+from Matches import SmartMatch
+from Utilities import BS
+from Utilities import quote
+from Utilities import unquote
 
 
-
-
-def split( string, sep=u',', esc=BS, quotes=u'"' ):
+def split( string: Text, sep: Text = ",", esc: Text = BS,
+           quotes: Text = '"' ) -> Iterable[ Text ]:
   r"""
   Splits a string along the given single-character separator (by default, a
   comma).
 
   Only split if the separator is not escaped or inside a quoted section.
 
-  >>> print( len( list( split( u' "A", "B" ' ) ) ) )
+  >>> print( len( list( split( ' "A", "B" ' ) ) ) )
   2
 
   >>> print( len( list( split( r' "A"\, "B" ') ) ) )
   1
 
-  >>> print( len( list( split( u' "A, B" ') ) ) )
+  >>> print( len( list( split( ' "A, B" ') ) ) )
   1
 
   """
@@ -101,33 +115,32 @@ def split( string, sep=u',', esc=BS, quotes=u'"' ):
     yield string[ last_pos: ]
 
 
+Value = TypeVar( 'Value' )
 
 
+class BaseSerializer( abc.ABC, Generic[ Value ] ):
 
-class BaseSerializer( object ):
+  @abc.abstractmethod
+  def serialize( self, value: Value ) -> Text:
+    pass
 
-  def serialize( self, value ):
+  @abc.abstractmethod
+  def deserialize( self, string: Text ) -> Value:
+    pass
 
-    raise NotImplementedError( "Serializers must implement the serialize method." )
-
-
-  def deserialize( self, string ):
-
-    raise NotImplementedError( "Serializers must implement the deserialize method." )
-
-
+  # TODO: Not very clean. Find a way to make it cleaner? Or maybe remove it
+  # entirely?
   def deserializeDefault( self, default ):
 
-    if type( default ) is type( u"" ):
-      default = self.deserialize( default )
+    if isinstance( default, str ):
+      return self.deserialize( default )
 
     return default
 
 
-
 class Int( BaseSerializer ):
 
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> int:
 
     try:
       return int( string )
@@ -135,19 +148,17 @@ class Int( BaseSerializer ):
     except ValueError:
       return 0
 
-
-  def serialize( self, int_ ):
+  def serialize( self, int_: int ) -> Text:
 
     if isinstance( int_, int ):
-      return u"%d" % int_
+      return "%d" % int_
 
-    return u''
-
+    return ""
 
 
 class Str( BaseSerializer ):
 
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> Optional[ Text ]:
 
     ## The empty string deserializes to None.
     if not string:
@@ -155,56 +166,50 @@ class Str( BaseSerializer ):
 
     return unquote( string )
 
-
-  def serialize( self, string ):
+  def serialize( self, string: Text ) -> Text:
 
     ## None serializes to the empty string.
     if string is None:
-      return u''
+      return ""
 
     return quote( string )
 
 
-
 class Bool( BaseSerializer ):
 
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> bool:
 
-    return string.strip().lower() in ( u"1", u"y", u"yes", u"on", u"true" )
+    return string.strip().lower() in ( "1", "y", "yes", "on", "true" )
 
+  def serialize( self, bool_: bool ) -> Text:
 
-  def serialize( self, bool_ ):
-
-    return u"True" if bool_ else u"False"
-
+    return "True" if bool_ else "False"
 
 
 class List( BaseSerializer ):
 
-  SEP   = u","
-  QUOTE = u'"'
+  SEP   = ","
+  QUOTE = '"'
 
-  def __init__( self, sub_serializer ):
+  def __init__( self, sub_serializer: BaseSerializer ):
 
     self.sub_serializer = sub_serializer
     BaseSerializer.__init__( self )
 
-
-  def serialize( self, list_ ):
+  def serialize( self, list_: ListType[ Value ] ) -> Text:
 
     result = []
 
     for item in list_:
 
-      item = self.sub_serializer.serialize( item )
+      s = self.sub_serializer.serialize( item )
 
-      result.append( item if self.SEP not in item
-                          else self.QUOTE + item + self.QUOTE )
+      result.append( s if self.SEP not in s
+                     else self.QUOTE + s + self.QUOTE )
 
     return self.SEP.join( result )
 
-
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> ListType[ Value ]:
 
     result = []
 
@@ -222,6 +227,8 @@ class List( BaseSerializer ):
     return result
 
 
+## TODO: Make format properties an actual type.
+FormatType = Dict[ Any, Any ]
 
 
 class Format( BaseSerializer ):
@@ -229,97 +236,86 @@ class Format( BaseSerializer ):
   ## FORMAT describes the formatting for a given piece of text: color,
   ## italic, underlined...
   ## Its string serialization is a semicolon-separated list of tokens and
-  ## looks like this: 'color:#ffffff; italic; bold'.
+  ## looks like this: "color:#ffffff; italic; bold".
   ## Its deserialized form is a dictionary.
   ## We also store format-related constants on it.
 
-  def serialize( self, d ):
+  def serialize( self, format: FormatType ) -> Text:
 
-    l = []
+    props: ListType[ Text ] = []
 
-    for k, v in d.items():
+    for k, v in format.items():
 
-      if   k == FORMAT_PROPERTIES.COLOR:
-        l.insert( 0, u"color: %s" % v )
+      if k == FORMAT_PROPERTIES.COLOR:
+        props.insert( 0, "color: %s" % v )
 
       elif k == FORMAT_PROPERTIES.ITALIC:
-        l.append( u"italic" )
+        props.append( "italic" )
 
       elif k == FORMAT_PROPERTIES.BOLD:
-        l.append( u"bold" )
+        props.append( "bold" )
 
       elif k == FORMAT_PROPERTIES.UNDERLINE:
-        l.append( u"underlined" )
+        props.append( "underlined" )
 
-    return u" ; ".join( l )
+    return " ; ".join( props )
 
+  def deserialize( self, format: Text ) -> FormatType:
 
-  def deserialize( self, l ):
+    d: FormatType = {}
 
-    d = {}
-
-    for item in l.split( u";" ):
+    for item in format.split( ";" ):
 
       item  = item.strip().lower()
-      value = None
 
-      if u":" in item:
+      if ":" in item and item.startswith( "c" ):
 
-        item, value = item.split( u":", 1 )
+        item, value = item.split( ":", 1 )
         item  = item.strip()
         value = value.strip()
+        d[ FORMAT_PROPERTIES.COLOR ] = value
 
-      if   item.startswith( u"i" ):
+      elif item.startswith( "i" ):
         d[ FORMAT_PROPERTIES.ITALIC ] = True
 
-      elif item.startswith( u"b" ):
+      elif item.startswith( "b" ):
         d[ FORMAT_PROPERTIES.BOLD ] = True
 
-      elif item.startswith( u"u" ):
+      elif item.startswith( "u" ):
         d[ FORMAT_PROPERTIES.UNDERLINE ] = True
-
-      elif item.startswith( u"c" ):
-
-        if value:
-          d[ FORMAT_PROPERTIES.COLOR ] = value
 
     return d
 
 
-
 class KeySequence( BaseSerializer ):
 
-  def deserializeDefault( self, string ):
+  def deserializeDefault( self, string: Text ) -> QKeySequence:
 
     ## QKeySequence.fromString uses PortableText by default, and so do our
     ## defaults:
     return QKeySequence.fromString( string ) if string is not None else None
 
-
-  def serialize( self, seq ):
+  def serialize( self, seq: Optional[ QKeySequence ] ) -> Text:
 
     if seq is not None:
       return seq.toString( QKeySequence.NativeText )
 
-    return u""
+    return ""
 
-
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> QKeySequence:
 
     return QKeySequence.fromString( string, QKeySequence.NativeText )
 
 
-
 class Size( BaseSerializer ):
 
-  SEP = r'[x,]'
+  SEP = r"[x,]"
 
-  def serialize( self, size ):
+  def serialize( self, size: QSize ) -> Text:
 
-    return u"%dx%d" % ( size.width(), size.height() )
+    return "%dx%d" % ( size.width(), size.height() )
 
-
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> QSize:
 
     string = string.lower().strip()
 
@@ -336,21 +332,19 @@ class Size( BaseSerializer ):
     return QSize()
 
 
-
 class Point( BaseSerializer ):
 
-  def serialize( self, point ):
+  def serialize( self, point: QPoint ) -> Text:
 
-    return u"%dx%d" % ( point.x(), point.y() )
+    return "%dx%d" % ( point.x(), point.y() )
 
-
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> QPoint:
 
     string = string.lower().strip()
 
-    if u'x' in string:
+    if "x" in string:
 
-      x, y = string.split( u'x', 1 )
+      x, y = string.split( "x", 1 )
 
       try:
         return QPoint( int( x ), int( y ) )
@@ -361,27 +355,24 @@ class Point( BaseSerializer ):
     return QPoint()
 
 
-
 class Pattern( BaseSerializer ):
 
-  def serialize( self, pattern ):
+  def serialize( self, pattern: BaseMatch ) -> Text:
 
-    if isinstance( pattern, ( RegexMatch, SmartMatch) ):
-      return quote( repr( pattern ) )
+    ## TODO: Not great. Replace the repr() with a proper serialization
+    ## function.
+    return quote( repr( pattern ) )
 
-    return u''
-
-
-  def deserialize( self, string ):
+  def deserialize( self, string: Text ) -> Optional[ BaseMatch ]:
 
     string = unquote( string )
 
     if not string:
       return None
 
-    if u":" in string:
+    if ":" in string:
 
-      prefix, suffix = string.split( u":", 1 )
+      prefix, suffix = string.split( ":", 1 )
       prefix = prefix.lower()
 
       for class_ in ( RegexMatch, SmartMatch ):

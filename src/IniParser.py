@@ -165,7 +165,7 @@ def update_settings_2_to_3( struct ):
   """
 
   def update_matches( schema ):
-    from Serializers import List, Str
+    from settings.Serializers import List, Str
     matches_keys = {}
     actions_keys = {}
     highlights_keys = {}

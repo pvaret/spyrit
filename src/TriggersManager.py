@@ -37,7 +37,7 @@ from SpyritSettings import TRIGGERS, MATCHES, ACTIONS
 from pipeline.ChunkData import ChunkType
 from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 
-import Serializers
+from settings import Serializers
 
 
 _LINE = u"__line__"

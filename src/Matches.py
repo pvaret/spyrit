@@ -26,6 +26,7 @@
 ##
 
 
+import abc
 import re
 
 
@@ -33,7 +34,12 @@ class MatchCreationError( Exception ):
   pass
 
 
-class RegexMatch:
+## TODO: Add the proper methods.
+class BaseMatch( abc.ABC ):
+  pass
+
+
+class RegexMatch( BaseMatch ):
 
   matchtype = u"regex"
 

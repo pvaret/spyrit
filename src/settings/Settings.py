@@ -95,6 +95,19 @@ class DictAttrProxy( object ):
   It requires the child class to have the __{set|get|del}item__ methods of a
   dictionary.
 
+  >>> class Test( DictAttrProxy, dict ):
+  ...   pass
+  >>> d = Test()
+  >>> d[ "a" ] = 1
+  >>> d._a
+  1
+  >>> d._b = 2
+  >>> d[ "b" ]
+  2
+  >>> del d._a
+  >>> "a" in d
+  False
+
   """
 
   @staticmethod
@@ -383,8 +396,6 @@ class Node( DictAttrProxy ):
 
 class NodeProto( object ):
 
-  PROPAGATE_METADATA = [ 'nodeclass', 'leafclass' ]
-
   def __init__( self, key, klass ):
 
     self.key           = key
@@ -402,20 +413,16 @@ class NodeProto( object ):
 
     return self.nodes[ key ]
 
-  def new( self, key, klass, nodeclass ):
+  def new( self, key, klass ):
 
     if "." in key:
       key, subkey = key.split( ".", 1 )
-      return ( self.new( key, klass=nodeclass, nodeclass=nodeclass )
-                   .new( subkey, klass=klass, nodeclass=nodeclass ) )
+      return ( self.new( key, klass=Node )
+                   .new( subkey, klass=klass ) )
 
     if key not in self.nodes:
 
       new_node = NodeProto( key, klass )
-
-      for prop in self.PROPAGATE_METADATA:
-        new_node.metadata[ prop ] = self.metadata[ prop ]
-
       self.nodes[ key ] = new_node
 
     return self.nodes[ key ]
@@ -475,22 +482,13 @@ class NodeProto( object ):
 
 class Settings( Node ):
 
-  nodeclass = Node
-  leafclass = Leaf
-
   def __init__( self ):
 
     super( Settings, self ).__init__( ROOT, None )
 
     self.proto = NodeProto( ROOT, self.__class__ )
 
-    self.proto.metadata[ 'nodeclass' ] = self.nodeclass
-    self.proto.metadata[ 'leafclass' ] = self.leafclass
-
   def loadSchema( self, schema_def ):
-
-    nodeclass = self.proto.metadata[ 'nodeclass' ]
-    leafclass = self.proto.metadata[ 'leafclass' ]
 
     pending_schema_defs = [ ( self.proto, schema_def ) ]
 
@@ -503,8 +501,7 @@ class Settings( Node ):
 
       for key, metadata in current_schema_def.get( 'keys', () ):
 
-        new_proto = current_proto.new(
-            key, klass=leafclass, nodeclass=nodeclass )
+        new_proto = current_proto.new( key, klass=Leaf )
 
         new_proto.metadata.update( section_metadata )
         new_proto.metadata.update( metadata )
@@ -524,8 +521,7 @@ class Settings( Node ):
         new_proto = current_proto
 
         for key in section_key.split( "." ):
-          new_proto = new_proto.new(
-              key, klass=nodeclass, nodeclass=nodeclass )
+          new_proto = new_proto.new( key, klass=Node )
           new_proto.metadata[ 'is_section' ] = True
 
         pending_schema_defs.append( ( new_proto, sub_schema_def ) )
@@ -562,5 +558,5 @@ class Settings( Node ):
         except KeyError:
           continue
 
-        if isinstance( node, self.nodeclass ):
+        if not node.isLeaf():
           stack.append( ( node, struct ) )

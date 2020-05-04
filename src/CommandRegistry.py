@@ -69,14 +69,14 @@ class CommandRegistry:
 
     if not cmdname:  ## Command not found.
 
-      help_txt = u"""\
+      help_txt = """
                  %(possible_cmdname)s: no such command.
                  Type %(CMDCHAR)s%(HELP)s for a list of available commands."""
 
-      ctx = { 'possible_cmdname': possible_cmdname,
-              'CMDCHAR': CMDCHAR,
-              'HELP': HELP }
-      world.info( dedent( help_txt ) % ctx )
+      ctx = { "possible_cmdname": possible_cmdname,
+              "CMDCHAR": CMDCHAR,
+              "HELP": HELP }
+      world.info( dedent( help_txt ).strip() % ctx )
       return
 
     command = self.lookupCommand( cmdname )
@@ -93,15 +93,15 @@ class CommandRegistry:
       if possible_subcmdname:
         cmdname +=  " " + possible_subcmdname
 
-      help_txt = u"""\
+      help_txt = """
           %(complete_cmdname)s: no such command.
           Type %(CMDCHAR)s%(HELP)s %(cmdname)s for help on this command."""
 
-      ctx = { 'complete_cmdname': complete_cmdname,
-              'CMDCHAR': CMDCHAR,
-              'cmdname': cmdname,
-              'HELP': HELP }
-      world.info( dedent( help_txt ) % ctx )
+      ctx = { "complete_cmdname": complete_cmdname,
+              "CMDCHAR": CMDCHAR,
+              "cmdname": cmdname,
+              "HELP": HELP }
+      world.info( dedent( help_txt ).strip() % ctx )
       return
 
     args.insert( 0, world )
@@ -110,7 +110,7 @@ class CommandRegistry:
       return execute( cmd_callable, args, kwargs )
 
     except ExecuteError as e:
-      msg = u"Command error: %s"
+      msg = "Command error: %s"
       world.info( msg % e )
 
 

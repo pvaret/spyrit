@@ -91,8 +91,8 @@ class SocketPipeline( QObject ):
       self.socket = QTcpSocket()
 
       if self.net_settings._ssl:  ## SSL was requested but is not available...
-        messages.warn( u"SSL functions not available; attempting" \
-                       u"unencrypted connection instead..." )
+        messages.warn( "SSL functions not available; attempting "
+                       "unencrypted connection instead..." )
 
     self.socket.stateChanged.connect( self.reportStateChange )
     self.socket.error.connect( self.reportError )
@@ -181,7 +181,7 @@ class SocketPipeline( QObject ):
     ## going to blame them for it.
 
     for err in errors:
-      messages.warn( u"SSL Error: " + err.errorString() )
+      messages.warn( "SSL Error: " + err.errorString() )
 
     self.socket.ignoreSslErrors()
 
@@ -197,14 +197,14 @@ class SocketPipeline( QObject ):
 
   def flushBuffer( self ):
 
-    data = b''.join( self.buffer )
+    data = b"".join( self.buffer )
     del self.buffer[:]
     self.pipeline.feedBytes( data )
 
 
   def send( self, data ):
 
-    assert isinstance( data, type( u"" ) )
+    assert isinstance( data, type( "" ) )
 
     if not self.socket.state() == self.socket.ConnectedState:
 

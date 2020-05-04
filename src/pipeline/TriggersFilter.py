@@ -64,12 +64,12 @@ class TriggersFilter( BaseFilter ):
 
     chunk_type, _ = chunk
 
-    if chunk_type in ( ChunkType.NETWORK, ChunkType.PROMPTSWEEP ) \
-       or chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
+    if ( chunk_type in ( ChunkType.NETWORK, ChunkType.PROMPTSWEEP )
+         or chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ) ):
 
-      line = u"".join( chunk[1]
-                       for chunk in self.buffer
-                       if chunk[0] == ChunkType.TEXT )
+      line = "".join( chunk[1]
+                      for chunk in self.buffer
+                      if chunk[0] == ChunkType.TEXT )
 
 
       if line:

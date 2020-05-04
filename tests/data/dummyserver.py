@@ -21,7 +21,7 @@ if __name__ == "__main__":
   except ( IndexError, ValueError ):
     port = DEFAULT_PORT
 
-  data = open( fname, 'rb' ).read()
+  data = open( fname, "rb" ).read()
 
   s = socket.socket()
 

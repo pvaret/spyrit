@@ -12,7 +12,7 @@ from typing import Text
 from typing import Tuple
 
 
-LAUNCHER_STUB = """\
+LAUNCHER_STUB = """
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -73,12 +73,13 @@ class EmbeddedModuleFinder( importlib.abc.MetaPathFinder ):
 
 
 sys.meta_path.append( EmbeddedModuleFinder( EMBEDDED_MODULES ) )
-importlib.import_module( "@BOOTSTRAP@" )"""
+importlib.import_module( "@BOOTSTRAP@" )
+""".strip()
 
 
 def make_source_archive( filename: Text ) -> bytes:
 
-  return base64.encodebytes( bz2.compress( open( filename, 'rb' ).read() ) )
+  return base64.encodebytes( bz2.compress( open( filename, "rb" ).read() ) )
 
 
 def compile_module_dict( modules: List[ Tuple[ Text, Text ] ] ) -> Text:

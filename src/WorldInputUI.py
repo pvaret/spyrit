@@ -37,7 +37,7 @@ from InputHistory     import InputHistory
 class WorldInputUI( QTextEdit ):
 
   returnPressed = pyqtSignal()
-  focusChanged  = pyqtSignal( 'QWidget' )
+  focusChanged  = pyqtSignal( "QWidget" )
 
   def __init__( self, parent, world, shouldsavehistory=True ):
 
@@ -80,26 +80,26 @@ class WorldInputUI( QTextEdit ):
     input_settings = self.settings._ui._input
     if input_settings._font._color:
 
-      style_elements.append( u"color: %s" \
+      style_elements.append( "color: %s"
                              % input_settings._font._color )
 
     if input_settings._font._name:
 
-      style_elements.append( u"font-family: %s" \
+      style_elements.append( "font-family: %s"
                              % input_settings._font._name )
 
     if input_settings._font._size:
 
-      style_elements.append( u"font-size: %dpt" \
+      style_elements.append( "font-size: %dpt"
                              % input_settings._font._size )
 
     if input_settings._background._color:
 
-      style_elements.append( u"background-color: %s" \
+      style_elements.append( "background-color: %s"
                              % input_settings._background._color )
 
     if style_elements:
-      self.setStyleSheet( u"QTextEdit { %s }" % " ; ".join( style_elements ) )
+      self.setStyleSheet( "QTextEdit { %s }" % " ; ".join( style_elements ) )
 
     font_height = QFontMetrics( self.font() ).height()
     self.setMinimumHeight( font_height*3 )
@@ -126,11 +126,11 @@ class WorldInputUI( QTextEdit ):
 
     ## Special case: disallow overriding of Return/Enter.
 
-    alt_ctrl_shift = e.modifiers() & \
-                   ( Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier )
+    alt_ctrl_shift = ( e.modifiers()
+        & ( Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier ) )
 
-    if e.key() in ( Qt.Key_Return, Qt.Key_Enter ) \
-      and alt_ctrl_shift == Qt.NoModifier:
+    if ( e.key() in ( Qt.Key_Return, Qt.Key_Enter )
+         and alt_ctrl_shift == Qt.NoModifier ):
 
       self.returnPressed.emit()
       e.accept()

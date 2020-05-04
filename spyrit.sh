@@ -31,7 +31,7 @@ done
 
 ## Did we find a Python 3 install?
 
-if [[ -z $_PYTHON \
+if [[ -z $_PYTHON
       || ! $($_PYTHON -c "import sys ; print( sys.version_info[0] )") == "3" ]] ; then
   errmsg="Couldn't find a Python 3 interpreter!"
   echo $errmsg

@@ -41,7 +41,7 @@ BUFFER    = 1024   ## bytes
 
 class PygameBackend:
 
-  name = u"SDL"
+  name = "SDL"
 
   def __init__( self ):
 

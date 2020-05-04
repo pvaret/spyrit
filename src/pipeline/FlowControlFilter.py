@@ -35,12 +35,12 @@ class FlowControlFilter( BaseFilter ):
 
   relevant_types = ChunkType.TEXT
 
-  match        = re.compile( r'(\r|\n)' )
-  unix_like_cr = re.compile( r'(?<!\r)\n' )
+  match        = re.compile( r"(\r|\n)" )
+  unix_like_cr = re.compile( r"(?<!\r)\n" )
 
   chunkmapping = {
-    u'\n': ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ),
-    u'\r': ( ChunkType.FLOWCONTROL, FlowControl.CARRIAGERETURN ),
+    "\n": ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ),
+    "\r": ( ChunkType.FLOWCONTROL, FlowControl.CARRIAGERETURN ),
   }
 
 
@@ -49,7 +49,7 @@ class FlowControlFilter( BaseFilter ):
     _, text = chunk
 
     ## Expand tabs to spaces:
-    text = text.replace( u'\t', u' '*8 )
+    text = text.replace( "\t", " " * 8 )
 
     while len( text ) > 0:
 
@@ -78,4 +78,4 @@ class FlowControlFilter( BaseFilter ):
   def formatForSending( self, data ):
 
     ## Transform UNIX-like CR into telnet-like CRLF.
-    return self.unix_like_cr.sub( u"\r\n", data )
+    return self.unix_like_cr.sub( "\r\n", data )

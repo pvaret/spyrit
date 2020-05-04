@@ -49,13 +49,13 @@ HDIUTIL    = "hdiutil"
 MKDIR      = "mkdir"
 CP         = "cp"
 MOUNTROOT  = os.path.join( this_dir, "mnt" )
-CONVERT2SP = "convert %s-template.dmg -format UDSP -o %s-%s" \
-           % ( APPNAME, APPNAME, VERSION )
-CONVERT2DMG= "convert %s-%s.sparseimage -format UDBZ -o %s-%s.dmg" \
-           % ( APPNAME, VERSION, APPNAME, VERSION )
+CONVERT2SP = ( "convert %s-template.dmg -format UDSP -o %s-%s"
+               % ( APPNAME, APPNAME, VERSION ) )
+CONVERT2DMG= ( "convert %s-%s.sparseimage -format UDBZ -o %s-%s.dmg"
+               % ( APPNAME, VERSION, APPNAME, VERSION ) )
 RESIZE     = "resize -size %%sm %s-%s.sparseimage" % ( APPNAME, VERSION )
-MOUNT      = "mount %s-%s.sparseimage -mountroot %s" \
-           % ( APPNAME, VERSION, MOUNTROOT )
+MOUNT      = ( "mount %s-%s.sparseimage -mountroot %s"
+               % ( APPNAME, VERSION, MOUNTROOT ) )
 EJECT      = "eject %s" % os.path.join( MOUNTROOT, APPNAME )
 DUSAGE     = "du"
 OVERHEAD   = 9.1  # Size already taken in empty DMG

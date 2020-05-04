@@ -19,7 +19,8 @@
 ## This file describes various bits of global data.
 ##
 
-u"""
+"""
+
 :doctest:
 
 >>> from Globals import *
@@ -382,7 +383,7 @@ URL_RE = (
 
 def compute_closest_ansi_color( rgb ):
 
-  u"""\
+  """
   Computes and returns the ANSI extended color number matching the given #rgb
   color most closely.
 
@@ -432,5 +433,5 @@ LEFTARROW = chr( 0x2192 )
 
 ## Command-related globals.
 
-CMDCHAR = u"/"
+CMDCHAR = "/"
 HELP    = "help"

@@ -19,7 +19,7 @@
 ## This file contains various utility functions.
 ##
 
-u"""
+"""
 :doctest:
 
 >>> from Utilities import *
@@ -28,14 +28,14 @@ u"""
 
 
 DEFAULT_ESCAPES = {
-  u'\n': u'n',
-  u'\r': u'r',
-  u'\t': u't',
-  u'"':  u'"',
-  u'\'': u'\'',
+    "\n": "n",
+    "\r": "r",
+    "\t": "t",
+    '"':  '"',
+    "\'": "\'",
 }
 
-BS = u"\\"
+BS = "\\"
 
 
 
@@ -51,7 +51,7 @@ def quote( string, esc=BS ):
   r"""
   Escapes typical control characters in the given string.
 
-  >>> STR = u'''Carriage
+  >>> STR = '''Carriage
   ... return.'''
   >>> print( quote( STR ) )
   Carriage\nreturn.
@@ -101,7 +101,7 @@ def unquote( string, esc=BS ):
 
     result.append( c )
 
-  return u''.join( result )
+  return "".join( result )
 
 
 
@@ -113,7 +113,7 @@ def make_unicode_translation_table():
 
   def is_latin_letter( l ):
 
-    return category( l )[ 0 ] == 'L'
+    return category( l )[ 0 ] == "L"
 
 
   for i in range( 0x1FFF ):
@@ -129,7 +129,7 @@ def make_unicode_translation_table():
 
     ## Decompose, then keep only Latin letters in the result.
     cn = normalize( "NFKD", c )
-    cn = ''.join( [ l for l in cn if is_latin_letter( l ) ] )
+    cn = "".join( [ l for l in cn if is_latin_letter( l ) ] )
 
     if cn and cn != c:
       d[ i ] = cn
@@ -140,15 +140,15 @@ def make_unicode_translation_table():
 UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
 def remove_accents( string, translation_table=UNICODE_TRANSLATION_TABLE ):
-  u"""\
+  """
   Filters the diacritics off Latin characters in the given Unicode string.
 
-  >>> print( remove_accents( u"Touché!" ) )
+  >>> print( remove_accents( "Touché!" ) )
   Touche!
 
   """
 
-  assert type( string ) is type( u'' )  ## Only accept Unicode strings.
+  assert type( string ) is type( "" )  ## Only accept Unicode strings.
 
   return string.translate( translation_table )
 
@@ -160,7 +160,7 @@ def normalize_text( string ):
 
 def ensure_valid_filename( filename ):
 
-  u"""\
+  """
   Make the given string safe(r) to use as a filename.
 
   Some platforms refuse certain characters in filenames. This function filters
@@ -173,23 +173,23 @@ def ensure_valid_filename( filename ):
 
   Note: the filename must be given as Unicode.
 
-  >>> print( ensure_valid_filename( u'(127.0.0.1:*).log' ) )
+  >>> print( ensure_valid_filename( "(127.0.0.1:*).log" ) )
   (127.0.0.1__).log
 
   """
 
-  assert type( filename ) is type( u'' )  ## Only accept Unicode strings.
+  assert type( filename ) is type( "" )  ## Only accept Unicode strings.
 
-  invalid_char_codes = [ ord( c ) for c in u'<>:"/\\|?*' ]
+  invalid_char_codes = [ ord( c ) for c in '<>:"/\\|?*' ]
   invalid_char_codes.extend( range( 32 ) )
 
-  translation_table = dict( ( c, u'_' ) for c in invalid_char_codes )
+  translation_table = dict( ( c, "_" ) for c in invalid_char_codes )
 
   return filename.translate( translation_table )
 
 
 
-CRASH_MSG = u"""\
+CRASH_MSG = """
 <qt>A critical error has occurred. You did nothing wrong! This is most likely a
 bug in Spyrit, and we are terribly sorry. The error is:<br/>
 <center><b><i>%(error)s</i></b></center><br/>
@@ -200,7 +200,7 @@ to <a href="https://github.com/pvaret/spyrit/issues">our issue tracker</a>,
 so we can look into it.<br/>
 <br/>
 Spyrit will now close.</qt>
-"""
+""".strip()
 
 def handle_exception( exc_type, exc_value, exc_traceback ):
 
@@ -224,7 +224,7 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
   filename, line, dummy, dummy = traceback.extract_tb( exc_traceback ).pop()
   filename = os.path.basename( filename )
-  error    = u"%s: %s" % ( exc_type.__name__, exc_value )
+  error    = "%s: %s" % ( exc_type.__name__, exc_value )
 
   if app:
     window = app.activeWindow()
@@ -249,11 +249,11 @@ def handle_exception( exc_type, exc_value, exc_traceback ):
 
 
 def format_as_table( columns, headers ):
-  u"""\
+  """
   Format a set of columns and headers as a table.
 
-  >>> print( format_as_table( columns=( [ 'item 1' ], [ 'item 2' ] ),
-  ...                         headers=[ 'Header A', 'Header B' ] ) )
+  >>> print( format_as_table( columns=( [ "item 1" ], [ "item 2" ] ),
+  ...                         headers=[ "Header A", "Header B" ] ) )
   Header A    Header B
   --------    --------
   item 1      item 2
@@ -261,7 +261,7 @@ def format_as_table( columns, headers ):
   """
 
   if len( headers ) < len( columns ):
-    headers = list( headers ) + [ '' ] * ( len( columns ) - len( headers ) )
+    headers = list( headers ) + [ "" ] * ( len( columns ) - len( headers ) )
 
   for column, header in zip( columns, headers ):
 
@@ -273,4 +273,4 @@ def format_as_table( columns, headers ):
     for i, item in enumerate( column ):
       column[ i ] = item.ljust( justify_to + 4 )
 
-  return '\n'.join( ''.join( line ).rstrip() for line in zip( *columns ) )
+  return "\n".join( "".join( line ).rstrip() for line in zip( *columns ) )

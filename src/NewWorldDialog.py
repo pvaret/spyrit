@@ -32,30 +32,30 @@ from SettingsWidgetMapper import SettingsWidgetMapper, qlineedit_not_empty
 
 def NewWorldDialog( settings, parent=None ):
 
-    header = PrettyPanelHeader( u"New world", QPixmap( ":/icon/new_world" ) )
+    header = PrettyPanelHeader( "New world", QPixmap( ":/icon/new_world" ) )
 
     mapper = SettingsWidgetMapper( settings )
     panel  = SettingsPanel( mapper )
 
-    name_mapper = panel.addBoundRow( 'name', QLineEdit(), u"World name:" )
-    host_mapper = panel.addBoundRow( 'net.host', QLineEdit(), u"Server:" )
+    name_mapper = panel.addBoundRow( "name", QLineEdit(), "World name:" )
+    host_mapper = panel.addBoundRow( "net.host", QLineEdit(), "Server:" )
 
     name_mapper.setValidator( qlineedit_not_empty )
     host_mapper.setValidator( qlineedit_not_empty )
 
     port = QSpinBox()
     port.setRange( 1, 65535 )
-    panel.addBoundRow( 'net.port', port, u"Port:" )
+    panel.addBoundRow( "net.port", port, "Port:" )
 
     if check_ssl_is_available():
-      panel.addBoundRow( 'net.ssl', QCheckBox( u"Use SSL &encryption" ) )
+      panel.addBoundRow( "net.ssl", QCheckBox( "Use SSL &encryption" ) )
 
     dialog = PrettyOptionDialog( mapper,
                                  panel,
                                  parent  = parent,
                                  header  = header,
-                                 oklabel = u"Connect",
-                                 title   = u"New world" )
+                                 oklabel = "Connect",
+                                 title   = "New world" )
 
     return dialog
 

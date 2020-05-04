@@ -61,15 +61,15 @@ class HelpCommand( BaseCommand ):
     if subcmdname:
       cmdname += " " + subcmdname
 
-    help_txt = u"""\
+    help_txt = """
         %(cmdname)s: no such command.
         Type %(CMDCHAR)s%(HELP)s for help on commands."""
 
-    ctx = { 'CMDCHAR': CMDCHAR,
-            'cmdname': cmdname,
-            'HELP': HELP }
+    ctx = { "CMDCHAR": CMDCHAR,
+            "cmdname": cmdname,
+            "HELP": HELP }
 
-    world.info( dedent( help_txt ) % ctx )
+    world.info( dedent( help_txt ).strip() % ctx )
 
 
   def helpCommand( self, world, cmd, cmdname, subcmdname=None ):
@@ -80,24 +80,24 @@ class HelpCommand( BaseCommand ):
     help_txt = self.get_help( cmd )
 
     if not help_txt:
-      world.info( u"No help on command '%s'." % cmdname  )
+      world.info( "No help on command '%s'." % cmdname  )
       return
 
     cmd = CMDCHAR + cmdname
 
-    ctx = { 'CMDCHAR': CMDCHAR,
-            'cmdname': cmdname,
-            'cmd':     cmd,
-            'HELP':    HELP }
+    ctx = { "CMDCHAR": CMDCHAR,
+            "cmdname": cmdname,
+            "cmd":     cmd,
+            "HELP":    HELP }
 
-    help_txt = u"Help on '%(CMDCHAR)s%(cmdname)s':\n" + help_txt
+    help_txt = "Help on '%(CMDCHAR)s%(cmdname)s':\n" + help_txt
     world.info( help_txt % ctx )
 
 
   def get_short_help( self, cmd ):
 
     if cmd.__doc__:
-      return cmd.__doc__.split( u"\n" )[0].strip()
+      return cmd.__doc__.split( "\n" )[0].strip()
 
     return None
 
@@ -109,12 +109,12 @@ class HelpCommand( BaseCommand ):
 
     doc = dedent( cmd.__doc__ )
 
-    if not hasattr( cmd, 'subcmds' ) or len( cmd.subcmds ) == 0:
+    if not hasattr( cmd, "subcmds" ) or len( cmd.subcmds ) == 0:
       return doc
 
     helptxt  = [ doc ]
-    helptxt += [ u"" ]
-    helptxt += [ u"Subcommands:" ]
+    helptxt += [ "" ]
+    helptxt += [ "Subcommands:" ]
 
     ljust = max( len( c ) for c in cmd.subcmds.keys() ) + 2
 
@@ -124,14 +124,14 @@ class HelpCommand( BaseCommand ):
 
       if doc:
         line = ( "  %s " % ( subcmdname.ljust( ljust ) )
-               + doc.split( u"\n" )[0].strip() )
+               + doc.split( "\n" )[0].strip() )
         helptxt.append( line )
 
-    helptxt += [ u"" ]
-    helptxt += [ u"Type '/help COMMAND SUBCOMMAND' for specific help on a " \
-                  "subcommand." ]
+    helptxt += [ "" ]
+    helptxt += [ "Type '/help COMMAND SUBCOMMAND' for specific help on a "
+                 "subcommand." ]
 
-    return u"\n".join( helptxt )
+    return "\n".join( helptxt )
 
 
   def helpAll( self, world ):
@@ -148,10 +148,10 @@ class HelpCommand( BaseCommand ):
       help = self.get_short_help( cmd )
 
       if help:
-        helptxt.append( CMDCHAR + u"%s" % cmdname.ljust( ljust ) + help )
+        helptxt.append( CMDCHAR + "%s" % cmdname.ljust( ljust ) + help )
 
-    helptxt += [ u"" ]
-    helptxt += [ u"Type '%shelp COMMAND' for more help on a command."
+    helptxt += [ "" ]
+    helptxt += [ "Type '%shelp COMMAND' for more help on a command."
                  % CMDCHAR ]
 
-    world.info( u'\n'.join( helptxt ) )
+    world.info( "\n".join( helptxt ) )

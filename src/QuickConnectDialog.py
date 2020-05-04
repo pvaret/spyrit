@@ -32,28 +32,28 @@ from PrettyOptionDialog   import PrettyOptionDialog
 
 def QuickConnectDialog( settings, parent=None ):
 
-    header = PrettyPanelHeader( u"Quick connect", QPixmap( ":/icon/connect" ) )
+    header = PrettyPanelHeader( "Quick connect", QPixmap( ":/icon/connect" ) )
 
     mapper = SettingsWidgetMapper( settings )
     panel  = SettingsPanel( mapper )
 
-    host_mapper = panel.addBoundRow( 'net.host', QLineEdit(), u"Server:" )
+    host_mapper = panel.addBoundRow( "net.host", QLineEdit(), "Server:" )
 
     host_mapper.setValidator( qlineedit_not_empty )
 
     port = QSpinBox()
     port.setRange( 1, 65535 )
-    panel.addBoundRow( 'net.port', port, u"Port:" )
+    panel.addBoundRow( "net.port", port, "Port:" )
 
     if check_ssl_is_available():
-      panel.addBoundRow( 'net.ssl', QCheckBox( u"Use SSL &encryption" ) )
+      panel.addBoundRow( "net.ssl", QCheckBox( "Use SSL &encryption" ) )
 
     dialog = PrettyOptionDialog( mapper,
                                  panel,
                                  parent  = parent,
                                  header  = header,
-                                 oklabel = u"Connect",
-                                 title   = u"Quick connect" )
+                                 oklabel = "Connect",
+                                 title   = "Quick connect" )
 
     return dialog
 

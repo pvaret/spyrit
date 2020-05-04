@@ -98,7 +98,7 @@ class AnsiFilter( BaseFilter ):
 
       format = {}
 
-      list_params = parameters.split( b';' )
+      list_params = parameters.split( b";" )
 
       while list_params:
 

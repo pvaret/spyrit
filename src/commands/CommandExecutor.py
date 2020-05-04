@@ -20,7 +20,7 @@
 ## sets.
 ##
 
-u"""\
+"""
 
 :doctest:
 
@@ -40,7 +40,7 @@ class ExecuteError( RuntimeError ):
 
 def match_args_to_function( callable, provided_args, provided_kwargs ):
 
-  u"""\
+  """
   Check that the given arguments fit the given callable's spec.
 
   Given a few simple functions:
@@ -54,11 +54,11 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
   Let us see how it works:
 
-  >>> ok, msg = match_args_to_function( simple, ( 'a', 'b' ), {} )
+  >>> ok, msg = match_args_to_function( simple, ( "a", "b" ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )
   True : None
 
-  >>> ok, msg = match_args_to_function( simple, ( 'a', ), {} )
+  >>> ok, msg = match_args_to_function( simple, ( "a", ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )
   True : None
 
@@ -66,31 +66,31 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   >>> print( "%s : %s" % ( ok, msg ) )  ## Missing argument a!
   False : Too few parameters! (Missing parameter 'a')
 
-  >>> ok, msg = match_args_to_function( simple, (), { 'a': 1 } )
+  >>> ok, msg = match_args_to_function( simple, (), { "a": 1 } )
   >>> print( "%s : %s" % ( ok, msg ) )  ## Passing kwargs also works.
   True : None
 
-  >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'c': 1 } )
+  >>> ok, msg = match_args_to_function( simple, ( "a" ), { "c": 1 } )
   >>> print( "%s : %s" % ( ok, msg ) )  ## Passing an unexpected argument
   ...                                   ## doesn't, though.
   False : c: unknown parameter!
 
-  >>> ok, msg = match_args_to_function( simple, ( 'a' ), { 'a': 1 } )
+  >>> ok, msg = match_args_to_function( simple, ( "a" ), { "a": 1 } )
   >>> print( "%s : %s" % ( ok, msg ) )  ## Neither does passing a redundant
   ...                                   ## argument.
   False : Parameter 'a' passed several times!
 
-  >>> ok, msg = match_args_to_function( simple, ( 'a', 'b', 'c' ), {} )
+  >>> ok, msg = match_args_to_function( simple, ( "a", "b", "c" ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )  ## And neither does passing too many
   ...                                   ## arguments.
   False : Too many parameters! (Did you forget some quotation marks?)
 
-  >>> ok, msg = match_args_to_function( simple_args, ( 'a', 'b', 'c' ), {} )
+  >>> ok, msg = match_args_to_function( simple_args, ( "a", "b", "c" ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )  ## Unless the function accepts *args.
   True : None
 
   >>> ok, msg = match_args_to_function(
-  ...     simple_kwargs, ( 'a', 'b' ), { 'c': 1 } )
+  ...     simple_kwargs, ( "a", "b" ), { "c": 1 } )
   >>> print( "%s : %s" % ( ok, msg ) )  ## Or the function accepts **kwargs.
   True : None
 
@@ -115,31 +115,31 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
   >>> a = A()
 
-  >>> ok, msg = match_args_to_function( a.method, ( 'a' ), {} )
+  >>> ok, msg = match_args_to_function( a.method, ( "a" ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )  ## Instance methods work like you'd
   ...                                   ## expect.
   True : None
 
-  >>> ok, msg = match_args_to_function( a.classmethod, ( 'a' ), {} )
+  >>> ok, msg = match_args_to_function( a.classmethod, ( "a" ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )  ## But so do class methods.
   True : None
 
-  >>> ok, msg = match_args_to_function( a.staticmethod, ( 'a' ), {} )
+  >>> ok, msg = match_args_to_function( a.staticmethod, ( "a" ), {} )
   >>> print( "%s : %s" % ( ok, msg ) )  ## And static methods.
   True : None
 
   """
 
   if inspect.isclass( callable ):
-    raise TypeError( u"Tried to call match_args_to_function on a class!" )
+    raise TypeError( "Tried to call match_args_to_function on a class!" )
 
   ## TODO: replace with inspect.signature in Python 3.
   try:
-    expected_args, star_args, star_kwargs, defaults = \
-                                             inspect.getargspec( callable )
+    call_args = inspect.getargspec( callable )
+    expected_args, star_args, star_kwargs, defaults = call_args
   except TypeError:
-    raise TypeError( u"Tried to call match_args_to_function on a non-Python "
-                      "function!" )
+    raise TypeError( "Tried to call match_args_to_function on a non-Python "
+                     "function!" )
 
   ## Reminder:
   ##   - expected_args is the list of the callable's arguments.
@@ -183,10 +183,10 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
         ## If not: too many arguments were passed to the callable. Abort.
         if len( provided_args ) > 2:
-          msg = u"Too many parameters! (Did you forget some quotation marks?)"
+          msg = "Too many parameters! (Did you forget some quotation marks?)"
 
         else:
-          msg = u"Too many parameters!"
+          msg = "Too many parameters!"
 
         return False, msg
 
@@ -198,10 +198,10 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
     if kwarg in actual_args:
 
       ## Argument has already been populated! Abort.
-      if not isinstance( kwarg, type( u"" ) ):
+      if not isinstance( kwarg, type( "" ) ):
         kwarg = kwarg.decode( "utf-8" )
 
-      return False, u"Parameter '%s' passed several times!" % kwarg
+      return False, "Parameter '%s' passed several times!" % kwarg
 
     if kwarg not in expected_args:
 
@@ -211,10 +211,10 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
 
       else:
         ## If not: unknown argument.
-        if not isinstance( kwarg, type( u"" ) ):
+        if not isinstance( kwarg, type( "" ) ):
           kwarg = kwarg.decode( "utf-8" )
 
-        return False, u"%s: unknown parameter!" % kwarg
+        return False, "%s: unknown parameter!" % kwarg
 
     actual_args[ kwarg ] = kwvalue
 
@@ -232,8 +232,8 @@ def match_args_to_function( callable, provided_args, provided_kwargs ):
   if len( expected_args ) > len( actual_args ):
 
     missing_args = [ arg for arg in expected_args if arg not in actual_args ]
-    return False, u"Too few parameters! (Missing parameter '%s')" \
-                  % missing_args[ 0 ]
+    return False, ( "Too few parameters! (Missing parameter '%s')"
+                    % missing_args[ 0 ] )
 
 
   ## STEP 5: If not, all's good!

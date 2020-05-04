@@ -58,10 +58,10 @@ class BaseCommand( object ):
 
     if args or kwargs:
         arg1 = ( list( args ) + list( kwargs.keys() ) )[0]
-        world.info( u"Unknown argument '%s' for command %s!" \
+        world.info( "Unknown argument '%s' for command %s!"
                     % ( arg1, cmdname ) )
 
-    world.info( u"Type '%s%s %s' for help on this command."
+    world.info( "Type '%s%s %s' for help on this command."
                 % ( CMDCHAR, HELP, cmdname ) )
 
 

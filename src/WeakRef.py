@@ -19,7 +19,8 @@
 ## Implements a bunch of weakly referenced objects and containers.
 ##
 
-u"""
+"""
+
 :doctest:
 
 >>> from WeakRef import *
@@ -35,7 +36,7 @@ from weakref import ref
 
 class WeakCallableRef( object ):
 
-  u"""
+  """
   Implements a weakref for callables, be they functions or methods.
 
   Due to implementation details, native Python weakrefs on bound methods always
@@ -176,7 +177,7 @@ class WeakCallableRef( object ):
 
 class WeakCallable:
 
-  u"""\
+  """
   Wraps a callable into a weakly referenced proxy object.
 
   If the proxy object is called after the reference is deleted, this raises a

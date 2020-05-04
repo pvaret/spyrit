@@ -248,7 +248,7 @@ class SplittableTextView( QTextEditWithClickableLinks ):
   def setConfiguration( self, font_name, font_size, background_color ):
 
     if background_color:
-      stylesheet = u"QTextEdit { background-color: %s }" % background_color
+      stylesheet = "QTextEdit { background-color: %s }" % background_color
       self.setStyleSheet( stylesheet )
 
     font = QFont( font_name )
@@ -289,7 +289,7 @@ class SplittableTextView( QTextEditWithClickableLinks ):
     font = self.font()
 
     ## Generate the layout for one line of text using this font:
-    layout = QTextLayout( u"---", font )
+    layout = QTextLayout( "---", font )
     layout.beginLayout()
     line = layout.createLine()
     layout.endLayout()
@@ -522,7 +522,7 @@ class SplittableTextView( QTextEditWithClickableLinks ):
       sel        = QAbstractTextDocumentLayout.Selection()
       sel.cursor = cur
       sel.format.setBackground( palette.brush( cgroup, QPalette.Highlight) )
-      sel.format.setForeground( palette.brush( cgroup, \
+      sel.format.setForeground( palette.brush( cgroup,
                                                QPalette.HighlightedText ) )
 
       ctx.selections = [ sel ]

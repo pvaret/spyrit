@@ -104,23 +104,23 @@ class MainWindow( QMainWindow ):
     menubar = self.menuBar()
     menubar.setContextMenuPolicy( Qt.PreventContextMenu )
 
-    self.menu_file = menubar.addMenu( u"File" )
+    self.menu_file = menubar.addMenu( "File" )
     self.menu_file.addAction( self.action_quit )
 
-    self.menu_worlds = menubar.addMenu( u"Worlds" )
+    self.menu_worlds = menubar.addMenu( "Worlds" )
 
     self.menu_connect = QMenu()
-    self.menu_connect.setTitle( u"Connect to..." )
+    self.menu_connect.setTitle( "Connect to..." )
     self.menu_connect.setIcon( QIcon( ":/icon/worlds" ) )
 
-    self.menu_help = menubar.addMenu( u"Help" )
+    self.menu_help = menubar.addMenu( "Help" )
     self.menu_help.addAction( self.action_about )
     self.menu_help.addAction( self.action_aboutqt )
 
 
     ## Create toolbars.
 
-    self.toolbar_main = QToolBar( u"Main Toolbar", self )
+    self.toolbar_main = QToolBar( "Main Toolbar", self )
     self.toolbar_main.setMovable( False )
     self.toolbar_main.setFloatable( False )
     self.toolbar_main.setContextMenuPolicy( Qt.PreventContextMenu )
@@ -214,7 +214,7 @@ class MainWindow( QMainWindow ):
     if not worlds:
 
       self.menu_connect.setEnabled( False )
-      self.menu_worlds.addAction( self.disabledMenuText( u"(No world created)" ) )
+      self.menu_worlds.addAction( self.disabledMenuText( "(No world created)" ) )
 
     else:
 
@@ -292,10 +292,10 @@ class MainWindow( QMainWindow ):
 
     if len( connectedworlds ) > 0:
 
-      if not confirmDialog( u"Confirm quit",
-                            u"You are still connected to <b>%s</b> world(s). " \
-                            u"Close them and quit?" % len( connectedworlds ),
-                            u"Quit",
+      if not confirmDialog( "Confirm quit",
+                            "You are still connected to <b>%s</b> world(s). "
+                            "Close them and quit?" % len( connectedworlds ),
+                            "Quit",
                             self ):
         event.ignore()
         return
@@ -358,7 +358,7 @@ class MainWindow( QMainWindow ):
 
   def makeConnectToWorldAction( self, worldname ):
 
-    action = QAction( worldname.replace( u"&", u"&&" ), self )
+    action = QAction( worldname.replace( "&", "&&" ), self )
     action.setData( QVariant( worldname ) )
     action.triggered.connect( self.actionConnectToWorld )
 

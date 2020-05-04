@@ -32,11 +32,11 @@ from PyQt5.QtWidgets import QTabWidget
 from PrettyPanelHeader import PrettyPanelHeader
 
 
-ABOUT = u"""\
+ABOUT = """
 <center><font size="+2">
   <b>%(name)s %(version)s</b></font><br/>
 <br/>
-"Endorsed by scientists!"</center>
+  "Endorsed by scientists!"</center>
 <br/>
 <br/>
 %(name)s is a client for textual roleplaying games such as MUDs, MUSHes,
@@ -62,10 +62,10 @@ This software uses the <i><a
 %(name)s is &#169;2007-2020 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
-"""
+""".strip()
 
 
-AUTHORS = u"""\
+AUTHORS = """
 <b><font size="+2">Authors</font></b><br/>
 <br/>
 <b>Pascal Varet</b>: Project lead, code design, community management, Web site
@@ -79,7 +79,7 @@ AUTHORS = u"""\
   play on pattern match.<br/>
 <b>Walter Vermeij</b>: Horse logo design.<br/>
 <b>Griatch</b>: Review, server-side feedback.<br/>
-"""
+""".strip()
 
 
 class AboutDialog( QDialog ):
@@ -94,7 +94,7 @@ class AboutDialog( QDialog ):
     if min_size and min_size.isValid():
       self.setMinimumSize( min_size )
 
-    title = u"About %s" % settings._app._name
+    title = "About %s" % settings._app._name
 
     self.setWindowTitle( title )
 
@@ -112,11 +112,11 @@ class AboutDialog( QDialog ):
     authors.setOpenExternalLinks( True )
 
     tabwidget = QTabWidget()
-    tabwidget.addTab( about, u"About" )
-    tabwidget.addTab( authors, u"Credits" )
+    tabwidget.addTab( about, "About" )
+    tabwidget.addTab( authors, "Credits" )
     self.layout().addWidget( tabwidget )
 
-    button = QPushButton( u"Ok" )
+    button = QPushButton( "Ok" )
     self.layout().addWidget( button )
     self.layout().setAlignment( button, Qt.AlignHCenter )
 

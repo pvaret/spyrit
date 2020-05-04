@@ -86,15 +86,15 @@ class SoundEngine:
   def play( self, soundfile ):
 
     if not self.backend:
-      return False, u"No sound engine available."
+      return False, "No sound engine available."
 
     filename = self.tmprc.get( soundfile )
 
     if not os.path.exists( filename ):
-      return False, u"%s: file not found." % soundfile
+      return False, "%s: file not found." % soundfile
 
     if not os.path.isfile( filename ):
-      return False, u"%s: not a valid file." % soundfile
+      return False, "%s: not a valid file." % soundfile
 
     ## TODO: Check that filename is a valid WAV file.
 

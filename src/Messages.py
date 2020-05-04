@@ -26,25 +26,25 @@ class Messages:
 
   def info( self, txt ):
     try:
-      print( u"INFO:", txt )
+      print( "INFO:", txt )
     except IOError:
       pass
 
   def debug( self, txt ):
     try:
-      print( u"DEBUG:", txt )
+      print( "DEBUG:", txt )
     except IOError:
       pass
 
   def warn( self, txt ):
     try:
-      print( u"WARN:", txt )
+      print( "WARN:", txt )
     except IOError:
       pass
 
   def error( self, txt ):
     try:
-      print( u"ERROR:", txt )
+      print( "ERROR:", txt )
     except IOError:
       pass
 

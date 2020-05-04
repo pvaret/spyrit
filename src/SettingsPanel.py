@@ -43,7 +43,7 @@ class SettingsPanel( QWidget ):
     ## WORKAROUND: Qt truncates the widget if it's a QCheckBox with its own
     ## text unless we do this:
     if label is None:
-      label = u" "
+      label = " "
 
     self.layout().addRow( label, widget )
 

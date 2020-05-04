@@ -54,10 +54,10 @@ class TabBar( QTabBar ):
 
     i = self.tabAt( e.pos() )
 
-    if e.button() == Qt.MiddleButton \
-       and self.tabsClosable() \
-       and i is not None \
-       and i == self.last_middle_click_index:
+    if ( e.button() == Qt.MiddleButton
+         and self.tabsClosable()
+         and i is not None
+         and i == self.last_middle_click_index ):
 
         self.tabCloseRequested.emit( i )
         e.accept()

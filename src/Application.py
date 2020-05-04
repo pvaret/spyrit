@@ -67,7 +67,7 @@ class Application( QApplication ):
       import resources
 
     except ImportError:
-      messages.warn( u"Resource file not found. No graphics will be loaded." )
+      messages.warn( "Resource file not found. No graphics will be loaded." )
 
     ## Load up the dingbat symbols font.
     QFontDatabase.addApplicationFont( ":/app/symbols" )
@@ -104,9 +104,9 @@ class Application( QApplication ):
 
     for arg in self.args[ 1: ]:
 
-      if u":" in arg:  ## This is probably a 'server:port' argument.
+      if ":" in arg:  ## This is probably a 'server:port' argument.
 
-        server, port = arg.split( u":", 1 )
+        server, port = arg.split( ":", 1 )
 
         try:
           port = int( port )
@@ -114,7 +114,7 @@ class Application( QApplication ):
           port = 0
 
         if not port or not server:
-          messages.warn( u"Invalid <server>:<port> command line: %s" % arg )
+          messages.warn( "Invalid <server>:<port> command line: %s" % arg )
 
         else:
           self.core.openWorldByHostPort( server, port )

@@ -88,8 +88,8 @@ class World( QObject ):
   def title( self ):
 
     settings = self.settings
-    return settings._name or u"(%s:%d)" \
-                          % ( settings._net._host, settings._net._port )
+    return ( settings._name
+             or "(%s:%d)" % ( settings._net._host, settings._net._port ) )
 
 
   def host( self ):
@@ -124,9 +124,9 @@ class World( QObject ):
   def confirmDisconnectFromWorld( self ):
 
     if self.isConnected():
-      if not confirmDialog( u"Confirm disconnect",
-                            u"Really disconnect from this world?",
-                            u"Disconnect",
+      if not confirmDialog( "Confirm disconnect",
+                            "Really disconnect from this world?",
+                            "Disconnect",
                             self.worldui ):
         return
 
@@ -147,7 +147,7 @@ class World( QObject ):
         self.startLogging()
 
       if self.settings._net._login_script:
-        self.socketpipeline.send( self.settings._net._login_script + u"\n" )
+        self.socketpipeline.send( self.settings._net._login_script + "\n" )
 
     elif self.status == Status.DISCONNECTED:
 
@@ -161,7 +161,7 @@ class World( QObject ):
     logdir  = self.settings._log._dir
 
     logfile = time.strftime( logfile )
-    logfile = logfile.replace( u"[WORLDNAME]", self.title() )
+    logfile = logfile.replace( "[WORLDNAME]", self.title() )
     logfile = ensure_valid_filename( logfile )
     logfile = os.path.join( logdir, logfile )
 
@@ -177,8 +177,8 @@ class World( QObject ):
       return self.last_log_filename
 
     ## File exists. Compute an available variant in the form "filename_X.ext".
-    candidate = base + u"_%d" + ext
-    existing  = set( glob( base + u"_*" + ext ) )
+    candidate = base + "_%d" + ext
+    existing  = set( glob( base + "_*" + ext ) )
 
     possible_filenames = [ candidate % i
                              for i in range( 1, len( existing ) + 2 )
@@ -263,15 +263,18 @@ class World( QObject ):
     return self.status == Status.DISCONNECTED
 
 
-  def selectFile( self, caption=u"Select file", dir=u"", filter=u"" ):
+  def selectFile( self, caption="Select file", dir="", filter="" ):
 
     if not dir:
       dir = platformSpecific.get_homedir()
 
-    return QFileDialog.getOpenFileName( self.worldui, caption, dir, filter )
+    filename, _filetype = QFileDialog.getOpenFileName(
+        self.worldui, caption, dir, filter )
+
+    return filename
 
 
-  def openFileOrErr( self, filename, mode='rb' ):
+  def openFileOrErr( self, filename, mode="rb" ):
 
     local_encoding = QApplication.instance().local_encoding
     filename = os.path.expanduser( filename )
@@ -282,8 +285,8 @@ class World( QObject ):
 
     except ( IOError, OSError ) as e:
 
-      errormsg = u"%s" % e
-      self.info( u"Error: %s: %s" % ( basename, errormsg ) )
+      errormsg = "%s" % e
+      self.info( "Error: %s: %s" % ( basename, errormsg ) )
       return None
 
 
@@ -292,10 +295,10 @@ class World( QObject ):
     if filename is None:
 
       filename = self.selectFile(
-                                  caption = u"Select the file to load",
-                                  filter  = u"Text files (*.log *.txt)" \
-                                            u";;All files (*)"
-                                )
+        caption = "Select the file to load",
+        filter  = "Text files (*.log *.txt)"
+                  ";;All files (*)"
+      )
 
     if not filename:
       return
@@ -305,7 +308,7 @@ class World( QObject ):
     if not f:
       return
 
-    self.info( u"Loading %s..." % os.path.basename( filename ) )
+    self.info( "Loading %s..." % os.path.basename( filename ) )
 
     t1 = time.time()
 
@@ -322,7 +325,7 @@ class World( QObject ):
 
     f.close()
 
-    self.info( u"File loaded in %.2fs." % ( t2 - t1 ) )
+    self.info( "File loaded in %.2fs." % ( t2 - t1 ) )
 
 
   def flushPendingInput( self ):
@@ -335,12 +338,12 @@ class World( QObject ):
         QApplication.instance().core.commands.runCmdLine( self, text[ len( CMDCHAR ): ] )
 
       else:
-        self.socketpipeline.send( text + u"\r\n" )
+        self.socketpipeline.send( text + "\r\n" )
 
 
   def processInput( self, input ):
 
-    for line in input.split( u'\n' ):
+    for line in input.split( "\n" ):
       self.input.append( line )
 
     self.input_flush.start()

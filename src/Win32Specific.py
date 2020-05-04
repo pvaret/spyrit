@@ -32,7 +32,7 @@ class Win32Specific:
   STATE_FILE      = "spyrit.state"
 
   should_repaint_on_scroll = False
-  default_font             = u"Courier New"
+  default_font             = "Courier New"
 
 
   def get_homedir( self ):

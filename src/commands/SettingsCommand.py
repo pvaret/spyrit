@@ -29,12 +29,12 @@ from SpyritSettings import DESCRIPTIONS
 
 class SettingsCommand( BaseCommand ):
 
-  u"View and modify the application settings."
+  "View and modify the application settings."
 
   def _getSerializer( self, settings, setting ):
 
     try:
-      return settings.get( setting ).proto.metadata.get( 'serializer' )
+      return settings.get( setting ).proto.metadata.get( "serializer" )
 
     except KeyError:
       return None
@@ -46,9 +46,9 @@ class SettingsCommand( BaseCommand ):
     value = s.serialize( settings[ setting ] )
 
     if value is None:
-      value = u'None'
+      value = "None"
 
-    if ' ' in value:
+    if " " in value:
       value = '"%s"' % value
 
     return value
@@ -61,7 +61,7 @@ class SettingsCommand( BaseCommand ):
     s = self._getSerializer( settings, setting )
 
     if not s:
-      return ( False, u"Unknown setting: %s" % setting )
+      return ( False, "Unknown setting: %s" % setting )
 
     args = s.deserialize( args )
     settings[ setting ] = args
@@ -74,7 +74,7 @@ class SettingsCommand( BaseCommand ):
     s = self._getSerializer( settings, setting )
 
     if not s:
-      return ( False, u"Unknown setting: %s" % setting )
+      return ( False, "Unknown setting: %s" % setting )
 
     try:
       del settings[ setting ]
@@ -87,7 +87,7 @@ class SettingsCommand( BaseCommand ):
 
   def cmd_set( self, world, setting, *args ):
 
-    u"""\
+    """
     Sets the given setting to the given value.
 
     Usage: %(cmd)s <setting> <value>
@@ -102,7 +102,7 @@ class SettingsCommand( BaseCommand ):
 
     if ok:
       value = self._getValue( settings, setting )
-      world.info( u"%s set to value %s" % ( setting, value ) )
+      world.info( "%s set to value %s" % ( setting, value ) )
 
     else:
       world.info( msg )
@@ -110,7 +110,7 @@ class SettingsCommand( BaseCommand ):
 
   def cmd_worldset( self, world, setting, *args ):
 
-    u"""\
+    """
     Sets the given setting to the given value, for this world only.
 
     Usage: %(cmd)s <setting> <value>
@@ -125,7 +125,7 @@ class SettingsCommand( BaseCommand ):
 
     if ok:
       value = self._getValue( settings, setting )
-      world.info( u"%s set to value %s on world %s" \
+      world.info( "%s set to value %s on world %s"
                   % ( setting, value, world.title() ) )
     else:
       world.info( msg )
@@ -133,7 +133,7 @@ class SettingsCommand( BaseCommand ):
 
   def cmd_reset( self, world, setting ):
 
-    u"""\
+    """
     Resets the given setting to its default value.
 
     Usage: %(cmd)s <setting>
@@ -148,7 +148,7 @@ class SettingsCommand( BaseCommand ):
 
     if ok:
       value = self._getValue( settings, setting )
-      world.info( u"%s reset to value %s" % ( setting, value ) )
+      world.info( "%s reset to value %s" % ( setting, value ) )
 
     else:
       world.info( msg )
@@ -156,7 +156,7 @@ class SettingsCommand( BaseCommand ):
 
   def cmd_worldreset( self, world, setting ):
 
-    u"""\
+    """
     Resets the given setting for this world to its global value.
 
     Usage: %(cmd)s <setting>
@@ -171,7 +171,7 @@ class SettingsCommand( BaseCommand ):
 
     if ok:
       value = self._getValue( settings, setting )
-      world.info( u"%s reset to value %s on world %s" \
+      world.info( "%s reset to value %s on world %s"
                   % ( setting, value, world.title() ) )
     else:
       world.info( msg )
@@ -179,7 +179,7 @@ class SettingsCommand( BaseCommand ):
 
   def cmd_settings( self, world ):
 
-    u"""\
+    """
     Lists all the available settings.
 
     Usage: %(cmd)s
@@ -188,19 +188,19 @@ class SettingsCommand( BaseCommand ):
 
     max_len = max( len( k ) for k in DESCRIPTIONS )
 
-    output = u"Available settings:\n"
+    output = "Available settings:\n"
 
     for setting, desc in sorted( DESCRIPTIONS.items() ):
       output += setting.ljust( max_len + 2 )
       output += desc
-      output += '\n'
+      output += "\n"
 
     world.info( output )
 
 
   def cmd_show( self, world, setting=None ):
 
-    u"""\
+    """
     Show the current settings.
 
     Usage: %(cmd)s [<setting> | all]
@@ -244,7 +244,7 @@ class SettingsCommand( BaseCommand ):
             pass
 
       if not list_settings:
-        world.info( u"All the settings have default values." )
+        world.info( "All the settings have default values." )
         return
 
     elif setting == "all":
@@ -253,7 +253,7 @@ class SettingsCommand( BaseCommand ):
     else:
 
       if self._getSerializer( settings, setting ) is None:
-        world.info( u"No such setting." )
+        world.info( "No such setting." )
         return
 
       list_settings = [ setting ]
@@ -263,7 +263,7 @@ class SettingsCommand( BaseCommand ):
 
     output = "Current settings:\n"
 
-    headers = ( u"Setting", u"Defaults", u"Global", u"World" )
+    headers = ( "Setting", "Defaults", "Global", "World" )
 
     columns = [ list_settings ]
 
@@ -278,15 +278,15 @@ class SettingsCommand( BaseCommand ):
         s = self._getSerializer( node if node is not DEFAULT else worldsettings, k )
 
         if s is None:    ## The key doesn't exist in this context. This is
-          value = u" "   ## likely a world-only key.
+          value = " "   ## likely a world-only key.
 
         elif node is DEFAULT:
           value = s.serialize( worldsettings.get( k ).proto.default_value )
 
         else:
-          value = s.serialize( node[ k ] ) if not node.get( k ).isEmpty() else u"-"
+          value = s.serialize( node[ k ] ) if not node.get( k ).isEmpty() else "-"
 
-        column.append( value if value else u"None" )
+        column.append( value if value else "None" )
 
       columns.append( column )
 

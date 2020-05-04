@@ -20,7 +20,8 @@
 ## use WeakCallableRef for non-memory-leaking callback storage.
 ##
 
-u"""
+"""
+
 :doctest:
 
 >>> from CallbackRegistry import *
@@ -70,7 +71,7 @@ def safe_call( fn, args ):
 
 class CallbackRegistry:
 
-  u"""
+  """
   Maintains a registry of weakly referenced callbacks.
 
   Let's create a registry:

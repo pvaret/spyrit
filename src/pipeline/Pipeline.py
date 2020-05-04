@@ -115,7 +115,7 @@ class Pipeline( QObject ):
 
   def addFilter( self, filterclass, **kwargs ):
 
-    kwargs.setdefault( 'context', self ) ## Set up context if needed.
+    kwargs.setdefault( "context", self ) ## Set up context if needed.
 
     filter = filterclass( **kwargs )
 

@@ -222,10 +222,10 @@ class WorldUI( QSplitter ):
 
     if self.world.isConnected():
 
-      if not confirmDialog( u"Confirm close",
-                            u"You are still connected to this world. " \
-                            u"Disconnect and close this tab?",
-                            u"Close tab",
+      if not confirmDialog( "Confirm close",
+                            "You are still connected to this world. "
+                            "Disconnect and close this tab?",
+                            "Close tab",
                             self ):
         return
 
@@ -270,7 +270,7 @@ class WorldUI( QSplitter ):
     self.deleteLater()
 
 
-  @pyqtSlot( 'QWidget' )
+  @pyqtSlot( "QWidget" )
   def setFocusProxy( self, widget ):
 
     ## WORKAROUND: PyQt doesn't seem to properly declare the slot for this

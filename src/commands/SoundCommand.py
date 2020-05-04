@@ -31,11 +31,11 @@ from Utilities   import format_as_table
 
 class SoundCommand( BaseCommand ):
 
-  u"Sound-related operations."
+  """Sound-related operations."""
 
   def cmd_play( self, world, filename=":/sound/pop" ):
 
-    u"""\
+    """
     Play a sound.
 
     Usage: %(cmd)s [<soundfile.wav>]
@@ -56,7 +56,7 @@ class SoundCommand( BaseCommand ):
 
   def cmd_engines( self, world, all=None ):
 
-    u"""\
+    """
     List supported sound engines and their status.
 
     Usage: %(cmd)s [all]
@@ -75,7 +75,7 @@ class SoundCommand( BaseCommand ):
     registry        = sound.registry
     current_backend = sound.backend
 
-    list_all = ( all is not None and all.lower().strip() == u"all" )
+    list_all = ( all is not None and all.lower().strip() == "all" )
 
     names    = []
     statuses = []
@@ -83,20 +83,20 @@ class SoundCommand( BaseCommand ):
     for backend in registry.listBackends( list_all ):
 
       if backend is current_backend:
-        status = u"in use"
+        status = "in use"
 
       elif backend.isAvailable():
-        status = u"available"
+        status = "available"
 
       else:
-        status = u"unavailable"
+        status = "unavailable"
 
 
       names.append( backend.name )
       statuses.append( status )
 
-    output = u"Available sound engines:\n"
+    output = "Available sound engines:\n"
     output += format_as_table( columns=( names, statuses ),
-                               headers=[ u'Engine', u'Status' ])
+                               headers=[ "Engine", "Status" ])
 
     world.info( output )

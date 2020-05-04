@@ -48,7 +48,7 @@ class WorldsSettings:
   def newWorldSettings( self ):
 
     ## TODO: Add createSection() to nodes that would do the right thing?
-    return self.settings.proto.build( '*', self.settings )
+    return self.settings.proto.build( "*", self.settings )
 
 
   def saveWorldSettings( self, key, settings ):
@@ -78,7 +78,7 @@ class WorldsManager( QObject ):
 
       if not settings._name:
         n += 1
-        settings._name = u"(Unnamed %d)" % n
+        settings._name = "(Unnamed %d)" % n
 
     self.generateMappings()
 

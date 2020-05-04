@@ -6,7 +6,7 @@ import sys
 import doctest
 
 THIS_DIR   = os.path.abspath( os.path.dirname( __file__ ) or os.curdir )
-SPYRIT_DIR = os.path.normpath( os.path.join( THIS_DIR, os.path.pardir, 'src' ) )
+SPYRIT_DIR = os.path.normpath( os.path.join( THIS_DIR, os.path.pardir, "src" ) )
 
 sys.path.insert( 0, SPYRIT_DIR )
 
@@ -25,7 +25,7 @@ def is_rst_doctest( fname ):
   if not fname.lower().endswith( ".rst" ):
     return False
 
-  data = open( fname, 'rb' ).read( 4096 )
+  data = open( fname, "rb" ).read( 4096 )
   data = data.decode( "utf-8" )
 
   for line in data.split( "\n" ):
@@ -40,7 +40,7 @@ def is_python_module_doctest( fname ):
   if not fname.lower().endswith( ".py" ):
     return False
 
-  data = open( fname, 'rb' ).read( 4096 )
+  data = open( fname, "rb" ).read( 4096 )
   data = data.decode( "utf-8" )
 
   for line in data.split( "\n" ):

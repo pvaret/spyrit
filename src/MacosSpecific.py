@@ -26,7 +26,7 @@ from PosixSpecific import PosixSpecific
 class MacosSpecific( PosixSpecific ):
 
   should_repaint_on_scroll = True
-  default_font             = u"Monaco"
+  default_font             = "Monaco"
 
   def get_sound_backends( self ):
 

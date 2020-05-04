@@ -74,9 +74,9 @@ class DebugCommand( BaseCommand ):
     kwargs = {}
 
     if filename:
-      kwargs[ 'filename' ] = filename
+      kwargs[ "filename" ] = filename
 
     if blocksize:
-      kwargs[ 'blocksize' ] = int( blocksize )
+      kwargs[ "blocksize" ] = int( blocksize )
 
     world.loadFile( **kwargs )

@@ -25,7 +25,7 @@
 """
 :doctest:
 
->>> from Serializers import *
+>>> from settings.Serializers import *
 
 """
 
@@ -115,7 +115,7 @@ def split( string: Text, sep: Text = ",", esc: Text = BS,
     yield string[ last_pos: ]
 
 
-Value = TypeVar( 'Value' )
+Value = TypeVar( "Value" )
 
 
 class BaseSerializer( abc.ABC, Generic[ Value ] ):

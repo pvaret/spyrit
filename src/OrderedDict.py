@@ -33,19 +33,19 @@ class OrderedDict( object ):
 
   >>> def make_example_dict():
   ...   d = OrderedDict()
-  ...   d[ 'a' ] = 1
-  ...   d[ 'b' ] = 2
-  ...   d[ 'c' ] = 3
-  ...   d[ 'd' ] = 4
+  ...   d[ "a" ] = 1
+  ...   d[ "b" ] = 2
+  ...   d[ "c" ] = 3
+  ...   d[ "d" ] = 4
   ...   return d
 
   >>> def print_in_order( d ):
   ...   print (
-  ...     '{'
-  ...   + ', '.join(
-  ...       ( '%s:%s' % ( repr( k ), repr( v ) ) for k, v in d.items() )
+  ...     "{"
+  ...   + ", ".join(
+  ...       ( "%s:%s" % ( repr( k ), repr( v ) ) for k, v in d.items() )
   ...     )
-  ...   + '}'
+  ...   + "}"
   ...   )
   >>> print_in_order( make_example_dict() )
   {'a':1, 'b':2, 'c':3, 'd':4}
@@ -60,11 +60,11 @@ class OrderedDict( object ):
   def __setitem__( self, key, value ):
     """
     >>> d = make_example_dict()
-    >>> d[ 'e' ] = 5
+    >>> d[ "e" ] = 5
     >>> print_in_order( d )
     {'a':1, 'b':2, 'c':3, 'd':4, 'e':5}
 
-    >>> d[ 'c' ] = 5
+    >>> d[ "c" ] = 5
     >>> print_in_order( d )
     {'a':1, 'b':2, 'c':5, 'd':4, 'e':5}
 
@@ -79,9 +79,9 @@ class OrderedDict( object ):
   def __getitem__( self, key ):
     """
     >>> d = make_example_dict()
-    >>> d[ 'b' ]
+    >>> d[ "b" ]
     2
-    >>> d[ 'e' ]  #doctest: +ELLIPSIS
+    >>> d[ "e" ]  #doctest: +ELLIPSIS
     Traceback (most recent call last):
     ...
     KeyError: ...
@@ -96,11 +96,11 @@ class OrderedDict( object ):
   def __delitem__( self, key ):
     """
     >>> d = make_example_dict()
-    >>> del d[ 'c' ]
+    >>> del d[ "c" ]
     >>> print_in_order( d )
     {'a':1, 'b':2, 'd':4}
 
-    >>> del d[ 'c' ]  #doctest: +ELLIPSIS
+    >>> del d[ "c" ]  #doctest: +ELLIPSIS
     Traceback (most recent call last):
     ...
     KeyError: ...
@@ -116,9 +116,9 @@ class OrderedDict( object ):
   def __contains__( self, key ):
     """
     >>> d = make_example_dict()
-    >>> 'a' in d
+    >>> "a" in d
     True
-    >>> 'e' in d
+    >>> "e" in d
     False
 
     """
@@ -157,9 +157,9 @@ class OrderedDict( object ):
   def setdefault( self, key, defaultvalue ):
     """
     >>> d = make_example_dict()
-    >>> print( d.setdefault( 'a', 5 ) )
+    >>> print( d.setdefault( "a", 5 ) )
     1
-    >>> print( d.setdefault( 'e', 6 ) )
+    >>> print( d.setdefault( "e", 6 ) )
     6
     >>> print_in_order( d )
     {'a':1, 'b':2, 'c':3, 'd':4, 'e':6}
@@ -188,7 +188,7 @@ class OrderedDict( object ):
   def insert( self, index, key, value ):
     """
     >>> d = make_example_dict()
-    >>> d.insert( 2, 'e', 5 )
+    >>> d.insert( 2, "e", 5 )
     >>> print_in_order( d )
     {'a':1, 'b':2, 'e':5, 'c':3, 'd':4}
 

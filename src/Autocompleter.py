@@ -179,7 +179,7 @@ class Autocompleter:
     tc.movePosition( QTextCursor.EndOfLine )
 
     if tc.position() == pos:  ## Cursor was at end of line.
-      tc.insertText( u" " )
+      tc.insertText( " " )
 
     else:
       tc.setPosition( pos )
@@ -300,7 +300,7 @@ class Autocompleter:
 
     elif chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
 
-      data     = u"".join( self.buffer )
+      data     = "".join( self.buffer )
       self.buffer = []
 
       for word in self.split( data ):

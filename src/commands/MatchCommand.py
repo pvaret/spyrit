@@ -26,11 +26,11 @@ from .BaseCommand import BaseCommand
 
 class MatchCommand( BaseCommand ):
 
-  u"""Create, list, delete match patterns."""
+  """Create, list, delete match patterns."""
 
-  def cmd_add( self, world, pattern, group=None, type=u"smart" ):
+  def cmd_add( self, world, pattern, group=None, type="smart" ):
 
-    u"""\
+    """
     Add a new match pattern.
 
     Usage: %(cmd)s <pattern> [<group>] [type="smart"|"regex"]
@@ -74,16 +74,16 @@ class MatchCommand( BaseCommand ):
       match = mgr.createMatch( pattern, type )
 
     except MatchCreationError as e:
-      world.info( u"%s" % e )
+      world.info( "%s" % e )
       return
 
     mgr.findOrCreateTrigger( group ).addMatch( match )
-    world.info( u"Match added." )
+    world.info( "Match added." )
 
 
   def cmd_del( self, world, group, number=None ):
 
-    u"""\
+    """
     Delete a match pattern or group of match patterns.
 
     Usage: %(cmd)s <group> [<number>]
@@ -108,19 +108,19 @@ class MatchCommand( BaseCommand ):
 
     if not mgr.hasGroup( group ):
 
-      world.info( u"No such match pattern group as '%s'!" % group )
+      world.info( "No such match pattern group as '%s'!" % group )
       return
 
     if number is None:
 
       mgr.delGroup( group )
-      world.info( u"Match pattern group '%s' deleted." % group )
+      world.info( "Match pattern group '%s' deleted." % group )
 
     else:
 
       if not number.isdigit():
 
-        world.info( u"Match pattern number argument must be a number!" )
+        world.info( "Match pattern number argument must be a number!" )
         return
 
       number = int( number )
@@ -129,7 +129,7 @@ class MatchCommand( BaseCommand ):
 
       if number > size:
 
-        world.info( u"Match pattern group '%s' only has %d pattern(s)!" \
+        world.info( "Match pattern group '%s' only has %d pattern(s)!"
                     % ( group, size ) )
         return
 
@@ -139,19 +139,19 @@ class MatchCommand( BaseCommand ):
       if size > 1:
 
         mgr.delMatch( group, number )
-        world.info( u"Match pattern #%d deleted from group '%s'." \
+        world.info( "Match pattern #%d deleted from group '%s'."
                     % ( number + 1, group ) )
 
       else:
 
         mgr.delGroup( group )
-        world.info( u"Match pattern group '%s' is now empty and was deleted." \
+        world.info( "Match pattern group '%s' is now empty and was deleted."
                     % group )
 
 
   def cmd_action( self, world, group, action, *args, **kwargs ):
 
-    u"""\
+    """
     Add a match action to the provided group.
 
     Usage: %(cmd)s <group> <action> [<parameters...>]
@@ -205,7 +205,7 @@ class MatchCommand( BaseCommand ):
 
     if not mgr.hasGroup( group ):
 
-      world.info( u"No such match pattern group as '%s'!" % group )
+      world.info( "No such match pattern group as '%s'!" % group )
       return
 
     act, msg = mgr.loadAction( action, args, kwargs )
@@ -216,13 +216,13 @@ class MatchCommand( BaseCommand ):
 
     mgr.findOrCreateTrigger( group ).addAction( act )
 
-    world.info( u"Action '%s' added to match pattern group '%s'." \
+    world.info( "Action '%s' added to match pattern group '%s'."
                 % ( action, group ) )
 
 
   def cmd_delaction( self, world, group, number ):
 
-    u"""\
+    """
     Delete an action from the given match pattern group.
 
     Usage: %(cmd)s <group> <number>
@@ -239,12 +239,12 @@ class MatchCommand( BaseCommand ):
 
     if not mgr.hasGroup( group ):
 
-      world.info( u"No such match pattern group as '%s'!" % group )
+      world.info( "No such match pattern group as '%s'!" % group )
       return
 
     if not number.isdigit():
 
-      world.info( u"Match pattern number argument must be a number!" )
+      world.info( "Match pattern number argument must be a number!" )
       return
 
     number = int( number )
@@ -253,7 +253,7 @@ class MatchCommand( BaseCommand ):
 
     if number > size:
 
-      world.info( u"Match pattern group '%s' only has %d action(s)!" \
+      world.info( "Match pattern group '%s' only has %d action(s)!"
                   % ( group, size ) )
       return
 
@@ -261,13 +261,13 @@ class MatchCommand( BaseCommand ):
       number -= 1  ## Match is given as 1-index but used as 0-index.
 
     mgr.delAction( group, number )
-    world.info( u"Action #%d deleted from match group '%s'." \
+    world.info( "Action #%d deleted from match group '%s'."
                 % ( number + 1, group ) )
 
 
   def cmd_test( self, world, line ):
 
-    u"""\
+    """
     Test an input line against every match pattern group.
 
     Report which group matches the line, and what tokens, if any, have been
@@ -293,11 +293,11 @@ class MatchCommand( BaseCommand ):
     matches = list( mgr.findMatches( line ) )
 
     if not matches:
-      world.info( u"No match found." )
+      world.info( "No match found." )
       return
 
     msg = []
-    msg.append( u"Matches found:" )
+    msg.append( "Matches found:" )
 
     for matchgroup, matchresult in matches:
 
@@ -308,19 +308,19 @@ class MatchCommand( BaseCommand ):
 
       if tokens:
 
-        msg.append( u"Group '%s' matches with tokens:" % group )
+        msg.append( "Group '%s' matches with tokens:" % group )
         for token, value in tokens:
-          msg.append( u"  %s: %s" % ( token, value ) )
+          msg.append( "  %s: %s" % ( token, value ) )
 
       else:
-        msg.append( u"Group '%s' matches." % group )
+        msg.append( "Group '%s' matches." % group )
 
-    world.info( u'\n'.join( msg ) )
+    world.info( "\n".join( msg ) )
 
 
   def cmd_list( self, world ):
 
-    u"""\
+    """
     List all match groups with their match patterns and related actions.
 
     Usage: %(cmd)s
@@ -330,29 +330,29 @@ class MatchCommand( BaseCommand ):
     mgr = world.socketpipeline.triggersmanager
 
     msg = []
-    msg.append( u"Match patterns:" )
+    msg.append( "Match patterns:" )
 
     if mgr.isEmpty():
-      msg.append( u"  None." )
+      msg.append( "  None." )
 
     for key, matchgroup in sorted( mgr.groups.items() ):
 
       group = matchgroup.name
 
-      msg.append( u"[%s]" % group )
+      msg.append( "[%s]" % group )
 
       for i, m in enumerate( matchgroup.matches ):
 
         if i == 0:
-          msg.append( u"  Patterns:" )
+          msg.append( "  Patterns:" )
 
-        msg.append( u"    #%d: " % ( i + 1 ) + m.toString() )
+        msg.append( "    #%d: " % ( i + 1 ) + m.toString() )
 
       for i, a in enumerate( matchgroup.actions.values() ):
 
         if i == 0:
-          msg.append( u"  Actions:" )
+          msg.append( "  Actions:" )
 
-        msg.append( u"    #%d: " % ( i + 1 ) + a.toString() )
+        msg.append( "    #%d: " % ( i + 1 ) + a.toString() )
 
-    world.info( u"\n".join( msg ) )
+    world.info( "\n".join( msg ) )

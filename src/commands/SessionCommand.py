@@ -30,11 +30,11 @@ class SessionCommand( BaseCommand ):
   ## TODO: Maybe split this out into several commands. Those don't feel like
   ## they belong together. So for now we hide the docstring so the commands
   ## will remain hidden in the help.
-  #u"""Connect, disconnect, close, quit."""
+  """Connect, disconnect, close, quit."""
 
   def cmd_reconnect( self, world ):
 
-    u"""\
+    """
     Reconnect to the current world if it is currently disconnected.
 
     Usage: %(cmd)s
@@ -46,7 +46,7 @@ class SessionCommand( BaseCommand ):
 
   def cmd_disconnect( self, world ):
 
-    u"""\
+    """
     Disconnect from the current world.
 
     Usage: %(cmd)s
@@ -58,7 +58,7 @@ class SessionCommand( BaseCommand ):
 
   def cmd_quit( self, world ):
 
-    u"""\
+    """
     Quit the application.
 
     Usage: %(cmd)s
@@ -70,7 +70,7 @@ class SessionCommand( BaseCommand ):
 
   def cmd_close( self, world ):
 
-    u"""\
+    """
     Closes the current tab.
 
     Usage: %(cmd)s

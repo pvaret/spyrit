@@ -51,7 +51,7 @@ class BaseFilter:
   def postpone( self, chunk ):
 
     if self.postponedChunk:
-      raise Exception( u"Duplicate postponed chunk!" )
+      raise Exception( "Duplicate postponed chunk!" )
 
     else:
       self.postponedChunk = chunk

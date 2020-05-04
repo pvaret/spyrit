@@ -65,7 +65,7 @@ class PlainLogger( object ):
       self.doLogText( payload )
 
     elif chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
-      self.doLogText( u"\n" )
+      self.doLogText( "\n" )
 
     else:
       return
@@ -75,20 +75,20 @@ class PlainLogger( object ):
 
   def doLogText( self, text ):
 
-    assert type( text ) is type( u'' )
+    assert type( text ) is type( "" )
     self.buffer.append( text.encode( self.encoding, "replace" ) )
 
 
   def doLogStart( self ):
 
-    now = time.strftime( u'%c', time.localtime() )
-    self.doLogText( u"%% Log start for %s on %s.\n" % ( self.world.title(), now ) )
+    now = time.strftime( "%c", time.localtime() )
+    self.doLogText( "%% Log start for %s on %s.\n" % ( self.world.title(), now ) )
 
 
   def doLogStop( self ):
 
-    now = time.strftime( u'%c', time.localtime() )
-    self.doLogText( u"%% Log end on %s.\n" % now )
+    now = time.strftime( "%c", time.localtime() )
+    self.doLogText( "%% Log end on %s.\n" % now )
 
 
   def flushBuffer( self ):
@@ -108,7 +108,7 @@ class PlainLogger( object ):
     self.is_logging = True
     self.doLogStart()
     ## TODO: move info message out of logger?
-    self.world.info( u"Started logging to %s" % basename( self.logfile.name ) )
+    self.world.info( "Started logging to %s" % basename( self.logfile.name ) )
 
     self.flushBuffer()
 
@@ -120,7 +120,7 @@ class PlainLogger( object ):
 
     self.doLogStop()
     ## TODO: move info message out of logger?
-    self.world.info( u"Stopped logging." )
+    self.world.info( "Stopped logging." )
 
     self.flushBuffer()
     self.is_logging = False
@@ -186,8 +186,8 @@ class AnsiFormatter:
 
 class AnsiLogger( PlainLogger ):
 
-  log_chunk_types = PlainLogger.log_chunk_types \
-                  | ChunkType.HIGHLIGHT | ChunkType.ANSI
+  log_chunk_types = ( PlainLogger.log_chunk_types
+                      | ChunkType.HIGHLIGHT | ChunkType.ANSI )
 
 
   def __init__( self, *args ):
@@ -230,7 +230,7 @@ def create_logger_for_world( world, logfilename ):
     except ( IOError, OSError ):
       pass
 
-  file = world.openFileOrErr( logfilename, 'a+b' )
+  file = world.openFileOrErr( logfilename, "a+b" )
 
   if not file:
     return None

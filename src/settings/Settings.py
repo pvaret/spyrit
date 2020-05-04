@@ -33,13 +33,13 @@ from CallbackRegistry import CallbackRegistry
 
 class __NoValue( object ):
   def __repr__( self ):
-    return '<NO VALUE>'
+    return "<NO VALUE>"
 
 
 NO_VALUE = __NoValue()
 
 ## A dummy key name for the root node of the settings.
-ROOT = '@'
+ROOT = "@"
 
 
 class MatchingDict( dict ):
@@ -360,7 +360,7 @@ class Node( DictAttrProxy ):
 
       if node.isLeaf():
 
-        serializer = node.proto.metadata.get( 'serializer' )
+        serializer = node.proto.metadata.get( "serializer" )
 
         if node.isEmpty() or serializer is None or not predicate( node ):
           continue
@@ -374,9 +374,9 @@ class Node( DictAttrProxy ):
           if node.isEmpty():
             continue
 
-          subkey = '.'.join( ( key, node_key ) ) if key else node_key
+          subkey = ".".join( ( key, node_key ) ) if key else node_key
 
-          if node.proto.metadata.get( 'is_section' ):
+          if node.proto.metadata.get( "is_section" ):
 
             dump = node.dump( predicate )
 
@@ -474,8 +474,8 @@ class NodeProto( object ):
       node.setInherit( inherit_node )
 
       ## Sanity test:
-      assert ( type( inherit_node ) is type( node ) ), \
-          "Type mismatch in Settings hierarchy!"
+      assert type( inherit_node ) is type( node ), (
+          "Type mismatch in Settings hierarchy!" )
 
     return node
 
@@ -496,33 +496,33 @@ class Settings( Node ):
 
       current_proto, current_schema_def = pending_schema_defs.pop( 0 )
 
-      current_proto.inherit = current_schema_def.get( 'inherit' )
-      section_metadata  = current_schema_def.get( 'default_metadata' ) or {}
+      current_proto.inherit = current_schema_def.get( "inherit" )
+      section_metadata  = current_schema_def.get( "default_metadata" ) or {}
 
-      for key, metadata in current_schema_def.get( 'keys', () ):
+      for key, metadata in current_schema_def.get( "keys", () ):
 
         new_proto = current_proto.new( key, klass=Leaf )
 
         new_proto.metadata.update( section_metadata )
         new_proto.metadata.update( metadata )
-        new_proto.metadata[ 'schema_id' ] = id( schema_def )
+        new_proto.metadata[ "schema_id" ] = id( schema_def )
 
-        default    = new_proto.metadata.get( 'default' )
-        serializer = new_proto.metadata.get( 'serializer' )
+        default    = new_proto.metadata.get( "default" )
+        serializer = new_proto.metadata.get( "serializer" )
 
         if None not in ( serializer, default ):
           default = serializer.deserializeDefault( default )
 
         new_proto.default_value = default
 
-      for section_key, sub_schema_def in \
-              current_schema_def.get( 'sections', () ):
+      sections = current_schema_def.get( "sections", () )
+      for section_key, sub_schema_def in sections:
 
         new_proto = current_proto
 
         for key in section_key.split( "." ):
           new_proto = new_proto.new( key, klass=Node )
-          new_proto.metadata[ 'is_section' ] = True
+          new_proto.metadata[ "is_section" ] = True
 
         pending_schema_defs.append( ( new_proto, sub_schema_def ) )
 
@@ -543,7 +543,7 @@ class Settings( Node ):
         except KeyError:
           continue
 
-        serializer = node.proto.metadata.get( 'serializer' )
+        serializer = node.proto.metadata.get( "serializer" )
         if serializer is None:
           continue
 

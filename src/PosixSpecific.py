@@ -31,7 +31,7 @@ class PosixSpecific:
   STATE_FILE      = "spyrit.state"
 
   should_repaint_on_scroll = False
-  default_font             = u"Nimbus Mono L"
+  default_font             = "Nimbus Mono L"
 
 
   def get_homedir( self ):
@@ -58,4 +58,4 @@ class PosixSpecific:
 
 
   def get_sound_backends( self ):
-    return [ "pygame" ]
+    return [ "qsound", "pygame" ]

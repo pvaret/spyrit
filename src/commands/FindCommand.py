@@ -25,7 +25,7 @@ from .BaseCommand import BaseCommand
 
 class FindCommand( BaseCommand ):
 
-  u"""\
+  """
   Find text in the output window.
 
   Usage: %(cmd)s [<text>]

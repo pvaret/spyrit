@@ -126,38 +126,38 @@ class OutputManager:
   def processNetworkChunk( self, event ):
 
     if   event == NetworkState.CONNECTING:
-      self.insertInfoText( u"Connecting..." )
+      self.insertInfoText( "Connecting..." )
 
     elif event == NetworkState.CONNECTED:
 
       if not self.was_connected:
-        self.insertInfoText( u"Connected!" )
+        self.insertInfoText( "Connected!" )
         self.was_connected = True
 
     elif event == NetworkState.ENCRYPTED:
-      self.insertInfoText( u"SSL encryption started." )
+      self.insertInfoText( "SSL encryption started." )
 
     elif event == NetworkState.DISCONNECTED:
 
       if self.was_connected:
-        self.insertInfoText( u"Connection closed." )
+        self.insertInfoText( "Connection closed." )
         self.was_connected = False
 
     elif event == NetworkState.RESOLVING:
-      self.insertInfoText( u"Resolving %s ..." % self.world.host() )
+      self.insertInfoText( "Resolving %s ..." % self.world.host() )
 
 
     elif event == NetworkState.CONNECTIONREFUSED:
-      self.insertInfoText( u"Connection refused." )
+      self.insertInfoText( "Connection refused." )
 
     elif event == NetworkState.HOSTNOTFOUND:
-      self.insertInfoText( u"Host not found." )
+      self.insertInfoText( "Host not found." )
 
     elif event == NetworkState.TIMEOUT:
-      self.insertInfoText( u"Network timeout." )
+      self.insertInfoText( "Network timeout." )
 
     elif event == NetworkState.OTHERERROR:
-      self.insertInfoText( u"Network error." )
+      self.insertInfoText( "Network error." )
 
 
   def insertNewLine( self ):

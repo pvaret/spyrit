@@ -37,9 +37,9 @@ class QTextEditWithClickableLinks( QTextEdit ):
 
     super( QTextEditWithClickableLinks, self ).__init__( parent )
 
-    self.previous_anchor = u""
+    self.previous_anchor = ""
     self.click_pos = QPoint()
-    self.click_link = u""
+    self.click_link = ""
 
     self.setMouseTracking( True )
 

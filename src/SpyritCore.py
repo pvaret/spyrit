@@ -57,8 +57,8 @@ class SpyritCore( QObject ):
     ## Set up a MOTD to properly welcome our user:
 
     MOTD = (
-        u"Welcome to %s %s!" % ( settings._app._name, settings._app._version ),
-        u"Type %shelp for help on available commands." % CMDCHAR
+        "Welcome to %s %s!" % ( settings._app._name, settings._app._version ),
+        "Type %shelp for help on available commands." % CMDCHAR
     )
 
     ## Note the use of iter(), so the MOTD is only displayed once for the whole
@@ -91,7 +91,7 @@ class SpyritCore( QObject ):
       self.openWorld( world )
 
     else:
-      messages.warn( u"No such world: %s" % worldname )
+      messages.warn( "No such world: %s" % worldname )
 
 
   def openWorldByHostPort( self, host, port, ssl=False ):

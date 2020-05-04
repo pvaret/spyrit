@@ -40,11 +40,11 @@ except ImportError:
 
 else:
 
-  SHELL_FOLDERS = \
-    r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders'
+  SHELL_FOLDERS = ( r'Software\Microsoft\Windows\CurrentVersion\Explorer'
+      '\Shell Folders' )
 
-  USER_SHELL_FOLDERS = \
-    r'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+  USER_SHELL_FOLDERS = ( r'Software\Microsoft\Windows\CurrentVersion\Explorer'
+      '\User Shell Folders' )
 
   HKCU = winreg.HKEY_CURRENT_USER
   HKLM = winreg.HKEY_LOCAL_MACHINE

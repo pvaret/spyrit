@@ -41,9 +41,9 @@ class BaseMatch( abc.ABC ):
 
 class RegexMatch( BaseMatch ):
 
-  matchtype = u"regex"
+  matchtype = "regex"
 
-  def __init__( self, pattern=u"" ):
+  def __init__( self, pattern="" ):
 
     self.pattern = pattern
     self.regex   = None
@@ -63,7 +63,7 @@ class RegexMatch( BaseMatch ):
 
     except re.error as e:
       self.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
-      self.error = u"%s" % e
+      self.error = "%s" % e
 
 
   def setPattern( self, pattern ):
@@ -100,12 +100,12 @@ class RegexMatch( BaseMatch ):
 
   def __repr__( self ):
 
-    return self.matchtype + u':' + self.pattern
+    return self.matchtype + ":" + self.pattern
 
 
   def toString( self ):
 
-    return u"'" + self.pattern + u"' (regex)"
+    return "'" + self.pattern + "' (regex)"
 
 
   def __unicode__( self ):
@@ -119,38 +119,38 @@ class RegexMatch( BaseMatch ):
 ## or asterisks, if they aren't preceded by an odd number of backslashes.
 
 
-TOKEN = r' *\w+ *' ## Non-null word with optional surrounding space.
+TOKEN = r" *\w+ *" ## Non-null word with optional surrounding space.
 
-BS      = r'\\' ## Backslash
-ASTER   = r'\*' ## Asterisk
-PERCENT = r'\%' ## Percent sign
+BS      = r"\\" ## Backslash
+ASTER   = r"\*" ## Asterisk
+PERCENT = r"\%" ## Percent sign
 
-LSB   = r'\[' ## Left square bracket
-RSB   = r'\]' ## Right square bracket
+LSB   = r"\[" ## Left square bracket
+RSB   = r"\]" ## Right square bracket
 
 PARSER = re.compile(
-    u'(?:'                      ## Either...
-  +   u'^'                      ## Beginning of string
-  + u'|'                        ## Or...
-  +   u'[^' + BS + u']'         ## Any one character other than a backslash
-  + u')'                        ## Then...
-  + u'(?:' + BS * 2 + u')'
-  + u'*'                        ## An even number of backslashes
-  + u'('                        ## And then, group-match either...
-  +    PERCENT                  ## A percent sign
-  + u'|'                        ## Or...
-  +    ASTER                    ## An asterisk
-  + u'|'                        ## Or...
+    "(?:"                     ## Either...
+  +   "^"                     ## Beginning of string
+  + "|"                       ## Or...
+  +   "[^" + BS + "]"         ## Any one character other than a backslash
+  + ")"                       ## Then...
+  + "(?:" + BS * 2 + ")"
+  + "*"                       ## An even number of backslashes
+  + "("                       ## And then, group-match either...
+  +    PERCENT                ## A percent sign
+  + "|"                       ## Or...
+  +    ASTER                  ## An asterisk
+  + "|"                       ## Or...
   +    LSB
-  +      TOKEN                  ## Something of the form [token].
+  +      TOKEN                ## Something of the form [token].
   +    RSB
-  + u')'
+  + ")"
 )
 
 
 class SmartMatch( RegexMatch ):
 
-  matchtype = u"smart"
+  matchtype = "smart"
 
   def patternToRegex( self, pattern ):
 
@@ -172,16 +172,16 @@ class SmartMatch( RegexMatch ):
       if before:
         regex.append( self.unescape_then_escape( before ) )
 
-      token = m.group( 1 ).lower().lstrip( u'[ ' ).rstrip( u' ]' )
+      token = m.group( 1 ).lower().lstrip( "[ " ).rstrip( " ]" )
 
-      if token == u'%':
-        regex.append( u".*?" ) ## Match anything, non-greedy
+      if token == "%":
+        regex.append( ".*?" ) ## Match anything, non-greedy
 
-      elif token == u'*':
-        regex.append( u".*" )  ## Match anything, greedy
+      elif token == "*":
+        regex.append( ".*" )  ## Match anything, greedy
 
       elif token in tokens:  ## Token which is already known
-        regex.append( u"(?P=%s)" % token ) ## Insert backreference.
+        regex.append( "(?P=%s)" % token ) ## Insert backreference.
 
       else:  ## New token
         tokens.add( token )
@@ -189,7 +189,7 @@ class SmartMatch( RegexMatch ):
         ## Named match for any non-null string, non-greedy.
         regex.append( r"(?P<%s>.+?)" % token )
 
-    return u''.join( regex )
+    return "".join( regex )
 
 
   def unescape_then_escape( self, string ):
@@ -198,10 +198,10 @@ class SmartMatch( RegexMatch ):
     ## re-escape according to the rules of Python's re module.
 
     replacements = (
-      ( u"\[",   u"[" ),
-      ( u"\]",   u"]" ),
-      ( u"\*",   u"*" ),
-      ( u"\\"*2, u"\\" ),
+      ( "\[",   "[" ),
+      ( "\]",   "]" ),
+      ( "\*",   "*" ),
+      ( "\\"*2, "\\" ),
     )
 
     for from_, to in replacements:
@@ -212,7 +212,7 @@ class SmartMatch( RegexMatch ):
 
   def toString( self ):
 
-    return u"'" + self.pattern + u"'"
+    return "'" + self.pattern + "'"
 
 
   def __unicode__( self ):
@@ -221,23 +221,23 @@ class SmartMatch( RegexMatch ):
 
 
 
-def load_match_by_type( pattern, type=u"smart" ):
+def load_match_by_type( pattern, type="smart" ):
 
   type = type.lower().strip()
 
   TYPES = {
-    u"smart": SmartMatch,
-    u"regex": RegexMatch,
+    "smart": SmartMatch,
+    "regex": RegexMatch,
   }
 
   klass = TYPES.get( type )
 
   if not klass:
-    raise MatchCreationError( u"Unknown match type: %s" % type )
+    raise MatchCreationError( "Unknown match type: %s" % type )
 
   match = klass( pattern )
 
   if match.error:
-    raise MatchCreationError( u"Match pattern syntax error: %s" % match.error )
+    raise MatchCreationError( "Match pattern syntax error: %s" % match.error )
 
   return match

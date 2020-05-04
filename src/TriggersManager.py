@@ -40,12 +40,12 @@ from pipeline.PipeUtils import insert_chunks_in_chunk_buffer
 from settings import Serializers
 
 
-_LINE = u"__line__"
+_LINE = "__line__"
 
 
 class HighlightAction:
 
-  name = u"highlights"
+  name = "highlights"
   multiple_matches_per_line = True
 
   @classmethod
@@ -56,7 +56,7 @@ class HighlightAction:
     # highlights in the group.
 
     if not format:
-      return None, u"Invalid format!"
+      return None, "Invalid format!"
 
     return cls( format ), None
 
@@ -106,9 +106,9 @@ class HighlightAction:
     for token, highlight in sorted( self.highlights.items() ):
       if token == _LINE:
         continue
-      hls.append( u"[%s]: %s" %  ( token, format.serialize( highlight ) ) )
+      hls.append( "[%s]: %s" %  ( token, format.serialize( highlight ) ) )
 
-    return self.name + u": " + u" ; ".join( hls )
+    return self.name + ": " + " ; ".join( hls )
 
 
   def __unicode__( self ):
@@ -119,7 +119,7 @@ class HighlightAction:
 
 class PlayAction:
 
-  name = u"play"
+  name = "play"
 
   ## Don't try to play several sounds at once even if several matches are found.
   multiple_matches_per_line = False
@@ -132,7 +132,7 @@ class PlayAction:
       soundfile = os.path.expanduser( soundfile )
 
       if not os.path.isfile( soundfile ):
-        return None, u"File not found!"
+        return None, "File not found!"
 
     return cls( soundfile ), None
 
@@ -154,7 +154,7 @@ class PlayAction:
 
   def toString( self ):
 
-    return self.name + u": " + ( self.soundfile or "pop" )
+    return self.name + ": " + ( self.soundfile or "pop" )
 
 
   def __unicode__( self ):
@@ -165,7 +165,7 @@ class PlayAction:
 
 class GagAction:
 
-  name = u"gag"
+  name = "gag"
 
   ## If a line is gagged, all processing stops right away.
   multiple_matches_per_line = False
@@ -214,7 +214,7 @@ class GagAction:
 
 class LinkAction:
 
-  name = u"link"
+  name = "link"
   multiple_matches_per_line = True
 
 
@@ -259,12 +259,12 @@ class LinkAction:
 
   def params( self ):
 
-    return u"" if self.url is None else self.url
+    return "" if self.url is None else self.url
 
 
   def toString( self ):
 
-    return ( self.name + u": " + self.url ) if self.url else self.name
+    return ( self.name + ": " + self.url ) if self.url else self.name
 
 
   def __unicode__( self ):
@@ -351,7 +351,7 @@ class TriggersManager:
           group.addAction( action )
 
 
-  def createMatch( self, pattern, type=u"smart" ):
+  def createMatch( self, pattern, type="smart" ):
 
     return load_match_by_type( pattern, type )
 
@@ -367,7 +367,7 @@ class TriggersManager:
                                  if g.isdigit() ]
       new_group_number = min( i for i in range( 1, len( self.groups ) + 2 )
                               if i not in existing_number_groups )
-      group = u"%d" % new_group_number
+      group = "%d" % new_group_number
 
     key = normalize_text( group.strip() )
 
@@ -382,7 +382,7 @@ class TriggersManager:
 
     action = self.actionregistry.get( actionname )
     if action is None:
-      return None, u"%s: No such action!" % actionname
+      return None, "%s: No such action!" % actionname
 
     factory = action.factory
     ok, msg = match_args_to_function( factory, args, kwargs )
@@ -454,8 +454,8 @@ class TriggersManager:
         ## overhaul the action serialization system and reserve the 'name'
         ## attribute for this.
         action_class = id( action.__class__ )
-        if action_class in already_performed_on_this_line \
-            and not action.multiple_matches_per_line:
+        if ( action_class in already_performed_on_this_line
+             and not action.multiple_matches_per_line ):
           continue
         already_performed_on_this_line.add( action_class )
 

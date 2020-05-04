@@ -30,9 +30,9 @@ def check_python_version():
   v = sys.version_info[ 0:2 ]
 
   if v >= REQUIRED_PYTHON_VERSION:
-    return True, u"🗸 Found Python v%s.%s." % v
+    return True, "🗸 Found Python v%s.%s." % v
 
-  return False, u"Python v%d.%d required!" % REQUIRED_PYTHON_VERSION
+  return False, "Python v%d.%d required!" % REQUIRED_PYTHON_VERSION
 
 
 
@@ -41,10 +41,10 @@ def check_pyqt5_installed():
   try:
     import PyQt5
     import PyQt5.QtCore
-    return True, u"🗸 Found PyQt v%s." % PyQt5.QtCore.PYQT_VERSION_STR
+    return True, "🗸 Found PyQt v%s." % PyQt5.QtCore.PYQT_VERSION_STR
 
   except ImportError:
-    return False, u"PyQt5 bindings required!"
+    return False, "PyQt5 bindings required!"
 
 
 
@@ -62,7 +62,7 @@ def check_qt_version():
   v = qt_version()
 
   if v >= REQUIRED_QT_VERSION:
-    return True, u"🗸 Found Qt v%s.%s." % v[ 0:2 ]
+    return True, "🗸 Found Qt v%s.%s." % v[ 0:2 ]
 
   else:
-    return False, u"Qt v%d.%d required!" % REQUIRED_QT_VERSION
+    return False, "Qt v%d.%d required!" % REQUIRED_QT_VERSION

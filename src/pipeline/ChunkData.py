@@ -25,7 +25,7 @@ from localenum import IntEnum
 
 
 class ChunkTypeMismatch( Exception ):
-  """\
+  """
   Raised when a combining operation is attempted on two chunks of incompatible
   types.
   """
@@ -62,9 +62,9 @@ def concat_chunks( chunk1, chunk2 ):
 
   ## Only chunks of the same type and whose data are strings can be
   ## concatenated.
-  if chunk1_type != chunk2_type \
-                 or type( chunk2_payload ) not in \
-                        ( type( b"" ), type( u"" ), bytearray ):
+  if ( chunk1_type != chunk2_type
+      or type( chunk2_payload ) not in
+          ( type( b"" ), type( "" ), bytearray ) ):
 
     raise ChunkTypeMismatch( "Trying to concat %d chunk with %d chunk!" %
                              ( chunk1_type, chunk2_type ) )
@@ -84,15 +84,15 @@ def chunk_repr( chunk ):
   chunk_type, payload = chunk
 
   if not isinstance( chunk_type, ChunkType ):
-    type_str = u"(unknown)"
+    type_str = "(unknown)"
 
   else:
     type_str = chunk_type.name
 
   if payload is None:
-    return u"<Chunk: %s>" % type_str
+    return "<Chunk: %s>" % type_str
 
-  return u"<Chunk: %s; %r>" % ( type_str, payload )
+  return "<Chunk: %s; %r>" % ( type_str, payload )
 
 
 ## ANSI-related data:

@@ -26,7 +26,21 @@
 
 """
 
+import abc
+
 from fnmatch import fnmatchcase
+from typing import cast
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Protocol
+from typing import Text
+from typing import Type
+from typing import Union
 
 from CallbackRegistry import CallbackRegistry
 
@@ -42,10 +56,10 @@ NO_VALUE = __NoValue()
 ROOT = "@"
 
 
-class MatchingDict( dict ):
+class MatchingDict( dict, Mapping[ Text, Any ] ):
   """
   A dictionary whose keys are glob patterns, and where key lookup is matched
-  against those patterns.
+  against those patterns. Requires the keys to be strings.
 
   >>> m = MatchingDict()
   >>> m[ "ab?" ] = 1
@@ -61,7 +75,7 @@ class MatchingDict( dict ):
 
   """
 
-  def __contains__( self, key ):
+  def __contains__( self, key: Any ) -> bool:
 
     try:
       self[ key ]
@@ -70,10 +84,10 @@ class MatchingDict( dict ):
     except KeyError:
       return False
 
-  def __getitem__( self, key ):
+  def __getitem__( self, key: Text ) -> Any:
 
     try:
-      return dict.__getitem__( self, key )
+      return super( MatchingDict, self ).__getitem__( key )
     except KeyError:
       pass
 
@@ -84,53 +98,77 @@ class MatchingDict( dict ):
     raise KeyError( key )
 
 
-class DictAttrProxy( object ):
+def validateAttr( attr: Text ) -> Optional[ Text ]:
   """
-  This class is meant to be inherited from by dict-like subclasses, and makes
-  the dict's keys accessible as attributes. Use it as a parent class, and you
-  can then access:
+  Determines whether the parameter begins with one underscore '_' but not two.
+  Returns None otherwise.  Attributes beginning with one underscore will be
+  looked up as items on self.
+
+  """
+
+  if ( len( attr ) >= 2
+       and attr.startswith( "_" )
+       and not attr.startswith( "__" ) ):
+
+      return attr[ 1: ]
+
+  return None
+
+
+class TextDictProtocol( Protocol ):
+  """
+  A Protocol class describing the underlying type expected by
+  AttrProxyDictMixin.
+  """
+
+  def __getitem__( self, key: Text ) -> Any:
+    pass
+
+  def __setitem__( self, key: Text, value: Any ):
+    pass
+
+  def __delitem__( self, key: Text ):
+    pass
+
+
+class AttrProxyDictMixin( TextDictProtocol ):
+  """
+  This mixin makes a dict's keys accessible as attributes. Inherit from it in
+  your dict-like class with Text keys, and you can then access:
     d[ "somekey" ]
   as:
     d._somekey
-  It requires the child class to have the __{set|get|del}item__ methods of a
-  dictionary.
 
-  >>> class Test( DictAttrProxy, dict ):
+  >>> class TestDict( dict, AttrProxyDictMixin ):
   ...   pass
-  >>> d = Test()
+  >>> d = TestDict()
   >>> d[ "a" ] = 1
   >>> d._a
   1
+  >>> d.a
+  Traceback (most recent call last):
+  ...
+  AttributeError: a
+  >>> d._A
+  Traceback (most recent call last):
+  ...
+  AttributeError: _A
   >>> d._b = 2
   >>> d[ "b" ]
   2
+  >>> del d.a
+  Traceback (most recent call last):
+  ...
+  AttributeError: a
   >>> del d._a
   >>> "a" in d
   False
 
   """
 
-  @staticmethod
-  def validatedAttr( attr ):
-    """
-    Static method. Determines whether the parameter begins with one
-    underscore '_' but not two. Returns None otherwise.
-    Attributes beginning with one underscore will be looked up as items on
-    self.
+  def __getattr__( self, attr: Text ) -> Any:
 
-    """
-
-    if ( len( attr ) >= 2
-         and attr.startswith( "_" )
-         and not attr.startswith( "__" ) ):
-
-        return attr[ 1: ]
-
-    return None
-
-  def __getattr__( self, attr ):
-
-    vattr = self.validatedAttr( attr )
+    vattr = validateAttr( attr )
 
     if vattr is None:
       ## This is neither an existing native attribute, nor a 'special'
@@ -141,66 +179,89 @@ class DictAttrProxy( object ):
     try:
       return self[ vattr ]
 
-    except KeyError:
-      raise AttributeError( attr )
+    except KeyError as e:
+      raise AttributeError( attr ) from e
 
-  def __setattr__( self, attr, value ):
+  def __setattr__( self, attr: Text, value: Any ):
 
-    vattr = self.validatedAttr( attr )
+    vattr = validateAttr( attr )
 
     if vattr:
       self[ vattr ] = value
 
     else:
       ## If this is a 'normal' attribute, treat it the normal way.
-      object.__setattr__( self, attr, value )
+      super( AttrProxyDictMixin, self ).__setattr__( attr, value )
 
-  def __delattr__( self, attr ):
+  def __delattr__( self, attr: Text ):
 
-    vattr = self.validatedAttr( attr )
+    vattr = validateAttr( attr )
 
     if vattr is None:
       ## If this is a 'normal' attribute, treat it the normal way
       ## and then return.
-      object.__delattr__( self, attr )
+      super( AttrProxyDictMixin, self ).__delattr__( attr )
 
       return
 
     try:
       del self[ vattr ]
 
-    except KeyError:
-      raise AttributeError( attr )
+    except KeyError as e:
+      raise AttributeError( attr ) from e
 
 
-class Leaf( object ):
+## TODO: Finish.
+class BaseNode( abc.ABC ):
 
-  def __init__( self, key, container ):
+  proto: "NodeProto"
+  fallback_value: Any
 
-    self.key            = key
-    self.inherit        = None
-    self.notifier       = CallbackRegistry()
-    self.own_value      = NO_VALUE
-    self.container      = container
-    self.fallback_value = None
+  @abc.abstractmethod
+  def getFullPath( self ) -> List[ Text ]:
+    pass
 
-  def isLeaf( self ):
+  @abc.abstractmethod
+  def isLeaf( self ) -> bool:
+    pass
+
+  @abc.abstractmethod
+  def isEmpty( self ) -> bool:
+    pass
+
+  # @abc.abstractmethod
+  # def setInherit( self, node: "BaseNode" ):
+  #   pass
+
+
+class Leaf( BaseNode ):
+
+  def __init__( self, key: Text, container: "Node" ):
+
+    self.key: Text                 = key
+    self.inherit: Optional[ Leaf ] = None
+    self.notifier                  = CallbackRegistry()
+    self.own_value: Any            = NO_VALUE
+    self.container: "Node"         = container
+    self.fallback_value: Any       = None
+
+  def isLeaf( self ) -> bool:
 
     return True
 
-  def __repr__( self ):
+  def __repr__( self ) -> Text:
 
     key_path = ".".join( self.getFullPath() )
     return "<Leaf %s>: %r" % ( key_path, self.own_value )
 
-  def getFullPath( self ):
+  def getFullPath( self ) -> List[ Text ]:
 
     if self.container is None:
       return []
 
     return self.container.getFullPath() + [ self.key ]
 
-  def setInherit( self, inherit ):
+  def setInherit( self, inherit: "Leaf" ):
 
     self.inherit = inherit
 
@@ -208,12 +269,12 @@ class Leaf( object ):
       inherit.notifier.add( self.propagate )
       self.fallback_value = inherit.value()
 
-  def value( self ):
+  def value( self ) -> Any:
 
     return ( self.own_value if self.own_value is not NO_VALUE
              else self.fallback_value )
 
-  def setValue( self, value ):
+  def setValue( self, value: Any ):
 
     prev_value = self.value()
 
@@ -230,7 +291,7 @@ class Leaf( object ):
 
     self.setValue( NO_VALUE )
 
-  def propagate( self, new_value ):
+  def propagate( self, new_value: Any ):
 
     prev_value = self.value()
     self.fallback_value = new_value
@@ -238,46 +299,46 @@ class Leaf( object ):
     if self.value() != prev_value:
       self.notifier.triggerAll( new_value )
 
-  def isEmpty( self ):
+  def isEmpty( self ) -> bool:
 
     return self.own_value is NO_VALUE
 
 
-def default_dump_predicate( node ):
+def default_dump_predicate( node: "Node" ) -> bool:
 
   return not node.proto.metadata.get( "exclude_from_dump" )
 
 
-class Node( DictAttrProxy ):
+class Node( BaseNode, AttrProxyDictMixin ):
 
   def __init__( self, key, container ):
 
-    self.key       = key
-    self.proto     = None
-    self.nodes     = {}
-    self.inherit   = None
-    self.container = container
+    self.key: Text                     = key
+    self.proto: NodeProto              = None
+    self.nodes: Dict[ Text, BaseNode ] = {}
+    self.inherit: Node                 = None
+    self.container: Node               = container
 
-  def isLeaf( self ):
+  def isLeaf( self ) -> bool:
 
     return False
 
-  def __repr__( self ):
+  def __repr__( self ) -> Text:
 
     return "<Node %s>" % ( ".".join( self.getFullPath() ) or "." )
 
-  def getFullPath( self ):
+  def getFullPath( self ) -> List[ Text ]:
 
     if self.container is None:
       return []
 
     return self.container.getFullPath() + [ self.key ]
 
-  def setInherit( self, inherit ):
+  def setInherit( self, inherit: "Node" ):
 
     self.inherit = inherit
 
-  def get( self, key ):
+  def get( self, key: Text ):
 
     if "." in key:
       head, tail = key.split( ".", 1 )
@@ -295,45 +356,46 @@ class Node( DictAttrProxy ):
 
     return node
 
-  def __iter__( self ):
+  def __iter__( self ) -> Iterable[ Text ]:
 
     return iter( self.nodes )
 
-  def __getitem__( self, key ):
+  def __getitem__( self, key: Text ) -> BaseNode:
 
     node = self.get( key )
     return node.value()
 
-  def __setitem__( self, key, value ):
+  def __setitem__( self, key: Text, value: Any ):
 
     node = self.get( key )
     node.setValue( value )
 
-  def __delitem__( self, key ):
+  def __delitem__( self, key: Text ):
 
     node = self.get( key )
     node.delValue()
 
-  def asDict( self ):
+  def asDict( self ) -> Dict[ Text, Any ]:
 
     ret = {}
     for k, v in self.nodes.items():
       if v.isLeaf():
-        ret[ k ] = v.value()
+        if type( v ) is Leaf:
+          ret[ k ] = cast( Leaf, v ).value()
       else:
-        ret[ k ] = v.asDict()
+        ret[ k ] = cast( Node, v ).asDict()
 
     return ret
 
-  def value( self ):
+  def value( self ) -> "Node":
 
     return self
 
-  def isEmpty( self ):
+  def isEmpty( self ) -> bool:
 
     return all( node.isEmpty() for node in self.nodes.values() )
 
-  def setValue( self, value ):
+  def setValue( self, value: Any ):
 
     if not isinstance( value, dict ):
       raise ValueError( "Expected a dictionary-type value for key %s; "
@@ -346,6 +408,8 @@ class Node( DictAttrProxy ):
       raise ValueError( "Expected a dict matching the schema for key %s; "
                         "got %r" % ( self.getFullPath(), value ) )
 
+  # TODO: Add typing information... once mypy supports recursive types. See
+  # https://github.com/python/mypy/issues/731.
   def dump( self, predicate=default_dump_predicate ):
 
     stack = [ ( self, "" ) ]
@@ -388,7 +452,7 @@ class Node( DictAttrProxy ):
 
     return result
 
-  def onChange( self, key, callback ):
+  def onChange( self, key: Text, callback: Callable ):
 
     leaf = self.get( key )
     leaf.notifier.add( callback )
@@ -396,16 +460,16 @@ class Node( DictAttrProxy ):
 
 class NodeProto( object ):
 
-  def __init__( self, key, klass ):
+  def __init__( self, key: Text, klass: Type[ BaseNode ] ):
 
-    self.key           = key
-    self.nodes         = MatchingDict()
-    self.klass         = klass
-    self.inherit       = None
-    self.metadata      = {}
-    self.default_value = None
+    self.key: Text                      = key
+    self.nodes: Dict[ Text, NodeProto ] = MatchingDict()
+    self.klass: Type[ BaseNode ]        = klass
+    self.inherit: Optional[ Text ]      = None
+    self.metadata: Dict[ Text, Any ]    = {}
+    self.default_value: Any             = None
 
-  def get( self, key ):
+  def get( self, key: Text ) -> "NodeProto":
 
     if "." in key:
       key, subkey = key.split( "." )
@@ -413,7 +477,7 @@ class NodeProto( object ):
 
     return self.nodes[ key ]
 
-  def new( self, key, klass ):
+  def new( self, key: Text, klass: Type[ BaseNode ] ) -> "NodeProto":
 
     if "." in key:
       key, subkey = key.split( ".", 1 )
@@ -427,10 +491,10 @@ class NodeProto( object ):
 
     return self.nodes[ key ]
 
-  def build( self, key, container ):
+  def build( self, key: Text, container: Node ) -> Union[ Node, Leaf ]:
 
-    node = None
-    inherit_container = None
+    node: Union[ Node, Leaf ]
+    inherit_container: Optional[ Node ] = None
 
     ## 1/ Figure out what node to build, by looking it up in the prototype tree
     ## then searching this prototype for inheritance information.
@@ -462,7 +526,12 @@ class NodeProto( object ):
     else:
       raise KeyError( key )
 
-    node = proto.klass( key, container )
+    # TODO: Don't pass the class, just an information of the nature of this
+    # node.
+    if proto.klass is Leaf:
+      node = Leaf( key, container )
+    elif proto.klass is Node:
+      node = Node( key, container )
     node.proto = proto
     node.fallback_value = proto.default_value
 
@@ -471,15 +540,17 @@ class NodeProto( object ):
     if inherit_container is not None:
 
       inherit_node = inherit_container.get( key )
-      node.setInherit( inherit_node )
 
       ## Sanity test:
       assert type( inherit_node ) is type( node ), (
           "Type mismatch in Settings hierarchy!" )
 
+      node.setInherit( inherit_node )
+
     return node
 
 
+# TODO: Annotate with types once mypy supports recursive types.
 class Settings( Node ):
 
   def __init__( self ):

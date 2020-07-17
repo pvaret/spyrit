@@ -10,3 +10,5 @@ tags
 resources.py
 .coverage
 attic/
+spyrit.code-workspace
+src/.vscode/

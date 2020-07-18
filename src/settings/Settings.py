@@ -304,11 +304,6 @@ class Leaf( BaseNode ):
     return self.own_value is NO_VALUE
 
 
-def default_dump_predicate( node: "Node" ) -> bool:
-
-  return not node.proto.metadata.get( "exclude_from_dump" )
-
-
 class Node( BaseNode, AttrProxyDictMixin ):
 
   def __init__( self, key, container ):
@@ -410,7 +405,7 @@ class Node( BaseNode, AttrProxyDictMixin ):
 
   # TODO: Add typing information... once mypy supports recursive types. See
   # https://github.com/python/mypy/issues/731.
-  def dump( self, predicate=default_dump_predicate ):
+  def dump( self ):
 
     stack = [ ( self, "" ) ]
     result = ( {}, {} )
@@ -426,7 +421,7 @@ class Node( BaseNode, AttrProxyDictMixin ):
 
         serializer = node.proto.metadata.get( "serializer" )
 
-        if node.isEmpty() or serializer is None or not predicate( node ):
+        if node.isEmpty() or serializer is None:
           continue
 
         result[ KEYS ][ key ] = serializer.serialize( node.value() )
@@ -442,7 +437,7 @@ class Node( BaseNode, AttrProxyDictMixin ):
 
           if node.proto.metadata.get( "is_section" ):
 
-            dump = node.dump( predicate )
+            dump = node.dump()
 
             if len( dump[ KEYS ] ) + len( dump[ SECTIONS ] ) > 0:
               result[ SECTIONS ][ subkey ] = dump
@@ -568,6 +563,9 @@ class Settings( Node ):
       current_proto, current_schema_def = pending_schema_defs.pop( 0 )
 
       current_proto.inherit = current_schema_def.get( "inherit" )
+      # TODO: Remove the "default_metadata" feature? It's only used for
+      # shortcuts, and may be better replaced by a little throwaway helper
+      # where we define those shortcuts.
       section_metadata  = current_schema_def.get( "default_metadata" ) or {}
 
       for key, metadata in current_schema_def.get( "keys", () ):

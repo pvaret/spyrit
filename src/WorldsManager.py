@@ -19,14 +19,19 @@
 ##
 
 
-from PyQt5.QtCore import QObject
+from typing import Optional
+from typing import Sequence
+
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QObject
 
-from World        import World
-from Utilities    import normalize_text
-
+# TODO: Using BaseNode directly kind of sucks. Find a way to make this cleaner?
+# Settings "derived" from the root setting graph should be accessible through a
+# dedicated API, without poking at the low-level details of settings Nodes.
+from settings.Settings import BaseNode
 from SpyritSettings import WORLDS
-
+from Utilities import normalize_text
+from World import World
 
 
 class WorldsSettings:
@@ -35,41 +40,49 @@ class WorldsSettings:
   WorldsManager requires.
   """
 
-  def __init__( self, settings ):
+  def __init__( self, settings, state ):
 
     self.settings = settings[ WORLDS ]
+    self.state = state[ WORLDS ]
 
-
-  def getAllWorldSettings( self ):
+  def getAllWorldSettings( self ) -> Sequence[ BaseNode ]:
 
     return self.settings.nodes.values()
-
 
   def newWorldSettings( self ):
 
     ## TODO: Add createSection() to nodes that would do the right thing?
     return self.settings.proto.build( "*", self.settings )
 
+  def newWorldState( self ):
 
-  def saveWorldSettings( self, key, settings ):
+    return self.state.proto.build( "*", self.state )
 
-    if settings in self.getAllWorldSettings():
-      ## World has already been saved, do nothing.
-      return
+  def lookupStateForSettings( self, settings: BaseNode ) -> BaseNode:
 
+    if settings._name:
+      key = normalize_text( settings._name )
+      if key in self.state:
+        return self.state[ key ]
+
+    return self.newWorldState()
+
+  def saveWorldSettings( self, key, settings, state ):
+
+    # TODO: Guarantee unicity?
     self.settings.nodes[ key ] = settings
-
+    self.state.nodes[ key ] = state
 
 
 class WorldsManager( QObject ):
 
   worldListChanged = pyqtSignal()
 
-  def __init__( self, settings ):
+  def __init__( self, settings, state ):
 
     QObject.__init__( self )
 
-    self.ws = WorldsSettings( settings )
+    self.ws = WorldsSettings( settings, state )
 
     ## Safety measure: ensure all worlds have a valid name.
     n = 0
@@ -82,29 +95,26 @@ class WorldsManager( QObject ):
 
     self.generateMappings()
 
-
   def generateMappings( self ):
 
     ## Provide mappings to lookup worlds based on their name and based on
     ## their (host, port) connection pair.
 
     self.name_mapping = dict(
-      ( self.normalize( settings._name ), settings )
-      for settings in self.ws.getAllWorldSettings()
+        ( self.normalize( settings._name ), settings )
+        for settings in self.ws.getAllWorldSettings()
     )
 
     self.hostport_mapping = {}
 
     for settings in self.ws.getAllWorldSettings():
       self.hostport_mapping.setdefault(
-        ( settings._net._host, settings._net._port ), []
+          ( settings._net._host, settings._net._port ), []
       ).append( settings )
-
 
   def normalize( self, name ):
 
     return normalize_text( name.strip() )
-
 
   def worldList( self ):
 
@@ -112,42 +122,49 @@ class WorldsManager( QObject ):
     worlds = ( world._name for world in self.ws.getAllWorldSettings() )
     return sorted( worlds, key=lambda s: self.normalize( s ) )
 
-
   def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
 
     wsettings = self.ws.newWorldSettings()
 
-    if name: wsettings._name      = name
-    if host: wsettings._net._host = host
-    if port: wsettings._net._port = port
-    if ssl:  wsettings._net._ssl  = ssl
+    if name:
+      wsettings._name = name
+    if host:
+      wsettings._net._host = host
+    if port:
+      wsettings._net._port = port
+    if ssl:
+      wsettings._net._ssl = ssl
 
     return wsettings
+  
+  def newWorldState( self ) -> BaseNode:
 
+    return self.ws.newWorldState()
 
-  def saveWorld( self, world ):
+  def saveWorld( self, world: World ):
 
     settings = world.settings
+    state = world.state
     key = self.normalize( settings._name )  ## TODO: Ensure unicity!
 
-    self.ws.saveWorldSettings( key, settings )
+    self.ws.saveWorldSettings( key, settings, state )
 
     self.generateMappings()
     self.worldListChanged.emit()
 
+  def newWorld( self, settings: BaseNode ) -> World:
 
-  def newWorld( self, settings ):
+    state = self.ws.lookupStateForSettings( settings )
+    
+    return World( settings, state )
 
-    return World( settings )
-
-
-  def newAnonymousWorld( self, host="", port=0, ssl=False ):
+  def newAnonymousWorld( self, host="", port=0, ssl=False ) -> World:
 
     settings = self.newWorldSettings( host, port, ssl )
+
     return self.newWorld( settings )
 
-
-  def lookupWorldByName( self, name ):
+  def lookupWorldByName( self, name ) -> Optional[World]:
 
     settings = self.name_mapping.get( self.normalize( name ) )
 
@@ -156,8 +173,7 @@ class WorldsManager( QObject ):
 
     return None
 
-
-  def lookupWorldByHostPort( self, host, port ):
+  def lookupWorldByHostPort( self, host: str, port: int ) -> Optional[World]:
 
     settings = self.hostport_mapping.get( ( host, port ) )
 

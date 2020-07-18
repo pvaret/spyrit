@@ -34,6 +34,7 @@ class InputHistory:
     self.shouldsave  = shouldsave
 
     settings = inputwidget.world.settings
+    state = inputwidget.world.state
 
     if self.shouldsave and settings._ui._input._save_history:
 
@@ -43,7 +44,7 @@ class InputHistory:
       except ValueError:
         count = 0
 
-      self.history = settings._ui._input._history[ :count ]
+      self.history = state._ui._input._history[ :count ]
 
     else:
       self.history = []
@@ -92,6 +93,7 @@ class InputHistory:
     self.history.insert( 0, text )
 
     settings = self.inputwidget.world.settings
+    state = self.inputwidget.world.state
 
     maxlength = settings._ui._input._max_history
 
@@ -100,4 +102,4 @@ class InputHistory:
 
     count = int( settings._ui._input._save_history )
     if self.shouldsave and count:
-      settings._ui._input._history = self.history[ :count ]
+      state._ui._input._history = self.history[ :count ]

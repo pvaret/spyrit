@@ -139,7 +139,8 @@ def make_unicode_translation_table():
 
 UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
-def remove_accents( string, translation_table=UNICODE_TRANSLATION_TABLE ):
+def remove_accents(
+    string: str, translation_table=UNICODE_TRANSLATION_TABLE ) -> str:
   """
   Filters the diacritics off Latin characters in the given Unicode string.
 
@@ -148,17 +149,15 @@ def remove_accents( string, translation_table=UNICODE_TRANSLATION_TABLE ):
 
   """
 
-  assert type( string ) is type( "" )  ## Only accept Unicode strings.
-
   return string.translate( translation_table )
 
 
-def normalize_text( string ):
+def normalize_text( string: str ) -> str:
 
   return remove_accents( string ).lower()
 
 
-def ensure_valid_filename( filename ):
+def ensure_valid_filename( filename: str ) -> str:
 
   """
   Make the given string safe(r) to use as a filename.
@@ -177,8 +176,6 @@ def ensure_valid_filename( filename ):
   (127.0.0.1__).log
 
   """
-
-  assert type( filename ) is type( "" )  ## Only accept Unicode strings.
 
   invalid_char_codes = [ ord( c ) for c in '<>:"/\\|?*' ]
   invalid_char_codes.extend( range( 32 ) )

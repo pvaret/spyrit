@@ -59,15 +59,18 @@ class World( QObject ):
   disconnected = pyqtSignal( bool )
   nowLogging   = pyqtSignal( bool )
 
-  def __init__( self, settings=None ):
+  def __init__( self, settings=None, state=None ):
 
     QObject.__init__( self )
 
     worldsmanager = QApplication.instance().core.worlds
     if not settings:
       settings = worldsmanager.newWorldSettings()
+    if not state:
+      state = worldsmanager.newWorldState()
 
     self.settings = settings
+    self.state    = state
     self.worldui  = None
     self.logger   = None
 

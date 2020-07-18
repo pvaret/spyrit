@@ -26,25 +26,30 @@ from weakref import WeakSet
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot
 
-from MainWindow      import MainWindow
-from SoundEngine     import SoundEngine
-from WorldsManager   import WorldsManager
-from TempResources   import TempResources
+from MainWindow import MainWindow
+from SoundEngine import SoundEngine
+from WorldsManager import WorldsManager
+from TempResources import TempResources
 
-from Globals         import CMDCHAR
-from Messages        import messages
-from SpyritSettings  import load_settings, save_settings
+from Globals import CMDCHAR
+from Messages import messages
+from SpyritSettings import load_settings
+from SpyritSettings import load_state
+from SpyritSettings import save_settings
+from SpyritSettings import save_state
 from TriggersManager import construct_triggersmanager
 from CommandRegistry import construct_command_registry
 
 
 class SpyritCore( QObject ):
 
-  def __init__( self, settings, worlds, commands, triggers, tmprc, sound ):
+  def __init__( self, settings, state, worlds, commands, triggers, tmprc,
+                sound ):
 
-    QObject.__init__( self )
+    super( SpyritCore, self ).__init__()
 
     self.settings = settings
+    self.state    = state
     self.worlds   = worlds
     self.commands = commands
     self.triggers = triggers
@@ -65,23 +70,21 @@ class SpyritCore( QObject ):
     ## application.
     self.motd = iter( MOTD )
 
-
   @pyqtSlot()
   def atExit( self ):
 
     self.tmprc.cleanup()
     self.triggers.save( self.settings )
     save_settings( self.settings )
-
+    save_state( self.state )
 
   def constructMainWindow( self ):
 
     if self.mw:
       return
 
-    self.mw = MainWindow( self.settings )
+    self.mw = MainWindow( self.settings, self.state )
     self.mw.show()
-
 
   def openWorldByName( self, worldname ):
 
@@ -93,7 +96,6 @@ class SpyritCore( QObject ):
     else:
       messages.warn( "No such world: %s" % worldname )
 
-
   def openWorldByHostPort( self, host, port, ssl=False ):
 
     world = self.worlds.lookupWorldByHostPort( host, port )
@@ -103,9 +105,8 @@ class SpyritCore( QObject ):
 
     else:
       self.openWorld(
-        self.worlds.newAnonymousWorld( host, port, ssl )
+          self.worlds.newAnonymousWorld( host, port, ssl )
       )
-
 
   def openWorld( self, world ):
 
@@ -114,25 +115,25 @@ class SpyritCore( QObject ):
     world.connectToWorld()
 
 
-
-
 def construct_spyrit_core( application ):
 
   settings = load_settings()
-  worlds   = WorldsManager( settings )
+  state    = load_state()
+  worlds   = WorldsManager( settings, state )
   tmprc    = TempResources()
   sound    = SoundEngine( tmprc )
   triggers = construct_triggersmanager( settings )
   commands = construct_command_registry()
 
   core = SpyritCore(
-           settings=settings,
-           worlds=worlds,
-           commands=commands,
-           triggers=triggers,
-           tmprc=tmprc,
-           sound=sound,
-         )
+      settings=settings,
+      state=state,
+      worlds=worlds,
+      commands=commands,
+      triggers=triggers,
+      tmprc=tmprc,
+      sound=sound,
+  )
 
   application.aboutToQuit.connect( core.atExit )
 

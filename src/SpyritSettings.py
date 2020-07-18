@@ -22,6 +22,10 @@
 
 import codecs
 
+from typing import Sequence
+
+from PyQt5.QtCore import QSize
+
 from Globals import ANSI_COLORS as COL
 from IniParser import parse_settings
 from IniParser import struct_to_ini
@@ -42,6 +46,7 @@ from settings.Serializers import Pattern
 from settings.Serializers import Point
 from settings.Serializers import Size
 from settings.Serializers import Str
+from settings.Serializers import Text
 from settings.Settings import Settings
 
 
@@ -62,6 +67,7 @@ TRIGGERS  = "triggers"
 MATCHES   = "matches"
 ACTIONS   = "actions"
 SHORTCUTS = "shortcuts"
+
 
 ## Schema for matches
 TRIGGERS_SCHEMA = {
@@ -181,23 +187,29 @@ SETTINGS_SCHEMA = {
     ),
     "sections": (
         ( TRIGGERS, for_all_sections( TRIGGERS_SCHEMA ) ),
-        ( WORLDS,   for_all_sections( WORLDS_SCHEMA ) ),
+        ( WORLDS, for_all_sections( WORLDS_SCHEMA ) ),
         ( SHORTCUTS, SHORTCUTS_SCHEMA ),
     )
 }
 
 ## Schema for stateful data that isn't really settings
 STATE_SCHEMA = {
-    "default_metadata": { "exclude_from_dump": True },
     "keys": (
         ( "ui.window.pos",     { "serializer": Point() } ),
         ( "ui.window.size",    { "serializer": Size(),
-                                 "default": "1200x900" } ),
-        ( "ui.splitter.sizes", { "serializer": List( Int() ),
-                                 "default": [ 1000, 100, 100 ] } ),
-        ( "ui.input.history",  { "serializer": List( Str() ),
-                                 "default": "" } ),
+                                 "default": QSize( 1200, 900 ) } ),
     ),
+    "sections": (
+        ( WORLDS, for_all_sections( {
+            "keys": (
+                ( "ui.splitter.sizes", { "serializer": List( Int() ),
+                                         "default": [ 1000, 100, 100 ] } ),
+                ( "ui.input.history",  { "serializer": List( Str() ),
+                                         "default": "" } ),
+            ),
+            "inherit": "..",
+        } ) ),
+    )
 }
 
 
@@ -258,7 +270,7 @@ def find_and_read( file_candidates, encoding=FILE_ENCODING ):
   for filename in file_candidates:
     try:
       reader = codecs.getreader( encoding )
-      return filename, reader( open( filename, "rb" ), "ignore" ).read()
+      return reader( open( filename, "rb" ), "ignore" ).read()
 
     except ( LookupError, IOError, OSError ):
       pass
@@ -266,49 +278,48 @@ def find_and_read( file_candidates, encoding=FILE_ENCODING ):
   return None, ""
 
 
-def load_settings():
-  settings = Settings()
-  settings.loadSchema( SETTINGS_SCHEMA )
-  settings.loadSchema( STATE_SCHEMA )
+def _load( schema, candidates: Sequence[ Text ] ):
 
-  found_settings_file, settings_text = find_and_read(
-      SETTINGS_FILE_CANDIDATES )
+  settings = Settings()
+  settings.loadSchema( schema )
+
+  settings_text = find_and_read( candidates )
 
   settings_struct = parse_settings( settings_text )
   settings.restore( settings_struct )
 
-  found_state_file, state_text = find_and_read( STATE_FILE_CANDIDATES )
-
-  state_struct = parse_settings( state_text )
-  settings.restore( state_struct )
-
   return settings
 
 
-def save_settings( settings ):
+def load_settings():
+
+  return _load( SETTINGS_SCHEMA, SETTINGS_FILE_CANDIDATES )
+
+
+def load_state():
+
+  return _load( STATE_SCHEMA, STATE_FILE_CANDIDATES )
+
+
+def _save( settings, filename: Text ):
 
   settings_text = ( "## version: %d\n" % ( VERSION )
                     + struct_to_ini( settings.dump() ) )
 
   try:
     writer = codecs.getwriter( FILE_ENCODING )
-    writer( open( SETTINGS_FILE, "wb" ), "ignore" ).write( settings_text )
+    writer( open( filename, "wb" ), "ignore" ).write( settings_text )
 
   except ( LookupError, IOError, OSError ):
     ## Well shucks.
     pass
 
-  ## Only dump the 'state' part of the structure.
-  def dump_predicate( node ):
-    return node.proto.metadata.get( "schema_id" ) == id( STATE_SCHEMA )
 
-  state_text = ( "## version: %d\n" % ( VERSION )
-                 + struct_to_ini( settings.dump( dump_predicate ) ) )
+def save_settings( settings ):
 
-  try:
-    writer = codecs.getwriter( FILE_ENCODING )
-    writer( open( STATE_FILE, "wb" ), "ignore" ).write( state_text )
+  _save( settings, SETTINGS_FILE )
 
-  except ( LookupError, IOError, OSError ):
-    ## Well shucks too.
-    pass
+
+def save_state( state ):
+
+  _save( state, STATE_FILE )

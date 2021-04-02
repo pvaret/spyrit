@@ -211,7 +211,8 @@ class AttrProxyDictMixin( TextDictProtocol ):
       raise AttributeError( attr ) from e
 
 
-## TODO: Finish.
+## TODO: Finish. Use a Protocol instead! See
+## https://mypy.readthedocs.io/en/stable/protocols.html.
 class BaseNode( abc.ABC ):
 
   proto: "NodeProto"
@@ -405,6 +406,8 @@ class Node( BaseNode, AttrProxyDictMixin ):
 
   # TODO: Add typing information... once mypy supports recursive types. See
   # https://github.com/python/mypy/issues/731.
+  # Or use a Protocol instead! See
+  # https://mypy.readthedocs.io/en/stable/protocols.html.
   def dump( self ):
 
     stack = [ ( self, "" ) ]

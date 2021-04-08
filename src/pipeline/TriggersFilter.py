@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -41,7 +41,9 @@ class TriggersFilter(BaseFilter):
 
         self.manager = manager
 
-        self.processChunk = self.noOp if manager is None else self.doProcessChunk
+        self.processChunk = (
+            self.noOp if manager is None else self.doProcessChunk
+        )
 
     def resetInternalState(self):
 
@@ -58,7 +60,10 @@ class TriggersFilter(BaseFilter):
 
         chunk_type, _ = chunk
 
-        if chunk_type in (ChunkType.NETWORK, ChunkType.PROMPTSWEEP) or chunk == (
+        if chunk_type in (
+            ChunkType.NETWORK,
+            ChunkType.PROMPTSWEEP,
+        ) or chunk == (
             ChunkType.FLOWCONTROL,
             FlowControl.LINEFEED,
         ):

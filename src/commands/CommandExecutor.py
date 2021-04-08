@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -227,7 +227,9 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
     if len(expected_args) > len(actual_args):
 
         missing_args = [arg for arg in expected_args if arg not in actual_args]
-        return False, ("Too few parameters! (Missing parameter '%s')" % missing_args[0])
+        return False, (
+            "Too few parameters! (Missing parameter '%s')" % missing_args[0]
+        )
 
     ## STEP 5: If not, all's good!
 

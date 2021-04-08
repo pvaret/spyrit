@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -36,7 +36,9 @@ elif os.name == "nt":
     from Win32Specific import Win32Specific as PlatformSpecific
 
 else:
-    raise NotImplementedError("This program doesn't support your OS yet. " "Sorry!")
+    raise NotImplementedError(
+        "This program doesn't support your OS yet. " "Sorry!"
+    )
 
 
 platformSpecific = PlatformSpecific()

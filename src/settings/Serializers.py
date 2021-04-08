@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -201,7 +201,9 @@ class List(BaseSerializer):
 
             s = self.sub_serializer.serialize(item)
 
-            result.append(s if self.SEP not in s else self.QUOTE + s + self.QUOTE)
+            result.append(
+                s if self.SEP not in s else self.QUOTE + s + self.QUOTE
+            )
 
         return self.SEP.join(result)
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -76,7 +76,9 @@ class CompletionList:
 
             if self.wordcount[oldword] == 0:
 
-                i = bisect.bisect_left(self.words, (normalize_text(oldword), oldword))
+                i = bisect.bisect_left(
+                    self.words, (normalize_text(oldword), oldword)
+                )
                 del self.words[i]
                 del self.wordcount[oldword]
 
@@ -162,7 +164,9 @@ class Autocompleter:
 
         if len(word) > 0:
 
-            tc.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor, len(word))
+            tc.movePosition(
+                QTextCursor.Right, QTextCursor.KeepAnchor, len(word)
+            )
 
     def finalize(self):
 
@@ -207,12 +211,15 @@ class Autocompleter:
         ## QTextCursor.isCopyOf(), quite reliable.
 
         currently_cycling = False
+        result = []
 
         if self.matchstate:  ## If a previous ongoing completion exists...
 
             lastcursor, lastresult = self.matchstate
 
-            if lastcursor.isCopyOf(textedit.textCursor()):  ## Is it still relevant?
+            if lastcursor.isCopyOf(
+                textedit.textCursor()
+            ):  ## Is it still relevant?
 
                 currently_cycling = True
                 result = lastresult

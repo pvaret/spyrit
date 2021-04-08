@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -90,7 +90,10 @@ class World(QObject):
     def title(self):
 
         settings = self.settings
-        return settings._name or "(%s:%d)" % (settings._net._host, settings._net._port)
+        return settings._name or "(%s:%d)" % (
+            settings._net._host,
+            settings._net._port,
+        )
 
     def host(self):
 
@@ -144,7 +147,9 @@ class World(QObject):
                 self.startLogging()
 
             if self.settings._net._login_script:
-                self.socketpipeline.send(self.settings._net._login_script + "\n")
+                self.socketpipeline.send(
+                    self.settings._net._login_script + "\n"
+                )
 
         elif self.status == Status.DISCONNECTED:
 
@@ -272,7 +277,9 @@ class World(QObject):
         basename = os.path.basename(filename)
 
         try:
-            return open(filename, mode)  ## NB: filename can be unicode. That's OK!
+            return open(
+                filename, mode
+            )  ## NB: filename can be unicode. That's OK!
 
         except (IOError, OSError) as e:
 

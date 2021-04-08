@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -76,7 +76,9 @@ class MainWindow(QMainWindow):
         self.tabwidget.setMovable(True)
         self.tabwidget.setTabsClosable(True)
 
-        self.setCentralWidget(FallbackTabWidget(self, self.tabwidget, default_pane))
+        self.setCentralWidget(
+            FallbackTabWidget(self, self.tabwidget, default_pane)
+        )
 
         self.tabwidget.currentChanged.connect(self.setCurrentWorldToolbar)
 
@@ -211,14 +213,18 @@ class MainWindow(QMainWindow):
         if not worlds:
 
             self.menu_connect.setEnabled(False)
-            self.menu_worlds.addAction(self.disabledMenuText("(No world created)"))
+            self.menu_worlds.addAction(
+                self.disabledMenuText("(No world created)")
+            )
 
         else:
 
             self.menu_connect.setEnabled(True)
 
             for world in worlds:
-                self.menu_connect.addAction(self.makeConnectToWorldAction(world))
+                self.menu_connect.addAction(
+                    self.makeConnectToWorldAction(world)
+                )
 
             self.menu_worlds.addMenu(self.menu_connect)
 
@@ -281,7 +287,9 @@ class MainWindow(QMainWindow):
         ## Confirm close if some worlds are still connected.
 
         connectedworlds = [
-            w for w in QApplication.instance().core.openworlds if w.isConnected()
+            w
+            for w in QApplication.instance().core.openworlds
+            if w.isConnected()
         ]
 
         if len(connectedworlds) > 0:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -52,7 +52,9 @@ class UnicodeTextFilter(BaseFilter):
 
         except LookupError:
 
-            messages.warn("Unknown encoding '%s'; reverting to Latin1." % encoding)
+            messages.warn(
+                "Unknown encoding '%s'; reverting to Latin1." % encoding
+            )
             encoding = "latin1"
 
         self.encoding = encoding

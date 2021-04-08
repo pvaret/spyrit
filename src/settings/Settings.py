@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -269,7 +269,11 @@ class Leaf(BaseNode):
 
     def value(self) -> Any:
 
-        return self.own_value if self.own_value is not NO_VALUE else self.fallback_value
+        return (
+            self.own_value
+            if self.own_value is not NO_VALUE
+            else self.fallback_value
+        )
 
     def setValue(self, value: Any):
 
@@ -506,7 +510,9 @@ class NodeProto(object):
             inherit_pattern = self.inherit
             inherit_container = container
 
-            while inherit_container is not None and inherit_pattern.startswith("."):
+            while inherit_container is not None and inherit_pattern.startswith(
+                "."
+            ):
 
                 inherit_pattern = inherit_pattern[1:]
                 inherit_container = inherit_container.container

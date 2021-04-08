@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -67,7 +67,9 @@ class WorldUI(QSplitter):
         self.inputui = WorldInputUI(self, world)
         self.addWidget(self.inputui)
 
-        self.secondaryinputui = WorldInputUI(self, world, shouldsavehistory=False)
+        self.secondaryinputui = WorldInputUI(
+            self, world, shouldsavehistory=False
+        )
         self.addWidget(self.secondaryinputui)
         self.secondaryinputui.hide()
 
@@ -82,7 +84,9 @@ class WorldUI(QSplitter):
             self.output_manager.textcursor.endEditBlock
         )
 
-        self.world.socketpipeline.pipeline.flushEnd.connect(self.outputui.repaint)
+        self.world.socketpipeline.pipeline.flushEnd.connect(
+            self.outputui.repaint
+        )
 
         world.socketpipeline.addSink(
             self.output_manager.processChunk,
@@ -132,7 +136,9 @@ class WorldUI(QSplitter):
 
         self.actionset.bindAction("toggle2ndinput", self.toggleSecondaryInput)
 
-        connect_action = self.actionset.bindAction("connect", self.world.connectToWorld)
+        connect_action = self.actionset.bindAction(
+            "connect", self.world.connectToWorld
+        )
 
         disconnect_action = self.actionset.bindAction(
             "disconnect", self.world.confirmDisconnectFromWorld
@@ -141,9 +147,13 @@ class WorldUI(QSplitter):
         connect_action.setEnabled(False)
         disconnect_action.setEnabled(False)
 
-        startlog_action = self.actionset.bindAction("startlog", self.world.startLogging)
+        startlog_action = self.actionset.bindAction(
+            "startlog", self.world.startLogging
+        )
 
-        stoplog_action = self.actionset.bindAction("stoplog", self.world.stopLogging)
+        stoplog_action = self.actionset.bindAction(
+            "stoplog", self.world.stopLogging
+        )
 
         startlog_action.setEnabled(True)
         stoplog_action.setEnabled(False)

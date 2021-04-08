@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -56,7 +56,9 @@ class SocketPipeline(QObject):
 
         self.pipeline.addFilter(TelnetFilter)
         self.pipeline.addFilter(AnsiFilter)
-        self.pipeline.addFilter(UnicodeTextFilter, encoding=self.net_settings._encoding)
+        self.pipeline.addFilter(
+            UnicodeTextFilter, encoding=self.net_settings._encoding
+        )
         self.pipeline.addFilter(FlowControlFilter)
         self.pipeline.addFilter(TriggersFilter, manager=self.triggersmanager)
 
@@ -71,7 +73,9 @@ class SocketPipeline(QObject):
     def setStreamEncoding(self):
 
         if self.pipeline:
-            self.pipeline.notify("encoding_changed", self.net_settings._encoding)
+            self.pipeline.notify(
+                "encoding_changed", self.net_settings._encoding
+            )
 
     def setupSocket(self):
 
@@ -86,7 +90,9 @@ class SocketPipeline(QObject):
         else:
             self.socket = QTcpSocket()
 
-            if self.net_settings._ssl:  ## SSL was requested but is not available...
+            if (
+                self.net_settings._ssl
+            ):  ## SSL was requested but is not available...
                 messages.warn(
                     "SSL functions not available; attempting "
                     "unencrypted connection instead..."
@@ -129,13 +135,17 @@ class SocketPipeline(QObject):
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.RESOLVING))
 
         elif state == QAbstractSocket.ConnectingState:
-            self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.CONNECTING))
+            self.pipeline.feedChunk(
+                (ChunkType.NETWORK, NetworkState.CONNECTING)
+            )
 
         elif state == QAbstractSocket.ConnectedState:
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.CONNECTED))
 
         elif state == QAbstractSocket.UnconnectedState:
-            self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.DISCONNECTED))
+            self.pipeline.feedChunk(
+                (ChunkType.NETWORK, NetworkState.DISCONNECTED)
+            )
 
     @pyqtSlot()
     def reportEncrypted(self):
@@ -149,10 +159,14 @@ class SocketPipeline(QObject):
         self.flushBuffer()
 
         if error == QAbstractSocket.ConnectionRefusedError:
-            self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.CONNECTIONREFUSED))
+            self.pipeline.feedChunk(
+                (ChunkType.NETWORK, NetworkState.CONNECTIONREFUSED)
+            )
 
         elif error == QAbstractSocket.HostNotFoundError:
-            self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.HOSTNOTFOUND))
+            self.pipeline.feedChunk(
+                (ChunkType.NETWORK, NetworkState.HOSTNOTFOUND)
+            )
 
         elif error == QAbstractSocket.SocketTimeoutError:
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.TIMEOUT))
@@ -161,7 +175,9 @@ class SocketPipeline(QObject):
             pass  ## It's okay, we handle it as a disconnect.
 
         else:
-            self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.OTHERERROR))
+            self.pipeline.feedChunk(
+                (ChunkType.NETWORK, NetworkState.OTHERERROR)
+            )
 
     @pyqtSlot("const QList<QSslError> &")
     def handleSslErrors(self, errors):

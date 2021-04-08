@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -82,7 +82,9 @@ TRIGGERS_SCHEMA = {
                     ("play", {"serializer": Str()}),
                     ("link", {"serializer": Str()}),
                 ),
-                "sections": (("highlights", for_all_keys({"serializer": Format()})),),
+                "sections": (
+                    ("highlights", for_all_keys({"serializer": Format()})),
+                ),
             },
         ),
     ),
@@ -135,7 +137,10 @@ SETTINGS_SCHEMA = {
     "keys": (
         ("app.name", {"serializer": Str(), "default": "Spyrit"}),
         ("app.version", {"serializer": Str(), "default": "0.5dev"}),
-        ("log.file", {"serializer": Str(), "default": "[WORLDNAME]-%Y.%m.%d.log"}),
+        (
+            "log.file",
+            {"serializer": Str(), "default": "[WORLDNAME]-%Y.%m.%d.log"},
+        ),
         ("log.dir", {"serializer": Str(), "default": LOG_DIR}),
         ("log.autostart", {"serializer": Bool(), "default": False}),
         ("log.ansi", {"serializer": Bool(), "default": False}),
@@ -153,14 +158,23 @@ SETTINGS_SCHEMA = {
         ),
         (
             "ui.view.font.info_format",
-            {"serializer": Format(), "default": "italic ; color: %s" % COL.darkgray},
+            {
+                "serializer": Format(),
+                "default": "italic ; color: %s" % COL.darkgray,
+            },
         ),
-        ("ui.view.background.color", {"serializer": Str(), "default": COL.black}),
+        (
+            "ui.view.background.color",
+            {"serializer": Str(), "default": COL.black},
+        ),
         ("ui.view.wrap_column", {"serializer": Int(), "default": 0}),
         ("ui.input.font.name", {"serializer": Str(), "default": ""}),
         ("ui.input.font.size", {"serializer": Int(), "default": 0}),
         ("ui.input.font.color", {"serializer": Str(), "default": ""}),
-        ("ui.input.background.color", {"serializer": Str(), "default": COL.white}),
+        (
+            "ui.input.background.color",
+            {"serializer": Str(), "default": COL.white},
+        ),
         ("ui.input.max_history", {"serializer": Int(), "default": 0}),
         ("ui.input.save_history", {"serializer": Int(), "default": 10}),
     ),
@@ -185,7 +199,10 @@ STATE_SCHEMA = {
                     "keys": (
                         (
                             "ui.splitter.sizes",
-                            {"serializer": List(Int()), "default": [1000, 100, 100]},
+                            {
+                                "serializer": List(Int()),
+                                "default": [1000, 100, 100],
+                            },
                         ),
                         (
                             "ui.input.history",
@@ -282,7 +299,9 @@ def load_state():
 
 def _save(settings, filename: Text):
 
-    settings_text = "## version: %d\n" % (VERSION) + struct_to_ini(settings.dump())
+    settings_text = "## version: %d\n" % (VERSION) + struct_to_ini(
+        settings.dump()
+    )
 
     try:
         writer = codecs.getwriter(FILE_ENCODING)

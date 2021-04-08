@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -135,7 +135,9 @@ def make_unicode_translation_table():
 UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
 
-def remove_accents(string: str, translation_table=UNICODE_TRANSLATION_TABLE) -> str:
+def remove_accents(
+    string: str, translation_table=UNICODE_TRANSLATION_TABLE
+) -> str:
     """
     Filters the diacritics off Latin characters in the given Unicode string.
 
@@ -231,7 +233,9 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
     print("Spyrit has closed due to an error. This is the full error report:")
     print("")
-    print("".join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+    print(
+        "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    )
     if app:
         app.core.atExit()
 

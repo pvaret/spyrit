@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -82,11 +82,15 @@ class WorldInputUI(QTextEdit):
 
         if input_settings._font._name:
 
-            style_elements.append("font-family: %s" % input_settings._font._name)
+            style_elements.append(
+                "font-family: %s" % input_settings._font._name
+            )
 
         if input_settings._font._size:
 
-            style_elements.append("font-size: %dpt" % input_settings._font._size)
+            style_elements.append(
+                "font-size: %dpt" % input_settings._font._size
+            )
 
         if input_settings._background._color:
 
@@ -125,7 +129,10 @@ class WorldInputUI(QTextEdit):
             Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier
         )
 
-        if e.key() in (Qt.Key_Return, Qt.Key_Enter) and alt_ctrl_shift == Qt.NoModifier:
+        if (
+            e.key() in (Qt.Key_Return, Qt.Key_Enter)
+            and alt_ctrl_shift == Qt.NoModifier
+        ):
 
             self.returnPressed.emit()
             e.accept()

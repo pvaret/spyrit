@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -129,7 +129,8 @@ class MatchCommand(BaseCommand):
             if number > size:
 
                 world.info(
-                    "Match pattern group '%s' only has %d pattern(s)!" % (group, size)
+                    "Match pattern group '%s' only has %d pattern(s)!"
+                    % (group, size)
                 )
                 return
 
@@ -140,14 +141,16 @@ class MatchCommand(BaseCommand):
 
                 mgr.delMatch(group, number)
                 world.info(
-                    "Match pattern #%d deleted from group '%s'." % (number + 1, group)
+                    "Match pattern #%d deleted from group '%s'."
+                    % (number + 1, group)
                 )
 
             else:
 
                 mgr.delGroup(group)
                 world.info(
-                    "Match pattern group '%s' is now empty and was deleted." % group
+                    "Match pattern group '%s' is now empty and was deleted."
+                    % group
                 )
 
     def cmd_action(self, world, group, action, *args, **kwargs):
@@ -217,7 +220,9 @@ class MatchCommand(BaseCommand):
 
         mgr.findOrCreateTrigger(group).addAction(act)
 
-        world.info("Action '%s' added to match pattern group '%s'." % (action, group))
+        world.info(
+            "Action '%s' added to match pattern group '%s'." % (action, group)
+        )
 
     def cmd_delaction(self, world, group, number):
 
@@ -253,7 +258,8 @@ class MatchCommand(BaseCommand):
         if number > size:
 
             world.info(
-                "Match pattern group '%s' only has %d action(s)!" % (group, size)
+                "Match pattern group '%s' only has %d action(s)!"
+                % (group, size)
             )
             return
 
@@ -261,7 +267,9 @@ class MatchCommand(BaseCommand):
             number -= 1  ## Match is given as 1-index but used as 0-index.
 
         mgr.delAction(group, number)
-        world.info("Action #%d deleted from match group '%s'." % (number + 1, group))
+        world.info(
+            "Action #%d deleted from match group '%s'." % (number + 1, group)
+        )
 
     def cmd_test(self, world, line):
 

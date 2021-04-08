@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -74,7 +74,9 @@ class BaseWidgetMapper(QObject):
 
         self.widget_value_setter(self.widget, widget_value)
 
-    widgetToSettingsValue = settingsToWidgetValue = lambda instance, value: value
+    widgetToSettingsValue = (
+        settingsToWidgetValue
+    ) = lambda instance, value: value
 
     def setValidator(self, validator):
 
@@ -146,7 +148,9 @@ def get_mapper(widget):
         if isinstance(widget, mapper.widget_class):
             return mapper(widget)
 
-    raise NotImplementedError("No mapper found for %s!" % widget.__class__.__name__)
+    raise NotImplementedError(
+        "No mapper found for %s!" % widget.__class__.__name__
+    )
 
 
 class SettingsWidgetMapper(QObject):

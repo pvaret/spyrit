@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -71,7 +71,8 @@ def concat_chunks(chunk1, chunk2):
     ):
 
         raise ChunkTypeMismatch(
-            "Trying to concat %d chunk with %d chunk!" % (chunk1_type, chunk2_type)
+            "Trying to concat %d chunk with %d chunk!"
+            % (chunk1_type, chunk2_type)
         )
 
     ## The chunks are compatible, so we concatenate their data.

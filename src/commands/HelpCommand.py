@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -112,12 +112,16 @@ class HelpCommand(BaseCommand):
             doc = subcmd.__doc__
 
             if doc:
-                line = "  %s " % (subcmdname.ljust(ljust)) + doc.split("\n")[0].strip()
+                line = (
+                    "  %s " % (subcmdname.ljust(ljust))
+                    + doc.split("\n")[0].strip()
+                )
                 helptxt.append(line)
 
         helptxt += [""]
         helptxt += [
-            "Type '/help COMMAND SUBCOMMAND' for specific help on a " "subcommand."
+            "Type '/help COMMAND SUBCOMMAND' for specific help on a "
+            "subcommand."
         ]
 
         return "\n".join(helptxt)
@@ -139,6 +143,8 @@ class HelpCommand(BaseCommand):
                 helptxt.append(CMDCHAR + "%s" % cmdname.ljust(ljust) + help)
 
         helptxt += [""]
-        helptxt += ["Type '%shelp COMMAND' for more help on a command." % CMDCHAR]
+        helptxt += [
+            "Type '%shelp COMMAND' for more help on a command." % CMDCHAR
+        ]
 
         world.info("\n".join(helptxt))

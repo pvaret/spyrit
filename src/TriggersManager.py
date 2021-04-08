@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -294,7 +294,9 @@ class TriggersManager:
 
     def load(self, settings):
         def children_in_order(node):
-            children = sorted([(int(k), node[k]) for k in node if k.isnumeric()])
+            children = sorted(
+                [(int(k), node[k]) for k in node if k.isnumeric()]
+            )
             return [child for _, child in children]
 
         ## TODO: Handle per-world settings.
@@ -326,7 +328,9 @@ class TriggersManager:
             ## If no group name is given: use the smallest available number as the
             ## group name.
 
-            existing_number_groups = [int(g) for g in self.groups.keys() if g.isdigit()]
+            existing_number_groups = [
+                int(g) for g in self.groups.keys() if g.isdigit()
+            ]
             new_group_number = min(
                 i
                 for i in range(1, len(self.groups) + 2)

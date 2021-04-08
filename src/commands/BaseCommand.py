@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -56,10 +56,13 @@ class BaseCommand:
 
         if args or kwargs:
             arg1 = (list(args) + list(kwargs.keys()))[0]
-            world.info("Unknown argument '%s' for command %s!" % (arg1, cmdname))
+            world.info(
+                "Unknown argument '%s' for command %s!" % (arg1, cmdname)
+            )
 
         world.info(
-            "Type '%s%s %s' for help on this command." % (CMDCHAR, HELP, cmdname)
+            "Type '%s%s %s' for help on this command."
+            % (CMDCHAR, HELP, cmdname)
         )
 
     def parseSubCommand(self, cmdline):

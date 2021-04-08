@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -53,11 +53,19 @@ class OutputManager:
         self.textformat = QTextCharFormat()
         self.infoformat = QTextCharFormat()
 
-        self.textformatmanager = FormatStack(QTextFormatFormatter(self.textformat))
-        self.infoformatmanager = FormatStack(QTextFormatFormatter(self.infoformat))
+        self.textformatmanager = FormatStack(
+            QTextFormatFormatter(self.textformat)
+        )
+        self.infoformatmanager = FormatStack(
+            QTextFormatFormatter(self.infoformat)
+        )
 
-        self.textformatmanager.setBaseFormat(self.view_settings._font._text_format)
-        self.infoformatmanager.setBaseFormat(self.view_settings._font._info_format)
+        self.textformatmanager.setBaseFormat(
+            self.view_settings._font._text_format
+        )
+        self.infoformatmanager.setBaseFormat(
+            self.view_settings._font._info_format
+        )
 
         self.view_settings.onChange(
             "font.text_format", self.textformatmanager.setBaseFormat
@@ -82,7 +90,9 @@ class OutputManager:
         self.textview.setSplitScrollback(self.view_settings["split_scroll"])
         self.textview.setPaging(self.view_settings["paging"])
 
-        self.view_settings.onChange("split_scroll", self.textview.setSplitScrollback)
+        self.view_settings.onChange(
+            "split_scroll", self.textview.setSplitScrollback
+        )
         self.view_settings.onChange("paging", self.textview.setPaging)
 
     def refresh(self):
@@ -178,4 +188,6 @@ class OutputManager:
         text = text.rstrip()
 
         self.textcursor.insertText(LEFTARROW + " " + text, self.infoformat)
-        self.pending_newline = True  ## There is always a new line after info text.
+        self.pending_newline = (
+            True  ## There is always a new line after info text.
+        )

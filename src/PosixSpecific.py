@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -42,7 +42,10 @@ class PosixSpecific:
         return os.path.join(self.get_homedir(), self.CONFIG_DIR)
 
     def get_old_settings_dirs(self):
-        return [os.path.join(self.get_homedir(), dir) for dir in self.OLD_CONFIG_DIRS]
+        return [
+            os.path.join(self.get_homedir(), dir)
+            for dir in self.OLD_CONFIG_DIRS
+        ]
 
     def get_settings_file(self):
         return os.path.join(self.get_settings_dir(), self.CONFIG_FILE)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -60,7 +60,10 @@ class AnsiFilter(BaseFilter):
 
     def defaultColors(self):
 
-        return (False, ANSI_TO_FORMAT.get(b"39")[1])  ## highlight  ## default colors
+        return (
+            False,  ## highlight
+            ANSI_TO_FORMAT.get(b"39")[1],  ## default colors
+        )
 
     def processChunk(self, chunk):
 
@@ -109,7 +112,9 @@ class AnsiFilter(BaseFilter):
 
                     if param == b"5":
 
-                        color = ANSI_COLORS_EXTENDED.get(int(list_params.pop(0)))
+                        color = ANSI_COLORS_EXTENDED.get(
+                            int(list_params.pop(0))
+                        )
                         format[prop] = color
 
                         continue

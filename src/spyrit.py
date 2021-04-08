@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -35,7 +35,11 @@ def main(args):
     from CheckVersions import check_pyqt5_installed
     from CheckVersions import check_qt_version
 
-    for check in (check_python_version, check_pyqt5_installed, check_qt_version):
+    for check in (
+        check_python_version,
+        check_pyqt5_installed,
+        check_qt_version,
+    ):
 
         ok, msg = check()
 

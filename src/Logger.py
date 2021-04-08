@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -78,7 +78,9 @@ class PlainLogger(object):
     def doLogStart(self):
 
         now = time.strftime("%c", time.localtime())
-        self.doLogText("%% Log start for %s on %s.\n" % (self.world.title(), now))
+        self.doLogText(
+            "%% Log start for %s on %s.\n" % (self.world.title(), now)
+        )
 
     def doLogStop(self):
 
@@ -168,7 +170,9 @@ class AnsiFormatter:
 
 class AnsiLogger(PlainLogger):
 
-    log_chunk_types = PlainLogger.log_chunk_types | ChunkType.HIGHLIGHT | ChunkType.ANSI
+    log_chunk_types = (
+        PlainLogger.log_chunk_types | ChunkType.HIGHLIGHT | ChunkType.ANSI
+    )
 
     def __init__(self, *args):
 

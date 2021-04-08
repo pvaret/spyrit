@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -121,7 +121,8 @@ class SettingsCommand(BaseCommand):
         if ok:
             value = self._getValue(settings, setting)
             world.info(
-                "%s set to value %s on world %s" % (setting, value, world.title())
+                "%s set to value %s on world %s"
+                % (setting, value, world.title())
             )
         else:
             world.info(msg)
@@ -166,7 +167,8 @@ class SettingsCommand(BaseCommand):
         if ok:
             value = self._getValue(settings, setting)
             world.info(
-                "%s reset to value %s on world %s" % (setting, value, world.title())
+                "%s reset to value %s on world %s"
+                % (setting, value, world.title())
             )
         else:
             world.info(msg)
@@ -220,7 +222,9 @@ class SettingsCommand(BaseCommand):
         if setting is not None:
             setting = setting.lower().strip()
 
-        if setting is None:  ## No argument given. Show only non-default settings.
+        if (
+            setting is None
+        ):  ## No argument given. Show only non-default settings.
 
             list_settings = []
 
@@ -275,10 +279,16 @@ class SettingsCommand(BaseCommand):
                     value = " "  ## likely a world-only key.
 
                 elif node is DEFAULT:
-                    value = s.serialize(worldsettings.get(k).proto.default_value)
+                    value = s.serialize(
+                        worldsettings.get(k).proto.default_value
+                    )
 
                 else:
-                    value = s.serialize(node[k]) if not node.get(k).isEmpty() else "-"
+                    value = (
+                        s.serialize(node[k])
+                        if not node.get(k).isEmpty()
+                        else "-"
+                    )
 
                 column.append(value if value else "None")
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -54,7 +54,9 @@ class SoundBackendRegistry:
     def lookupBackend(self, backend_name):
 
         if backend_name not in self.backend_cache:
-            self.backend_cache[backend_name] = self.SOUNDBACKENDS[backend_name]()
+            self.backend_cache[backend_name] = self.SOUNDBACKENDS[
+                backend_name
+            ]()
 
         return self.backend_cache[backend_name]
 
@@ -65,7 +67,9 @@ class SoundBackendRegistry:
         else:
             backend_list = self.preferred_backends
 
-        return [self.lookupBackend(backend_name) for backend_name in backend_list]
+        return [
+            self.lookupBackend(backend_name) for backend_name in backend_list
+        ]
 
 
 class SoundEngine:

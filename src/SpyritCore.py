@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -42,7 +42,9 @@ from CommandRegistry import construct_command_registry
 
 
 class SpyritCore(QObject):
-    def __init__(self, settings, state, worlds, commands, triggers, tmprc, sound):
+    def __init__(
+        self, settings, state, worlds, commands, triggers, tmprc, sound
+    ):
 
         super(SpyritCore, self).__init__()
 

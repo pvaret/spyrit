@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -66,7 +66,9 @@ class Application(QApplication):
             import resources
 
         except ImportError:
-            messages.warn("Resource file not found. No graphics will be loaded.")
+            messages.warn(
+                "Resource file not found. No graphics will be loaded."
+            )
 
         ## Load up the dingbat symbols font.
         QFontDatabase.addApplicationFont(":/app/symbols")
@@ -111,7 +113,9 @@ class Application(QApplication):
                     port = 0
 
                 if not port or not server:
-                    messages.warn("Invalid <server>:<port> command line: %s" % arg)
+                    messages.warn(
+                        "Invalid <server>:<port> command line: %s" % arg
+                    )
 
                 else:
                     self.core.openWorldByHostPort(server, port)

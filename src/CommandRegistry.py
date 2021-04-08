@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -77,7 +77,9 @@ class CommandRegistry:
 
         command = self.lookupCommand(cmdname)
 
-        subcmdname, possible_subcmdname, remainder = command.parseSubCommand(remainder)
+        subcmdname, possible_subcmdname, remainder = command.parseSubCommand(
+            remainder
+        )
 
         args, kwargs = command.parseArgs(remainder)
         cmd_callable = command.getCallableForName(cmdname, subcmdname)

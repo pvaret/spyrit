@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -371,7 +371,9 @@ URL_RE = (
     + re_optional(r":\d+")  ## Port
     + re_optional(
         r"/"
-        + re_optional(re_optional(r"[a-zA-Z0-9~.#/!?&=-]+") + r"[a-zA-Z0-9~#/&_=-]")
+        + re_optional(
+            re_optional(r"[a-zA-Z0-9~.#/!?&=-]+") + r"[a-zA-Z0-9~#/&_=-]"
+        )
     )
 )
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -42,7 +42,8 @@ class Win32Specific:
 
     def get_old_settings_dirs(self):
         return [
-            os.path.join(winpaths.get_appdata(), dir) for dir in self.OLD_CONFIG_DIRS
+            os.path.join(winpaths.get_appdata(), dir)
+            for dir in self.OLD_CONFIG_DIRS
         ]
 
     def get_settings_file(self):

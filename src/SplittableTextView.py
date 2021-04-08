@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2020 Pascal Varet <p.varet@gmail.com>
+## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 ##
 ## This file is part of Spyrit.
 ##
@@ -327,7 +327,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
     def nextPageForPos(self, pos):
 
         if pos == 0:
-            height = int(self.document().documentLayout().documentSize().height())
+            height = int(
+                self.document().documentLayout().documentSize().height()
+            )
 
         else:
             height = pos + self.viewport().height()
@@ -353,7 +355,12 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         height = self.viewport().height()
 
-        y = e.y() + self.document().size().height() - height - self.scrollbar.value()
+        y = (
+            e.y()
+            + self.document().size().height()
+            - height
+            - self.scrollbar.value()
+        )
 
         e = QMouseEvent(
             e.type(),
@@ -367,7 +374,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def mouseMoveEvent(self, e):
 
-        return super(SplittableTextView, self).mouseMoveEvent(self.remapMouseEvent(e))
+        return super(SplittableTextView, self).mouseMoveEvent(
+            self.remapMouseEvent(e)
+        )
 
     def mousePressEvent(self, e):
 
@@ -389,7 +398,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
             cur = self.cursorForPosition(e.pos())
             self.setTextCursor(cur)
 
-        res = super(SplittableTextView, self).mousePressEvent(self.remapMouseEvent(e))
+        res = super(SplittableTextView, self).mousePressEvent(
+            self.remapMouseEvent(e)
+        )
 
         self.scrollbar.setValue(val)
         self.scrollbar.blockSignals(block)
@@ -406,7 +417,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
         block = self.scrollbar.blockSignals(True)
         val = self.scrollbar.value()
 
-        res = super(SplittableTextView, self).mouseReleaseEvent(self.remapMouseEvent(e))
+        res = super(SplittableTextView, self).mouseReleaseEvent(
+            self.remapMouseEvent(e)
+        )
 
         self.pinSelection()
 
@@ -500,7 +513,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
             sel = QAbstractTextDocumentLayout.Selection()
             sel.cursor = cur
             sel.format.setBackground(palette.brush(cgroup, QPalette.Highlight))
-            sel.format.setForeground(palette.brush(cgroup, QPalette.HighlightedText))
+            sel.format.setForeground(
+                palette.brush(cgroup, QPalette.HighlightedText)
+            )
 
             ctx.selections = [sel]
 
@@ -512,7 +527,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
         ## Paging implementation:
 
         if self.atbottom and self.paging:
-            self.next_page_position = self.nextPageForPos(self.scrollbar.value())
+            self.next_page_position = self.nextPageForPos(
+                self.scrollbar.value()
+            )
 
     def moveScrollbarToBottom(self):
 

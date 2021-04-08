@@ -21,69 +21,65 @@
 ##
 
 
-from PyQt5.QtCore    import Qt
-from PyQt5.QtCore    import QUrl
-from PyQt5.QtCore    import QPoint
-from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtGui     import QDesktopServices
+from PyQt5.QtGui import QDesktopServices
 
 
-class QTextEditWithClickableLinks( QTextEdit ):
+class QTextEditWithClickableLinks(QTextEdit):
 
-  linkClicked = pyqtSignal( str )
+    linkClicked = pyqtSignal(str)
 
-  def __init__( self, parent=None ):
+    def __init__(self, parent=None):
 
-    super( QTextEditWithClickableLinks, self ).__init__( parent )
+        super(QTextEditWithClickableLinks, self).__init__(parent)
 
-    self.previous_anchor = ""
-    self.click_pos = QPoint()
-    self.click_link = ""
+        self.previous_anchor = ""
+        self.click_pos = QPoint()
+        self.click_link = ""
 
-    self.setMouseTracking( True )
+        self.setMouseTracking(True)
 
-    flags = self.textInteractionFlags()
-    flags |= Qt.LinksAccessibleByMouse
-    self.setTextInteractionFlags( flags )
+        flags = self.textInteractionFlags()
+        flags |= Qt.LinksAccessibleByMouse
+        self.setTextInteractionFlags(flags)
 
-    self.linkClicked.connect( self.onLinkClicked )
+        self.linkClicked.connect(self.onLinkClicked)
 
+    def mouseMoveEvent(self, e):
 
-  def mouseMoveEvent( self, e ):
+        maybe_anchor = self.anchorAt(e.pos())
 
-    maybe_anchor = self.anchorAt( e.pos() )
+        if maybe_anchor != self.previous_anchor:
 
-    if maybe_anchor != self.previous_anchor:
+            if maybe_anchor:
+                self.viewport().setCursor(Qt.PointingHandCursor)
 
-      if maybe_anchor:
-        self.viewport().setCursor( Qt.PointingHandCursor )
+            else:
+                self.viewport().setCursor(Qt.ArrowCursor)
 
-      else:
-        self.viewport().setCursor( Qt.ArrowCursor )
+            self.previous_anchor = maybe_anchor
 
-      self.previous_anchor = maybe_anchor
+        return super(QTextEditWithClickableLinks, self).mouseMoveEvent(e)
 
-    return super( QTextEditWithClickableLinks, self ).mouseMoveEvent( e )
+    def mousePressEvent(self, e):
 
+        self.click_pos = e.pos()
+        self.click_link = self.anchorAt(e.pos())
 
-  def mousePressEvent( self, e ):
+        return super(QTextEditWithClickableLinks, self).mousePressEvent(e)
 
-    self.click_pos = e.pos()
-    self.click_link = self.anchorAt( e.pos() )
+    def mouseReleaseEvent(self, e):
 
-    return super( QTextEditWithClickableLinks, self ).mousePressEvent( e )
+        if (e.pos() - self.click_pos).manhattanLength() <= 3:
+            if self.click_link and self.click_link == self.anchorAt(e.pos()):
+                self.linkClicked.emit(self.click_link)
 
+        return super(QTextEditWithClickableLinks, self).mouseReleaseEvent(e)
 
-  def mouseReleaseEvent( self, e ):
+    def onLinkClicked(self, href):
 
-    if ( e.pos() - self.click_pos ).manhattanLength() <= 3:
-      if self.click_link and self.click_link == self.anchorAt( e.pos() ):
-        self.linkClicked.emit( self.click_link )
-
-    return super( QTextEditWithClickableLinks, self ).mouseReleaseEvent( e )
-
-
-  def onLinkClicked( self, href ):
-
-    QDesktopServices.openUrl( QUrl( href ) )
+        QDesktopServices.openUrl(QUrl(href))

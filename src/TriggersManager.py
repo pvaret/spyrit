@@ -27,11 +27,11 @@ from collections import OrderedDict
 
 from PyQt5.QtWidgets import QApplication
 
-from Matches        import RegexMatch
-from Matches        import load_match_by_type
-from Globals        import URL_RE
-from Globals        import FORMAT_PROPERTIES
-from Utilities      import normalize_text
+from Matches import RegexMatch
+from Matches import load_match_by_type
+from Globals import URL_RE
+from Globals import FORMAT_PROPERTIES
+from Utilities import normalize_text
 from SpyritSettings import TRIGGERS, MATCHES, ACTIONS
 
 from pipeline.ChunkData import ChunkType
@@ -45,455 +45,412 @@ _LINE = "__line__"
 
 class HighlightAction:
 
-  name = "highlights"
-  multiple_matches_per_line = True
+    name = "highlights"
+    multiple_matches_per_line = True
 
-  @classmethod
-  def factory( cls, format ):
-    # TODO: !! This in fact no longer works with the /match command. Fix it.
-    # This may be tricky because that command expects one highlight = one token,
-    # whereas in the new design the highlight action takes care of all the
-    # highlights in the group.
+    @classmethod
+    def factory(cls, format):
+        # TODO: !! This in fact no longer works with the /match command. Fix it.
+        # This may be tricky because that command expects one highlight = one token,
+        # whereas in the new design the highlight action takes care of all the
+        # highlights in the group.
 
-    if not format:
-      return None, "Invalid format!"
+        if not format:
+            return None, "Invalid format!"
 
-    return cls( format ), None
+        return cls(format), None
 
+    def __init__(self, format):
 
-  def __init__( self, format ):
+        self.highlights = format
 
-    self.highlights = format
+    def __call__(self, match, chunkbuffer):
 
+        for token, hl in self.highlights.items():
+            if token == _LINE:
+                start, end = match.span()
 
-  def __call__( self, match, chunkbuffer ):
+            else:
 
-    for token, hl in self.highlights.items():
-      if token == _LINE:
-        start, end = match.span()
+                if token not in match.groupdict():
+                    continue
 
-      else:
+                start, end = match.span(self.token)
 
-        if token not in match.groupdict():
-          continue
+            if start == end:
+                continue
 
-        start, end = match.span( self.token )
+            new_chunks = [
+                (start, (ChunkType.HIGHLIGHT, (id(hl), hl))),
+                (end, (ChunkType.HIGHLIGHT, (id(hl), {}))),
+            ]
 
-      if start == end:
-        continue
+            insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks)
 
-      new_chunks = [
-        ( start, ( ChunkType.HIGHLIGHT, ( id( hl ), hl ) ) ),
-        ( end,   ( ChunkType.HIGHLIGHT, ( id( hl ), {} ) ) ),
-      ]
+    def params(self):
 
-      insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
+        return self.highlights
 
+    def toString(self):
 
-  def params( self ):
+        hls = []
+        format = Serializers.Format()
 
-    return self.highlights
+        if _LINE in self.highlights:
+            hls.append(format.serialize(self.highlights[_LINE]))
 
+        for token, highlight in sorted(self.highlights.items()):
+            if token == _LINE:
+                continue
+            hls.append("[%s]: %s" % (token, format.serialize(highlight)))
 
-  def toString( self ):
+        return self.name + ": " + " ; ".join(hls)
 
-    hls = []
-    format = Serializers.Format()
+    def __unicode__(self):
 
-    if _LINE in self.highlights:
-      hls.append( format.serialize( self.highlights[ _LINE ] ) )
-
-    for token, highlight in sorted( self.highlights.items() ):
-      if token == _LINE:
-        continue
-      hls.append( "[%s]: %s" %  ( token, format.serialize( highlight ) ) )
-
-    return self.name + ": " + " ; ".join( hls )
-
-
-  def __unicode__( self ):
-
-    raise NotImplementedError( "This method doesn't exist anymore!" )
-
+        raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class PlayAction:
 
-  name = "play"
+    name = "play"
 
-  ## Don't try to play several sounds at once even if several matches are found.
-  multiple_matches_per_line = False
+    ## Don't try to play several sounds at once even if several matches are found.
+    multiple_matches_per_line = False
 
+    @classmethod
+    def factory(cls, soundfile=None):
 
-  @classmethod
-  def factory( cls, soundfile=None ):
+        if soundfile:
+            soundfile = os.path.expanduser(soundfile)
 
-    if soundfile:
-      soundfile = os.path.expanduser( soundfile )
+            if not os.path.isfile(soundfile):
+                return None, "File not found!"
 
-      if not os.path.isfile( soundfile ):
-        return None, "File not found!"
+        return cls(soundfile), None
 
-    return cls( soundfile ), None
+    def __init__(self, soundfile=None):
 
+        self.soundfile = soundfile
 
-  def __init__( self, soundfile=None ):
+    def __call__(self, match, chunkbuffer):
 
-    self.soundfile = soundfile
+        QApplication.instance().core.sound.play(self.soundfile or ":/sound/pop")
 
+    def params(self):
 
-  def __call__( self, match, chunkbuffer ):
+        return self.soundfile or ""
 
-    QApplication.instance().core.sound.play( self.soundfile or ":/sound/pop" )
+    def toString(self):
 
+        return self.name + ": " + (self.soundfile or "pop")
 
-  def params( self ):
+    def __unicode__(self):
 
-    return self.soundfile or ""
-
-
-  def toString( self ):
-
-    return self.name + ": " + ( self.soundfile or "pop" )
-
-
-  def __unicode__( self ):
-
-    raise NotImplementedError( "This method doesn't exist anymore!" )
-
+        raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class GagAction:
 
-  name = "gag"
+    name = "gag"
 
-  ## If a line is gagged, all processing stops right away.
-  multiple_matches_per_line = False
+    ## If a line is gagged, all processing stops right away.
+    multiple_matches_per_line = False
 
+    @classmethod
+    def factory(cls, enabled):
 
-  @classmethod
-  def factory( cls, enabled ):
+        if enabled:
+            return cls(), None
 
-    if enabled:
-      return cls(), None
+        return None, None
 
-    return None, None
+    def __call__(self, match, chunkbuffer):
 
+        ## TODO: (here and everywhere else): process buffer in order by adding
+        ## updated chunks to a new buffer and then substituting buffer contents
+        ## in-place.
+        for i in reversed(range(len(chunkbuffer))):
 
-  def __call__( self, match, chunkbuffer ):
+            chunk = chunkbuffer[i]
+            chunk_type, _ = chunk
 
-    ## TODO: (here and everywhere else): process buffer in order by adding
-    ## updated chunks to a new buffer and then substituting buffer contents
-    ## in-place.
-    for i in reversed( range( len( chunkbuffer ) ) ):
+            if chunk_type in (
+                ChunkType.TEXT,
+                ChunkType.FLOWCONTROL,
+                ChunkType.HIGHLIGHT,
+            ):
+                del chunkbuffer[i]
 
-      chunk = chunkbuffer[ i ]
-      chunk_type, _ = chunk
+    def params(self):
 
-      if chunk_type in ( ChunkType.TEXT,
-                         ChunkType.FLOWCONTROL,
-                         ChunkType.HIGHLIGHT ):
-        del chunkbuffer[ i ]
+        return True
 
+    def toString(self):
 
-  def params( self ):
+        return self.name
 
-    return True
+    def __unicode__(self):
 
-
-  def toString( self ):
-
-    return self.name
-
-
-  def __unicode__( self ):
-
-    raise NotImplementedError( "This method doesn't exist anymore!" )
-
+        raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class LinkAction:
 
-  name = "link"
-  multiple_matches_per_line = True
+    name = "link"
+    multiple_matches_per_line = True
 
+    @classmethod
+    def factory(cls, url=None):
 
-  @classmethod
-  def factory( cls, url=None ):
+        return cls(url), None
 
-    return cls( url ), None
+    def __init__(self, url=None):
 
+        self.url = url
 
-  def __init__( self, url=None ):
+    def __call__(self, match, chunkbuffer):
 
-    self.url = url
+        start, end = match.span()
 
+        if start == end:
+            return
 
-  def __call__( self, match, chunkbuffer ):
+        url = self.url
 
-    start, end = match.span()
+        if url is None:
+            url = match.group(0)
 
-    if start == end:
-      return
+        ## TODO: Allow URL substitutions?
 
-    url = self.url
+        href = {
+            FORMAT_PROPERTIES.HREF: url,
+            FORMAT_PROPERTIES.COLOR: "#1947C4",
+            FORMAT_PROPERTIES.UNDERLINE: True,
+        }
 
-    if url is None:
-      url = match.group( 0 )
+        new_chunks = [
+            (start, (ChunkType.HIGHLIGHT, (id(href), href))),
+            (end, (ChunkType.HIGHLIGHT, (id(href), {}))),
+        ]
 
-    ## TODO: Allow URL substitutions?
+        insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks)
 
-    href = {
-        FORMAT_PROPERTIES.HREF:      url,
-        FORMAT_PROPERTIES.COLOR:     "#1947C4",
-        FORMAT_PROPERTIES.UNDERLINE: True,
-    }
+    def params(self):
 
-    new_chunks = [
-      ( start, ( ChunkType.HIGHLIGHT, ( id( href ), href ) ) ),
-      ( end,   ( ChunkType.HIGHLIGHT, ( id( href ), {} ) ) ),
-    ]
+        return "" if self.url is None else self.url
 
-    insert_chunks_in_chunk_buffer( chunkbuffer, new_chunks )
+    def toString(self):
 
+        return (self.name + ": " + self.url) if self.url else self.name
 
-  def params( self ):
+    def __unicode__(self):
 
-    return "" if self.url is None else self.url
-
-
-  def toString( self ):
-
-    return ( self.name + ": " + self.url ) if self.url else self.name
-
-
-  def __unicode__( self ):
-
-    raise NotImplementedError( "This method doesn't exist anymore!" )
-
+        raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class MatchGroup:
+    def __init__(self, name):
 
-  def __init__( self, name ):
+        self.name = name.strip()
+        self.matches = []
+        self.actions = OrderedDict()
 
-    self.name    = name.strip()
-    self.matches = []
-    self.actions = OrderedDict()
+    def addMatch(self, match):
 
+        self.matches.append(match)
+        return self
 
-  def addMatch( self, match ):
+    def addAction(self, action):
 
-    self.matches.append( match )
-    return self
+        self.actions[action.name] = action
+        return self
 
+    def __len__(self):
 
-  def addAction( self, action ):
-
-    self.actions[ action.name ] = action
-    return self
-
-
-  def __len__( self ):
-
-    return len( self.matches )
-
+        return len(self.matches)
 
 
 DEFAULT_MATCHES = [
     ## Given the match group a name that contains non-alphanumeric character so
     ## that it can't conflict with user-defined match groups.
     ## TODO: Maybe allow anonymous groups for internal usage?
-    MatchGroup( "*HTTP_LINKS*" )
-        .addMatch( RegexMatch( URL_RE ) )
-        .addAction( LinkAction() ),
+    MatchGroup("*HTTP_LINKS*")
+    .addMatch(RegexMatch(URL_RE))
+    .addAction(LinkAction()),
 ]
 
 
-
 class TriggersManager:
+    def __init__(self):
 
-  def __init__( self ):
+        self.actionregistry = OrderedDict()
+        self.groups = OrderedDict()
 
-    self.actionregistry = OrderedDict()
-    self.groups = OrderedDict()
+    def registerActionClass(self, actionname, action):
 
+        assert actionname not in self.actionregistry
+        self.actionregistry[actionname] = action
 
-  def registerActionClass( self, actionname, action ):
+    def load(self, settings):
+        def children_in_order(node):
+            children = sorted([(int(k), node[k]) for k in node if k.isnumeric()])
+            return [child for _, child in children]
 
-    assert actionname not in self.actionregistry
-    self.actionregistry[ actionname ] = action
+        ## TODO: Handle per-world settings.
+        all_groups = settings[TRIGGERS]
 
+        for trigger in children_in_order(all_groups):
+            group = self.findOrCreateTrigger(trigger._name)
 
-  def load( self, settings ):
+            for match in children_in_order(trigger[MATCHES]):
+                group.addMatch(match)
 
-    def children_in_order( node ):
-      children = sorted( [ ( int( k ), node[ k ] )
-                           for k in node if k.isnumeric() ] )
-      return [ child for _, child in children ]
+            for action_type, action_params in trigger[ACTIONS].asDict().items():
+                if not action_type in self.actionregistry:
+                    ## Well bummer. Corrupted settings? Not much we can do.
+                    continue
+                action_class = self.actionregistry[action_type]
+                action, _ = action_class.factory(action_params)
+                if action:
+                    group.addAction(action)
 
-    ## TODO: Handle per-world settings.
-    all_groups = settings[ TRIGGERS ]
+    def createMatch(self, pattern, type="smart"):
 
-    for trigger in children_in_order( all_groups ):
-      group = self.findOrCreateTrigger( trigger._name )
+        return load_match_by_type(pattern, type)
 
-      for match in children_in_order( trigger[ MATCHES ] ):
-        group.addMatch( match )
+    def findOrCreateTrigger(self, group=None):
 
-      for action_type, action_params in trigger[ ACTIONS ].asDict().items():
-        if not action_type in self.actionregistry:
-          ## Well bummer. Corrupted settings? Not much we can do.
-          continue
-        action_class = self.actionregistry[ action_type ]
-        action, _ = action_class.factory( action_params )
-        if action:
-          group.addAction( action )
+        if group is None:
 
+            ## If no group name is given: use the smallest available number as the
+            ## group name.
 
-  def createMatch( self, pattern, type="smart" ):
+            existing_number_groups = [int(g) for g in self.groups.keys() if g.isdigit()]
+            new_group_number = min(
+                i
+                for i in range(1, len(self.groups) + 2)
+                if i not in existing_number_groups
+            )
+            group = "%d" % new_group_number
 
-    return load_match_by_type( pattern, type )
+        key = normalize_text(group.strip())
 
+        return self.groups.setdefault(key, MatchGroup(group))
 
-  def findOrCreateTrigger( self, group=None ):
+    # TODO: Consider renaming this to loadFromArgs (for instance) and factory()
+    # to loadFromSettingsNode.
+    def loadAction(self, actionname, args, kwargs):
 
-    if group is None:
+        from commands.CommandExecutor import match_args_to_function
 
-      ## If no group name is given: use the smallest available number as the
-      ## group name.
+        action = self.actionregistry.get(actionname)
+        if action is None:
+            return None, "%s: No such action!" % actionname
 
-      existing_number_groups = [ int( g ) for g in self.groups.keys()
-                                 if g.isdigit() ]
-      new_group_number = min( i for i in range( 1, len( self.groups ) + 2 )
-                              if i not in existing_number_groups )
-      group = "%d" % new_group_number
+        factory = action.factory
+        ok, msg = match_args_to_function(factory, args, kwargs)
 
-    key = normalize_text( group.strip() )
+        if not ok:
+            return None, msg
 
-    return self.groups.setdefault( key, MatchGroup( group ) )
+        return factory(*args, **kwargs)
 
+    def hasGroup(self, group):
 
-  # TODO: Consider renaming this to loadFromArgs (for instance) and factory()
-  # to loadFromSettingsNode.
-  def loadAction( self, actionname, args, kwargs ):
+        return normalize_text(group.strip()) in self.groups
 
-    from commands.CommandExecutor import match_args_to_function
+    def sizeOfGroup(self, group):
 
-    action = self.actionregistry.get( actionname )
-    if action is None:
-      return None, "%s: No such action!" % actionname
+        key = normalize_text(group.strip())
 
-    factory = action.factory
-    ok, msg = match_args_to_function( factory, args, kwargs )
+        return len(self.groups.get(key, []))
 
-    if not ok:
-      return None, msg
+    def delGroup(self, group):
 
-    return factory( *args, **kwargs )
+        try:
+            del self.groups[normalize_text(group.strip())]
 
+        except KeyError:
+            pass
 
-  def hasGroup( self, group ):
+    def delMatch(self, group, index):
 
-    return normalize_text( group.strip() ) in self.groups
+        try:
+            self.groups[normalize_text(group.strip())].matches.pop(index)
 
+        except (KeyError, IndexError):
+            pass
 
-  def sizeOfGroup( self, group ):
+    def delAction(self, group, index):
 
-    key = normalize_text( group.strip() )
+        try:
+            actions = self.groups[normalize_text(group.strip())].actions
 
-    return len( self.groups.get( key, [] ) )
+            key = list(k for k in actions)[index]
+            del actions[key]
 
+        except (KeyError, IndexError):
+            pass
 
-  def delGroup( self, group ):
+    def findMatches(self, line):
 
-    try:
-      del self.groups[ normalize_text( group.strip() ) ]
+        for matchgroup in DEFAULT_MATCHES + list(self.groups.values()):
+            for match in matchgroup.matches:
+                for result in match.matches(line):
+                    yield matchgroup, result
 
-    except KeyError:
-      pass
+    def performMatchingActions(self, line, chunkbuffer):
 
+        already_performed_on_this_line = set()
 
-  def delMatch( self, group, index ):
+        for matchgroup, matchresult in self.findMatches(line):
+            for action in matchgroup.actions.values():
 
-    try:
-      self.groups[ normalize_text( group.strip() ) ].matches.pop( index )
+                ## TODO: make this cleaner. Using the class is not nice. Ideally we'd
+                ## overhaul the action serialization system and reserve the 'name'
+                ## attribute for this.
+                action_class = id(action.__class__)
+                if (
+                    action_class in already_performed_on_this_line
+                    and not action.multiple_matches_per_line
+                ):
+                    continue
+                already_performed_on_this_line.add(action_class)
 
-    except ( KeyError, IndexError ):
-      pass
+                action(matchresult, chunkbuffer)
 
+    def isEmpty(self):
 
-  def delAction( self, group, index ):
+        return not self.groups
 
-    try:
-      actions = self.groups[ normalize_text( group.strip() ) ].actions
+    def save(self, settings):
 
-      key = list( k for k in actions )[ index ]
-      del actions[ key ]
+        ## Configuration is about to be saved. Serialize our current setup into the
+        ## configuration.
 
-    except ( KeyError, IndexError ):
-      pass
+        ## TODO: Handle per-world settings.
+        try:
+            del settings.nodes[TRIGGERS]
 
+        except KeyError:
+            pass
 
-  def findMatches( self, line ):
+        for groupname, matchgroup in self.groups.items():
 
-    for matchgroup in DEFAULT_MATCHES + list( self.groups.values() ):
-      for match in matchgroup.matches:
-        for result in match.matches( line ):
-          yield matchgroup, result
+            node = settings[TRIGGERS].get(groupname)
+            for i, match in enumerate(matchgroup.matches):
+                node[MATCHES][str(i + 1)] = match
 
+            for action in matchgroup.actions.values():
+                node[ACTIONS][action.name] = action.params()
 
-  def performMatchingActions( self, line, chunkbuffer ):
 
-    already_performed_on_this_line = set()
-
-    for matchgroup, matchresult in self.findMatches( line ):
-      for action in matchgroup.actions.values():
-
-        ## TODO: make this cleaner. Using the class is not nice. Ideally we'd
-        ## overhaul the action serialization system and reserve the 'name'
-        ## attribute for this.
-        action_class = id( action.__class__ )
-        if ( action_class in already_performed_on_this_line
-             and not action.multiple_matches_per_line ):
-          continue
-        already_performed_on_this_line.add( action_class )
-
-        action( matchresult, chunkbuffer )
-
-
-  def isEmpty( self ):
-
-    return not self.groups
-
-
-  def save( self, settings ):
-
-    ## Configuration is about to be saved. Serialize our current setup into the
-    ## configuration.
-
-    ## TODO: Handle per-world settings.
-    try:
-      del settings.nodes[ TRIGGERS ]
-
-    except KeyError:
-      pass
-
-    for groupname, matchgroup in self.groups.items():
-
-      node = settings[ TRIGGERS ].get( groupname )
-      for i, match in enumerate( matchgroup.matches ):
-        node[ MATCHES ][ str( i+1 ) ] = match
-
-      for action in matchgroup.actions.values():
-        node[ ACTIONS ][ action.name ] = action.params()
-
-
-def construct_triggersmanager( settings ):
-  t = TriggersManager()
-  t.registerActionClass( "gag",        GagAction )
-  t.registerActionClass( "highlights", HighlightAction )
-  t.registerActionClass( "link",       LinkAction )
-  t.registerActionClass( "play",       PlayAction )
-  t.load( settings )
-  return t
+def construct_triggersmanager(settings):
+    t = TriggersManager()
+    t.registerActionClass("gag", GagAction)
+    t.registerActionClass("highlights", HighlightAction)
+    t.registerActionClass("link", LinkAction)
+    t.registerActionClass("play", PlayAction)
+    t.load(settings)
+    return t

@@ -21,77 +21,76 @@
 ##
 
 
-from PyQt5.QtCore    import Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFrame
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtWidgets import QSizePolicy
 
 
-class PrettyPanelHeader( QFrame ):
+class PrettyPanelHeader(QFrame):
 
-  ## A few spacing constants used during the layout:
+    ## A few spacing constants used during the layout:
 
-  SPACING = 20
-  MARGIN  = 15
+    SPACING = 20
+    MARGIN = 15
 
-  ## The header's stylesheet. The actual colors will be filled in when the
-  ## hader is instanciated.
+    ## The header's stylesheet. The actual colors will be filled in when the
+    ## hader is instanciated.
 
-  STYLESHEET = """
+    STYLESHEET = """
     QFrame#header {
       border: 8px inset %s;
       border-image: url(:ui/header_borders) 8px repeat stretch;
     }
   """
 
-  def __init__( self, title, icon=None, desc=None, parent=None ):
+    def __init__(self, title, icon=None, desc=None, parent=None):
 
-    QFrame.__init__( self, parent )
+        QFrame.__init__(self, parent)
 
-    ## The object gets a name so that we can apply the stylesheet to it
-    ## specifically.
+        ## The object gets a name so that we can apply the stylesheet to it
+        ## specifically.
 
-    self.setObjectName( "header" )
+        self.setObjectName("header")
 
-    ## The colors that are used in the stylesheet are retrieved from the
-    ## currently configured palette.
+        ## The colors that are used in the stylesheet are retrieved from the
+        ## currently configured palette.
 
-    dark = self.palette().dark().color().name()
+        dark = self.palette().dark().color().name()
 
-    self.setStyleSheet( self.STYLESHEET % dark )
+        self.setStyleSheet(self.STYLESHEET % dark)
 
-    ## Legacy setup for platforms that don't support stylesheets (yet).
+        ## Legacy setup for platforms that don't support stylesheets (yet).
 
-    self.setFrameShape(  QFrame.StyledPanel )
-    self.setFrameShadow( QFrame.Plain )
+        self.setFrameShape(QFrame.StyledPanel)
+        self.setFrameShadow(QFrame.Plain)
 
-    ## Layout stuff.
+        ## Layout stuff.
 
-    self.setSizePolicy( QSizePolicy.Minimum, QSizePolicy.Fixed )
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
 
-    layout = QHBoxLayout( self )
+        layout = QHBoxLayout(self)
 
-    layout.setSpacing( self.SPACING )
-    layout.setContentsMargins( self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN )
+        layout.setSpacing(self.SPACING)
+        layout.setContentsMargins(self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN)
 
-    ## And creation of the header's contents.
+        ## And creation of the header's contents.
 
-    if icon:
-      i = QLabel( self )
-      i.setPixmap( icon )
-      layout.addWidget( i, 0, Qt.AlignLeft | Qt.AlignVCenter )
+        if icon:
+            i = QLabel(self)
+            i.setPixmap(icon)
+            layout.addWidget(i, 0, Qt.AlignLeft | Qt.AlignVCenter)
 
-    label = '<font size="+2"><b>%s</b></font>' % title
+        label = '<font size="+2"><b>%s</b></font>' % title
 
-    if desc:
-      label += '<br><font size="-1"><i>%s</i></font>' % desc
+        if desc:
+            label += '<br><font size="-1"><i>%s</i></font>' % desc
 
-    text = QLabel( label, self )
-    text.setAlignment( Qt.AlignRight )
+        text = QLabel(label, self)
+        text.setAlignment(Qt.AlignRight)
 
-    text.setTextFormat( Qt.RichText )
-    layout.addWidget( text, 0, Qt.AlignRight | Qt.AlignVCenter )
+        text.setTextFormat(Qt.RichText)
+        layout.addWidget(text, 0, Qt.AlignRight | Qt.AlignVCenter)
 
-    self.setLayout( layout )
-
+        self.setLayout(layout)

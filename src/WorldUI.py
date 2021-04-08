@@ -33,248 +33,240 @@ from PyQt5.QtWidgets import QSplitter
 from PyQt5.QtWidgets import QApplication
 
 from pipeline.ChunkData import ChunkType
-from ActionSet          import ActionSet
-from WorldInputUI       import WorldInputUI
-from Autocompleter      import Autocompleter
-from OutputManager      import OutputManager
-from ConfirmDialog      import confirmDialog
+from ActionSet import ActionSet
+from WorldInputUI import WorldInputUI
+from Autocompleter import Autocompleter
+from OutputManager import OutputManager
+from ConfirmDialog import confirmDialog
 from SplittableTextView import SplittableTextView
 
 
+class WorldUI(QSplitter):
 
-class WorldUI( QSplitter ):
+    requestAttention = pyqtSignal()
 
-  requestAttention = pyqtSignal()
+    def __init__(self, world, parent=None):
 
-  def __init__( self, world, parent=None ):
+        QSplitter.__init__(self, Qt.Vertical, parent)
 
-    QSplitter.__init__( self, Qt.Vertical, parent )
+        self.world = world
 
-    self.world = world
+        self.world.socketpipeline.addSink(
+            self.windowAlert, ChunkType.PACKETBOUND | ChunkType.NETWORK
+        )
 
-    self.world.socketpipeline.addSink( self.windowAlert,
-                                       ChunkType.PACKETBOUND | ChunkType.NETWORK )
+        ## Setup input and output UI.
 
-    ## Setup input and output UI.
+        self.outputui = SplittableTextView(self)
+        self.addWidget(self.outputui)
 
-    self.outputui = SplittableTextView( self )
-    self.addWidget( self.outputui )
+        self.outputui.setFocusProxy(self)
 
-    self.outputui.setFocusProxy( self )
+        self.output_manager = OutputManager(world, self.outputui)
 
-    self.output_manager = OutputManager( world, self.outputui )
+        self.inputui = WorldInputUI(self, world)
+        self.addWidget(self.inputui)
 
-    self.inputui = WorldInputUI( self, world )
-    self.addWidget( self.inputui )
+        self.secondaryinputui = WorldInputUI(self, world, shouldsavehistory=False)
+        self.addWidget(self.secondaryinputui)
+        self.secondaryinputui.hide()
 
-    self.secondaryinputui = WorldInputUI( self, world, shouldsavehistory=False )
-    self.addWidget( self.secondaryinputui )
-    self.secondaryinputui.hide()
+        self.inputui.returnPressed.connect(self.outputui.pingPage)
+        self.secondaryinputui.returnPressed.connect(self.outputui.pingPage)
 
-    self.inputui.returnPressed.connect( self.outputui.pingPage )
-    self.secondaryinputui.returnPressed.connect( self.outputui.pingPage )
+        self.world.socketpipeline.pipeline.flushBegin.connect(
+            self.output_manager.textcursor.beginEditBlock
+        )
 
-    self.world.socketpipeline.pipeline.flushBegin.connect(
-                              self.output_manager.textcursor.beginEditBlock )
+        self.world.socketpipeline.pipeline.flushEnd.connect(
+            self.output_manager.textcursor.endEditBlock
+        )
 
-    self.world.socketpipeline.pipeline.flushEnd.connect(
-                              self.output_manager.textcursor.endEditBlock )
+        self.world.socketpipeline.pipeline.flushEnd.connect(self.outputui.repaint)
 
-    self.world.socketpipeline.pipeline.flushEnd.connect( self.outputui.repaint )
+        world.socketpipeline.addSink(
+            self.output_manager.processChunk,
+            ChunkType.TEXT | ChunkType.FLOWCONTROL | ChunkType.NETWORK,
+        )
 
-    world.socketpipeline.addSink( self.output_manager.processChunk,
-                                    ChunkType.TEXT
-                                  | ChunkType.FLOWCONTROL
-                                  | ChunkType.NETWORK )
+        world.socketpipeline.addSink(
+            self.output_manager.textformatmanager.processChunk,
+            ChunkType.ANSI | ChunkType.HIGHLIGHT,
+        )
 
-    world.socketpipeline.addSink( self.output_manager.textformatmanager.processChunk,
-                                    ChunkType.ANSI
-                                  | ChunkType.HIGHLIGHT )
+        self.setFocusProxy(self.inputui)
 
-    self.setFocusProxy( self.inputui )
+        self.inputui.focusChanged.connect(self.setFocusProxy)
+        self.secondaryinputui.focusChanged.connect(self.setFocusProxy)
 
-    self.inputui.focusChanged.connect( self.setFocusProxy )
-    self.secondaryinputui.focusChanged.connect( self.setFocusProxy )
+        ## Setup autocompleter.
 
-    ## Setup autocompleter.
+        self.autocompleter = Autocompleter()
+        world.socketpipeline.addSink(self.autocompleter.sink)
 
-    self.autocompleter = Autocompleter()
-    world.socketpipeline.addSink( self.autocompleter.sink )
+        ## Setup splitter.
 
-    ## Setup splitter.
+        self.setChildrenCollapsible(False)
+        self.setSizes(world.state._ui._splitter._sizes)
 
-    self.setChildrenCollapsible( False )
-    self.setSizes( world.state._ui._splitter._sizes )
+        self.splitterMoved.connect(self.saveSplitterPosition)
 
-    self.splitterMoved.connect( self.saveSplitterPosition )
+        ## Create toolbar and bind World-related actions.
 
-    ## Create toolbar and bind World-related actions.
+        self.toolbar = QToolBar()
+        self.toolbar.setMovable(False)
+        self.toolbar.setFloatable(False)
+        self.toolbar.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
 
-    self.toolbar = QToolBar()
-    self.toolbar.setMovable( False )
-    self.toolbar.setFloatable( False )
-    self.toolbar.setContextMenuPolicy( Qt.PreventContextMenu )
-    self.toolbar.setToolButtonStyle( Qt.ToolButtonTextUnderIcon )
+        self.toolbar.setWindowTitle(world.title())
 
-    self.toolbar.setWindowTitle( world.title() )
+        self.actionset = ActionSet(self)
 
-    self.actionset = ActionSet( self )
+        self.actionset.bindAction("stepup", self.outputui.stepUp)
+        self.actionset.bindAction("stepdown", self.outputui.stepDown)
+        self.actionset.bindAction("pageup", self.outputui.pageUp)
+        self.actionset.bindAction("pagedown", self.outputui.pageDown)
+        self.actionset.bindAction("home", self.outputui.moveScrollbarToTop)
+        self.actionset.bindAction("end", self.outputui.moveScrollbarToBottom)
 
-    self.actionset.bindAction( "stepup",   self.outputui.stepUp )
-    self.actionset.bindAction( "stepdown", self.outputui.stepDown )
-    self.actionset.bindAction( "pageup",   self.outputui.pageUp )
-    self.actionset.bindAction( "pagedown", self.outputui.pageDown )
-    self.actionset.bindAction( "home",     self.outputui.moveScrollbarToTop )
-    self.actionset.bindAction( "end",      self.outputui.moveScrollbarToBottom )
+        self.actionset.bindAction("toggle2ndinput", self.toggleSecondaryInput)
 
-    self.actionset.bindAction( "toggle2ndinput", self.toggleSecondaryInput )
+        connect_action = self.actionset.bindAction("connect", self.world.connectToWorld)
 
-    connect_action    = self.actionset.bindAction( "connect",
-                                                   self.world.connectToWorld )
+        disconnect_action = self.actionset.bindAction(
+            "disconnect", self.world.confirmDisconnectFromWorld
+        )
 
-    disconnect_action = self.actionset.bindAction( "disconnect",
-                                                   self.world.confirmDisconnectFromWorld )
+        connect_action.setEnabled(False)
+        disconnect_action.setEnabled(False)
 
-    connect_action.setEnabled( False )
-    disconnect_action.setEnabled( False )
+        startlog_action = self.actionset.bindAction("startlog", self.world.startLogging)
 
-    startlog_action = self.actionset.bindAction( "startlog",
-                                                 self.world.startLogging )
+        stoplog_action = self.actionset.bindAction("stoplog", self.world.stopLogging)
 
-    stoplog_action  = self.actionset.bindAction( "stoplog",
-                                                 self.world.stopLogging )
+        startlog_action.setEnabled(True)
+        stoplog_action.setEnabled(False)
 
-    startlog_action.setEnabled( True )
-    stoplog_action.setEnabled( False )
+        world.disconnected.connect(connect_action.setEnabled)
+        world.disconnected.connect(disconnect_action.setDisabled)
 
+        world.nowLogging.connect(startlog_action.setDisabled)
+        world.nowLogging.connect(stoplog_action.setEnabled)
 
-    world.disconnected.connect( connect_action.setEnabled )
-    world.disconnected.connect( disconnect_action.setDisabled )
+        self.toolbar.addAction(connect_action)
+        self.toolbar.addAction(disconnect_action)
 
+        self.toolbar.addSeparator()
 
-    world.nowLogging.connect( startlog_action.setDisabled )
-    world.nowLogging.connect( stoplog_action.setEnabled )
+        self.toolbar.addAction(startlog_action)
+        self.toolbar.addAction(stoplog_action)
 
-    self.toolbar.addAction( connect_action )
-    self.toolbar.addAction( disconnect_action )
+        self.toolbar.addSeparator()
 
-    self.toolbar.addSeparator()
+        self.world.setUI(self)
 
-    self.toolbar.addAction( startlog_action )
-    self.toolbar.addAction( stoplog_action )
+        for line in QApplication.instance().core.motd:
+            self.world.info(line)
 
-    self.toolbar.addSeparator()
+    def updateToolBarIcons(self, size):
 
-    self.world.setUI( self )
+        if not size:
+            size = QApplication.style().pixelMetric(QStyle.PM_ToolBarIconSize)
 
-    for line in QApplication.instance().core.motd:
-      self.world.info( line )
+        new_size = QSize(size, size)
+        self.toolbar.setIconSize(new_size)
 
+    def toggleSecondaryInput(self):
 
-  def updateToolBarIcons( self, size ):
+        if self.secondaryinputui.isHidden():
+            self.secondaryinputui.show()
+            self.secondaryinputui.setFocus()
 
-    if not size:
-      size = QApplication.style().pixelMetric( QStyle.PM_ToolBarIconSize )
+        else:
+            self.secondaryinputui.hide()
+            self.inputui.setFocus()
 
-    new_size = QSize( size, size )
-    self.toolbar.setIconSize( new_size )
+    @pyqtSlot(bool)
+    def onTabChanged(self, is_now_visible):
 
+        if is_now_visible:
 
-  def toggleSecondaryInput( self ):
+            ## Ensure the currently visible world has focus.
+            self.setFocus()
 
-    if self.secondaryinputui.isHidden():
-      self.secondaryinputui.show()
-      self.secondaryinputui.setFocus()
+    def windowAlert(self):
 
-    else:
-      self.secondaryinputui.hide()
-      self.inputui.setFocus()
+        if not self.world:
+            return
 
+        if self.world.settings._ui._window._alert:
+            QApplication.instance().alert(self.window())
 
-  @pyqtSlot( bool )
-  def onTabChanged( self, is_now_visible ):
+        self.requestAttention.emit()
 
-    if is_now_visible:
+    @pyqtSlot()
+    def saveSplitterPosition(self):
 
-      ## Ensure the currently visible world has focus.
-      self.setFocus()
+        self.world.state._ui._splitter._sizes = self.sizes()
 
+    @pyqtSlot()
+    def close(self):
 
-  def windowAlert( self ):
+        if self.world.isConnected():
 
-    if not self.world:
-      return
+            if not confirmDialog(
+                "Confirm close",
+                "You are still connected to this world. "
+                "Disconnect and close this tab?",
+                "Close tab",
+                self,
+            ):
+                return
 
-    if self.world.settings._ui._window._alert:
-      QApplication.instance().alert( self.window() )
+        ## The following line is outside the above if statement because the world,
+        ## even if not connected, might be *trying* to connect.
 
-    self.requestAttention.emit()
+        self.world.disconnectFromWorld()
 
+        ## Then, schedule the closing of the world.
+        QTimer.singleShot(0, self.doClose)
 
-  @pyqtSlot()
-  def saveSplitterPosition( self ):
+    def doClose(self):
 
-    self.world.state._ui._splitter._sizes = self.sizes()
+        self.world.stopLogging()
 
+        self.setParent(None)
 
-  @pyqtSlot()
-  def close( self ):
+        self.world.worldui = None
+        self.world.logger = None
+        self.output_manager.world = None
+        self.actionset.parent = None
+        self.inputui.world = None
+        self.inputui.history.inputwidget = None
+        self.inputui.history.actionset = None
+        self.secondaryinputui.world = None
+        self.secondaryinputui.history.inputwidget = None
+        self.secondaryinputui.history.actionset = None
 
-    if self.world.isConnected():
+        for f in self.world.socketpipeline.pipeline.filters:
+            f.context = None
+            f.sink = None
 
-      if not confirmDialog( "Confirm close",
-                            "You are still connected to this world. "
-                            "Disconnect and close this tab?",
-                            "Close tab",
-                            self ):
-        return
+        self.world.socketpipeline.pipeline = None
+        self.world.socketpipeline = None
+        self.outputui = None
+        self.inputui = None
+        self.secondaryinputui = None
+        self.output_manager = None
 
-    ## The following line is outside the above if statement because the world,
-    ## even if not connected, might be *trying* to connect.
+        self.world = None
+        self.deleteLater()
 
-    self.world.disconnectFromWorld()
+    @pyqtSlot("QWidget")
+    def setFocusProxy(self, widget):
 
-    ## Then, schedule the closing of the world.
-    QTimer.singleShot( 0, self.doClose )
+        ## WORKAROUND: PyQt doesn't seem to properly declare the slot for this
+        ## method, so we must override it. :/
 
-
-  def doClose( self ):
-
-    self.world.stopLogging()
-
-    self.setParent( None )
-
-    self.world.worldui               = None
-    self.world.logger                = None
-    self.output_manager.world        = None
-    self.actionset.parent            = None
-    self.inputui.world               = None
-    self.inputui.history.inputwidget = None
-    self.inputui.history.actionset   = None
-    self.secondaryinputui.world               = None
-    self.secondaryinputui.history.inputwidget = None
-    self.secondaryinputui.history.actionset   = None
-
-    for f in self.world.socketpipeline.pipeline.filters:
-      f.context = None
-      f.sink = None
-
-    self.world.socketpipeline.pipeline = None
-    self.world.socketpipeline          = None
-    self.outputui                      = None
-    self.inputui                       = None
-    self.secondaryinputui              = None
-    self.output_manager                = None
-
-    self.world = None
-    self.deleteLater()
-
-
-  @pyqtSlot( "QWidget" )
-  def setFocusProxy( self, widget ):
-
-    ## WORKAROUND: PyQt doesn't seem to properly declare the slot for this
-    ## method, so we must override it. :/
-
-    QSplitter.setFocusProxy( self, widget )
-
+        QSplitter.setFocusProxy(self, widget)

@@ -21,73 +21,76 @@
 ##
 
 
-from PyQt5.QtCore    import QObject
-from PyQt5.QtCore    import pyqtSlot
-from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtCore import QObject
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QTabWidget
 
 
-class TabDelegate( QObject ):
+class TabDelegate(QObject):
 
-  DELEGATES = set([
-                "removeTab",
-                "isTabEnabled", "setTabEnabled",
-                "tabIcon", "setTabIcon",
-                "tabText", "setTabText",
-                "tabToolTip", "setTabToolTip",
-                "tabWhatsThis", "setTabWhatsThis",
-              ])
+    DELEGATES = set(
+        [
+            "removeTab",
+            "isTabEnabled",
+            "setTabEnabled",
+            "tabIcon",
+            "setTabIcon",
+            "tabText",
+            "setTabText",
+            "tabToolTip",
+            "setTabToolTip",
+            "tabWhatsThis",
+            "setTabWhatsThis",
+        ]
+    )
 
+    tabChanged = pyqtSignal(bool)
+    tabCloseRequested = pyqtSignal()
 
-  tabChanged        = pyqtSignal( bool )
-  tabCloseRequested = pyqtSignal()
+    def __init__(self, tabwidget, widget):
 
-  def __init__( self, tabwidget, widget ):
+        QObject.__init__(self, parent=widget)
 
-    QObject.__init__( self, parent=widget )
+        self.widget = widget
+        self.tabwidget = tabwidget
 
-    self.widget    = widget
-    self.tabwidget = tabwidget
+        assert isinstance(self.tabwidget, QTabWidget)
 
-    assert isinstance( self.tabwidget, QTabWidget )
+        self.is_current_tab = False
 
-    self.is_current_tab = False
+        self.tabwidget.currentChanged.connect(self.onTabChanged)
+        self.tabwidget.tabCloseRequested.connect(self.onTabCloseRequested)
 
-    self.tabwidget.currentChanged.connect( self.onTabChanged )
-    self.tabwidget.tabCloseRequested.connect( self.onTabCloseRequested )
+    @pyqtSlot(int)
+    def onTabChanged(self, i):
 
+        tabindex = self.tabwidget.indexOf(self.widget)
 
-  @pyqtSlot( int )
-  def onTabChanged( self, i ):
+        is_now_current_tab = tabindex == i
 
-    tabindex = self.tabwidget.indexOf( self.widget )
+        if is_now_current_tab != self.is_current_tab:
 
-    is_now_current_tab = ( tabindex == i )
+            self.tabChanged.emit(is_now_current_tab)
+            self.is_current_tab = is_now_current_tab
 
-    if is_now_current_tab != self.is_current_tab:
+    @pyqtSlot(int)
+    def onTabCloseRequested(self, i):
 
-      self.tabChanged.emit( is_now_current_tab )
-      self.is_current_tab = is_now_current_tab
+        if i == self.tabwidget.indexOf(self.widget):
+            self.tabCloseRequested.emit()
 
+    def __getattr__(self, attr):
 
-  @pyqtSlot( int )
-  def onTabCloseRequested( self, i ):
+        if not attr in self.DELEGATES:
+            raise AttributeError(attr)
 
-    if i == self.tabwidget.indexOf( self.widget ):
-      self.tabCloseRequested.emit()
+        ## Might raise AttributeError, which is okay:
+        method = getattr(self.tabwidget, attr)
 
+        tabindex = self.tabwidget.indexOf(self.widget)
 
-  def __getattr__( self, attr ):
+        def delegated_method(*args):
+            return method(tabindex, *args)
 
-    if not attr in self.DELEGATES:
-      raise AttributeError( attr )
-
-    ## Might raise AttributeError, which is okay:
-    method = getattr( self.tabwidget, attr )
-
-    tabindex = self.tabwidget.indexOf( self.widget )
-
-    def delegated_method( *args ):
-      return method( tabindex, *args )
-
-    return delegated_method
+        return delegated_method

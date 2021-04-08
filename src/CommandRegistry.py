@@ -21,119 +21,115 @@
 ##
 
 
-from Globals                  import CMDCHAR
-from Globals                  import HELP
-from commands.CommandParsing  import parse_command
+from Globals import CMDCHAR
+from Globals import HELP
+from commands.CommandParsing import parse_command
 from commands.CommandExecutor import execute
 from commands.CommandExecutor import ExecuteError
 
 from textwrap import dedent
 
 
-
 class CommandRegistry:
+    def __init__(self):
 
-  def __init__( self ):
+        self.commands = {}
 
-    self.commands = {}
+    def registerCommand(self, cmdname: str, command_class):
 
+        cmdname = cmdname.strip().lower()
+        self.commands[cmdname] = command_class()
 
-  def registerCommand( self, cmdname, command_class ):
+    ## TODO: rename this to lookup(), implement it on BaseCommand too.
+    def lookupCommand(self, command):
 
-    cmdname = cmdname.strip().lower()
-    self.commands[ cmdname ] = command_class()
+        return self.commands.get(command.strip().lower())
 
+    def parseCommand(self, cmdline):
 
-  ## TODO: rename this to lookup(), implement it on BaseCommand too.
-  def lookupCommand( self, command ):
+        cmdname, remainder = parse_command(cmdline)
 
-    return self.commands.get( command.strip().lower() )
+        if cmdname in self.commands:
+            return cmdname, cmdname, remainder
 
+        return None, cmdname, cmdline
 
-  def parseCommand( self, cmdline ):
+    def runCmdLine(self, world, cmdline):
 
-    cmdname, remainder = parse_command( cmdline )
+        cmdname, possible_cmdname, remainder = self.parseCommand(cmdline)
 
-    if cmdname in self.commands:
-      return cmdname, cmdname, remainder
+        if not possible_cmdname:  ## Empty command line. Do nothing.
+            return
 
-    return None, cmdname, cmdline
+        if not cmdname:  ## Command not found.
 
-
-  def runCmdLine( self, world, cmdline ):
-
-    cmdname, possible_cmdname, remainder = self.parseCommand( cmdline )
-
-    if not possible_cmdname:  ## Empty command line. Do nothing.
-      return
-
-    if not cmdname:  ## Command not found.
-
-      help_txt = """
+            help_txt = """
                  %(possible_cmdname)s: no such command.
                  Type %(CMDCHAR)s%(HELP)s for a list of available commands."""
 
-      ctx = { "possible_cmdname": possible_cmdname,
-              "CMDCHAR": CMDCHAR,
-              "HELP": HELP }
-      world.info( dedent( help_txt ).strip() % ctx )
-      return
+            ctx = {
+                "possible_cmdname": possible_cmdname,
+                "CMDCHAR": CMDCHAR,
+                "HELP": HELP,
+            }
+            world.info(dedent(help_txt).strip() % ctx)
+            return
 
-    command = self.lookupCommand( cmdname )
+        command = self.lookupCommand(cmdname)
 
-    subcmdname, possible_subcmdname, remainder = command.parseSubCommand( remainder )
+        subcmdname, possible_subcmdname, remainder = command.parseSubCommand(remainder)
 
-    args, kwargs = command.parseArgs( remainder )
-    cmd_callable = command.getCallableForName( cmdname, subcmdname )
+        args, kwargs = command.parseArgs(remainder)
+        cmd_callable = command.getCallableForName(cmdname, subcmdname)
 
-    if cmd_callable is None:  ## Command not found!
+        if cmd_callable is None:  ## Command not found!
 
-      complete_cmdname = cmdname
+            complete_cmdname = cmdname
 
-      if possible_subcmdname:
-        cmdname +=  " " + possible_subcmdname
+            if possible_subcmdname:
+                cmdname += " " + possible_subcmdname
 
-      help_txt = """
+            help_txt = """
           %(complete_cmdname)s: no such command.
           Type %(CMDCHAR)s%(HELP)s %(cmdname)s for help on this command."""
 
-      ctx = { "complete_cmdname": complete_cmdname,
-              "CMDCHAR": CMDCHAR,
-              "cmdname": cmdname,
-              "HELP": HELP }
-      world.info( dedent( help_txt ).strip() % ctx )
-      return
+            ctx = {
+                "complete_cmdname": complete_cmdname,
+                "CMDCHAR": CMDCHAR,
+                "cmdname": cmdname,
+                "HELP": HELP,
+            }
+            world.info(dedent(help_txt).strip() % ctx)
+            return
 
-    args.insert( 0, world )
+        args.insert(0, world)
 
-    try:
-      return execute( cmd_callable, args, kwargs )
+        try:
+            return execute(cmd_callable, args, kwargs)
 
-    except ExecuteError as e:
-      msg = "Command error: %s"
-      world.info( msg % e )
-
-
-
-def construct_command_registry():
+        except ExecuteError as e:
+            msg = "Command error: %s"
+            world.info(msg % e)
 
 
-  from commands.HelpCommand     import HelpCommand
-  from commands.SettingsCommand import SettingsCommand
-  from commands.DebugCommand    import DebugCommand
-  from commands.FindCommand     import FindCommand
-  from commands.SessionCommand  import SessionCommand
-  from commands.SoundCommand    import SoundCommand
-  from commands.MatchCommand    import MatchCommand
+def construct_command_registry() -> CommandRegistry:
 
-  command_registry = CommandRegistry()
+    from commands.HelpCommand import HelpCommand
+    from commands.SettingsCommand import SettingsCommand
+    from commands.DebugCommand import DebugCommand
+    from commands.FindCommand import FindCommand
+    from commands.SessionCommand import SessionCommand
+    from commands.SoundCommand import SoundCommand
+    from commands.MatchCommand import MatchCommand
 
-  command_registry.registerCommand( HELP,       HelpCommand )
-  command_registry.registerCommand( "settings", SettingsCommand )
-  command_registry.registerCommand( "debug",    DebugCommand )
-  command_registry.registerCommand( "find",     FindCommand )
-  command_registry.registerCommand( "session",  SessionCommand )
-  command_registry.registerCommand( "sound",    SoundCommand )
-  command_registry.registerCommand( "match",    MatchCommand )
+    command_registry = CommandRegistry()
 
-  return command_registry
+    command_registry.registerCommand(HELP, HelpCommand)
+    command_registry.registerCommand("settings", SettingsCommand)
+    command_registry.registerCommand("debug", DebugCommand)
+    command_registry.registerCommand("find", FindCommand)
+    command_registry.registerCommand("session", SessionCommand)
+    command_registry.registerCommand("sound", SoundCommand)
+    command_registry.registerCommand("match", MatchCommand)
+
+    return command_registry

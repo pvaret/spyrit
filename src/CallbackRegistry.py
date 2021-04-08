@@ -34,109 +34,104 @@ import inspect
 from WeakRef import WeakCallableRef
 
 
-def safe_call( fn, args ):
+def safe_call(fn, args):
 
-  ## This function works like a Qt-like slot, in the sense that it calls the
-  ## given function with the right number of parameters if more than required
-  ## are passed.
+    ## This function works like a Qt-like slot, in the sense that it calls the
+    ## given function with the right number of parameters if more than required
+    ## are passed.
 
-  ( fn_args, varargs, varkw, defaults ) = inspect.getargspec( fn )
+    (fn_args, varargs, varkw, defaults) = inspect.getargspec(fn)
 
-  if varargs:
-    return fn( *args )
+    if varargs:
+        return fn(*args)
 
-  n_args = len( fn_args )
+    n_args = len(fn_args)
 
-  if inspect.ismethod( fn ):
-    ## Account for 'self' implicit argument.
-    n_args -= 1
+    if inspect.ismethod(fn):
+        ## Account for 'self' implicit argument.
+        n_args -= 1
 
-  if not n_args:
-    return fn()
+    if not n_args:
+        return fn()
 
-  ## We use the LAST n arguments. The reason for this is, our most common
-  ## use case for this decorator is to bind configuration changes to
-  ## the appropriate callbacks. Configuration change notifications emit
-  ## a (key, value) tuple of arguments, and the typical signatures for our
-  ## callbacks will use both key and value, or value alone, or nothing at
-  ## all.
-  ## If we used the FIRST n arguments, then in the second case we'd only
-  ## transmit the key, which is not as useful as the value.
+    ## We use the LAST n arguments. The reason for this is, our most common
+    ## use case for this decorator is to bind configuration changes to
+    ## the appropriate callbacks. Configuration change notifications emit
+    ## a (key, value) tuple of arguments, and the typical signatures for our
+    ## callbacks will use both key and value, or value alone, or nothing at
+    ## all.
+    ## If we used the FIRST n arguments, then in the second case we'd only
+    ## transmit the key, which is not as useful as the value.
 
-  args = args[ -n_args: ]
+    args = args[-n_args:]
 
-  return fn( *args )
-
+    return fn(*args)
 
 
 class CallbackRegistry:
 
-  """
-  Maintains a registry of weakly referenced callbacks.
+    """
+    Maintains a registry of weakly referenced callbacks.
 
-  Let's create a registry:
+    Let's create a registry:
 
-  >>> reg = CallbackRegistry()
+    >>> reg = CallbackRegistry()
 
-  At first, it's empty:
+    At first, it's empty:
 
-  >>> print( len( reg ) )
-  0
+    >>> print( len( reg ) )
+    0
 
-  Let's populate it:
+    Let's populate it:
 
-  >>> def callback( arg ):
-  ...   print( "Callback called with argument: %s" % arg )
+    >>> def callback( arg ):
+    ...   print( "Callback called with argument: %s" % arg )
 
-  >>> reg.add( callback )
-  >>> print( len( reg ) )
-  1
+    >>> reg.add( callback )
+    >>> print( len( reg ) )
+    1
 
-  The registry can trigger the call of all its callbacks with the given
-  arguments:
+    The registry can trigger the call of all its callbacks with the given
+    arguments:
 
-  >>> reg.triggerAll( "Hello world!" )
-  Callback called with argument: Hello world!
+    >>> reg.triggerAll( "Hello world!" )
+    Callback called with argument: Hello world!
 
-  And since the callbacks are weakly referenced, they disappear automatically
-  from the registry when deleted.
+    And since the callbacks are weakly referenced, they disappear automatically
+    from the registry when deleted.
 
-  >>> del callback
-  >>> reg.triggerAll( "Hello again!" )  ## nothing happens!
-  >>> print( len( reg ) )
-  0
+    >>> del callback
+    >>> reg.triggerAll( "Hello again!" )  ## nothing happens!
+    >>> print( len( reg ) )
+    0
 
-  """
+    """
 
-  def __init__( self ):
+    def __init__(self):
 
-    self.__registry = {}
+        self.__registry = {}
 
+    def add(self, callback):
 
-  def add( self, callback ):
+        fnref = WeakCallableRef(callback, self.purgeDeadCallback)
+        self.__registry[id(fnref)] = fnref
 
-    fnref = WeakCallableRef( callback, self.purgeDeadCallback )
-    self.__registry[ id( fnref ) ] = fnref
+    def purgeDeadCallback(self, fnref):
 
+        try:
+            del self.__registry[id(fnref)]
 
-  def purgeDeadCallback( self, fnref ):
+        except KeyError:
+            pass
 
-    try:
-      del self.__registry[ id( fnref ) ]
+    def __len__(self):
 
-    except KeyError:
-      pass
+        return len(self.__registry)
 
+    def triggerAll(self, *args):
 
-  def __len__( self ):
+        for fnref in self.__registry.values():
 
-    return len( self.__registry )
-
-
-  def triggerAll( self, *args ):
-
-    for fnref in self.__registry.values():
-
-      fn = fnref()
-      if fn is not None:
-        safe_call( fn, args )
+            fn = fnref()
+            if fn is not None:
+                safe_call(fn, args)

@@ -24,107 +24,103 @@
 import sys
 import locale
 
-from PyQt5.QtGui     import QIcon
-from PyQt5.QtGui     import QFontDatabase
-from PyQt5.QtCore    import QTimer
-from PyQt5.QtCore    import pyqtSlot
-from PyQt5.QtCore    import pyqtRemoveInputHook
+from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QFontDatabase
+from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtRemoveInputHook
 from PyQt5.QtWidgets import QApplication
 
 
-from Messages   import messages
-from Utilities  import handle_exception
+from Messages import messages
+from Utilities import handle_exception
 from SpyritCore import construct_spyrit_core
 
 ## Make it easier to use PDB:
 pyqtRemoveInputHook()
 
-class Application( QApplication ):
 
-  def __init__( self, args ):
+class Application(QApplication):
+    def __init__(self, args):
 
-    QApplication.__init__( self, args )
+        QApplication.__init__(self, args)
 
-    self.args           = args
-    self.bootstrapped   = False
-    self.local_encoding = locale.getpreferredencoding()  ## Try to guess the
-                                                         ## local encoding.
-    self.core = None
+        self.args = args
+        self.bootstrapped = False
+        self.local_encoding = locale.getpreferredencoding()  ## Try to guess the
+        ## local encoding.
+        self.core = None
 
-    self.aboutToQuit.connect( self.beforeStop )
+        self.aboutToQuit.connect(self.beforeStop)
 
+    def bootstrap(self):
 
-  def bootstrap( self ):
+        ## Check that we aren't already bootstrapped.
+        if self.bootstrapped:
+            return
 
-    ## Check that we aren't already bootstrapped.
-    if self.bootstrapped:
-      return
+        self.bootstrapped = True
 
-    self.bootstrapped = True
-
-    ## Attempt to load resources. Log error if resources not found.
-    try:
-      import resources
-
-    except ImportError:
-      messages.warn( "Resource file not found. No graphics will be loaded." )
-
-    ## Load up the dingbat symbols font.
-    QFontDatabase.addApplicationFont( ":/app/symbols" )
-
-    ## Setup icon.
-    self.setWindowIcon( QIcon( ":/app/icon" ) )
-
-    ## And create the core object for Spyrit:
-    self.core = construct_spyrit_core( self )
-
-
-  def exec_( self ):
-
-    if not self.bootstrapped:
-      self.bootstrap()
-
-    QTimer.singleShot( 0, self.afterStart )
-
-    return QApplication.exec_()
-
-
-  def afterStart( self ):
-
-    ## This method is called once, right after the start of the event loop.
-    ## It is used to set up things that we only want done after the event loop
-    ## has begun running.
-
-    sys.excepthook = handle_exception
-
-    self.core.constructMainWindow()
-
-    ## At this point, the arguments that Qt uses have already been filtered
-    ## by Qt itself.
-
-    for arg in self.args[ 1: ]:
-
-      if ":" in arg:  ## This is probably a 'server:port' argument.
-
-        server, port = arg.split( ":", 1 )
-
+        ## Attempt to load resources. Log error if resources not found.
         try:
-          port = int( port )
-        except ValueError:
-          port = 0
+            import resources
 
-        if not port or not server:
-          messages.warn( "Invalid <server>:<port> command line: %s" % arg )
+        except ImportError:
+            messages.warn("Resource file not found. No graphics will be loaded.")
 
-        else:
-          self.core.openWorldByHostPort( server, port )
+        ## Load up the dingbat symbols font.
+        QFontDatabase.addApplicationFont(":/app/symbols")
 
-      else:
+        ## Setup icon.
+        self.setWindowIcon(QIcon(":/app/icon"))
 
-        self.core.openWorldByName( arg )
+        ## And create the core object for Spyrit:
+        self.core = construct_spyrit_core(self)
 
+    def exec_(self):
 
-  @pyqtSlot()
-  def beforeStop( self ):
+        if not self.bootstrapped:
+            self.bootstrap()
 
-    sys.excepthook = sys.__excepthook__
+        QTimer.singleShot(0, self.afterStart)
+
+        return QApplication.exec_()
+
+    def afterStart(self):
+
+        ## This method is called once, right after the start of the event loop.
+        ## It is used to set up things that we only want done after the event loop
+        ## has begun running.
+
+        sys.excepthook = handle_exception
+
+        self.core.constructMainWindow()
+
+        ## At this point, the arguments that Qt uses have already been filtered
+        ## by Qt itself.
+
+        for arg in self.args[1:]:
+
+            if ":" in arg:  ## This is probably a 'server:port' argument.
+
+                server, port = arg.split(":", 1)
+
+                try:
+                    port = int(port)
+                except ValueError:
+                    port = 0
+
+                if not port or not server:
+                    messages.warn("Invalid <server>:<port> command line: %s" % arg)
+
+                else:
+                    self.core.openWorldByHostPort(server, port)
+
+            else:
+
+                self.core.openWorldByName(arg)
+
+    @pyqtSlot()
+    def beforeStop(self):
+
+        sys.excepthook = sys.__excepthook__

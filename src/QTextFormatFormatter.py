@@ -28,71 +28,63 @@ from PyQt5.QtGui import QFont
 
 
 class QTextFormatFormatter:
+    def __init__(self, qtextformat):
 
-  def __init__( self, qtextformat ):
+        self.qtextformat = qtextformat
+        self.color_cache = {}
 
-    self.qtextformat = qtextformat
-    self.color_cache = {}
+        self.property_setter_mapping = dict(
+            (
+                (FORMAT_PROPERTIES.COLOR, self._setForegroundProperty),
+                (FORMAT_PROPERTIES.BACKGROUND, self._setBackgroundProperty),
+                (FORMAT_PROPERTIES.ITALIC, self._setItalicProperty),
+                (FORMAT_PROPERTIES.UNDERLINE, self._setUnderlineProperty),
+                (FORMAT_PROPERTIES.BOLD, self._setFontWeightProperty),
+                (FORMAT_PROPERTIES.HREF, self._setHrefProperty),
+            )
+        )
 
-    self.property_setter_mapping = dict((
-      ( FORMAT_PROPERTIES.COLOR     , self._setForegroundProperty ),
-      ( FORMAT_PROPERTIES.BACKGROUND, self._setBackgroundProperty ),
-      ( FORMAT_PROPERTIES.ITALIC    , self._setItalicProperty     ),
-      ( FORMAT_PROPERTIES.UNDERLINE , self._setUnderlineProperty  ),
-      ( FORMAT_PROPERTIES.BOLD      , self._setFontWeightProperty ),
-      ( FORMAT_PROPERTIES.HREF      , self._setHrefProperty       ),
-    ))
+    def _getCachedColor(self, value):
 
+        value = value.lower()
+        color = self.color_cache.get(value)
 
-  def _getCachedColor( self, value ):
+        if color is None:
+            color = self.color_cache.setdefault(value, QColor(value))
 
-    value = value.lower()
-    color = self.color_cache.get( value )
+        return color
 
-    if color is None:
-      color = self.color_cache.setdefault( value, QColor( value ) )
+    def _setForegroundProperty(self, value):
 
-    return color
+        self.qtextformat.setForeground(self._getCachedColor(value))
 
+    def _setBackgroundProperty(self, value):
 
-  def _setForegroundProperty( self, value ):
+        self.qtextformat.setBackground(self._getCachedColor(value))
 
-    self.qtextformat.setForeground( self._getCachedColor( value ) )
+    def _setUnderlineProperty(self, value):
 
+        self.qtextformat.setFontUnderline(True)
 
-  def _setBackgroundProperty( self, value ):
+    def _setItalicProperty(self, value):
 
-    self.qtextformat.setBackground( self._getCachedColor( value ) )
+        self.qtextformat.setFontItalic(True)
 
+    def _setFontWeightProperty(self, value):
 
-  def _setUnderlineProperty( self, value ):
+        self.qtextformat.setFontWeight(QFont.Black)
 
-    self.qtextformat.setFontUnderline( True )
+    def _setHrefProperty(self, value):
 
+        self.qtextformat.setAnchorHref(value)
 
-  def _setItalicProperty( self, value ):
+    def clearProperty(self, property_id):
 
-    self.qtextformat.setFontItalic( True )
+        self.qtextformat.clearProperty(property_id)
 
+    def setProperty(self, property_id, value):
 
-  def _setFontWeightProperty( self, value ):
+        setter = self.property_setter_mapping.get(property_id)
 
-    self.qtextformat.setFontWeight( QFont.Black )
-
-
-  def _setHrefProperty( self, value ):
-
-    self.qtextformat.setAnchorHref( value )
-
-
-  def clearProperty( self, property_id ):
-
-    self.qtextformat.clearProperty( property_id )
-
-
-  def setProperty( self, property_id, value ):
-
-    setter = self.property_setter_mapping.get( property_id )
-
-    if setter is not None:
-      setter( value )
+        if setter is not None:
+            setter(value)

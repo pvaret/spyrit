@@ -29,139 +29,127 @@ from .ChunkData import ChunkType
 from .ChunkData import thePromptSweepChunk
 from .ChunkData import thePacketStartChunk, thePacketEndChunk
 
-from SingleShotTimer  import SingleShotTimer
+from SingleShotTimer import SingleShotTimer
 from CallbackRegistry import CallbackRegistry
 
 
-class Pipeline( QObject ):
+class Pipeline(QObject):
 
-  PROMPT_TIMEOUT = 700 ## ms
+    PROMPT_TIMEOUT = 700  ## ms
 
-  flushBegin = pyqtSignal()
-  flushEnd   = pyqtSignal()
+    flushBegin = pyqtSignal()
+    flushEnd = pyqtSignal()
 
-  def __init__( self ):
+    def __init__(self):
 
-    QObject.__init__( self )
+        QObject.__init__(self)
 
-    self.filters      = []
-    self.outputBuffer = []
-    self.sinks        = dict( ( type, CallbackRegistry() )
-                              for type in ChunkType )
+        self.filters = []
+        self.outputBuffer = []
+        self.sinks = dict((type, CallbackRegistry()) for type in ChunkType)
 
-    self.notification_registry = {}
+        self.notification_registry = {}
 
-    self.prompt_timer = SingleShotTimer( self.sweepPrompt )
-    self.prompt_timer.setInterval( self.PROMPT_TIMEOUT )
+        self.prompt_timer = SingleShotTimer(self.sweepPrompt)
+        self.prompt_timer.setInterval(self.PROMPT_TIMEOUT)
 
+    def feedBytes(self, packet, blocksize=2048):
 
-  def feedBytes( self, packet, blocksize=2048 ):
+        ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
+        ## and feed that to the real chunk sink.
 
-    ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
-    ## and feed that to the real chunk sink.
+        while packet:
 
-    while packet:
+            ## Splitting the packet into chunks of limited size makes for slightly
+            ## slower processing overall, but better responsiveness, when processing
+            ## large packets.
+            bytes, packet = packet[:blocksize], packet[blocksize:]
 
-      ## Splitting the packet into chunks of limited size makes for slightly
-      ## slower processing overall, but better responsiveness, when processing
-      ## large packets.
-      bytes, packet = packet[ :blocksize ], packet[ blocksize: ]
+            self.feedChunk(thePacketStartChunk, autoflush=False)
+            self.feedChunk((ChunkType.BYTES, bytes), autoflush=False)
+            self.feedChunk(thePacketEndChunk)
 
-      self.feedChunk( thePacketStartChunk, autoflush=False )
-      self.feedChunk( ( ChunkType.BYTES, bytes ), autoflush=False )
-      self.feedChunk( thePacketEndChunk )
+        self.prompt_timer.start()
 
-    self.prompt_timer.start()
+    def sweepPrompt(self):
 
+        self.feedChunk(thePromptSweepChunk)
 
-  def sweepPrompt( self ):
+    def feedChunk(self, chunk, autoflush=True):
 
-    self.feedChunk( thePromptSweepChunk )
+        if not self.filters:
+            return
 
+        self.filters[0].feedChunk(chunk)
 
-  def feedChunk( self, chunk, autoflush=True ):
+        ## When the above call returns, the chunk as been fully processed through
+        ## the chain of filters, and the resulting chunks are waiting in the
+        ## output bucket. So we can flush it.
 
-    if not self.filters:
-      return
+        if autoflush:
+            self.flushOutputBuffer()
 
-    self.filters[0].feedChunk( chunk )
+    def appendToOutputBuffer(self, chunk):
 
-    ## When the above call returns, the chunk as been fully processed through
-    ## the chain of filters, and the resulting chunks are waiting in the
-    ## output bucket. So we can flush it.
+        self.outputBuffer.append(chunk)
 
-    if autoflush:
-      self.flushOutputBuffer()
+    def flushOutputBuffer(self):
 
+        self.flushBegin.emit()
 
-  def appendToOutputBuffer( self, chunk ):
+        for chunk in self.outputBuffer:
 
-    self.outputBuffer.append( chunk )
+            chunk_type, _ = chunk
+            self.sinks[chunk_type].triggerAll(chunk)
 
+        self.flushEnd.emit()
 
-  def flushOutputBuffer( self ):
+        self.outputBuffer = []
 
-    self.flushBegin.emit()
+    def addFilter(self, filterclass, **kwargs):
 
-    for chunk in self.outputBuffer:
+        kwargs.setdefault("context", self)  ## Set up context if needed.
 
-      chunk_type, _ = chunk
-      self.sinks[ chunk_type ].triggerAll( chunk )
+        filter = filterclass(**kwargs)
 
-    self.flushEnd.emit()
+        filter.setSink(self.appendToOutputBuffer)
 
-    self.outputBuffer = []
+        if self.filters:
+            self.filters[-1].setSink(filter.feedChunk)
 
+        self.filters.append(filter)
 
-  def addFilter( self, filterclass, **kwargs ):
+    def addSink(self, callback, types=ChunkType.all()):
 
-    kwargs.setdefault( "context", self ) ## Set up context if needed.
+        ## 'callback' should be a callable that accepts and handles a chunk.
 
-    filter = filterclass( **kwargs )
+        for type in ChunkType:
 
-    filter.setSink( self.appendToOutputBuffer )
+            if type & types:
+                self.sinks[type].add(callback)
 
-    if self.filters:
-      self.filters[-1].setSink( filter.feedChunk )
+    def formatForSending(self, data):
 
-    self.filters.append( filter )
+        for filter in reversed(self.filters):
+            data = filter.formatForSending(data)
 
+        return data
 
-  def addSink( self, callback, types=ChunkType.all() ):
+    def resetInternalState(self):
 
-    ## 'callback' should be a callable that accepts and handles a chunk.
+        for f in self.filters:
+            f.resetInternalState()
 
-    for type in ChunkType:
+    def notify(self, notification, *args):
 
-      if type & types:
-        self.sinks[ type ].add( callback )
+        callbacks = self.notification_registry.get(notification)
 
+        if callbacks:
+            callbacks.triggerAll(*args)
 
-  def formatForSending( self, data ):
+    def bindNotificationListener(self, notification, callback):
 
-   for filter in reversed( self.filters ):
-      data = filter.formatForSending( data )
+        if notification not in self.notification_registry:
+            self.notification_registry[notification] = CallbackRegistry()
 
-   return data
-
-
-  def resetInternalState( self ):
-
-    for f in self.filters:
-      f.resetInternalState()
-
-
-  def notify( self, notification, *args ):
-
-    callbacks = self.notification_registry.get( notification )
-
-    if callbacks:
-      callbacks.triggerAll( *args )
-
-
-  def bindNotificationListener( self, notification, callback ):
-
-    if notification not in self.notification_registry:
-      self.notification_registry[ notification ] = CallbackRegistry()
-
-    self.notification_registry[ notification ].add( callback )
+        self.notification_registry[notification].add(callback)

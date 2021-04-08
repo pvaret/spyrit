@@ -20,96 +20,84 @@
 ##
 
 
-from PyQt5.QtGui  import QIcon
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import QTimeLine
 
 
-
 class LED:
+    def __init__(self):
 
-  def __init__( self ):
+        self.ON_UNLIT = QIcon(":/icon/unlit_green_led")
+        self.ON_LIT = QIcon(":/icon/lit_green_led")
+        self.OFF_UNLIT = QIcon(":/icon/unlit_red_led")
+        self.OFF_LIT = QIcon(":/icon/lit_red_led")
 
-    self.ON_UNLIT  = QIcon( ":/icon/unlit_green_led" )
-    self.ON_LIT    = QIcon( ":/icon/lit_green_led" )
-    self.OFF_UNLIT = QIcon( ":/icon/unlit_red_led" )
-    self.OFF_LIT   = QIcon( ":/icon/lit_red_led" )
+    def select(self, on, lit):
 
+        if on:
+            return self.ON_LIT if lit else self.ON_UNLIT
 
-  def select( self, on, lit ):
-
-    if on:
-      return self.ON_LIT if lit else self.ON_UNLIT
-
-    else:
-      return self.OFF_LIT if lit else self.OFF_UNLIT
+        else:
+            return self.OFF_LIT if lit else self.OFF_UNLIT
 
 
-class TabIconBlinker( QObject ):
+class TabIconBlinker(QObject):
+    def __init__(self, tab):
 
-  def __init__( self, tab ):
+        QObject.__init__(self, parent=tab)
 
-    QObject.__init__( self, parent=tab )
+        self.led = LED()
+        self.tab = tab
+        self.is_on = False
+        self.visible = True
 
-    self.led     = LED()
-    self.tab     = tab
-    self.is_on   = False
-    self.visible = True
+        self.tab.tabChanged.connect(self.onTabChanged)
 
-    self.tab.tabChanged.connect( self.onTabChanged )
+        self.blinker = QTimeLine(50, self)  ## ms
+        self.blinker.setFrameRange(0, 1)
+        self.blinker.frameChanged.connect(self.iconBlink)
+        self.blinker.finished.connect(self.steadyIcon)
 
-    self.blinker = QTimeLine( 50, self ) ## ms
-    self.blinker.setFrameRange( 0, 1 )
-    self.blinker.frameChanged.connect( self.iconBlink )
-    self.blinker.finished.connect( self.steadyIcon )
+    def startIconBlink(self):
 
+        if self.blinker.state() == QTimeLine.NotRunning:
+            self.blinker.start()
 
-  def startIconBlink( self ):
+    @pyqtSlot(int)
+    def iconBlink(self, frame):
 
-    if self.blinker.state() == QTimeLine.NotRunning:
-      self.blinker.start()
+        led = self.led.select(on=self.is_on, lit=(frame % 2 == 0))
+        self.tab.setTabIcon(led)
 
+    @pyqtSlot()
+    def steadyIcon(self):
 
-  @pyqtSlot( int )
-  def iconBlink( self, frame ):
+        if self.blinker.state() == QTimeLine.Running:
+            return
 
-    led = self.led.select( on  = self.is_on,
-                           lit = ( frame % 2 == 0 ) )
-    self.tab.setTabIcon( led )
+        led = self.led.select(on=self.is_on, lit=not self.visible)
+        self.tab.setTabIcon(led)
 
+    @pyqtSlot(bool)
+    def onTabChanged(self, is_now_visible):
 
-  @pyqtSlot()
-  def steadyIcon( self ):
+        self.visible = is_now_visible
 
-    if self.blinker.state() == QTimeLine.Running:
-      return
+        if is_now_visible:
+            self.steadyIcon()
 
-    led = self.led.select( on  = self.is_on,
-                           lit = not self.visible )
-    self.tab.setTabIcon( led )
+    @pyqtSlot(bool)
+    def setLedOn(self, is_on=True):
 
+        if is_on and not self.is_on:
+            self.is_on = True
+            self.startIconBlink()
 
-  @pyqtSlot( bool )
-  def onTabChanged( self, is_now_visible ):
+    @pyqtSlot(bool)
+    def setLedOff(self, is_off=True):
 
-    self.visible = is_now_visible
-
-    if is_now_visible:
-      self.steadyIcon()
-
-
-  @pyqtSlot( bool )
-  def setLedOn( self, is_on=True ):
-
-    if is_on and not self.is_on:
-      self.is_on = True
-      self.startIconBlink()
-
-
-  @pyqtSlot( bool )
-  def setLedOff( self, is_off=True ):
-
-    if is_off and self.is_on:
-      self.is_on = False
-      self.startIconBlink()
+        if is_off and self.is_on:
+            self.is_on = False
+            self.startIconBlink()

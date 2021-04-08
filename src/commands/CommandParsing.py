@@ -29,87 +29,91 @@
 
 import re
 
-QUOTED = re.compile( r'([^"\'\s]*)' +     ## Anything but space or quote
-                     r"(?:"         +     ## Non-grouping match...
-                       r'"(.*?)"' + "|" + r"'(.*?)'" +  ## Anything quoted
-                     r")"           +
-                     r'([^"\'\s]*)' )     ## Anything but space or quote
+QUOTED = re.compile(
+    r'([^"\'\s]*)'
+    + r"(?:"  ## Anything but space or quote
+    + r'"(.*?)"'  ## Non-grouping match...
+    + "|"
+    + r"'(.*?)'"
+    + r")"  ## Anything quoted
+    + r'([^"\'\s]*)'
+)  ## Anything but space or quote
 
 KWARG_SEP = "="
 
 
-def tokenize( line ):
-  """
-  Split a line of text into a list of tokens, respecting quotes.
+def tokenize(line):
+    """
+    Split a line of text into a list of tokens, respecting quotes.
 
-  >>> print( tokenize( '''   "A B" C="D 'E'" F   ''' ) )
-  ['A B', "C=D 'E'", 'F']
+    >>> print( tokenize( '''   "A B" C="D 'E'" F   ''' ) )
+    ['A B', "C=D 'E'", 'F']
 
-  Does the right thing even in complex cases:
+    Does the right thing even in complex cases:
 
-  >>> print( tokenize( '''   '' "''" "'"   ''' ) )
-  ['', "''", "'"]
+    >>> print( tokenize( '''   '' "''" "'"   ''' ) )
+    ['', "''", "'"]
 
-  """
+    """
 
-  line   = line.strip()
-  tokens = []
+    line = line.strip()
+    tokens = []
 
-  while True:
+    while True:
 
-    m = QUOTED.search( line )
+        m = QUOTED.search(line)
 
-    if m:
+        if m:
 
-      for token in line[ 0:m.start() ].split():
-        tokens.append( token.strip() )
+            for token in line[0 : m.start()].split():
+                tokens.append(token.strip())
 
-      token  = m.group( 1 )
-      token += m.group( 2 ) if m.group( 2 ) is not None else m.group( 3 )
-      token += m.group( 4 )
+            token = m.group(1)
+            token += m.group(2) if m.group(2) is not None else m.group(3)
+            token += m.group(4)
 
-      tokens.append( token )
+            tokens.append(token)
 
-      line = line[ m.end(): ]
+            line = line[m.end() :]
 
-    else:
+        else:
 
-      for token in line.split():
-        tokens.append( token.strip() )
+            for token in line.split():
+                tokens.append(token.strip())
 
-      break
+            break
 
-  return tokens
-
-
-def parse_command( cmdline ):
-
-  ## For now, a simple split will do.
-
-  cmdline = cmdline.strip()
-
-  if cmdline:
-    cmd = cmdline.split()[0]
-    return cmd, cmdline[ len( cmd ): ]
-
-  return "", cmdline
+    return tokens
 
 
-def parse_arguments( cmdline ):
+def parse_command(cmdline):
 
-  args   = []
-  kwargs = {}
+    ## For now, a simple split will do.
 
-  tokens = tokenize( cmdline )
+    cmdline = cmdline.strip()
 
-  for token in tokens:
+    if cmdline:
+        cmd = cmdline.split()[0]
+        return cmd, cmdline[len(cmd) :]
 
-    if KWARG_SEP in token:
+    return "", cmdline
 
-      key, val = token.split( KWARG_SEP, 1 )
-      kwargs[ key ] = val
 
-    else:
-      args.append( token )
+def parse_arguments(cmdline):
 
-  return args, kwargs
+    args = []
+    kwargs = {}
+
+    tokens = tokenize(cmdline)
+
+    for token in tokens:
+
+        if KWARG_SEP in token:
+
+            key, val = token.split(KWARG_SEP, 1)
+            kwargs[key] = val
+
+        else:
+            args.append(token)
+
+    return args, kwargs

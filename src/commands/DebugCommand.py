@@ -23,60 +23,58 @@
 from .BaseCommand import BaseCommand
 
 
-class DebugCommand( BaseCommand ):
+class DebugCommand(BaseCommand):
 
-  ## No docstring. This is not a user-visible command.
+    ## No docstring. This is not a user-visible command.
 
-  def cmd_raise( self, world, *args ):
+    def cmd_raise(self, world, *args):
 
-    ## No docstring. This is not a user-visible subcommand.
+        ## No docstring. This is not a user-visible subcommand.
 
-    e = None
+        e = None
 
-    if args:
+        if args:
 
-      exc = __builtins__.get( args[0], None )
+            exc = __builtins__.get(args[0], None)
 
-      try:
-        is_an_exception = issubclass( exc, BaseException )
+            try:
+                is_an_exception = issubclass(exc, BaseException)
 
-      except TypeError:  ## exc is not a class!
-        is_an_exception = False
+            except TypeError:  ## exc is not a class!
+                is_an_exception = False
 
-      if is_an_exception:
-        e = exc( *args[1:] )
+            if is_an_exception:
+                e = exc(*args[1:])
 
-    if not e:
-      e = Exception( args and " ".join( args ) or None )
+        if not e:
+            e = Exception(args and " ".join(args) or None)
 
-    raise e
+        raise e
 
+    def cmd_execute(self, world, filename):
 
-  def cmd_execute( self, world, filename ):
+        ## No docstring. This is not a user-visible subcommand.
 
-    ## No docstring. This is not a user-visible subcommand.
+        f = world.openFileOrErr(filename)
 
-    f = world.openFileOrErr( filename )
+        if not f:
+            return
 
-    if not f:
-      return
+        exec(f.read())
 
-    exec( f.read() )
+    def cmd_load(self, world, filename=None, blocksize=None):
 
+        ## No docstring. This is not a user-visible subcommand.
 
-  def cmd_load( self, world, filename=None, blocksize=None ):
+        if blocksize is not None and not blocksize.isdigit():
+            blocksize = None
 
-    ## No docstring. This is not a user-visible subcommand.
+        kwargs = {}
 
-    if blocksize is not None and not blocksize.isdigit():
-      blocksize = None
+        if filename:
+            kwargs["filename"] = filename
 
-    kwargs = {}
+        if blocksize:
+            kwargs["blocksize"] = int(blocksize)
 
-    if filename:
-      kwargs[ "filename" ] = filename
-
-    if blocksize:
-      kwargs[ "blocksize" ] = int( blocksize )
-
-    world.loadFile( **kwargs )
+        world.loadFile(**kwargs)

@@ -24,67 +24,62 @@ from PyQt5.QtWidgets import QApplication
 
 from .CommandParsing import parse_command
 from .CommandParsing import parse_arguments
-from Globals        import HELP, CMDCHAR
+from Globals import HELP, CMDCHAR
 
 
-class BaseCommand( object ):
+class BaseCommand:
 
-  ## Abstract base class for commands.
+    ## Abstract base class for commands.
 
-  CMD = "cmd"
+    CMD = "cmd"
 
-  def __init__( self ):
+    def __init__(self):
 
-    self.subcmds = {}
+        self.subcmds = {}
 
-    for name in dir( self ):
+        for name in dir(self):
 
-      attr = getattr( self, name )
+            attr = getattr(self, name)
 
-      if callable( attr ) and name.startswith( self.CMD + "_" ):
-        self.subcmds[ name[ len( self.CMD + "_" ): ].lower() ] = attr
+            if callable(attr) and name.startswith(self.CMD + "_"):
+                self.subcmds[name[len(self.CMD + "_") :].lower()] = attr
 
+    def cmd(self, world, *args, **kwargs):
 
-  def cmd( self, world, *args, **kwargs ):
+        ## Default implementation that only displays help. Overload this in
+        ## subclasses.
 
-    ## Default implementation that only displays help. Overload this in
-    ## subclasses.
+        commands = QApplication.instance().core.commands
 
-    commands = QApplication.instance().core.commands
+        ## TODO: Clean this up; store cmd name when registering it.
+        cmdname = [k for k, v in commands.commands.items() if v is self][0]
 
-    ## TODO: Clean this up; store cmd name when registering it.
-    cmdname = [ k for k, v in commands.commands.items()
-                if v is self ][0]
+        if args or kwargs:
+            arg1 = (list(args) + list(kwargs.keys()))[0]
+            world.info("Unknown argument '%s' for command %s!" % (arg1, cmdname))
 
-    if args or kwargs:
-        arg1 = ( list( args ) + list( kwargs.keys() ) )[0]
-        world.info( "Unknown argument '%s' for command %s!"
-                    % ( arg1, cmdname ) )
+        world.info(
+            "Type '%s%s %s' for help on this command." % (CMDCHAR, HELP, cmdname)
+        )
 
-    world.info( "Type '%s%s %s' for help on this command."
-                % ( CMDCHAR, HELP, cmdname ) )
+    def parseSubCommand(self, cmdline):
 
+        subcmdname, remainder = parse_command(cmdline)
 
-  def parseSubCommand( self, cmdline ):
+        if subcmdname in self.subcmds:
+            return subcmdname, subcmdname, remainder
 
-    subcmdname, remainder = parse_command( cmdline )
+        return None, subcmdname, cmdline
 
-    if subcmdname in self.subcmds:
-      return subcmdname, subcmdname, remainder
+    def parseArgs(self, cmdline):
 
-    return None, subcmdname, cmdline
+        args, kwargs = parse_arguments(cmdline)
 
+        return args, kwargs
 
-  def parseArgs( self, cmdline ):
+    def getCallableForName(self, cmdname, subcmdname):
 
-    args, kwargs = parse_arguments( cmdline )
+        if subcmdname is None:
+            return getattr(self, self.CMD, None)
 
-    return args, kwargs
-
-
-  def getCallableForName( self, cmdname, subcmdname ):
-
-    if subcmdname is None:
-      return getattr( self, self.CMD, None )
-
-    return self.subcmds.get( subcmdname.lower() )
+        return self.subcmds.get(subcmdname.lower())

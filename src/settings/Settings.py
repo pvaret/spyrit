@@ -45,9 +45,9 @@ from typing import Union
 from CallbackRegistry import CallbackRegistry
 
 
-class __NoValue( object ):
-  def __repr__( self ):
-    return "<NO VALUE>"
+class __NoValue(object):
+    def __repr__(self):
+        return "<NO VALUE>"
 
 
 NO_VALUE = __NoValue()
@@ -56,579 +56,575 @@ NO_VALUE = __NoValue()
 ROOT = "@"
 
 
-class MatchingDict( dict, Mapping[ Text, Any ] ):
-  """
-  A dictionary whose keys are glob patterns, and where key lookup is matched
-  against those patterns. Requires the keys to be strings.
+class MatchingDict(dict, Mapping[Text, Any]):
+    """
+    A dictionary whose keys are glob patterns, and where key lookup is matched
+    against those patterns. Requires the keys to be strings.
 
-  >>> m = MatchingDict()
-  >>> m[ "ab?" ] = 1
-  >>> m[ "de*" ] = 2
-  >>> print( m[ "abc" ] )
-  1
-  >>> print( m[ "defg" ] )
-  2
-  >>> print( "abcd" in m )
-  False
-  >>> print( "defg" in m )
-  True
+    >>> m = MatchingDict()
+    >>> m[ "ab?" ] = 1
+    >>> m[ "de*" ] = 2
+    >>> print( m[ "abc" ] )
+    1
+    >>> print( m[ "defg" ] )
+    2
+    >>> print( "abcd" in m )
+    False
+    >>> print( "defg" in m )
+    True
 
-  """
+    """
 
-  def __contains__( self, key: Any ) -> bool:
+    def __contains__(self, key: Any) -> bool:
 
-    try:
-      self[ key ]
-      return True
+        try:
+            self[key]
+            return True
 
-    except KeyError:
-      return False
+        except KeyError:
+            return False
 
-  def __getitem__( self, key: Text ) -> Any:
+    def __getitem__(self, key: Text) -> Any:
 
-    try:
-      return super( MatchingDict, self ).__getitem__( key )
-    except KeyError:
-      pass
+        try:
+            return super(MatchingDict, self).__getitem__(key)
+        except KeyError:
+            pass
 
-    for k in sorted( self.keys(), key=len, reverse=True ):
-      if fnmatchcase( key, k ):
-        return self[ k ]
+        for k in sorted(self.keys(), key=len, reverse=True):
+            if fnmatchcase(key, k):
+                return self[k]
 
-    raise KeyError( key )
-
-
-def validateAttr( attr: Text ) -> Optional[ Text ]:
-  """
-  Determines whether the parameter begins with one underscore '_' but not two.
-  Returns None otherwise.  Attributes beginning with one underscore will be
-  looked up as items on self.
-
-  """
-
-  if ( len( attr ) >= 2
-       and attr.startswith( "_" )
-       and not attr.startswith( "__" ) ):
-
-      return attr[ 1: ]
-
-  return None
+        raise KeyError(key)
 
 
-class TextDictProtocol( Protocol ):
-  """
-  A Protocol class describing the underlying type expected by
-  AttrProxyDictMixin.
-  """
+def validateAttr(attr: Text) -> Optional[Text]:
+    """
+    Determines whether the parameter begins with one underscore '_' but not two.
+    Returns None otherwise.  Attributes beginning with one underscore will be
+    looked up as items on self.
 
-  def __getitem__( self, key: Text ) -> Any:
-    pass
+    """
 
-  def __setitem__( self, key: Text, value: Any ):
-    pass
+    if len(attr) >= 2 and attr.startswith("_") and not attr.startswith("__"):
 
-  def __delitem__( self, key: Text ):
-    pass
+        return attr[1:]
+
+    return None
 
 
-class AttrProxyDictMixin( TextDictProtocol ):
-  """
-  This mixin makes a dict's keys accessible as attributes. Inherit from it in
-  your dict-like class with Text keys, and you can then access:
-    d[ "somekey" ]
-  as:
-    d._somekey
+class TextDictProtocol(Protocol):
+    """
+    A Protocol class describing the underlying type expected by
+    AttrProxyDictMixin.
+    """
 
-  >>> class TestDict( dict, AttrProxyDictMixin ):
-  ...   pass
-  >>> d = TestDict()
-  >>> d[ "a" ] = 1
-  >>> d._a
-  1
-  >>> d.a
-  Traceback (most recent call last):
-  ...
-  AttributeError: a
-  >>> d._A
-  Traceback (most recent call last):
-  ...
-  AttributeError: _A
-  >>> d._b = 2
-  >>> d[ "b" ]
-  2
-  >>> del d.a
-  Traceback (most recent call last):
-  ...
-  AttributeError: a
-  >>> del d._a
-  >>> "a" in d
-  False
+    def __getitem__(self, key: Text) -> Any:
+        pass
 
-  """
+    def __setitem__(self, key: Text, value: Any):
+        pass
 
-  def __getattr__( self, attr: Text ) -> Any:
+    def __delitem__(self, key: Text):
+        pass
 
-    vattr = validateAttr( attr )
 
-    if vattr is None:
-      ## This is neither an existing native attribute, nor a 'special'
-      ## attribute name that should be read off the mapped dictionary,
-      ## so we raise an AttributeError.
-      raise AttributeError( attr )
+class AttrProxyDictMixin(TextDictProtocol):
+    """
+    This mixin makes a dict's keys accessible as attributes. Inherit from it in
+    your dict-like class with Text keys, and you can then access:
+      d[ "somekey" ]
+    as:
+      d._somekey
 
-    try:
-      return self[ vattr ]
+    >>> class TestDict( dict, AttrProxyDictMixin ):
+    ...   pass
+    >>> d = TestDict()
+    >>> d[ "a" ] = 1
+    >>> d._a
+    1
+    >>> d.a
+    Traceback (most recent call last):
+    ...
+    AttributeError: a
+    >>> d._A
+    Traceback (most recent call last):
+    ...
+    AttributeError: _A
+    >>> d._b = 2
+    >>> d[ "b" ]
+    2
+    >>> del d.a
+    Traceback (most recent call last):
+    ...
+    AttributeError: a
+    >>> del d._a
+    >>> "a" in d
+    False
 
-    except KeyError as e:
-      raise AttributeError( attr ) from e
+    """
 
-  def __setattr__( self, attr: Text, value: Any ):
+    def __getattr__(self, attr: Text) -> Any:
 
-    vattr = validateAttr( attr )
+        vattr = validateAttr(attr)
 
-    if vattr:
-      self[ vattr ] = value
+        if vattr is None:
+            ## This is neither an existing native attribute, nor a 'special'
+            ## attribute name that should be read off the mapped dictionary,
+            ## so we raise an AttributeError.
+            raise AttributeError(attr)
 
-    else:
-      ## If this is a 'normal' attribute, treat it the normal way.
-      super( AttrProxyDictMixin, self ).__setattr__( attr, value )
+        try:
+            return self[vattr]
 
-  def __delattr__( self, attr: Text ):
+        except KeyError as e:
+            raise AttributeError(attr) from e
 
-    vattr = validateAttr( attr )
+    def __setattr__(self, attr: Text, value: Any):
 
-    if vattr is None:
-      ## If this is a 'normal' attribute, treat it the normal way
-      ## and then return.
-      super( AttrProxyDictMixin, self ).__delattr__( attr )
+        vattr = validateAttr(attr)
 
-      return
+        if vattr:
+            self[vattr] = value
 
-    try:
-      del self[ vattr ]
+        else:
+            ## If this is a 'normal' attribute, treat it the normal way.
+            super(AttrProxyDictMixin, self).__setattr__(attr, value)
 
-    except KeyError as e:
-      raise AttributeError( attr ) from e
+    def __delattr__(self, attr: Text):
+
+        vattr = validateAttr(attr)
+
+        if vattr is None:
+            ## If this is a 'normal' attribute, treat it the normal way
+            ## and then return.
+            super(AttrProxyDictMixin, self).__delattr__(attr)
+
+            return
+
+        try:
+            del self[vattr]
+
+        except KeyError as e:
+            raise AttributeError(attr) from e
 
 
 ## TODO: Finish. Use a Protocol instead! See
 ## https://mypy.readthedocs.io/en/stable/protocols.html.
-class BaseNode( abc.ABC ):
+class BaseNode(abc.ABC):
 
-  proto: "NodeProto"
-  fallback_value: Any
+    proto: "NodeProto"
+    fallback_value: Any
 
-  @abc.abstractmethod
-  def getFullPath( self ) -> List[ Text ]:
-    pass
+    @abc.abstractmethod
+    def getFullPath(self) -> List[Text]:
+        pass
 
-  @abc.abstractmethod
-  def isLeaf( self ) -> bool:
-    pass
+    @abc.abstractmethod
+    def isLeaf(self) -> bool:
+        pass
 
-  @abc.abstractmethod
-  def isEmpty( self ) -> bool:
-    pass
+    @abc.abstractmethod
+    def isEmpty(self) -> bool:
+        pass
 
-  # @abc.abstractmethod
-  # def setInherit( self, node: "BaseNode" ):
-  #   pass
+    # @abc.abstractmethod
+    # def setInherit( self, node: "BaseNode" ):
+    #   pass
 
 
-class Leaf( BaseNode ):
+class Leaf(BaseNode):
+    def __init__(self, key: Text, container: "Node"):
 
-  def __init__( self, key: Text, container: "Node" ):
+        self.key: Text = key
+        self.inherit: Optional[Leaf] = None
+        self.notifier = CallbackRegistry()
+        self.own_value: Any = NO_VALUE
+        self.container: "Node" = container
+        self.fallback_value: Any = None
 
-    self.key: Text                 = key
-    self.inherit: Optional[ Leaf ] = None
-    self.notifier                  = CallbackRegistry()
-    self.own_value: Any            = NO_VALUE
-    self.container: "Node"         = container
-    self.fallback_value: Any       = None
+    def isLeaf(self) -> bool:
 
-  def isLeaf( self ) -> bool:
+        return True
 
-    return True
+    def __repr__(self) -> Text:
 
-  def __repr__( self ) -> Text:
+        key_path = ".".join(self.getFullPath())
+        return "<Leaf %s>: %r" % (key_path, self.own_value)
 
-    key_path = ".".join( self.getFullPath() )
-    return "<Leaf %s>: %r" % ( key_path, self.own_value )
+    def getFullPath(self) -> List[Text]:
 
-  def getFullPath( self ) -> List[ Text ]:
+        if self.container is None:
+            return []
 
-    if self.container is None:
-      return []
+        return self.container.getFullPath() + [self.key]
 
-    return self.container.getFullPath() + [ self.key ]
+    def setInherit(self, inherit: "Leaf"):
 
-  def setInherit( self, inherit: "Leaf" ):
+        self.inherit = inherit
 
-    self.inherit = inherit
+        if inherit is not None:
+            inherit.notifier.add(self.propagate)
+            self.fallback_value = inherit.value()
 
-    if inherit is not None:
-      inherit.notifier.add( self.propagate )
-      self.fallback_value = inherit.value()
+    def value(self) -> Any:
 
-  def value( self ) -> Any:
+        return self.own_value if self.own_value is not NO_VALUE else self.fallback_value
 
-    return ( self.own_value if self.own_value is not NO_VALUE
-             else self.fallback_value )
+    def setValue(self, value: Any):
 
-  def setValue( self, value: Any ):
+        prev_value = self.value()
 
-    prev_value = self.value()
+        if value == self.fallback_value:
+            value = NO_VALUE
 
-    if value == self.fallback_value:
-      value = NO_VALUE
+        self.own_value = value
 
-    self.own_value = value
+        new_value = self.value()
+        if self.notifier and (new_value != prev_value):
+            self.notifier.triggerAll(new_value)
 
-    new_value = self.value()
-    if self.notifier and ( new_value != prev_value ):
-      self.notifier.triggerAll( new_value )
+    def delValue(self):
 
-  def delValue( self ):
+        self.setValue(NO_VALUE)
 
-    self.setValue( NO_VALUE )
+    def propagate(self, new_value: Any):
 
-  def propagate( self, new_value: Any ):
+        prev_value = self.value()
+        self.fallback_value = new_value
 
-    prev_value = self.value()
-    self.fallback_value = new_value
+        if self.value() != prev_value:
+            self.notifier.triggerAll(new_value)
 
-    if self.value() != prev_value:
-      self.notifier.triggerAll( new_value )
+    def isEmpty(self) -> bool:
 
-  def isEmpty( self ) -> bool:
+        return self.own_value is NO_VALUE
 
-    return self.own_value is NO_VALUE
 
+class Node(BaseNode, AttrProxyDictMixin):
+    def __init__(self, key, container):
 
-class Node( BaseNode, AttrProxyDictMixin ):
+        self.key: Text = key
+        self.proto: NodeProto = None
+        self.nodes: Dict[Text, BaseNode] = {}
+        self.inherit: Node = None
+        self.container: Node = container
 
-  def __init__( self, key, container ):
+    def isLeaf(self) -> bool:
 
-    self.key: Text                     = key
-    self.proto: NodeProto              = None
-    self.nodes: Dict[ Text, BaseNode ] = {}
-    self.inherit: Node                 = None
-    self.container: Node               = container
+        return False
 
-  def isLeaf( self ) -> bool:
+    def __repr__(self) -> Text:
 
-    return False
+        return "<Node %s>" % (".".join(self.getFullPath()) or ".")
 
-  def __repr__( self ) -> Text:
+    def getFullPath(self) -> List[Text]:
 
-    return "<Node %s>" % ( ".".join( self.getFullPath() ) or "." )
+        if self.container is None:
+            return []
 
-  def getFullPath( self ) -> List[ Text ]:
+        return self.container.getFullPath() + [self.key]
 
-    if self.container is None:
-      return []
+    def setInherit(self, inherit: "Node"):
 
-    return self.container.getFullPath() + [ self.key ]
+        self.inherit = inherit
 
-  def setInherit( self, inherit: "Node" ):
+    def get(self, key: Text):
 
-    self.inherit = inherit
+        if "." in key:
+            head, tail = key.split(".", 1)
+            return self.get(head).get(tail)
 
-  def get( self, key: Text ):
+        try:
+            return self.nodes[key]
 
-    if "." in key:
-      head, tail = key.split( ".", 1 )
-      return self.get( head ).get( tail )
+        except KeyError:
+            if self.proto is None:
+                raise
 
-    try:
-      return self.nodes[ key ]
+        node = self.proto.build(key, self)
+        self.nodes[key] = node
 
-    except KeyError:
-      if self.proto is None:
-        raise
+        return node
 
-    node = self.proto.build( key, self )
-    self.nodes[ key ] = node
+    def __iter__(self) -> Iterable[Text]:
 
-    return node
+        return iter(self.nodes)
 
-  def __iter__( self ) -> Iterable[ Text ]:
+    def __getitem__(self, key: Text) -> BaseNode:
 
-    return iter( self.nodes )
+        node = self.get(key)
+        return node.value()
 
-  def __getitem__( self, key: Text ) -> BaseNode:
+    def __setitem__(self, key: Text, value: Any):
 
-    node = self.get( key )
-    return node.value()
+        node = self.get(key)
+        node.setValue(value)
 
-  def __setitem__( self, key: Text, value: Any ):
+    def __delitem__(self, key: Text):
 
-    node = self.get( key )
-    node.setValue( value )
+        node = self.get(key)
+        node.delValue()
 
-  def __delitem__( self, key: Text ):
+    def asDict(self) -> Dict[Text, Any]:
 
-    node = self.get( key )
-    node.delValue()
+        ret = {}
+        for k, v in self.nodes.items():
+            if v.isLeaf():
+                if type(v) is Leaf:
+                    ret[k] = cast(Leaf, v).value()
+            else:
+                ret[k] = cast(Node, v).asDict()
 
-  def asDict( self ) -> Dict[ Text, Any ]:
+        return ret
 
-    ret = {}
-    for k, v in self.nodes.items():
-      if v.isLeaf():
-        if type( v ) is Leaf:
-          ret[ k ] = cast( Leaf, v ).value()
-      else:
-        ret[ k ] = cast( Node, v ).asDict()
+    def value(self) -> "Node":
 
-    return ret
+        return self
 
-  def value( self ) -> "Node":
+    def isEmpty(self) -> bool:
 
-    return self
+        return all(node.isEmpty() for node in self.nodes.values())
 
-  def isEmpty( self ) -> bool:
+    def setValue(self, value: Any):
 
-    return all( node.isEmpty() for node in self.nodes.values() )
+        if not isinstance(value, dict):
+            raise ValueError(
+                "Expected a dictionary-type value for key %s; "
+                "got: %r" % (self.getFullPath(), value)
+            )
 
-  def setValue( self, value: Any ):
+        try:
+            for k, v in value.items():
+                self.get(k).setValue(v)
+        except KeyError:
+            raise ValueError(
+                "Expected a dict matching the schema for key %s; "
+                "got %r" % (self.getFullPath(), value)
+            )
 
-    if not isinstance( value, dict ):
-      raise ValueError( "Expected a dictionary-type value for key %s; "
-                        "got: %r" % ( self.getFullPath(), value ) )
+    # TODO: Add typing information... once mypy supports recursive types. See
+    # https://github.com/python/mypy/issues/731.
+    # Or use a Protocol instead! See
+    # https://mypy.readthedocs.io/en/stable/protocols.html.
+    def dump(self):
 
-    try:
-      for k, v in value.items():
-        self.get( k ).setValue( v )
-    except KeyError:
-      raise ValueError( "Expected a dict matching the schema for key %s; "
-                        "got %r" % ( self.getFullPath(), value ) )
+        stack = [(self, "")]
+        result = ({}, {})
 
-  # TODO: Add typing information... once mypy supports recursive types. See
-  # https://github.com/python/mypy/issues/731.
-  # Or use a Protocol instead! See
-  # https://mypy.readthedocs.io/en/stable/protocols.html.
-  def dump( self ):
+        KEYS = 0
+        SECTIONS = 1
 
-    stack = [ ( self, "" ) ]
-    result = ( {}, {} )
+        while stack:
 
-    KEYS     = 0
-    SECTIONS = 1
+            node, key = stack.pop(0)
 
-    while stack:
+            if node.isLeaf():
 
-      node, key = stack.pop( 0 )
+                serializer = node.proto.metadata.get("serializer")
 
-      if node.isLeaf():
+                if node.isEmpty() or serializer is None:
+                    continue
 
-        serializer = node.proto.metadata.get( "serializer" )
+                result[KEYS][key] = serializer.serialize(node.value())
 
-        if node.isEmpty() or serializer is None:
-          continue
+            else:
 
-        result[ KEYS ][ key ] = serializer.serialize( node.value() )
+                for node_key, node in sorted(node.nodes.items()):
 
-      else:
+                    if node.isEmpty():
+                        continue
 
-        for node_key, node in sorted( node.nodes.items() ):
+                    subkey = ".".join((key, node_key)) if key else node_key
 
-          if node.isEmpty():
-            continue
+                    if node.proto.metadata.get("is_section"):
 
-          subkey = ".".join( ( key, node_key ) ) if key else node_key
+                        dump = node.dump()
 
-          if node.proto.metadata.get( "is_section" ):
+                        if len(dump[KEYS]) + len(dump[SECTIONS]) > 0:
+                            result[SECTIONS][subkey] = dump
 
-            dump = node.dump()
+                    else:
+                        stack.append((node, subkey))
 
-            if len( dump[ KEYS ] ) + len( dump[ SECTIONS ] ) > 0:
-              result[ SECTIONS ][ subkey ] = dump
+        return result
 
-          else:
-            stack.append( ( node, subkey ) )
+    def onChange(self, key: Text, callback: Callable):
 
-    return result
+        leaf = self.get(key)
+        leaf.notifier.add(callback)
 
-  def onChange( self, key: Text, callback: Callable ):
 
-    leaf = self.get( key )
-    leaf.notifier.add( callback )
+class NodeProto(object):
+    def __init__(self, key: Text, klass: Type[BaseNode]):
 
+        self.key: Text = key
+        self.nodes: Dict[Text, NodeProto] = MatchingDict()
+        self.klass: Type[BaseNode] = klass
+        self.inherit: Optional[Text] = None
+        self.metadata: Dict[Text, Any] = {}
+        self.default_value: Any = None
 
-class NodeProto( object ):
+    def get(self, key: Text) -> "NodeProto":
 
-  def __init__( self, key: Text, klass: Type[ BaseNode ] ):
+        if "." in key:
+            key, subkey = key.split(".")
+            return self.get(key).get(subkey)
 
-    self.key: Text                      = key
-    self.nodes: Dict[ Text, NodeProto ] = MatchingDict()
-    self.klass: Type[ BaseNode ]        = klass
-    self.inherit: Optional[ Text ]      = None
-    self.metadata: Dict[ Text, Any ]    = {}
-    self.default_value: Any             = None
+        return self.nodes[key]
 
-  def get( self, key: Text ) -> "NodeProto":
+    def new(self, key: Text, klass: Type[BaseNode]) -> "NodeProto":
 
-    if "." in key:
-      key, subkey = key.split( "." )
-      return self.get( key ).get( subkey )
+        if "." in key:
+            key, subkey = key.split(".", 1)
+            return self.new(key, klass=Node).new(subkey, klass=klass)
 
-    return self.nodes[ key ]
+        if key not in self.nodes:
 
-  def new( self, key: Text, klass: Type[ BaseNode ] ) -> "NodeProto":
+            new_node = NodeProto(key, klass)
+            self.nodes[key] = new_node
 
-    if "." in key:
-      key, subkey = key.split( ".", 1 )
-      return ( self.new( key, klass=Node )
-                   .new( subkey, klass=klass ) )
+        return self.nodes[key]
 
-    if key not in self.nodes:
+    def build(self, key: Text, container: Node) -> Union[Node, Leaf]:
 
-      new_node = NodeProto( key, klass )
-      self.nodes[ key ] = new_node
+        node: Union[Node, Leaf]
+        inherit_container: Optional[Node] = None
 
-    return self.nodes[ key ]
+        ## 1/ Figure out what node to build, by looking it up in the prototype tree
+        ## then searching this prototype for inheritance information.
 
-  def build( self, key: Text, container: Node ) -> Union[ Node, Leaf ]:
+        if key in self.nodes:
 
-    node: Union[ Node, Leaf ]
-    inherit_container: Optional[ Node ] = None
+            proto = self.get(key)
 
-    ## 1/ Figure out what node to build, by looking it up in the prototype tree
-    ## then searching this prototype for inheritance information.
+            if container.inherit is not None:
+                inherit_container = container.inherit
 
-    if key in self.nodes:
+        elif self.inherit:
 
-      proto = self.get( key )
+            inherit_pattern = self.inherit
+            inherit_container = container
 
-      if container.inherit is not None:
-        inherit_container = container.inherit
+            while inherit_container is not None and inherit_pattern.startswith("."):
 
-    elif self.inherit:
+                inherit_pattern = inherit_pattern[1:]
+                inherit_container = inherit_container.container
+                ## TODO: inherit from subcontainers?
 
-      inherit_pattern = self.inherit
-      inherit_container = container
+            if inherit_container is None:
+                raise KeyError(key)
 
-      while ( inherit_container is not None
-              and inherit_pattern.startswith( "." ) ):
+            proto = inherit_container.proto.get(key)
 
-        inherit_pattern = inherit_pattern[ 1: ]
-        inherit_container = inherit_container.container
-        ## TODO: inherit from subcontainers?
+        else:
+            raise KeyError(key)
 
-      if inherit_container is None:
-        raise KeyError( key )
+        # TODO: Don't pass the class, just an information of the nature of this
+        # node.
+        if proto.klass is Leaf:
+            node = Leaf(key, container)
+        elif proto.klass is Node:
+            node = Node(key, container)
+        node.proto = proto
+        node.fallback_value = proto.default_value
 
-      proto = inherit_container.proto.get( key )
+        ## 2/ Set up inheritance given the provided information.
 
-    else:
-      raise KeyError( key )
+        if inherit_container is not None:
 
-    # TODO: Don't pass the class, just an information of the nature of this
-    # node.
-    if proto.klass is Leaf:
-      node = Leaf( key, container )
-    elif proto.klass is Node:
-      node = Node( key, container )
-    node.proto = proto
-    node.fallback_value = proto.default_value
+            inherit_node = inherit_container.get(key)
 
-    ## 2/ Set up inheritance given the provided information.
+            ## Sanity test:
+            assert type(inherit_node) is type(
+                node
+            ), "Type mismatch in Settings hierarchy!"
 
-    if inherit_container is not None:
+            node.setInherit(inherit_node)
 
-      inherit_node = inherit_container.get( key )
-
-      ## Sanity test:
-      assert type( inherit_node ) is type( node ), (
-          "Type mismatch in Settings hierarchy!" )
-
-      node.setInherit( inherit_node )
-
-    return node
+        return node
 
 
 # TODO: Annotate with types once mypy supports recursive types.
-class Settings( Node ):
+class Settings(Node):
+    def __init__(self):
 
-  def __init__( self ):
+        super(Settings, self).__init__(ROOT, None)
 
-    super( Settings, self ).__init__( ROOT, None )
+        self.proto = NodeProto(ROOT, self.__class__)
 
-    self.proto = NodeProto( ROOT, self.__class__ )
+    def loadSchema(self, schema_def):
 
-  def loadSchema( self, schema_def ):
+        pending_schema_defs = [(self.proto, schema_def)]
 
-    pending_schema_defs = [ ( self.proto, schema_def ) ]
+        while pending_schema_defs:
 
-    while pending_schema_defs:
+            current_proto, current_schema_def = pending_schema_defs.pop(0)
 
-      current_proto, current_schema_def = pending_schema_defs.pop( 0 )
+            current_proto.inherit = current_schema_def.get("inherit")
+            # TODO: Remove the "default_metadata" feature? It's only used for
+            # shortcuts, and may be better replaced by a little throwaway helper
+            # where we define those shortcuts.
+            section_metadata = current_schema_def.get("default_metadata") or {}
 
-      current_proto.inherit = current_schema_def.get( "inherit" )
-      # TODO: Remove the "default_metadata" feature? It's only used for
-      # shortcuts, and may be better replaced by a little throwaway helper
-      # where we define those shortcuts.
-      section_metadata  = current_schema_def.get( "default_metadata" ) or {}
+            for key, metadata in current_schema_def.get("keys", ()):
 
-      for key, metadata in current_schema_def.get( "keys", () ):
+                new_proto = current_proto.new(key, klass=Leaf)
 
-        new_proto = current_proto.new( key, klass=Leaf )
+                new_proto.metadata.update(section_metadata)
+                new_proto.metadata.update(metadata)
+                new_proto.metadata["schema_id"] = id(schema_def)
 
-        new_proto.metadata.update( section_metadata )
-        new_proto.metadata.update( metadata )
-        new_proto.metadata[ "schema_id" ] = id( schema_def )
+                default = new_proto.metadata.get("default")
+                serializer = new_proto.metadata.get("serializer")
 
-        default    = new_proto.metadata.get( "default" )
-        serializer = new_proto.metadata.get( "serializer" )
+                if None not in (serializer, default):
+                    default = serializer.deserializeDefault(default)
 
-        if None not in ( serializer, default ):
-          default = serializer.deserializeDefault( default )
+                new_proto.default_value = default
 
-        new_proto.default_value = default
+            sections = current_schema_def.get("sections", ())
+            for section_key, sub_schema_def in sections:
 
-      sections = current_schema_def.get( "sections", () )
-      for section_key, sub_schema_def in sections:
+                new_proto = current_proto
 
-        new_proto = current_proto
+                for key in section_key.split("."):
+                    new_proto = new_proto.new(key, klass=Node)
+                    new_proto.metadata["is_section"] = True
 
-        for key in section_key.split( "." ):
-          new_proto = new_proto.new( key, klass=Node )
-          new_proto.metadata[ "is_section" ] = True
+                pending_schema_defs.append((new_proto, sub_schema_def))
 
-        pending_schema_defs.append( ( new_proto, sub_schema_def ) )
+    def restore(self, settings_struct):
 
-  def restore( self, settings_struct ):
+        stack = [(self, settings_struct)]
 
-    stack = [ ( self, settings_struct ) ]
+        while stack:
 
-    while stack:
+            current_settings, struct = stack.pop(0)
+            keys, sections = struct
 
-      current_settings, struct = stack.pop( 0 )
-      keys, sections = struct
+            for key, value in keys.items():
 
-      for key, value in keys.items():
+                try:
+                    node = current_settings.get(key)
 
-        try:
-          node = current_settings.get( key )
+                except KeyError:
+                    continue
 
-        except KeyError:
-          continue
+                serializer = node.proto.metadata.get("serializer")
+                if serializer is None:
+                    continue
 
-        serializer = node.proto.metadata.get( "serializer" )
-        if serializer is None:
-          continue
+                value = serializer.deserialize(value)
+                node.setValue(value)
 
-        value = serializer.deserialize( value )
-        node.setValue( value )
+            for section, struct in sections.items():
 
-      for section, struct in sections.items():
+                try:
+                    node = current_settings.get(section)
 
-        try:
-          node = current_settings.get( section )
+                except KeyError:
+                    continue
 
-        except KeyError:
-          continue
-
-        if not node.isLeaf():
-          stack.append( ( node, struct ) )
+                if not node.isLeaf():
+                    stack.append((node, struct))

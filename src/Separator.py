@@ -24,14 +24,13 @@
 from PyQt5.QtWidgets import QFrame
 
 
-class Separator( QFrame ):
+class Separator(QFrame):
+    def __init__(self, parent=None):
 
-  def __init__( self, parent=None ):
+        QFrame.__init__(self, parent)
 
-    QFrame.__init__( self, parent )
-
-    self.setLineWidth( 1 );
-    self.setMidLineWidth( 0 );
-    self.setFrameShape ( QFrame.HLine )
-    self.setFrameShadow( QFrame.Sunken )
-    self.setMinimumSize( 0, 2 );
+        self.setLineWidth(1)
+        self.setMidLineWidth(0)
+        self.setFrameShape(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
+        self.setMinimumSize(0, 2)

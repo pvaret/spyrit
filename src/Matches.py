@@ -30,214 +30,204 @@ import abc
 import re
 
 
-class MatchCreationError( Exception ):
-  pass
+class MatchCreationError(Exception):
+    pass
 
 
 ## TODO: Add the proper methods.
-class BaseMatch( abc.ABC ):
-  pass
+class BaseMatch(abc.ABC):
+    pass
 
 
-class RegexMatch( BaseMatch ):
+class RegexMatch(BaseMatch):
 
-  matchtype = "regex"
+    matchtype = "regex"
 
-  def __init__( self, pattern="" ):
+    def __init__(self, pattern=""):
 
-    self.pattern = pattern
-    self.regex   = None
-    self.error   = None
-    self.name    = None
+        self.pattern = pattern
+        self.regex = None
+        self.error = None
+        self.name = None
 
-    if pattern:
-      self.setPattern( pattern )
+        if pattern:
+            self.setPattern(pattern)
 
+    def compileRegex(self, regex):
 
-  def compileRegex( self, regex ):
+        self.error = None
 
-    self.error = None
+        try:
+            self.regex = re.compile(regex)
 
-    try:
-      self.regex = re.compile( regex )
+        except re.error as e:
+            self.regex = re.compile("$ ^")  ## Clever regex that never matches.
+            self.error = "%s" % e
 
-    except re.error as e:
-      self.regex = re.compile( "$ ^" )  ## Clever regex that never matches.
-      self.error = "%s" % e
+    def setPattern(self, pattern):
 
+        self.pattern = pattern
+        regex_pattern = self.patternToRegex(pattern)
 
-  def setPattern( self, pattern ):
+        self.compileRegex(regex_pattern)
 
-    self.pattern = pattern
-    regex_pattern = self.patternToRegex( pattern )
+    def patternToRegex(self, pattern):
 
-    self.compileRegex( regex_pattern )
+        ## This is a regex match, so the regex IS the pattern.
+        return pattern
 
+    def matches(self, string):
 
-  def patternToRegex( self, pattern ):
+        if not self.regex:
+            return None
 
-    ## This is a regex match, so the regex IS the pattern.
-    return pattern
+        return list(self.regex.finditer(string))
 
+    def matchtokens(self):
 
-  def matches( self, string ):
+        if not self.regex:
+            return None
 
-    if not self.regex:
-      return None
+        tokens = sorted([(v, k) for k, v in self.regex.groupindex.items()])
 
-    return list( self.regex.finditer( string ) )
+        return [tok[1] for tok in tokens]
 
+    def __repr__(self):
 
-  def matchtokens( self ):
+        return self.matchtype + ":" + self.pattern
 
-    if not self.regex:
-      return None
+    def toString(self):
 
-    tokens = sorted( [ ( v, k ) for k, v in self.regex.groupindex.items() ] )
+        return "'" + self.pattern + "' (regex)"
 
-    return [ tok[1] for tok in tokens ]
+    def __unicode__(self):
 
-
-  def __repr__( self ):
-
-    return self.matchtype + ":" + self.pattern
-
-
-  def toString( self ):
-
-    return "'" + self.pattern + "' (regex)"
-
-
-  def __unicode__( self ):
-
-    raise NotImplementedError( "This method doesn't exist anymore!" )
-
-
+        raise NotImplementedError("This method doesn't exist anymore!")
 
 
 ## This convoluted regex parses out either words (\w+) between square brackets
 ## or asterisks, if they aren't preceded by an odd number of backslashes.
 
 
-TOKEN = r" *\w+ *" ## Non-null word with optional surrounding space.
+TOKEN = r" *\w+ *"  ## Non-null word with optional surrounding space.
 
-BS      = r"\\" ## Backslash
-ASTER   = r"\*" ## Asterisk
-PERCENT = r"\%" ## Percent sign
+BS = r"\\"  ## Backslash
+ASTER = r"\*"  ## Asterisk
+PERCENT = r"\%"  ## Percent sign
 
-LSB   = r"\[" ## Left square bracket
-RSB   = r"\]" ## Right square bracket
+LSB = r"\["  ## Left square bracket
+RSB = r"\]"  ## Right square bracket
 
 PARSER = re.compile(
-    "(?:"                     ## Either...
-  +   "^"                     ## Beginning of string
-  + "|"                       ## Or...
-  +   "[^" + BS + "]"         ## Any one character other than a backslash
-  + ")"                       ## Then...
-  + "(?:" + BS * 2 + ")"
-  + "*"                       ## An even number of backslashes
-  + "("                       ## And then, group-match either...
-  +    PERCENT                ## A percent sign
-  + "|"                       ## Or...
-  +    ASTER                  ## An asterisk
-  + "|"                       ## Or...
-  +    LSB
-  +      TOKEN                ## Something of the form [token].
-  +    RSB
-  + ")"
+    "(?:"  ## Either...
+    + "^"  ## Beginning of string
+    + "|"  ## Or...
+    + "[^"
+    + BS
+    + "]"  ## Any one character other than a backslash
+    + ")"  ## Then...
+    + "(?:"
+    + BS * 2
+    + ")"
+    + "*"  ## An even number of backslashes
+    + "("  ## And then, group-match either...
+    + PERCENT  ## A percent sign
+    + "|"  ## Or...
+    + ASTER  ## An asterisk
+    + "|"  ## Or...
+    + LSB
+    + TOKEN  ## Something of the form [token].
+    + RSB
+    + ")"
 )
 
 
-class SmartMatch( RegexMatch ):
+class SmartMatch(RegexMatch):
 
-  matchtype = "smart"
+    matchtype = "smart"
 
-  def patternToRegex( self, pattern ):
+    def patternToRegex(self, pattern):
 
-    regex  = []
-    tokens = set()
+        regex = []
+        tokens = set()
 
-    while pattern:
+        while pattern:
 
-      m = PARSER.search( pattern )
+            m = PARSER.search(pattern)
 
-      if not m:
+            if not m:
 
-        regex.append( self.unescape_then_escape( pattern ) )
-        break
+                regex.append(self.unescape_then_escape(pattern))
+                break
 
-      start, end = m.span( 1 )
-      before, pattern = pattern[ :start ], pattern[ end: ]
+            start, end = m.span(1)
+            before, pattern = pattern[:start], pattern[end:]
 
-      if before:
-        regex.append( self.unescape_then_escape( before ) )
+            if before:
+                regex.append(self.unescape_then_escape(before))
 
-      token = m.group( 1 ).lower().lstrip( "[ " ).rstrip( " ]" )
+            token = m.group(1).lower().lstrip("[ ").rstrip(" ]")
 
-      if token == "%":
-        regex.append( ".*?" ) ## Match anything, non-greedy
+            if token == "%":
+                regex.append(".*?")  ## Match anything, non-greedy
 
-      elif token == "*":
-        regex.append( ".*" )  ## Match anything, greedy
+            elif token == "*":
+                regex.append(".*")  ## Match anything, greedy
 
-      elif token in tokens:  ## Token which is already known
-        regex.append( "(?P=%s)" % token ) ## Insert backreference.
+            elif token in tokens:  ## Token which is already known
+                regex.append("(?P=%s)" % token)  ## Insert backreference.
 
-      else:  ## New token
-        tokens.add( token )
+            else:  ## New token
+                tokens.add(token)
 
-        ## Named match for any non-null string, non-greedy.
-        regex.append( r"(?P<%s>.+?)" % token )
+                ## Named match for any non-null string, non-greedy.
+                regex.append(r"(?P<%s>.+?)" % token)
 
-    return "".join( regex )
+        return "".join(regex)
 
+    def unescape_then_escape(self, string):
 
-  def unescape_then_escape( self, string ):
+        ## Unescape string according to the SmartMatch parser's rules, then
+        ## re-escape according to the rules of Python's re module.
 
-    ## Unescape string according to the SmartMatch parser's rules, then
-    ## re-escape according to the rules of Python's re module.
+        replacements = (
+            ("\[", "["),
+            ("\]", "]"),
+            ("\*", "*"),
+            ("\\" * 2, "\\"),
+        )
 
-    replacements = (
-      ( "\[",   "[" ),
-      ( "\]",   "]" ),
-      ( "\*",   "*" ),
-      ( "\\"*2, "\\" ),
-    )
+        for from_, to in replacements:
+            string = string.replace(from_, to)
 
-    for from_, to in replacements:
-      string = string.replace( from_, to )
+        return re.escape(string)
 
-    return re.escape( string )
+    def toString(self):
 
+        return "'" + self.pattern + "'"
 
-  def toString( self ):
+    def __unicode__(self):
 
-    return "'" + self.pattern + "'"
-
-
-  def __unicode__( self ):
-
-    raise NotImplementedError( "This method doesn't exist anymore!" )
+        raise NotImplementedError("This method doesn't exist anymore!")
 
 
+def load_match_by_type(pattern, type="smart"):
 
-def load_match_by_type( pattern, type="smart" ):
+    type = type.lower().strip()
 
-  type = type.lower().strip()
+    TYPES = {
+        "smart": SmartMatch,
+        "regex": RegexMatch,
+    }
 
-  TYPES = {
-    "smart": SmartMatch,
-    "regex": RegexMatch,
-  }
+    klass = TYPES.get(type)
 
-  klass = TYPES.get( type )
+    if not klass:
+        raise MatchCreationError("Unknown match type: %s" % type)
 
-  if not klass:
-    raise MatchCreationError( "Unknown match type: %s" % type )
+    match = klass(pattern)
 
-  match = klass( pattern )
+    if match.error:
+        raise MatchCreationError("Match pattern syntax error: %s" % match.error)
 
-  if match.error:
-    raise MatchCreationError( "Match pattern syntax error: %s" % match.error )
-
-  return match
+    return match

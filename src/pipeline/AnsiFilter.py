@@ -29,169 +29,164 @@ from Globals import FORMAT_PROPERTIES
 from Globals import ESC
 
 from .BaseFilter import BaseFilter
-from .ChunkData  import ChunkType
-from .ChunkData  import ANSI_TO_FORMAT
+from .ChunkData import ChunkType
+from .ChunkData import ANSI_TO_FORMAT
 
 
-class AnsiFilter( BaseFilter ):
+class AnsiFilter(BaseFilter):
 
-  relevant_types = ChunkType.BYTES
+    relevant_types = ChunkType.BYTES
 
-  ## For the time being, we only catch the SGR (Set Graphics Rendition) part
-  ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
+    ## For the time being, we only catch the SGR (Set Graphics Rendition) part
+    ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
 
-  CSI8b = b"\x9b"
+    CSI8b = b"\x9b"
 
-  CSI = b"(?:" + ESC + br"\[" + b"|" + CSI8b + b")"
+    CSI = b"(?:" + ESC + br"\[" + b"|" + CSI8b + b")"
 
-  match = re.compile( CSI + br"((?:\d+;?)*)" + b"m" )
+    match = re.compile(CSI + br"((?:\d+;?)*)" + b"m")
 
-  unfinished = re.compile(
-    b"|".join( [ b"(" + code + b"$)" for code in ( ESC, CSI + br"[\d;]*" ) ] )
-  )
+    unfinished = re.compile(
+        b"|".join([b"(" + code + b"$)" for code in (ESC, CSI + br"[\d;]*")])
+    )
 
+    def resetInternalState(self):
 
-  def resetInternalState( self ):
+        ## Note: this method is called by the base class's __init__, so we're
+        ## sure that self.highlighted and self.current_colors are defined.
 
-    ## Note: this method is called by the base class's __init__, so we're
-    ## sure that self.highlighted and self.current_colors are defined.
+        self.highlighted, self.current_colors = self.defaultColors()
+        BaseFilter.resetInternalState(self)
 
-    self.highlighted, self.current_colors = self.defaultColors()
-    BaseFilter.resetInternalState( self )
+    def defaultColors(self):
 
+        return (False, ANSI_TO_FORMAT.get(b"39")[1])  ## highlight  ## default colors
 
-  def defaultColors( self ):
+    def processChunk(self, chunk):
 
-    return ( False,  ## highlight
-             ANSI_TO_FORMAT.get( b"39" )[1] ) ## default colors
+        current_colors = self.current_colors
+        highlighted = self.highlighted
 
+        chunk_type, text = chunk
 
-  def processChunk( self, chunk ):
+        while text:
 
-    current_colors = self.current_colors
-    highlighted    = self.highlighted
+            ansi = self.match.search(text)
 
-    chunk_type, text = chunk
+            if not ansi:
 
-    while text:
+                ## Done with the ANSI parsing in this chunk! Bail out.
+                break
 
-      ansi = self.match.search( text )
+            head, text = text[: ansi.start()], text[ansi.end() :]
 
-      if not ansi:
+            if head:
+                yield (ChunkType.BYTES, head)
 
-        ## Done with the ANSI parsing in this chunk! Bail out.
-        break
+            parameters = bytes(ansi.groups()[0])
 
-      head, text = text[ :ansi.start() ], text[ ansi.end(): ]
+            if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
 
-      if head:
-        yield ( ChunkType.BYTES, head )
+                yield (ChunkType.ANSI, {})
 
-      parameters = bytes( ansi.groups() [0] )
+                highlighted, current_colors = self.defaultColors()
+                continue
 
-      if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
+            format = {}
 
-        yield ( ChunkType.ANSI, {} )
+            list_params = parameters.split(b";")
 
-        highlighted, current_colors = self.defaultColors()
-        continue
+            while list_params:
 
-      format = {}
+                param = list_params.pop(0)
 
-      list_params = parameters.split( b";" )
+                ## Special case: extended 256 color codes require special treatment.
 
-      while list_params:
+                if len(list_params) >= 2 and param in [b"38", b"48"]:
 
-        param = list_params.pop( 0 )
+                    prop = ANSI_TO_FORMAT.get(param)[0]
+                    param = list_params.pop(0)
 
-        ## Special case: extended 256 color codes require special treatment.
+                    if param == b"5":
 
-        if len( list_params ) >= 2 and param in [ b"38", b"48" ]:
+                        color = ANSI_COLORS_EXTENDED.get(int(list_params.pop(0)))
+                        format[prop] = color
 
-          prop = ANSI_TO_FORMAT.get( param )[0]
-          param = list_params.pop( 0 )
+                        continue
 
-          if param == b"5":
+                ## Carry on with the standard cases.
 
-            color = ANSI_COLORS_EXTENDED.get( int( list_params.pop( 0 ) ) )
-            format[ prop ] = color
+                if param == b"0":  ## ESC [ 0 m -- reset the format!
 
-            continue
+                    yield (ChunkType.ANSI, {})
 
-        ## Carry on with the standard cases.
+                    highlighted, current_colors = self.defaultColors()
+                    format = {}
 
-        if param == b"0":  ## ESC [ 0 m -- reset the format!
+                    continue
 
-          yield ( ChunkType.ANSI, {} )
+                prop, value = ANSI_TO_FORMAT.get(param, (None, None))
 
-          highlighted, current_colors = self.defaultColors()
-          format = {}
+                if not prop:  ## Unknown ANSI code. Ignore.
+                    continue
 
-          continue
+                if prop == FORMAT_PROPERTIES.COLOR:
 
-        prop, value = ANSI_TO_FORMAT.get( param, ( None, None ) )
+                    (c_unhighlighted, c_highlighted) = current_colors = value
 
-        if not prop:  ## Unknown ANSI code. Ignore.
-          continue
+                    if highlighted:
+                        format[FORMAT_PROPERTIES.COLOR] = c_highlighted
 
-        if prop == FORMAT_PROPERTIES.COLOR:
+                    else:
+                        format[FORMAT_PROPERTIES.COLOR] = c_unhighlighted
 
-          ( c_unhighlighted, c_highlighted ) = current_colors = value
+                    continue
 
-          if highlighted:
-            format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
+                if prop == FORMAT_PROPERTIES.BOLD:
 
-          else:
-            format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
+                    ## According to spec, this actually means highlighted colors.
 
-          continue
+                    highlighted = value
 
-        if prop == FORMAT_PROPERTIES.BOLD:
+                    c_unhighlighted, c_highlighted = current_colors
 
-          ## According to spec, this actually means highlighted colors.
+                    if value:  ## Colors are now highlighted.
+                        format[FORMAT_PROPERTIES.COLOR] = c_highlighted
 
-          highlighted = value
+                    else:
+                        format[FORMAT_PROPERTIES.COLOR] = c_unhighlighted
 
-          c_unhighlighted, c_highlighted = current_colors
+                    if False:  ## Ignore 'bold' meaning of this ANSI code?
+                        continue  ## TODO: Make it a parameter.
 
-          if value:  ## Colors are now highlighted.
-            format[ FORMAT_PROPERTIES.COLOR ] = c_highlighted
+                ## Other cases: italic, underline and such. Just pass the value along.
 
-          else:
-            format[ FORMAT_PROPERTIES.COLOR ] = c_unhighlighted
+                format[prop] = value
 
-          if False:   ## Ignore 'bold' meaning of this ANSI code?
-            continue  ## TODO: Make it a parameter.
+            if format:
+                yield (ChunkType.ANSI, format)
 
-        ## Other cases: italic, underline and such. Just pass the value along.
+        ## Done searching for complete ANSI sequences.
 
-        format[ prop ] = value
+        self.current_colors = current_colors
+        self.highlighted = highlighted
 
-      if format:
-        yield ( ChunkType.ANSI, format )
+        if text:
 
+            possible_unfinished = self.unfinished.search(text)
 
-    ## Done searching for complete ANSI sequences.
+            if possible_unfinished:
 
-    self.current_colors = current_colors
-    self.highlighted    = highlighted
+                ## Remaining text ends with an unfinished ANSI sequence!
+                ## So we feed what remains of the raw text, if any, down the pipe, and
+                ## then postpone the unfinished ANSI sequence.
 
-    if text:
+                startmatch = possible_unfinished.start()
 
-      possible_unfinished = self.unfinished.search( text )
+                if startmatch > 0:
+                    yield (ChunkType.BYTES, text[:startmatch])
 
-      if possible_unfinished:
+                self.postpone((ChunkType.BYTES, text[startmatch:]))
 
-        ## Remaining text ends with an unfinished ANSI sequence!
-        ## So we feed what remains of the raw text, if any, down the pipe, and
-        ## then postpone the unfinished ANSI sequence.
-
-        startmatch = possible_unfinished.start()
-
-        if startmatch > 0:
-          yield ( ChunkType.BYTES, text[ :startmatch ] )
-
-        self.postpone( ( ChunkType.BYTES, text[ startmatch: ] ) )
-
-      else:
-        yield ( ChunkType.BYTES, text )
+            else:
+                yield (ChunkType.BYTES, text)

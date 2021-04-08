@@ -25,57 +25,53 @@ from PyQt5.QtWidgets import QApplication
 from .BaseCommand import BaseCommand
 
 
-class SessionCommand( BaseCommand ):
+class SessionCommand(BaseCommand):
 
-  ## TODO: Maybe split this out into several commands. Those don't feel like
-  ## they belong together. So for now we hide the docstring so the commands
-  ## will remain hidden in the help.
-  """Connect, disconnect, close, quit."""
+    ## TODO: Maybe split this out into several commands. Those don't feel like
+    ## they belong together. So for now we hide the docstring so the commands
+    ## will remain hidden in the help.
+    """Connect, disconnect, close, quit."""
 
-  def cmd_reconnect( self, world ):
+    def cmd_reconnect(self, world):
 
-    """
-    Reconnect to the current world if it is currently disconnected.
+        """
+        Reconnect to the current world if it is currently disconnected.
 
-    Usage: %(cmd)s
+        Usage: %(cmd)s
 
-    """
+        """
 
-    world.connectToWorld()
+        world.connectToWorld()
 
+    def cmd_disconnect(self, world):
 
-  def cmd_disconnect( self, world ):
+        """
+        Disconnect from the current world.
 
-    """
-    Disconnect from the current world.
+        Usage: %(cmd)s
 
-    Usage: %(cmd)s
+        """
 
-    """
+        world.disconnectFromWorld()
 
-    world.disconnectFromWorld()
+    def cmd_quit(self, world):
 
+        """
+        Quit the application.
 
-  def cmd_quit( self, world ):
+        Usage: %(cmd)s
 
-    """
-    Quit the application.
+        """
 
-    Usage: %(cmd)s
+        QApplication.instance().closeAllWindows()
 
-    """
+    def cmd_close(self, world):
 
-    QApplication.instance().closeAllWindows()
+        """
+        Closes the current tab.
 
+        Usage: %(cmd)s
 
-  def cmd_close( self, world ):
+        """
 
-    """
-    Closes the current tab.
-
-    Usage: %(cmd)s
-
-    """
-
-    world.worldui.close()
-
+        world.worldui.close()

@@ -23,15 +23,15 @@
 from PyQt5.QtWidgets import QMessageBox
 
 
-def confirmDialog( title, msg, okbutton, widget=None ):
+def confirmDialog(title, msg, okbutton, widget=None):
 
-  messagebox = QMessageBox( widget )
+    messagebox = QMessageBox(widget)
 
-  messagebox.setIcon( QMessageBox.Question )
-  messagebox.setWindowTitle( title )
-  messagebox.setText( msg )
+    messagebox.setIcon(QMessageBox.Question)
+    messagebox.setWindowTitle(title)
+    messagebox.setText(msg)
 
-  messagebox.addButton( okbutton, QMessageBox.AcceptRole )
-  messagebox.addButton( QMessageBox.Cancel )
+    messagebox.addButton(okbutton, QMessageBox.AcceptRole)
+    messagebox.addButton(QMessageBox.Cancel)
 
-  return ( messagebox.exec_() != QMessageBox.Cancel )
+    return messagebox.exec_() != QMessageBox.Cancel

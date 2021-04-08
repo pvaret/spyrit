@@ -24,29 +24,26 @@
 from PyQt5.QtWidgets import QWidget, QFormLayout
 
 
-class SettingsPanel( QWidget ):
+class SettingsPanel(QWidget):
 
-  MARGINS = ( 20, 20, 20, 20 )  ## right, top, left, bottom
+    MARGINS = (20, 20, 20, 20)  ## right, top, left, bottom
 
-  def __init__( self, mapper ):
+    def __init__(self, mapper):
 
-    QWidget.__init__( self )
+        QWidget.__init__(self)
 
-    self.setLayout( QFormLayout() )
-    self.layout().setContentsMargins( *self.MARGINS )
+        self.setLayout(QFormLayout())
+        self.layout().setContentsMargins(*self.MARGINS)
 
-    self.mapper = mapper
+        self.mapper = mapper
 
+    def addBoundRow(self, node_path, widget, label=None):
 
-  def addBoundRow( self, node_path, widget, label=None ):
+        ## WORKAROUND: Qt truncates the widget if it's a QCheckBox with its own
+        ## text unless we do this:
+        if label is None:
+            label = " "
 
-    ## WORKAROUND: Qt truncates the widget if it's a QCheckBox with its own
-    ## text unless we do this:
-    if label is None:
-      label = " "
+        self.layout().addRow(label, widget)
 
-    self.layout().addRow( label, widget )
-
-    return self.mapper.bind( node_path, widget )
-
-
+        return self.mapper.bind(node_path, widget)

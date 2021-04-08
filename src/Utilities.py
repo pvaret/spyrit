@@ -31,159 +31,153 @@ DEFAULT_ESCAPES = {
     "\n": "n",
     "\r": "r",
     "\t": "t",
-    '"':  '"',
-    "\'": "\'",
+    '"': '"',
+    "'": "'",
 }
 
 BS = "\\"
 
 
-
-
 def check_ssl_is_available():
 
-  from PyQt5 import QtNetwork
-  return QtNetwork.QSslSocket.supportsSsl()
+    from PyQt5 import QtNetwork
+
+    return QtNetwork.QSslSocket.supportsSsl()
 
 
+def quote(string, esc=BS):
+    r"""
+    Escapes typical control characters in the given string.
 
-def quote( string, esc=BS ):
-  r"""
-  Escapes typical control characters in the given string.
+    >>> STR = '''Carriage
+    ... return.'''
+    >>> print( quote( STR ) )
+    Carriage\nreturn.
 
-  >>> STR = '''Carriage
-  ... return.'''
-  >>> print( quote( STR ) )
-  Carriage\nreturn.
+    """
 
-  """
+    ## Escape the escape character itself:
+    string = string.replace(esc, esc + esc)
 
-  ## Escape the escape character itself:
-  string = string.replace( esc, esc + esc )
+    ## Then escape the rest:
+    for from_, to in DEFAULT_ESCAPES.items():
+        string = string.replace(from_, esc + to)
 
-  ## Then escape the rest:
-  for from_, to in DEFAULT_ESCAPES.items():
-    string = string.replace( from_, esc + to )
-
-  return string
-
+    return string
 
 
-def unquote( string, esc=BS ):
-  r"""
-  Unquote a string. Reverse operation to quote().
+def unquote(string, esc=BS):
+    r"""
+    Unquote a string. Reverse operation to quote().
 
-  >>> print( unquote( r'It\'s okay.\nYes.' ) )
-  It's okay.
-  Yes.
+    >>> print( unquote( r'It\'s okay.\nYes.' ) )
+    It's okay.
+    Yes.
 
-  >>> STR = r'''This \\ 'is'
-  ... a "test".\n'''
-  >>> unquote( quote( STR ) ) == STR
-  True
+    >>> STR = r'''This \\ 'is'
+    ... a "test".\n'''
+    >>> unquote( quote( STR ) ) == STR
+    True
 
-  """
+    """
 
-  result    = []
-  in_escape = False
-  escapes   = dict( ( v, k ) for ( k, v ) in DEFAULT_ESCAPES.items() )
+    result = []
+    in_escape = False
+    escapes = dict((v, k) for (k, v) in DEFAULT_ESCAPES.items())
 
-  for c in string:
+    for c in string:
 
-    if in_escape:
-      result.append( escapes.get( c, c ) )
-      in_escape = False
-      continue
+        if in_escape:
+            result.append(escapes.get(c, c))
+            in_escape = False
+            continue
 
-    if c == esc:
-      in_escape = True
-      continue
+        if c == esc:
+            in_escape = True
+            continue
 
-    result.append( c )
+        result.append(c)
 
-  return "".join( result )
-
+    return "".join(result)
 
 
 def make_unicode_translation_table():
 
-  from unicodedata import normalize, category
+    from unicodedata import normalize, category
 
-  d = {}
+    d = {}
 
-  def is_latin_letter( l ):
+    def is_latin_letter(l):
 
-    return category( l )[ 0 ] == "L"
+        return category(l)[0] == "L"
 
+    for i in range(0x1FFF):
 
-  for i in range( 0x1FFF ):
+        try:
+            c = chr(i)
 
-    try:
-      c = chr( i )
+        except ValueError:
+            continue
 
-    except ValueError:
-      continue
+        if not is_latin_letter(c):
+            continue
 
-    if not is_latin_letter( c ):
-      continue
+        ## Decompose, then keep only Latin letters in the result.
+        cn = normalize("NFKD", c)
+        cn = "".join([l for l in cn if is_latin_letter(l)])
 
-    ## Decompose, then keep only Latin letters in the result.
-    cn = normalize( "NFKD", c )
-    cn = "".join( [ l for l in cn if is_latin_letter( l ) ] )
+        if cn and cn != c:
+            d[i] = cn
 
-    if cn and cn != c:
-      d[ i ] = cn
-
-  return d
+    return d
 
 
 UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
-def remove_accents(
-    string: str, translation_table=UNICODE_TRANSLATION_TABLE ) -> str:
-  """
-  Filters the diacritics off Latin characters in the given Unicode string.
 
-  >>> print( remove_accents( "Touché!" ) )
-  Touche!
+def remove_accents(string: str, translation_table=UNICODE_TRANSLATION_TABLE) -> str:
+    """
+    Filters the diacritics off Latin characters in the given Unicode string.
 
-  """
+    >>> print( remove_accents( "Touché!" ) )
+    Touche!
 
-  return string.translate( translation_table )
+    """
 
-
-def normalize_text( string: str ) -> str:
-
-  return remove_accents( string ).lower()
+    return string.translate(translation_table)
 
 
-def ensure_valid_filename( filename: str ) -> str:
+def normalize_text(string: str) -> str:
 
-  """
-  Make the given string safe(r) to use as a filename.
+    return remove_accents(string).lower()
 
-  Some platforms refuse certain characters in filenames. This function filters
-  those characters out of the given string and replaces them with an
-  underscore.
 
-  The resulting string is not guaranteed to be valid, because ultimately it's
-  the filesystem's call and we can't second-guess it. This function only makes
-  a best-effort attempt which should hopefully suffice in most cases.
+def ensure_valid_filename(filename: str) -> str:
 
-  Note: the filename must be given as Unicode.
+    """
+    Make the given string safe(r) to use as a filename.
 
-  >>> print( ensure_valid_filename( "(127.0.0.1:*).log" ) )
-  (127.0.0.1__).log
+    Some platforms refuse certain characters in filenames. This function filters
+    those characters out of the given string and replaces them with an
+    underscore.
 
-  """
+    The resulting string is not guaranteed to be valid, because ultimately it's
+    the filesystem's call and we can't second-guess it. This function only makes
+    a best-effort attempt which should hopefully suffice in most cases.
 
-  invalid_char_codes = [ ord( c ) for c in '<>:"/\\|?*' ]
-  invalid_char_codes.extend( range( 32 ) )
+    Note: the filename must be given as Unicode.
 
-  translation_table = dict( ( c, "_" ) for c in invalid_char_codes )
+    >>> print( ensure_valid_filename( "(127.0.0.1:*).log" ) )
+    (127.0.0.1__).log
 
-  return filename.translate( translation_table )
+    """
 
+    invalid_char_codes = [ord(c) for c in '<>:"/\\|?*']
+    invalid_char_codes.extend(range(32))
+
+    translation_table = dict((c, "_") for c in invalid_char_codes)
+
+    return filename.translate(translation_table)
 
 
 CRASH_MSG = """
@@ -199,75 +193,74 @@ so we can look into it.<br/>
 Spyrit will now close.</qt>
 """.strip()
 
-def handle_exception( exc_type, exc_value, exc_traceback ):
 
-  import sys
-  import os.path
-  import traceback
+def handle_exception(exc_type, exc_value, exc_traceback):
 
-  from PyQt5.QtWidgets import QMessageBox
-  from PyQt5.QtWidgets import QApplication
+    import sys
+    import os.path
+    import traceback
 
-  app = QApplication.instance()
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QApplication
 
-  ## KeyboardInterrupt is a special case.
-  ## We don't raise the error dialog when it occurs.
-  if issubclass( exc_type, KeyboardInterrupt ):
+    app = QApplication.instance()
+
+    ## KeyboardInterrupt is a special case.
+    ## We don't raise the error dialog when it occurs.
+    if issubclass(exc_type, KeyboardInterrupt):
+
+        if app:
+            app.quit()
+
+        return
+
+    filename, line, dummy, dummy = traceback.extract_tb(exc_traceback).pop()
+    filename = os.path.basename(filename)
+    error = "%s: %s" % (exc_type.__name__, exc_value)
 
     if app:
-      app.quit()
+        window = app.activeWindow()
+    else:
+        window = None
 
-    return
+    args = dict(filename=filename, line=line, error=error)
 
-  filename, line, dummy, dummy = traceback.extract_tb( exc_traceback ).pop()
-  filename = os.path.basename( filename )
-  error    = "%s: %s" % ( exc_type.__name__, exc_value )
+    QMessageBox.critical(
+        window, "Oh dear...", CRASH_MSG % args, buttons=QMessageBox.Close
+    )
 
-  if app:
-    window = app.activeWindow()
-  else:
-    window = None
+    print("Spyrit has closed due to an error. This is the full error report:")
+    print("")
+    print("".join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+    if app:
+        app.core.atExit()
 
-  args = dict( filename=filename, line=line, error=error )
-
-  QMessageBox.critical( window, "Oh dear...",
-                        CRASH_MSG % args,
-                        buttons=QMessageBox.Close )
-
-  print( "Spyrit has closed due to an error. This is the full error report:" )
-  print( "" )
-  print( "".join( traceback.format_exception( exc_type,
-                                              exc_value,
-                                              exc_traceback ) ) )
-  if app:
-    app.core.atExit()
-
-  sys.exit( 1 )
+    sys.exit(1)
 
 
-def format_as_table( columns, headers ):
-  """
-  Format a set of columns and headers as a table.
+def format_as_table(columns, headers):
+    """
+    Format a set of columns and headers as a table.
 
-  >>> print( format_as_table( columns=( [ "item 1" ], [ "item 2" ] ),
-  ...                         headers=[ "Header A", "Header B" ] ) )
-  Header A    Header B
-  --------    --------
-  item 1      item 2
+    >>> print( format_as_table( columns=( [ "item 1" ], [ "item 2" ] ),
+    ...                         headers=[ "Header A", "Header B" ] ) )
+    Header A    Header B
+    --------    --------
+    item 1      item 2
 
-  """
+    """
 
-  if len( headers ) < len( columns ):
-    headers = list( headers ) + [ "" ] * ( len( columns ) - len( headers ) )
+    if len(headers) < len(columns):
+        headers = list(headers) + [""] * (len(columns) - len(headers))
 
-  for column, header in zip( columns, headers ):
+    for column, header in zip(columns, headers):
 
-    column.insert( 0, header )
-    column.insert( 1, "-" * len( header ) )
+        column.insert(0, header)
+        column.insert(1, "-" * len(header))
 
-    justify_to = max( len( item ) for item in column )
+        justify_to = max(len(item) for item in column)
 
-    for i, item in enumerate( column ):
-      column[ i ] = item.ljust( justify_to + 4 )
+        for i, item in enumerate(column):
+            column[i] = item.ljust(justify_to + 4)
 
-  return "\n".join( "".join( line ).rstrip() for line in zip( *columns ) )
+    return "\n".join("".join(line).rstrip() for line in zip(*columns))

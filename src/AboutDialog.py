@@ -21,8 +21,8 @@
 ##
 
 
-from PyQt5.QtCore    import Qt
-from PyQt5.QtGui     import QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QDialog
@@ -82,42 +82,41 @@ AUTHORS = """
 """.strip()
 
 
-class AboutDialog( QDialog ):
+class AboutDialog(QDialog):
+    def __init__(self, settings, parent=None):
 
-  def __init__( self, settings, parent=None ):
+        QDialog.__init__(self, parent)
 
-    QDialog.__init__( self, parent )
+        self.setLayout(QVBoxLayout(self))
 
-    self.setLayout( QVBoxLayout( self ) )
+        min_size = settings._ui._window._min_size
+        if min_size and min_size.isValid():
+            self.setMinimumSize(min_size)
 
-    min_size = settings._ui._window._min_size
-    if min_size and min_size.isValid():
-      self.setMinimumSize( min_size )
+        title = "About %s" % settings._app._name
 
-    title = "About %s" % settings._app._name
+        self.setWindowTitle(title)
 
-    self.setWindowTitle( title )
+        header = PrettyPanelHeader(title, QPixmap(":/app/icon"))
+        self.layout().addWidget(header)
 
-    header = PrettyPanelHeader( title, QPixmap( ":/app/icon" ) )
-    self.layout().addWidget( header )
+        about = QLabel(ABOUT % settings._app)
+        about.setContentsMargins(20, 20, 20, 20)
+        about.setWordWrap(True)
+        about.setOpenExternalLinks(True)
 
-    about = QLabel( ABOUT % settings._app )
-    about.setContentsMargins( 20, 20, 20, 20 )
-    about.setWordWrap( True )
-    about.setOpenExternalLinks( True )
+        authors = QLabel(AUTHORS % settings._app)
+        authors.setContentsMargins(20, 20, 20, 20)
+        authors.setWordWrap(True)
+        authors.setOpenExternalLinks(True)
 
-    authors = QLabel( AUTHORS % settings._app )
-    authors.setContentsMargins( 20, 20, 20, 20 )
-    authors.setWordWrap( True )
-    authors.setOpenExternalLinks( True )
+        tabwidget = QTabWidget()
+        tabwidget.addTab(about, "About")
+        tabwidget.addTab(authors, "Credits")
+        self.layout().addWidget(tabwidget)
 
-    tabwidget = QTabWidget()
-    tabwidget.addTab( about, "About" )
-    tabwidget.addTab( authors, "Credits" )
-    self.layout().addWidget( tabwidget )
+        button = QPushButton("Ok")
+        self.layout().addWidget(button)
+        self.layout().setAlignment(button, Qt.AlignHCenter)
 
-    button = QPushButton( "Ok" )
-    self.layout().addWidget( button )
-    self.layout().setAlignment( button, Qt.AlignHCenter )
-
-    button.clicked.connect( self.accept )
+        button.clicked.connect(self.accept)

@@ -21,157 +21,147 @@
 ##
 
 
-from PyQt5.QtCore    import Qt
-from PyQt5.QtCore    import pyqtSlot
-from PyQt5.QtCore    import pyqtSignal
-from PyQt5.QtGui     import QFontMetrics
-from PyQt5.QtGui     import QKeySequence
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QTextEdit
 
 
-from ActionSet        import ActionSet
-from InputHistory     import InputHistory
+from ActionSet import ActionSet
+from InputHistory import InputHistory
 
 
+class WorldInputUI(QTextEdit):
 
-class WorldInputUI( QTextEdit ):
+    returnPressed = pyqtSignal()
+    focusChanged = pyqtSignal("QWidget")
 
-  returnPressed = pyqtSignal()
-  focusChanged  = pyqtSignal( "QWidget" )
+    def __init__(self, parent, world, shouldsavehistory=True):
 
-  def __init__( self, parent, world, shouldsavehistory=True ):
+        QTextEdit.__init__(self, parent)
 
-    QTextEdit.__init__( self, parent )
+        self.setTabChangesFocus(True)
+        self.setAcceptRichText(False)
 
-    self.setTabChangesFocus( True )
-    self.setAcceptRichText( False )
+        self.world = world
+        self.settings = world.settings
+        self.history = InputHistory(self, shouldsavehistory)
 
-    self.world    = world
-    self.settings = world.settings
-    self.history  = InputHistory( self, shouldsavehistory )
+        self.actionset = ActionSet(self)
 
-    self.actionset = ActionSet( self )
+        self.actionset.bindAction("historyup", self.historyUp)
+        self.actionset.bindAction("historydown", self.historyDown)
+        self.actionset.bindAction("autocomplete", self.autocomplete)
 
-    self.actionset.bindAction( "historyup",    self.historyUp )
-    self.actionset.bindAction( "historydown",  self.historyDown )
-    self.actionset.bindAction( "autocomplete", self.autocomplete )
+        ## Apply configuration:
 
-    ## Apply configuration:
+        self.refresh()
 
-    self.refresh()
+        ## And bind it to key changes:
 
-    ## And bind it to key changes:
+        for key in ["font.color", "font.name", "font.size", "background.color"]:
+            self.settings._ui._input.onChange(key, self.refresh)
 
-    for key in [ "font.color", "font.name", "font.size", "background.color" ]:
-      self.settings._ui._input.onChange( key, self.refresh )
+        self.returnPressed.connect(self.clearAndSend)
 
-    self.returnPressed.connect( self.clearAndSend )
+    def refresh(self):
 
+        ## Unlike the output UI, which is very specific to the problem domain --
+        ## i.e. MU*s, the input box should be whatever's convenient to the
+        ## user, and already configured in their system. This is why we use
+        ## system default values when nothing specific is configured.
 
-  def refresh( self ):
+        style_elements = []
 
-    ## Unlike the output UI, which is very specific to the problem domain --
-    ## i.e. MU*s, the input box should be whatever's convenient to the
-    ## user, and already configured in their system. This is why we use
-    ## system default values when nothing specific is configured.
+        input_settings = self.settings._ui._input
+        if input_settings._font._color:
 
-    style_elements = []
+            style_elements.append("color: %s" % input_settings._font._color)
 
-    input_settings = self.settings._ui._input
-    if input_settings._font._color:
+        if input_settings._font._name:
 
-      style_elements.append( "color: %s"
-                             % input_settings._font._color )
+            style_elements.append("font-family: %s" % input_settings._font._name)
 
-    if input_settings._font._name:
+        if input_settings._font._size:
 
-      style_elements.append( "font-family: %s"
-                             % input_settings._font._name )
+            style_elements.append("font-size: %dpt" % input_settings._font._size)
 
-    if input_settings._font._size:
+        if input_settings._background._color:
 
-      style_elements.append( "font-size: %dpt"
-                             % input_settings._font._size )
+            style_elements.append(
+                "background-color: %s" % input_settings._background._color
+            )
 
-    if input_settings._background._color:
+        if style_elements:
+            self.setStyleSheet("QTextEdit { %s }" % " ; ".join(style_elements))
 
-      style_elements.append( "background-color: %s"
-                             % input_settings._background._color )
+        font_height = QFontMetrics(self.font()).height()
+        self.setMinimumHeight(font_height * 3)
 
-    if style_elements:
-      self.setStyleSheet( "QTextEdit { %s }" % " ; ".join( style_elements ) )
+    def keyPressEvent(self, e):
 
-    font_height = QFontMetrics( self.font() ).height()
-    self.setMinimumHeight( font_height*3 )
+        ## Custom key sequence handler: since all our shortcuts are configurable,
+        ## and are allowed to override the default QTextEdit shortcuts, we have to
+        ## override the key event handler to preempt the use of those shortcuts.
+        ## Note: This still doesn't work for Tab & Shift+Tab, which are handled
+        ## straight in QWidget.event() by Qt.
 
+        key = QKeySequence(int(e.modifiers()) + e.key())
 
-  def keyPressEvent( self, e ):
+        for a in self.actions() + self.parentWidget().actions():
+            for shortcut in a.shortcuts():
 
-    ## Custom key sequence handler: since all our shortcuts are configurable,
-    ## and are allowed to override the default QTextEdit shortcuts, we have to
-    ## override the key event handler to preempt the use of those shortcuts.
-    ## Note: This still doesn't work for Tab & Shift+Tab, which are handled
-    ## straight in QWidget.event() by Qt.
+                if key.matches(shortcut) == QKeySequence.ExactMatch:
 
-    key = QKeySequence( int( e.modifiers() ) + e.key() )
+                    a.trigger()
+                    e.accept()
+                    return
 
-    for a in self.actions() + self.parentWidget().actions():
-      for shortcut in a.shortcuts():
+        ## Special case: disallow overriding of Return/Enter.
 
-        if key.matches( shortcut ) == QKeySequence.ExactMatch:
+        alt_ctrl_shift = e.modifiers() & (
+            Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier
+        )
 
-          a.trigger()
-          e.accept()
-          return
+        if e.key() in (Qt.Key_Return, Qt.Key_Enter) and alt_ctrl_shift == Qt.NoModifier:
 
-    ## Special case: disallow overriding of Return/Enter.
+            self.returnPressed.emit()
+            e.accept()
 
-    alt_ctrl_shift = ( e.modifiers()
-        & ( Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier ) )
+        else:
+            QTextEdit.keyPressEvent(self, e)
 
-    if ( e.key() in ( Qt.Key_Return, Qt.Key_Enter )
-         and alt_ctrl_shift == Qt.NoModifier ):
+    @pyqtSlot()
+    def clearAndSend(self):
 
-      self.returnPressed.emit()
-      e.accept()
+        text = str(self.toPlainText())
 
-    else:
-      QTextEdit.keyPressEvent( self, e )
+        self.clear()
 
+        if text:
+            self.history.update(text)
 
-  @pyqtSlot()
-  def clearAndSend( self ):
+        self.world.processInput(text)
 
-    text = str( self.toPlainText() )
+    def historyUp(self):
 
-    self.clear()
+        self.history.historyUp()
 
-    if text:
-      self.history.update( text )
+    def historyDown(self):
 
-    self.world.processInput( text )
+        self.history.historyDown()
 
+    def autocomplete(self):
 
-  def historyUp( self ):
+        self.world.worldui.autocompleter.complete(self)
 
-    self.history.historyUp()
+    def focusInEvent(self, e):
 
+        QTextEdit.focusInEvent(self, e)
 
-  def historyDown( self ):
+        ## Notify other possible interested parties that this widget now has the
+        ## focus.
 
-    self.history.historyDown()
-
-
-  def autocomplete( self ):
-
-    self.world.worldui.autocompleter.complete( self )
-
-
-  def focusInEvent( self, e ):
-
-    QTextEdit.focusInEvent( self, e )
-
-    ## Notify other possible interested parties that this widget now has the
-    ## focus.
-
-    self.focusChanged.emit( self )
+        self.focusChanged.emit(self)

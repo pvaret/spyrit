@@ -25,78 +25,76 @@ import os.path
 from PyQt5.QtWidgets import QApplication
 
 from .BaseCommand import BaseCommand
-from Utilities   import format_as_table
+from Utilities import format_as_table
 
 
+class SoundCommand(BaseCommand):
 
-class SoundCommand( BaseCommand ):
+    """Sound-related operations."""
 
-  """Sound-related operations."""
+    def cmd_play(self, world, filename=":/sound/pop"):
 
-  def cmd_play( self, world, filename=":/sound/pop" ):
+        """
+        Play a sound.
 
-    """
-    Play a sound.
+        Usage: %(cmd)s [<soundfile.wav>]
 
-    Usage: %(cmd)s [<soundfile.wav>]
+        If you omit the sound file name, a default 'pop' sound will be played.
+        The purpose of this command is to test your sound setup.
 
-    If you omit the sound file name, a default 'pop' sound will be played.
-    The purpose of this command is to test your sound setup.
+        """
 
-    """
+        sound = QApplication.instance().core.sound
 
-    sound = QApplication.instance().core.sound
+        filename = os.path.expanduser(filename)
+        ok, msg = sound.play(filename)
 
-    filename = os.path.expanduser( filename )
-    ok, msg = sound.play( filename )
+        if not ok:
+            world.info(msg)
 
-    if not ok:
-      world.info( msg )
+    def cmd_engines(self, world, all=None):
 
+        """
+        List supported sound engines and their status.
 
-  def cmd_engines( self, world, all=None ):
+        Usage: %(cmd)s [all]
 
-    """
-    List supported sound engines and their status.
+        If the optional parameter 'all' is given, then all the existing engines
+        will be listed, even if unsupported on your platform. Mind that polling
+        unsupported engines may take a few seconds.
 
-    Usage: %(cmd)s [all]
+        Sound engines are listed with their status: available, not available,
+        or in use. If no engine is in use, no sound can be played.
 
-    If the optional parameter 'all' is given, then all the existing engines
-    will be listed, even if unsupported on your platform. Mind that polling
-    unsupported engines may take a few seconds.
+        """
 
-    Sound engines are listed with their status: available, not available,
-    or in use. If no engine is in use, no sound can be played.
+        sound = QApplication.instance().core.sound
 
-    """
+        registry = sound.registry
+        current_backend = sound.backend
 
-    sound = QApplication.instance().core.sound
+        list_all = all is not None and all.lower().strip() == "all"
 
-    registry        = sound.registry
-    current_backend = sound.backend
+        names = []
+        statuses = []
 
-    list_all = ( all is not None and all.lower().strip() == "all" )
+        for backend in registry.listBackends(list_all):
 
-    names    = []
-    statuses = []
+            if backend is current_backend:
+                status = "in use"
 
-    for backend in registry.listBackends( list_all ):
+            elif backend.isAvailable():
+                status = "available"
 
-      if backend is current_backend:
-        status = "in use"
+            else:
+                status = "unavailable"
 
-      elif backend.isAvailable():
-        status = "available"
+            names.append(backend.name)
+            statuses.append(status)
 
-      else:
-        status = "unavailable"
+        output = "Available sound engines:\n"
+        output += format_as_table(
+            columns=(names, statuses), headers=["Engine", "Status"]
+        )
 
-
-      names.append( backend.name )
-      statuses.append( status )
-
-    output = "Available sound engines:\n"
-    output += format_as_table( columns=( names, statuses ),
-                               headers=[ "Engine", "Status" ])
-
-    world.info( output )
+        world.info(output)

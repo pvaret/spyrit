@@ -23,80 +23,72 @@
 
 import os.path
 
-from QSoundBackend    import QSoundBackend
-from PygameBackend    import PygameBackend
+from QSoundBackend import QSoundBackend
+from PygameBackend import PygameBackend
 from PlatformSpecific import platformSpecific
-
-
 
 
 class SoundBackendRegistry:
 
-  SOUNDBACKENDS = {
-    "qsound": QSoundBackend,
-    "pygame": PygameBackend,
-  }
+    SOUNDBACKENDS = {
+        "qsound": QSoundBackend,
+        "pygame": PygameBackend,
+    }
 
-  def __init__( self ):
+    def __init__(self):
 
-    self.preferred_backends = platformSpecific.get_sound_backends()
-    self.backend_cache = {}
+        self.preferred_backends = platformSpecific.get_sound_backends()
+        self.backend_cache = {}
 
+    def pollForBackend(self):
 
-  def pollForBackend( self ):
+        for backend_name in self.preferred_backends:
 
-    for backend_name in self.preferred_backends:
+            backend = self.lookupBackend(backend_name)
 
-      backend = self.lookupBackend( backend_name )
+            if backend.isAvailable():
+                return backend
 
-      if backend.isAvailable():
-        return backend
+        return None
 
-    return None
+    def lookupBackend(self, backend_name):
 
+        if backend_name not in self.backend_cache:
+            self.backend_cache[backend_name] = self.SOUNDBACKENDS[backend_name]()
 
-  def lookupBackend( self, backend_name ):
+        return self.backend_cache[backend_name]
 
-    if backend_name not in self.backend_cache:
-      self.backend_cache[ backend_name ] = self.SOUNDBACKENDS[ backend_name ]()
+    def listBackends(self, also_list_unsupported=False):
 
-    return self.backend_cache[ backend_name ]
+        if also_list_unsupported:
+            backend_list = self.SOUNDBACKENDS.keys()
+        else:
+            backend_list = self.preferred_backends
 
-
-  def listBackends( self, also_list_unsupported=False ):
-
-      if also_list_unsupported:
-        backend_list = self.SOUNDBACKENDS.keys()
-      else:
-        backend_list = self.preferred_backends
-
-      return [ self.lookupBackend( backend_name )
-               for backend_name in backend_list ]
+        return [self.lookupBackend(backend_name) for backend_name in backend_list]
 
 
 class SoundEngine:
+    def __init__(self, tmprc):
 
-  def __init__( self, tmprc ):
+        self.tmprc = tmprc
+        self.registry = SoundBackendRegistry()
+        self.backend = self.registry.pollForBackend()
 
-    self.tmprc    = tmprc
-    self.registry = SoundBackendRegistry()
-    self.backend  = self.registry.pollForBackend()
+    def play(self, soundfile):
 
+        if not self.backend:
+            return False, "No sound engine available."
 
-  def play( self, soundfile ):
+        filename = self.tmprc.get(soundfile)
 
-    if not self.backend:
-      return False, "No sound engine available."
+        if not os.path.exists(filename):
+            return False, "%s: file not found." % soundfile
 
-    filename = self.tmprc.get( soundfile )
+        if not os.path.isfile(filename):
+            return False, "%s: not a valid file." % soundfile
 
-    if not os.path.exists( filename ):
-      return False, "%s: file not found." % soundfile
+        ## TODO: Check that filename is a valid WAV file.
 
-    if not os.path.isfile( filename ):
-      return False, "%s: not a valid file." % soundfile
-
-    ## TODO: Check that filename is a valid WAV file.
-
-    self.backend.play( filename )
-    return True, None
+        self.backend.play(filename)
+        return True, None

@@ -29,53 +29,48 @@ from .ChunkData import ChunkType
 from .ChunkData import FlowControl
 
 
+class TriggersFilter(BaseFilter):
+    def __init__(self, context=None, manager=None):
 
-class TriggersFilter( BaseFilter ):
+        self.buffer = []
+        self.setManager(manager)
 
-  def __init__( self, context=None, manager=None ):
+        BaseFilter.__init__(self, context)
 
-    self.buffer = []
-    self.setManager( manager )
+    def setManager(self, manager):
 
-    BaseFilter.__init__( self, context )
+        self.manager = manager
 
+        self.processChunk = self.noOp if manager is None else self.doProcessChunk
 
-  def setManager( self, manager ):
+    def resetInternalState(self):
 
-    self.manager = manager
+        self.buffer = []
+        BaseFilter.resetInternalState(self)
 
-    self.processChunk = self.noOp if manager is None else self.doProcessChunk
+    def noOp(self, chunk):
 
-
-  def resetInternalState( self ):
-
-    self.buffer = []
-    BaseFilter.resetInternalState( self )
-
-
-  def noOp( self, chunk ):
-
-    yield chunk
-
-
-  def doProcessChunk( self, chunk ):
-
-    self.buffer.append( chunk )
-
-    chunk_type, _ = chunk
-
-    if ( chunk_type in ( ChunkType.NETWORK, ChunkType.PROMPTSWEEP )
-         or chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ) ):
-
-      line = "".join( chunk[1]
-                      for chunk in self.buffer
-                      if chunk[0] == ChunkType.TEXT )
-
-
-      if line:
-        self.manager.performMatchingActions( line, self.buffer )
-
-      for chunk in self.buffer:
         yield chunk
 
-      self.buffer = []
+    def doProcessChunk(self, chunk):
+
+        self.buffer.append(chunk)
+
+        chunk_type, _ = chunk
+
+        if chunk_type in (ChunkType.NETWORK, ChunkType.PROMPTSWEEP) or chunk == (
+            ChunkType.FLOWCONTROL,
+            FlowControl.LINEFEED,
+        ):
+
+            line = "".join(
+                chunk[1] for chunk in self.buffer if chunk[0] == ChunkType.TEXT
+            )
+
+            if line:
+                self.manager.performMatchingActions(line, self.buffer)
+
+            for chunk in self.buffer:
+                yield chunk
+
+            self.buffer = []

@@ -31,51 +31,49 @@ from .ChunkData import FlowControl
 from .BaseFilter import BaseFilter
 
 
-class FlowControlFilter( BaseFilter ):
+class FlowControlFilter(BaseFilter):
 
-  relevant_types = ChunkType.TEXT
+    relevant_types = ChunkType.TEXT
 
-  match        = re.compile( r"(\r|\n)" )
-  unix_like_cr = re.compile( r"(?<!\r)\n" )
+    match = re.compile(r"(\r|\n)")
+    unix_like_cr = re.compile(r"(?<!\r)\n")
 
-  chunkmapping = {
-    "\n": ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ),
-    "\r": ( ChunkType.FLOWCONTROL, FlowControl.CARRIAGERETURN ),
-  }
+    chunkmapping = {
+        "\n": (ChunkType.FLOWCONTROL, FlowControl.LINEFEED),
+        "\r": (ChunkType.FLOWCONTROL, FlowControl.CARRIAGERETURN),
+    }
 
+    def processChunk(self, chunk):
 
-  def processChunk( self, chunk ):
+        _, text = chunk
 
-    _, text = chunk
+        ## Expand tabs to spaces:
+        text = text.replace("\t", " " * 8)
 
-    ## Expand tabs to spaces:
-    text = text.replace( "\t", " " * 8 )
+        while len(text) > 0:
 
-    while len( text ) > 0:
+            fc = self.match.search(text)
 
-      fc = self.match.search( text )
+            if fc:
+                head = text[: fc.start()]
+                tail = text[fc.end() :]
 
-      if fc:
-        head = text[ :fc.start() ]
-        tail = text[ fc.end():   ]
+                text = tail
 
-        text = tail
+                if head:
+                    yield (ChunkType.TEXT, head)
 
-        if head:
-          yield ( ChunkType.TEXT, head )
+                yield self.chunkmapping[fc.group()]
 
-        yield self.chunkmapping[ fc.group() ]
+            else:
+                ## The remaining text doesn't contain any flow control character that
+                ## we care about. So we quit the loop.
+                break
 
-      else:
-        ## The remaining text doesn't contain any flow control character that
-        ## we care about. So we quit the loop.
-        break
+        if text:
+            yield (ChunkType.TEXT, text)
 
-    if text:
-      yield ( ChunkType.TEXT, text )
+    def formatForSending(self, data):
 
-
-  def formatForSending( self, data ):
-
-    ## Transform UNIX-like CR into telnet-like CRLF.
-    return self.unix_like_cr.sub( "\r\n", data )
+        ## Transform UNIX-like CR into telnet-like CRLF.
+        return self.unix_like_cr.sub("\r\n", data)

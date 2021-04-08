@@ -26,65 +26,63 @@ from PyQt5.QtGui import QTextDocument
 
 
 class SearchManager:
+    def __init__(self, textedit, settings):
 
-  def __init__( self, textedit, settings ):
+        self.textedit = textedit
+        self.settings = settings
 
-    self.textedit = textedit
-    self.settings = settings
+        self.cursor = None
+        self.previous_search = None
 
-    self.cursor          = None
-    self.previous_search = None
+    def find(self, string=None):
 
+        ## An empty search string means repeating the last search.
 
-  def find( self, string=None ):
+        if not string:
+            string = self.previous_search
 
-    ## An empty search string means repeating the last search.
+        ## Unless the last search was empty, in which case we bail out.
 
-    if not string:
-      string = self.previous_search
+        if not string:
+            return False
 
-    ## Unless the last search was empty, in which case we bail out.
+        ## Reset the search cursor if this is a new search.
 
-    if not string:
-      return False
+        if string != self.previous_search:
+            self.cursor = None
 
-    ## Reset the search cursor if this is a new search.
+        cursor = self.cursor
+        textedit = self.textedit
+        document = textedit.document()
 
-    if string != self.previous_search:
-      self.cursor = None
+        self.previous_search = string
 
-    cursor   = self.cursor
-    textedit = self.textedit
-    document = textedit.document()
+        ## Create new cursor at end of document if this is a new search.
 
-    self.previous_search = string
+        if not cursor:
+            cursor = QTextCursor(document)
+            cursor.movePosition(QTextCursor.End)
 
-    ## Create new cursor at end of document if this is a new search.
+        cursor = document.find(string, cursor, QTextDocument.FindBackward)
 
-    if not cursor:
-      cursor = QTextCursor( document )
-      cursor.movePosition( QTextCursor.End )
+        if cursor.isNull():  ## String was not found!
 
-    cursor = document.find( string, cursor, QTextDocument.FindBackward )
+            ## Clear selection by setting an empty cursor, and scroll back to bottom
+            ## of window.
 
-    if cursor.isNull():  ## String was not found!
+            cursor = QTextCursor(document)
+            textedit.setTextCursor(cursor)
+            textedit.moveScrollbarToBottom()
 
-      ## Clear selection by setting an empty cursor, and scroll back to bottom
-      ## of window.
+            self.cursor = None
 
-      cursor = QTextCursor( document )
-      textedit.setTextCursor( cursor )
-      textedit.moveScrollbarToBottom()
+            return False
 
-      self.cursor = None
+        else:
 
-      return False
+            textedit.setTextCursor(cursor)
+            textedit.ensureCursorVisible()
 
-    else:
+            self.cursor = cursor
 
-      textedit.setTextCursor( cursor )
-      textedit.ensureCursorVisible()
-
-      self.cursor = cursor
-
-      return True
+            return True

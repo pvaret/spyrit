@@ -29,32 +29,31 @@ import sys
 from Messages import messages
 
 
-def main( args ):
+def main(args):
 
-  from CheckVersions import check_python_version
-  from CheckVersions import check_pyqt5_installed
-  from CheckVersions import check_qt_version
+    from CheckVersions import check_python_version
+    from CheckVersions import check_pyqt5_installed
+    from CheckVersions import check_qt_version
 
-  for check in ( check_python_version,
-                 check_pyqt5_installed,
-                 check_qt_version ):
+    for check in (check_python_version, check_pyqt5_installed, check_qt_version):
 
-    ok, msg = check()
+        ok, msg = check()
 
-    if not ok:
+        if not ok:
 
-      messages.error( msg )
-      sys.exit( 1 )  ## Fail!
+            messages.error(msg)
+            sys.exit(1)  ## Fail!
+
+        if "--check-dependencies-only" in args:
+            messages.info(msg)
 
     if "--check-dependencies-only" in args:
-      messages.info( msg )
+        sys.exit(0)  ## Success.
 
-  if "--check-dependencies-only" in args:
-    sys.exit( 0 )  ## Success.
+    from Application import Application
 
-  from Application import Application
-  Application( args ).exec_()
+    Application(args).exec_()
 
 
 if __name__ == "__main__":
-  main( sys.argv )
+    main(sys.argv)

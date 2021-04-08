@@ -23,23 +23,23 @@
 from .BaseCommand import BaseCommand
 
 
-class FindCommand( BaseCommand ):
+class FindCommand(BaseCommand):
 
-  """
-  Find text in the output window.
+    """
+    Find text in the output window.
 
-  Usage: %(cmd)s [<text>]
+    Usage: %(cmd)s [<text>]
 
-  If <text> is omitted, the last search is repeated.
-  If <text> is a sentence containing spaces, it should be enclosed in quotes.
+    If <text> is omitted, the last search is repeated.
+    If <text> is a sentence containing spaces, it should be enclosed in quotes.
 
-  Examples:
-      %(cmd)s Character
-      %(cmd)s "Character pages"
-      %(cmd)s
+    Examples:
+        %(cmd)s Character
+        %(cmd)s "Character pages"
+        %(cmd)s
 
-  """
+    """
 
-  def cmd( self, world, text=None ):
+    def cmd(self, world, text=None):
 
-    world.worldui.output_manager.findInHistory( text )
+        world.worldui.output_manager.findInHistory(text)

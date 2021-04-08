@@ -35,151 +35,151 @@ from World import World
 
 
 class WorldsSettings:
-  """
-  This class encapsulates the deep knowledge about settings objects that
-  WorldsManager requires.
-  """
+    """
+    This class encapsulates the deep knowledge about settings objects that
+    WorldsManager requires.
+    """
 
-  def __init__( self, settings, state ):
+    def __init__(self, settings, state):
 
-    self.settings = settings[ WORLDS ]
-    self.state = state[ WORLDS ]
+        self.settings = settings[WORLDS]
+        self.state = state[WORLDS]
 
-  def getAllWorldSettings( self ) -> Sequence[ BaseNode ]:
+    def getAllWorldSettings(self) -> Sequence[BaseNode]:
 
-    return self.settings.nodes.values()
+        return self.settings.nodes.values()
 
-  def newWorldSettings( self ):
+    def newWorldSettings(self):
 
-    ## TODO: Add createSection() to nodes that would do the right thing?
-    return self.settings.proto.build( "*", self.settings )
+        ## TODO: Add createSection() to nodes that would do the right thing?
+        return self.settings.proto.build("*", self.settings)
 
-  def newWorldState( self ):
+    def newWorldState(self):
 
-    return self.state.proto.build( "*", self.state )
+        return self.state.proto.build("*", self.state)
 
-  def lookupStateForSettings( self, settings: BaseNode ) -> BaseNode:
+    def lookupStateForSettings(self, settings: BaseNode) -> BaseNode:
 
-    if settings._name:
-      key = normalize_text( settings._name )
-      if key in self.state:
-        return self.state[ key ]
+        if settings._name:
+            key = normalize_text(settings._name)
+            if key in self.state:
+                return self.state[key]
 
-    return self.newWorldState()
+        return self.newWorldState()
 
-  def saveWorldSettings( self, key, settings, state ):
+    def saveWorldSettings(self, key, settings, state):
 
-    # TODO: Guarantee unicity?
-    self.settings.nodes[ key ] = settings
-    self.state.nodes[ key ] = state
+        # TODO: Guarantee unicity?
+        self.settings.nodes[key] = settings
+        self.state.nodes[key] = state
 
 
-class WorldsManager( QObject ):
+class WorldsManager(QObject):
 
-  worldListChanged = pyqtSignal()
+    worldListChanged = pyqtSignal()
 
-  def __init__( self, settings, state ):
+    def __init__(self, settings, state):
 
-    QObject.__init__( self )
+        QObject.__init__(self)
 
-    self.ws = WorldsSettings( settings, state )
+        self.ws = WorldsSettings(settings, state)
 
-    ## Safety measure: ensure all worlds have a valid name.
-    n = 0
+        ## Safety measure: ensure all worlds have a valid name.
+        n = 0
 
-    for settings in self.ws.getAllWorldSettings():
+        for settings in self.ws.getAllWorldSettings():
 
-      if not settings._name:
-        n += 1
-        settings._name = "(Unnamed %d)" % n
+            if not settings._name:
+                n += 1
+                settings._name = "(Unnamed %d)" % n
 
-    self.generateMappings()
+        self.generateMappings()
 
-  def generateMappings( self ):
+    def generateMappings(self):
 
-    ## Provide mappings to lookup worlds based on their name and based on
-    ## their (host, port) connection pair.
+        ## Provide mappings to lookup worlds based on their name and based on
+        ## their (host, port) connection pair.
 
-    self.name_mapping = dict(
-        ( self.normalize( settings._name ), settings )
-        for settings in self.ws.getAllWorldSettings()
-    )
+        self.name_mapping = dict(
+            (self.normalize(settings._name), settings)
+            for settings in self.ws.getAllWorldSettings()
+        )
 
-    self.hostport_mapping = {}
+        self.hostport_mapping = {}
 
-    for settings in self.ws.getAllWorldSettings():
-      self.hostport_mapping.setdefault(
-          ( settings._net._host, settings._net._port ), []
-      ).append( settings )
+        for settings in self.ws.getAllWorldSettings():
+            self.hostport_mapping.setdefault(
+                (settings._net._host, settings._net._port), []
+            ).append(settings)
 
-  def normalize( self, name ):
+    def normalize(self, name):
 
-    return normalize_text( name.strip() )
+        return normalize_text(name.strip())
 
-  def worldList( self ):
+    def worldList(self):
 
-    ## Return world names, sorted by normalized value.
-    worlds = ( world._name for world in self.ws.getAllWorldSettings() )
-    return sorted( worlds, key=lambda s: self.normalize( s ) )
+        ## Return world names, sorted by normalized value.
+        worlds = (world._name for world in self.ws.getAllWorldSettings())
+        return sorted(worlds, key=lambda s: self.normalize(s))
 
-  def newWorldSettings( self, host="", port=0, ssl=False, name="" ):
+    def newWorldSettings(self, host="", port=0, ssl=False, name=""):
 
-    wsettings = self.ws.newWorldSettings()
+        wsettings = self.ws.newWorldSettings()
 
-    if name:
-      wsettings._name = name
-    if host:
-      wsettings._net._host = host
-    if port:
-      wsettings._net._port = port
-    if ssl:
-      wsettings._net._ssl = ssl
+        if name:
+            wsettings._name = name
+        if host:
+            wsettings._net._host = host
+        if port:
+            wsettings._net._port = port
+        if ssl:
+            wsettings._net._ssl = ssl
 
-    return wsettings
-  
-  def newWorldState( self ) -> BaseNode:
+        return wsettings
 
-    return self.ws.newWorldState()
+    def newWorldState(self) -> BaseNode:
 
-  def saveWorld( self, world: World ):
+        return self.ws.newWorldState()
 
-    settings = world.settings
-    state = world.state
-    key = self.normalize( settings._name )  ## TODO: Ensure unicity!
+    def saveWorld(self, world: World):
 
-    self.ws.saveWorldSettings( key, settings, state )
+        settings = world.settings
+        state = world.state
+        key = self.normalize(settings._name)  ## TODO: Ensure unicity!
 
-    self.generateMappings()
-    self.worldListChanged.emit()
+        self.ws.saveWorldSettings(key, settings, state)
 
-  def newWorld( self, settings: BaseNode ) -> World:
+        self.generateMappings()
+        self.worldListChanged.emit()
 
-    state = self.ws.lookupStateForSettings( settings )
-    
-    return World( settings, state )
+    def newWorld(self, settings: BaseNode) -> World:
 
-  def newAnonymousWorld( self, host="", port=0, ssl=False ) -> World:
+        state = self.ws.lookupStateForSettings(settings)
 
-    settings = self.newWorldSettings( host, port, ssl )
+        return World(settings, state)
 
-    return self.newWorld( settings )
+    def newAnonymousWorld(self, host="", port=0, ssl=False) -> World:
 
-  def lookupWorldByName( self, name ) -> Optional[World]:
+        settings = self.newWorldSettings(host, port, ssl)
 
-    settings = self.name_mapping.get( self.normalize( name ) )
+        return self.newWorld(settings)
 
-    if settings:
-      return self.newWorld( settings )
+    def lookupWorldByName(self, name) -> Optional[World]:
 
-    return None
+        settings = self.name_mapping.get(self.normalize(name))
 
-  def lookupWorldByHostPort( self, host: str, port: int ) -> Optional[World]:
+        if settings:
+            return self.newWorld(settings)
 
-    settings = self.hostport_mapping.get( ( host, port ) )
+        return None
 
-    if settings and len( settings ) == 1:
+    def lookupWorldByHostPort(self, host: str, port: int) -> Optional[World]:
 
-      ## One matching configuration found, and only one.
-      return self.newWorld( settings[ 0 ] )
+        settings = self.hostport_mapping.get((host, port))
 
-    return None
+        if settings and len(settings) == 1:
+
+            ## One matching configuration found, and only one.
+            return self.newWorld(settings[0])
+
+        return None

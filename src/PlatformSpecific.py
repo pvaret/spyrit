@@ -26,18 +26,17 @@ import sys
 
 if os.name == "posix":
 
-  if sys.platform == "darwin":
-    from MacosSpecific import MacosSpecific as PlatformSpecific
+    if sys.platform == "darwin":
+        from MacosSpecific import MacosSpecific as PlatformSpecific
 
-  else:
-    from PosixSpecific import PosixSpecific as PlatformSpecific
+    else:
+        from PosixSpecific import PosixSpecific as PlatformSpecific
 
 elif os.name == "nt":
-  from Win32Specific import Win32Specific as PlatformSpecific
+    from Win32Specific import Win32Specific as PlatformSpecific
 
 else:
-  raise NotImplementedError( "This program doesn't support your OS yet. "
-                             "Sorry!" )
+    raise NotImplementedError("This program doesn't support your OS yet. " "Sorry!")
 
 
 platformSpecific = PlatformSpecific()

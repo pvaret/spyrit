@@ -20,339 +20,338 @@
 ##
 
 
-from Matches     import MatchCreationError
+from Matches import MatchCreationError
 from .BaseCommand import BaseCommand
 
 
-class MatchCommand( BaseCommand ):
+class MatchCommand(BaseCommand):
 
-  """Create, list, delete match patterns."""
+    """Create, list, delete match patterns."""
 
-  def cmd_add( self, world, pattern, group=None, type="smart" ):
+    def cmd_add(self, world, pattern, group=None, type="smart"):
 
-    """
-    Add a new match pattern.
+        """
+        Add a new match pattern.
 
-    Usage: %(cmd)s <pattern> [<group>] [type="smart"|"regex"]
+        Usage: %(cmd)s <pattern> [<group>] [type="smart"|"regex"]
 
-    The <group> parameter lets you specify the name of a group for the match,
-    so patterns with the same semantics and on which the same action must be
-    taken when a match is found, can be put together.
+        The <group> parameter lets you specify the name of a group for the match,
+        so patterns with the same semantics and on which the same action must be
+        taken when a match is found, can be put together.
 
-    If the given group doesn't already exist, it will be automatically created.
-    If the parameter is left unspecified, the command creates a new group using
-    the next available ordinal number as its name, i.e. '1', '2', '3'...
+        If the given group doesn't already exist, it will be automatically created.
+        If the parameter is left unspecified, the command creates a new group using
+        the next available ordinal number as its name, i.e. '1', '2', '3'...
 
-    The <type> parameter allows you to choose the syntax for the pattern:
-    'smart' or 'regex'. If unspecified, the default is 'smart'.
+        The <type> parameter allows you to choose the syntax for the pattern:
+        'smart' or 'regex'. If unspecified, the default is 'smart'.
 
-    'smart' is a very simple pattern syntax:
-        '*' matches anything, as many characters as it can;
-        '%%' matches anything, as few characters as it can;
-        '[<token>]' matches anything as token <token>.
-    The characters '*', '%%', '[' and ']' can be escaped with a backslash.
+        'smart' is a very simple pattern syntax:
+            '*' matches anything, as many characters as it can;
+            '%%' matches anything, as few characters as it can;
+            '[<token>]' matches anything as token <token>.
+        The characters '*', '%%', '[' and ']' can be escaped with a backslash.
 
-    'regex' follows the usual syntax of regular expressions:
-        http://docs.python.org/library/re.html
-    Named regular expression groups are used as the pattern's tokens.
+        'regex' follows the usual syntax of regular expressions:
+            http://docs.python.org/library/re.html
+        Named regular expression groups are used as the pattern's tokens.
 
-    Tokens can be used by other commands to single out parts of the match to
-    highlight or otherwise act upon.
+        Tokens can be used by other commands to single out parts of the match to
+        highlight or otherwise act upon.
 
-    Don't forget to quote the pattern if it contains spaces!
+        Don't forget to quote the pattern if it contains spaces!
 
-    Examples:
-        %(cmd)s "You have received a message from *"
-        %(cmd)s "[player] pages: [message]" group=pages
-        %(cmd)s "From afar, (?P<player>\w+) pages (?P<message>.+)" group=pages type=regex
+        Examples:
+            %(cmd)s "You have received a message from *"
+            %(cmd)s "[player] pages: [message]" group=pages
+            %(cmd)s "From afar, (?P<player>\w+) pages (?P<message>.+)" group=pages type=regex
 
-    """
+        """
 
-    mgr = world.socketpipeline.triggersmanager
+        mgr = world.socketpipeline.triggersmanager
 
-    try:
-      match = mgr.createMatch( pattern, type )
+        try:
+            match = mgr.createMatch(pattern, type)
 
-    except MatchCreationError as e:
-      world.info( "%s" % e )
-      return
+        except MatchCreationError as e:
+            world.info("%s" % e)
+            return
 
-    mgr.findOrCreateTrigger( group ).addMatch( match )
-    world.info( "Match added." )
+        mgr.findOrCreateTrigger(group).addMatch(match)
+        world.info("Match added.")
 
+    def cmd_del(self, world, group, number=None):
 
-  def cmd_del( self, world, group, number=None ):
+        """
+        Delete a match pattern or group of match patterns.
 
-    """
-    Delete a match pattern or group of match patterns.
+        Usage: %(cmd)s <group> [<number>]
 
-    Usage: %(cmd)s <group> [<number>]
+        If the match pattern number is provided, only that pattern is deleted from
+        the group.  If it isn't, the whole group is deleted.
 
-    If the match pattern number is provided, only that pattern is deleted from
-    the group.  If it isn't, the whole group is deleted.
+        Note that if you delete the last pattern from a group, then the group is
+        deleted as well.
 
-    Note that if you delete the last pattern from a group, then the group is
-    deleted as well.
+        Examples:
+            %(cmd)s pages 3
+            %(cmd)s pages
 
-    Examples:
-        %(cmd)s pages 3
-        %(cmd)s pages
+        Given a match group called 'pages' containing more than three match
+        patterns, the first command deletes the third pattern in the group, and the
+        second command deletes the whole group.
 
-    Given a match group called 'pages' containing more than three match
-    patterns, the first command deletes the third pattern in the group, and the
-    second command deletes the whole group.
+        """
 
-    """
+        mgr = world.socketpipeline.triggersmanager
 
-    mgr = world.socketpipeline.triggersmanager
+        if not mgr.hasGroup(group):
 
-    if not mgr.hasGroup( group ):
+            world.info("No such match pattern group as '%s'!" % group)
+            return
 
-      world.info( "No such match pattern group as '%s'!" % group )
-      return
+        if number is None:
 
-    if number is None:
+            mgr.delGroup(group)
+            world.info("Match pattern group '%s' deleted." % group)
 
-      mgr.delGroup( group )
-      world.info( "Match pattern group '%s' deleted." % group )
+        else:
 
-    else:
+            if not number.isdigit():
 
-      if not number.isdigit():
+                world.info("Match pattern number argument must be a number!")
+                return
 
-        world.info( "Match pattern number argument must be a number!" )
-        return
+            number = int(number)
 
-      number = int( number )
+            size = mgr.sizeOfGroup(group)
 
-      size = mgr.sizeOfGroup( group )
+            if number > size:
 
-      if number > size:
+                world.info(
+                    "Match pattern group '%s' only has %d pattern(s)!" % (group, size)
+                )
+                return
 
-        world.info( "Match pattern group '%s' only has %d pattern(s)!"
-                    % ( group, size ) )
-        return
+            if number > 0:
+                number -= 1  ## Match is given as 1-index but used as 0-index.
 
-      if number > 0:
-        number -= 1  ## Match is given as 1-index but used as 0-index.
+            if size > 1:
 
-      if size > 1:
+                mgr.delMatch(group, number)
+                world.info(
+                    "Match pattern #%d deleted from group '%s'." % (number + 1, group)
+                )
 
-        mgr.delMatch( group, number )
-        world.info( "Match pattern #%d deleted from group '%s'."
-                    % ( number + 1, group ) )
+            else:
 
-      else:
+                mgr.delGroup(group)
+                world.info(
+                    "Match pattern group '%s' is now empty and was deleted." % group
+                )
 
-        mgr.delGroup( group )
-        world.info( "Match pattern group '%s' is now empty and was deleted."
-                    % group )
+    def cmd_action(self, world, group, action, *args, **kwargs):
 
+        """
+        Add a match action to the provided group.
 
-  def cmd_action( self, world, group, action, *args, **kwargs ):
+        Usage: %(cmd)s <group> <action> [<parameters...>]
 
-    """
-    Add a match action to the provided group.
+        If the given action already exists in the group, it is updated instead.
 
-    Usage: %(cmd)s <group> <action> [<parameters...>]
+        Available actions are:
+          highlight - colorize the matching pattern or token
+          play      - play a WAV sound file when a line matches
+          gag       - don't display the matching line
 
-    If the given action already exists in the group, it is updated instead.
+        The required parameters depend on the chosen action.
 
-    Available actions are:
-      highlight - colorize the matching pattern or token
-      play      - play a WAV sound file when a line matches
-      gag       - don't display the matching line
+        Action parameters:
+          highlight <format> [token=<token>]
+            <format> is a format description. It is a semicolon-separated list of
+              format parameters. Possible format parameters are 'bold', 'italic',
+              'underline' and 'color: #rrggbb' (without quotes). Don't forget to
+              quote the format description.
+            <token> is the identifier of a token defined in a match pattern. If
+              this argument is omitted, the highlight applies to the whole pattern.
 
-    The required parameters depend on the chosen action.
+          play [<soundfile>]
+            <soundfile> is the path to a WAV sound file. If this argument is
+              omitted, a default 'pop' sound is used.
 
-    Action parameters:
-      highlight <format> [token=<token>]
-        <format> is a format description. It is a semicolon-separated list of
-          format parameters. Possible format parameters are 'bold', 'italic',
-          'underline' and 'color: #rrggbb' (without quotes). Don't forget to
-          quote the format description.
-        <token> is the identifier of a token defined in a match pattern. If
-          this argument is omitted, the highlight applies to the whole pattern.
+          gag
+            This action takes no argument.
 
-      play [<soundfile>]
-        <soundfile> is the path to a WAV sound file. If this argument is
-          omitted, a default 'pop' sound is used.
+        Examples:
+          Assuming a group 'my_pages' containing the following pattern:
+            [player] pages: "[message]"
 
-      gag
-        This action takes no argument.
+          %(cmd)s my_pages highlight "bold ; color: #ffffff"
+          %(cmd)s my_pages highlight "underline" token=player
 
-    Examples:
-      Assuming a group 'my_pages' containing the following pattern:
-        [player] pages: "[message]"
+          The above makes the whole line white and bold; the name of the player who
+          pages you is also underlined.
 
-      %(cmd)s my_pages highlight "bold ; color: #ffffff"
-      %(cmd)s my_pages highlight "underline" token=player
+          %(cmd)s my_pages play /path/to/sound.wav
 
-      The above makes the whole line white and bold; the name of the player who
-      pages you is also underlined.
+          The above plays the given sound file when you receive a page.
 
-      %(cmd)s my_pages play /path/to/sound.wav
+          %(cmd)s my_pages gag
 
-      The above plays the given sound file when you receive a page.
+          The above hides all the pages you receive.
 
-      %(cmd)s my_pages gag
+        """
 
-      The above hides all the pages you receive.
+        mgr = world.socketpipeline.triggersmanager
 
-    """
+        if not mgr.hasGroup(group):
 
-    mgr = world.socketpipeline.triggersmanager
+            world.info("No such match pattern group as '%s'!" % group)
+            return
 
-    if not mgr.hasGroup( group ):
+        act, msg = mgr.loadAction(action, args, kwargs)
 
-      world.info( "No such match pattern group as '%s'!" % group )
-      return
+        if not act:
+            world.info(msg)
+            return
 
-    act, msg = mgr.loadAction( action, args, kwargs )
+        mgr.findOrCreateTrigger(group).addAction(act)
 
-    if not act:
-      world.info( msg )
-      return
+        world.info("Action '%s' added to match pattern group '%s'." % (action, group))
 
-    mgr.findOrCreateTrigger( group ).addAction( act )
+    def cmd_delaction(self, world, group, number):
 
-    world.info( "Action '%s' added to match pattern group '%s'."
-                % ( action, group ) )
+        """
+        Delete an action from the given match pattern group.
 
+        Usage: %(cmd)s <group> <number>
 
-  def cmd_delaction( self, world, group, number ):
+        Example:
+          %(cmd)s my_pages 2
 
-    """
-    Delete an action from the given match pattern group.
+        Given a match pattern group 'my_pages' containing several actions, the
+        above command deletes the second action from the group.
 
-    Usage: %(cmd)s <group> <number>
+        """
 
-    Example:
-      %(cmd)s my_pages 2
+        mgr = world.socketpipeline.triggersmanager
 
-    Given a match pattern group 'my_pages' containing several actions, the
-    above command deletes the second action from the group.
+        if not mgr.hasGroup(group):
 
-    """
+            world.info("No such match pattern group as '%s'!" % group)
+            return
 
-    mgr = world.socketpipeline.triggersmanager
+        if not number.isdigit():
 
-    if not mgr.hasGroup( group ):
+            world.info("Match pattern number argument must be a number!")
+            return
 
-      world.info( "No such match pattern group as '%s'!" % group )
-      return
+        number = int(number)
 
-    if not number.isdigit():
+        size = len(mgr.findOrCreateTrigger(group).actions)
 
-      world.info( "Match pattern number argument must be a number!" )
-      return
+        if number > size:
 
-    number = int( number )
+            world.info(
+                "Match pattern group '%s' only has %d action(s)!" % (group, size)
+            )
+            return
 
-    size = len( mgr.findOrCreateTrigger( group ).actions )
+        if number > 0:
+            number -= 1  ## Match is given as 1-index but used as 0-index.
 
-    if number > size:
+        mgr.delAction(group, number)
+        world.info("Action #%d deleted from match group '%s'." % (number + 1, group))
 
-      world.info( "Match pattern group '%s' only has %d action(s)!"
-                  % ( group, size ) )
-      return
+    def cmd_test(self, world, line):
 
-    if number > 0:
-      number -= 1  ## Match is given as 1-index but used as 0-index.
+        """
+        Test an input line against every match pattern group.
 
-    mgr.delAction( group, number )
-    world.info( "Action #%d deleted from match group '%s'."
-                % ( number + 1, group ) )
+        Report which group matches the line, and what tokens, if any, have been
+        recognized.
 
+        Usage: %(cmd)s <line>
 
-  def cmd_test( self, world, line ):
+        Don't forget to enclose the line in quotes.
 
-    """
-    Test an input line against every match pattern group.
+        Example:
+          Assuming a group 'my_pages' containing the following pattern:
+            [player] pages: "[message]"
 
-    Report which group matches the line, and what tokens, if any, have been
-    recognized.
+          %(cmd)s 'Arthur pages: "Hi!"'
 
-    Usage: %(cmd)s <line>
+          The above command reports that the group 'my_pages' matches, with the
+          tokens 'player' and 'message' containing 'Arthur' and 'Hi!' respectively.
 
-    Don't forget to enclose the line in quotes.
+        """
 
-    Example:
-      Assuming a group 'my_pages' containing the following pattern:
-        [player] pages: "[message]"
+        mgr = world.socketpipeline.triggersmanager
 
-      %(cmd)s 'Arthur pages: "Hi!"'
+        matches = list(mgr.findMatches(line))
 
-      The above command reports that the group 'my_pages' matches, with the
-      tokens 'player' and 'message' containing 'Arthur' and 'Hi!' respectively.
+        if not matches:
+            world.info("No match found.")
+            return
 
-    """
+        msg = []
+        msg.append("Matches found:")
 
-    mgr = world.socketpipeline.triggersmanager
+        for matchgroup, matchresult in matches:
 
-    matches = list( mgr.findMatches( line ) )
+            group = matchgroup.name
+            tokens = sorted(
+                (tok, value)
+                for tok, value in matchresult.groupdict().items()
+                if value is not None
+            )
 
-    if not matches:
-      world.info( "No match found." )
-      return
+            if tokens:
 
-    msg = []
-    msg.append( "Matches found:" )
+                msg.append("Group '%s' matches with tokens:" % group)
+                for token, value in tokens:
+                    msg.append("  %s: %s" % (token, value))
 
-    for matchgroup, matchresult in matches:
+            else:
+                msg.append("Group '%s' matches." % group)
 
-      group = matchgroup.name
-      tokens = sorted( ( tok, value )
-                         for tok, value in matchresult.groupdict().items()
-                         if value is not None )
+        world.info("\n".join(msg))
 
-      if tokens:
+    def cmd_list(self, world):
 
-        msg.append( "Group '%s' matches with tokens:" % group )
-        for token, value in tokens:
-          msg.append( "  %s: %s" % ( token, value ) )
+        """
+        List all match groups with their match patterns and related actions.
 
-      else:
-        msg.append( "Group '%s' matches." % group )
+        Usage: %(cmd)s
 
-    world.info( "\n".join( msg ) )
+        """
 
+        mgr = world.socketpipeline.triggersmanager
 
-  def cmd_list( self, world ):
+        msg = []
+        msg.append("Match patterns:")
 
-    """
-    List all match groups with their match patterns and related actions.
+        if mgr.isEmpty():
+            msg.append("  None.")
 
-    Usage: %(cmd)s
+        for key, matchgroup in sorted(mgr.groups.items()):
 
-    """
+            group = matchgroup.name
 
-    mgr = world.socketpipeline.triggersmanager
+            msg.append("[%s]" % group)
 
-    msg = []
-    msg.append( "Match patterns:" )
+            for i, m in enumerate(matchgroup.matches):
 
-    if mgr.isEmpty():
-      msg.append( "  None." )
+                if i == 0:
+                    msg.append("  Patterns:")
 
-    for key, matchgroup in sorted( mgr.groups.items() ):
+                msg.append("    #%d: " % (i + 1) + m.toString())
 
-      group = matchgroup.name
+            for i, a in enumerate(matchgroup.actions.values()):
 
-      msg.append( "[%s]" % group )
+                if i == 0:
+                    msg.append("  Actions:")
 
-      for i, m in enumerate( matchgroup.matches ):
+                msg.append("    #%d: " % (i + 1) + a.toString())
 
-        if i == 0:
-          msg.append( "  Patterns:" )
-
-        msg.append( "    #%d: " % ( i + 1 ) + m.toString() )
-
-      for i, a in enumerate( matchgroup.actions.values() ):
-
-        if i == 0:
-          msg.append( "  Actions:" )
-
-        msg.append( "    #%d: " % ( i + 1 ) + a.toString() )
-
-    world.info( "\n".join( msg ) )
+        world.info("\n".join(msg))

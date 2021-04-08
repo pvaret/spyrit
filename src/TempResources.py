@@ -28,60 +28,55 @@ from PyQt5.QtCore import QTemporaryFile
 
 
 class TempResources:
+    def __init__(self):
 
-  def __init__( self ):
+        self.map = {}
+        self.tmpfiles = set()
 
-    self.map      = {}
-    self.tmpfiles = set()
+    def get(self, fname):
 
+        if fname in self.map:
+            return self.map[fname]
 
-  def get( self, fname ):
+        tmpfname = self.new_temp_resource(fname) or fname
 
-    if fname in self.map:
-      return self.map[ fname ]
+        return self.map.setdefault(fname, tmpfname)
 
-    tmpfname = self.new_temp_resource( fname ) or fname
+    def new_temp_resource(self, fname):
 
-    return self.map.setdefault( fname, tmpfname )
+        ## This creates the temp file if fname is a resource, but not if that
+        ## resource is unknown, or turns out to be a real file.
 
+        if not QFile.exists(fname):
+            return None
 
-  def new_temp_resource( self, fname ):
+        tmp = QTemporaryFile.createNativeFile(fname)
 
-    ## This creates the temp file if fname is a resource, but not if that
-    ## resource is unknown, or turns out to be a real file.
+        if not tmp:
+            return None
 
-    if not QFile.exists( fname ):
-      return None
+        ## Close the temporary file for now. We only want it filled with the
+        ## appropriate data for later use.
 
-    tmp = QTemporaryFile.createNativeFile( fname )
+        tmp.close()
+        tmp.setAutoRemove(False)  ## We see to temp file removal on our own.
 
-    if not tmp:
-      return None
+        tmpfname = tmp.fileName()
+        self.tmpfiles.add(tmpfname)
 
-    ## Close the temporary file for now. We only want it filled with the
-    ## appropriate data for later use.
+        return tmpfname
 
-    tmp.close()
-    tmp.setAutoRemove( False )  ## We see to temp file removal on our own.
+    def cleanup(self):
 
-    tmpfname = tmp.fileName()
-    self.tmpfiles.add( tmpfname )
+        while self.tmpfiles:
 
-    return tmpfname
+            try:
+                os.unlink(self.tmpfiles.pop())
+            except OSError:
+                pass
 
+        self.map.clear()
 
-  def cleanup( self ):
+    def __del__(self):
 
-    while self.tmpfiles:
-
-      try:
-        os.unlink( self.tmpfiles.pop() )
-      except OSError:
-        pass
-
-    self.map.clear()
-
-
-  def __del__( self ):
-
-    self.cleanup()
+        self.cleanup()

@@ -20,42 +20,43 @@
 ##
 
 
-from PyQt5.QtGui     import QPixmap
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QLineEdit, QSpinBox, QCheckBox
 
-from Utilities            import check_ssl_is_available
-from SettingsPanel        import SettingsPanel
-from PrettyPanelHeader    import PrettyPanelHeader
-from PrettyOptionDialog   import PrettyOptionDialog
+from Utilities import check_ssl_is_available
+from SettingsPanel import SettingsPanel
+from PrettyPanelHeader import PrettyPanelHeader
+from PrettyOptionDialog import PrettyOptionDialog
 from SettingsWidgetMapper import SettingsWidgetMapper, qlineedit_not_empty
 
 
-def NewWorldDialog( settings, parent=None ):
+def NewWorldDialog(settings, parent=None):
 
-    header = PrettyPanelHeader( "New world", QPixmap( ":/icon/new_world" ) )
+    header = PrettyPanelHeader("New world", QPixmap(":/icon/new_world"))
 
-    mapper = SettingsWidgetMapper( settings )
-    panel  = SettingsPanel( mapper )
+    mapper = SettingsWidgetMapper(settings)
+    panel = SettingsPanel(mapper)
 
-    name_mapper = panel.addBoundRow( "name", QLineEdit(), "World name:" )
-    host_mapper = panel.addBoundRow( "net.host", QLineEdit(), "Server:" )
+    name_mapper = panel.addBoundRow("name", QLineEdit(), "World name:")
+    host_mapper = panel.addBoundRow("net.host", QLineEdit(), "Server:")
 
-    name_mapper.setValidator( qlineedit_not_empty )
-    host_mapper.setValidator( qlineedit_not_empty )
+    name_mapper.setValidator(qlineedit_not_empty)
+    host_mapper.setValidator(qlineedit_not_empty)
 
     port = QSpinBox()
-    port.setRange( 1, 65535 )
-    panel.addBoundRow( "net.port", port, "Port:" )
+    port.setRange(1, 65535)
+    panel.addBoundRow("net.port", port, "Port:")
 
     if check_ssl_is_available():
-      panel.addBoundRow( "net.ssl", QCheckBox( "Use SSL &encryption" ) )
+        panel.addBoundRow("net.ssl", QCheckBox("Use SSL &encryption"))
 
-    dialog = PrettyOptionDialog( mapper,
-                                 panel,
-                                 parent  = parent,
-                                 header  = header,
-                                 oklabel = "Connect",
-                                 title   = "New world" )
+    dialog = PrettyOptionDialog(
+        mapper,
+        panel,
+        parent=parent,
+        header=header,
+        oklabel="Connect",
+        title="New world",
+    )
 
     return dialog
-

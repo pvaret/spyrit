@@ -24,6 +24,7 @@
 
 
 from collections import defaultdict
+
 ## TODO: Remove custom OrderedDict, use that from collections. (Requires a
 ## replacement for the .lastvalue() method.)
 from OrderedDict import OrderedDict
@@ -36,90 +37,85 @@ ANSI = 1
 
 
 class FormatStack:
+    def __init__(self, formatter):
 
-  def __init__( self, formatter ):
+        self.formatter = formatter
+        self.stacks = defaultdict(OrderedDict)
 
-    self.formatter = formatter
-    self.stacks    = defaultdict( OrderedDict )
+    def processChunk(self, chunk):
 
+        chunk_type, payload = chunk
 
-  def processChunk( self, chunk ):
+        if chunk_type == ChunkType.ANSI:
+            self._applyFormat(ANSI, payload)
 
-    chunk_type, payload = chunk
+        elif chunk_type == ChunkType.HIGHLIGHT:
 
-    if chunk_type == ChunkType.ANSI:
-      self._applyFormat( ANSI, payload )
+            id, format = payload
+            self._applyFormat(id, format)
 
-    elif chunk_type == ChunkType.HIGHLIGHT:
+    def setBaseFormat(self, format):
 
-      id, format = payload
-      self._applyFormat( id, format )
+        actual_format = dict((k, None) for k in self.stacks)
+        actual_format.update(format)
 
+        self._applyFormat(BASE, actual_format)
 
-  def setBaseFormat( self, format ):
+    def _applyFormat(self, id, format):
 
-    actual_format = dict( ( k, None ) for k in self.stacks )
-    actual_format.update( format )
+        if not format:
 
-    self._applyFormat( BASE, actual_format )
+            self._clearFormat(id)
+            return
 
+        for property, value in format.items():
 
-  def _applyFormat( self, id, format ):
+            stack = self.stacks[property]
 
-    if not format:
+            old_end_value = stack.lastvalue()
 
-      self._clearFormat( id )
-      return
+            if value:
 
-    for property, value in format.items():
+                if id not in stack and id in (BASE, ANSI):
+                    stack.insert(id, id, value)
 
-      stack = self.stacks[ property ]
+                else:
+                    stack[id] = value
 
-      old_end_value = stack.lastvalue()
+            else:
 
-      if value:
+                if id in stack:
+                    del stack[id]
 
-        if id not in stack and id in ( BASE, ANSI ):
-          stack.insert( id, id, value )
+                else:
+                    continue
 
-        else:
-          stack[ id ] = value
+            new_end_value = stack.lastvalue()
 
-      else:
+            if new_end_value == old_end_value:
+                continue
 
-        if id in stack:
-          del stack[ id ]
+            if new_end_value:
+                self.formatter.setProperty(property, new_end_value)
 
-        else:
-          continue
+            else:
+                self.formatter.clearProperty(property)
 
-      new_end_value = stack.lastvalue()
+    def _clearFormat(self, id):
 
-      if new_end_value == old_end_value:
-        continue
+        for property, stack in self.stacks.items():
 
-      if new_end_value:
-        self.formatter.setProperty( property, new_end_value )
+            if id in stack:
 
-      else:
-        self.formatter.clearProperty( property )
+                old_end_value = stack.lastvalue()
+                del stack[id]
+                new_end_value = stack.lastvalue()
 
+                if new_end_value == old_end_value:
+                    continue
 
-  def _clearFormat( self, id ):
+                if new_end_value:
+                    self.formatter.setProperty(property, new_end_value)
 
-    for property, stack in self.stacks.items():
-
-      if id in stack:
-
-        old_end_value = stack.lastvalue()
-        del stack[ id ]
-        new_end_value = stack.lastvalue()
-
-        if new_end_value == old_end_value:
-          continue
-
-        if new_end_value:
-          self.formatter.setProperty( property, new_end_value )
-
-        else:
-          self.formatter.clearProperty( property )
+                else:
+                    self.formatter.clearProperty(property)

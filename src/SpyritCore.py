@@ -41,100 +41,96 @@ from TriggersManager import construct_triggersmanager
 from CommandRegistry import construct_command_registry
 
 
-class SpyritCore( QObject ):
+class SpyritCore(QObject):
+    def __init__(self, settings, state, worlds, commands, triggers, tmprc, sound):
 
-  def __init__( self, settings, state, worlds, commands, triggers, tmprc,
-                sound ):
+        super(SpyritCore, self).__init__()
 
-    super( SpyritCore, self ).__init__()
+        self.settings = settings
+        self.state = state
+        self.worlds = worlds
+        self.commands = commands
+        self.triggers = triggers
+        self.tmprc = tmprc
+        self.sound = sound
+        self.mw = None
 
-    self.settings = settings
-    self.state    = state
-    self.worlds   = worlds
-    self.commands = commands
-    self.triggers = triggers
-    self.tmprc    = tmprc
-    self.sound    = sound
-    self.mw       = None
+        self.openworlds = WeakSet()
 
-    self.openworlds = WeakSet()
+        ## Set up a MOTD to properly welcome our user:
 
-    ## Set up a MOTD to properly welcome our user:
+        MOTD = (
+            "Welcome to %s %s!" % (settings._app._name, settings._app._version),
+            "Type %shelp for help on available commands." % CMDCHAR,
+        )
 
-    MOTD = (
-        "Welcome to %s %s!" % ( settings._app._name, settings._app._version ),
-        "Type %shelp for help on available commands." % CMDCHAR
+        ## Note the use of iter(), so the MOTD is only displayed once for the whole
+        ## application.
+        self.motd = iter(MOTD)
+
+    @pyqtSlot()
+    def atExit(self):
+
+        self.tmprc.cleanup()
+        self.triggers.save(self.settings)
+        save_settings(self.settings)
+        save_state(self.state)
+
+    def constructMainWindow(self):
+
+        if self.mw:
+            return
+
+        self.mw = MainWindow(self.settings, self.state)
+        self.mw.show()
+
+    def openWorldByName(self, worldname):
+
+        world = self.worlds.lookupWorldByName(worldname)
+
+        if world:
+            self.openWorld(world)
+
+        else:
+            messages.warn("No such world: %s" % worldname)
+
+    def openWorldByHostPort(self, host, port, ssl=False):
+
+        world = self.worlds.lookupWorldByHostPort(host, port)
+
+        if world:
+            self.openWorld(world)
+
+        else:
+            self.openWorld(self.worlds.newAnonymousWorld(host, port, ssl))
+
+    def openWorld(self, world):
+
+        self.openworlds.add(world)
+        self.mw.newWorldUI(world)
+        world.connectToWorld()
+
+
+def construct_spyrit_core(application):
+
+    settings = load_settings()
+    state = load_state()
+    worlds = WorldsManager(settings, state)
+    tmprc = TempResources()
+    sound = SoundEngine(tmprc)
+    triggers = construct_triggersmanager(settings)
+    commands = construct_command_registry()
+
+    core = SpyritCore(
+        settings=settings,
+        state=state,
+        worlds=worlds,
+        commands=commands,
+        triggers=triggers,
+        tmprc=tmprc,
+        sound=sound,
     )
 
-    ## Note the use of iter(), so the MOTD is only displayed once for the whole
-    ## application.
-    self.motd = iter( MOTD )
+    application.aboutToQuit.connect(core.atExit)
 
-  @pyqtSlot()
-  def atExit( self ):
-
-    self.tmprc.cleanup()
-    self.triggers.save( self.settings )
-    save_settings( self.settings )
-    save_state( self.state )
-
-  def constructMainWindow( self ):
-
-    if self.mw:
-      return
-
-    self.mw = MainWindow( self.settings, self.state )
-    self.mw.show()
-
-  def openWorldByName( self, worldname ):
-
-    world = self.worlds.lookupWorldByName( worldname )
-
-    if world:
-      self.openWorld( world )
-
-    else:
-      messages.warn( "No such world: %s" % worldname )
-
-  def openWorldByHostPort( self, host, port, ssl=False ):
-
-    world = self.worlds.lookupWorldByHostPort( host, port )
-
-    if world:
-      self.openWorld( world )
-
-    else:
-      self.openWorld(
-          self.worlds.newAnonymousWorld( host, port, ssl )
-      )
-
-  def openWorld( self, world ):
-
-    self.openworlds.add( world )
-    self.mw.newWorldUI( world )
-    world.connectToWorld()
-
-
-def construct_spyrit_core( application ):
-
-  settings = load_settings()
-  state    = load_state()
-  worlds   = WorldsManager( settings, state )
-  tmprc    = TempResources()
-  sound    = SoundEngine( tmprc )
-  triggers = construct_triggersmanager( settings )
-  commands = construct_command_registry()
-
-  core = SpyritCore(
-      settings=settings,
-      state=state,
-      worlds=worlds,
-      commands=commands,
-      triggers=triggers,
-      tmprc=tmprc,
-      sound=sound,
-  )
-
-  application.aboutToQuit.connect( core.atExit )
-
-  return core
+    return core

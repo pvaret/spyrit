@@ -20,136 +20,127 @@
 ##
 
 
-from PyQt5.QtCore    import Qt
-from PyQt5.QtCore    import pyqtSlot
-from PyQt5.QtCore    import pyqtSignal
+from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QTabBar
 from PyQt5.QtWidgets import QTabWidget
 from PyQt5.QtWidgets import QStackedWidget
 
 
+class TabBar(QTabBar):
+    "A QTabBar with a few added features."
 
-class TabBar( QTabBar ):
-  "A QTabBar with a few added features."
+    def __init__(self, *args, **kwargs):
 
-  def __init__( self, *args, **kwargs ):
+        QTabBar.__init__(self, *args, **kwargs)
 
-    QTabBar.__init__( self, *args, **kwargs )
+        self.last_middle_click_index = None
 
-    self.last_middle_click_index = None
+    def mousePressEvent(self, e):
 
+        if e.button() == Qt.MiddleButton and self.tabsClosable():
 
-  def mousePressEvent( self, e ):
+            i = self.tabAt(e.pos())
+            self.last_middle_click_index = i
 
-    if e.button() == Qt.MiddleButton and self.tabsClosable():
+        QTabBar.mousePressEvent(self, e)
 
-      i = self.tabAt( e.pos() )
-      self.last_middle_click_index = i
+    def mouseReleaseEvent(self, e):
 
-    QTabBar.mousePressEvent( self, e )
+        i = self.tabAt(e.pos())
 
+        if (
+            e.button() == Qt.MiddleButton
+            and self.tabsClosable()
+            and i is not None
+            and i == self.last_middle_click_index
+        ):
 
-  def mouseReleaseEvent( self, e ):
+            self.tabCloseRequested.emit(i)
+            e.accept()
 
-    i = self.tabAt( e.pos() )
+        else:
+            QTabBar.mouseReleaseEvent(self, e)
 
-    if ( e.button() == Qt.MiddleButton
-         and self.tabsClosable()
-         and i is not None
-         and i == self.last_middle_click_index ):
-
-        self.tabCloseRequested.emit( i )
-        e.accept()
-
-    else:
-      QTabBar.mouseReleaseEvent( self, e )
-
-    self.last_middle_click_index = None
-
+        self.last_middle_click_index = None
 
 
-class TabWidget( QTabWidget ):
-  "A QTabWidget with a few added features."
+class TabWidget(QTabWidget):
+    "A QTabWidget with a few added features."
 
-  numberOfTabChanged = pyqtSignal( int )
+    numberOfTabChanged = pyqtSignal(int)
 
-  def __init__( self, *args, **kwargs ):
+    def __init__(self, *args, **kwargs):
 
-    QTabWidget.__init__( self, *args, **kwargs )
+        QTabWidget.__init__(self, *args, **kwargs)
 
-    self.setTabBar( TabBar( self ) )
+        self.setTabBar(TabBar(self))
 
+    def tabInserted(self, i):
 
-  def tabInserted( self, i ):
+        ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
+        ## is modified, even if Qt doesn't think it should.
 
-    ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
-    ## is modified, even if Qt doesn't think it should.
+        self.currentChanged.emit(self.currentIndex())
+        self.numberOfTabChanged.emit(self.count())
 
-    self.currentChanged.emit( self.currentIndex() )
-    self.numberOfTabChanged.emit( self.count() )
+    def tabRemoved(self, i):
 
+        ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
+        ## is modified, even if Qt doesn't think it should.
 
-  def tabRemoved( self, i ):
+        self.currentChanged.emit(self.currentIndex())
+        self.numberOfTabChanged.emit(self.count())
 
-    ## Ensures that the 'currentChanged( int )' signal is sent when the tab bar
-    ## is modified, even if Qt doesn't think it should.
+    def previousTab(self):
 
-    self.currentChanged.emit( self.currentIndex() )
-    self.numberOfTabChanged.emit( self.count() )
+        i = self.currentIndex()
+        if i > 0:
+            self.setCurrentIndex(i - 1)
 
+    def nextTab(self):
 
-  def previousTab( self ):
+        i = self.currentIndex()
+        if i < self.count() - 1:
+            self.setCurrentIndex(i + 1)
 
-    i = self.currentIndex()
-    if i > 0:
-      self.setCurrentIndex( i-1 )
+    def closeTab(self):
 
-
-  def nextTab( self ):
-
-    i = self.currentIndex()
-    if i < self.count()-1:
-      self.setCurrentIndex( i+1 )
-
-
-  def closeTab( self ):
-
-    i = self.currentIndex()
-    if i >= 0:
-      self.tabCloseRequested.emit( i )
+        i = self.currentIndex()
+        if i >= 0:
+            self.tabCloseRequested.emit(i)
 
 
+class FallbackTabWidget(QStackedWidget):
+    """A widget that takes a tabwidget and a fallback widget and displays the
+    latter when the former has no tab."""
 
-class FallbackTabWidget( QStackedWidget ):
-  """A widget that takes a tabwidget and a fallback widget and displays the
-  latter when the former has no tab."""
+    def __init__(self, parent=None, tabwidget=None, fallback=None):
 
-  def __init__( self, parent=None, tabwidget=None, fallback=None ):
+        QStackedWidget.__init__(self, parent)
 
-    QStackedWidget.__init__( self, parent )
+        if fallback is None:
+            fallback = QWidget(parent)
 
-    if fallback is None:
-        fallback = QWidget( parent )
+        if tabwidget is None:
+            tabwidget = TabWidget(parent)
 
-    if tabwidget is None:
-        tabwidget = TabWidget( parent )
+        assert isinstance(tabwidget, TabWidget)
 
-    assert isinstance( tabwidget, TabWidget )
+        self.tabwidget = tabwidget
+        self.fallback = fallback
 
-    self.tabwidget = tabwidget
-    self.fallback  = fallback
+        self.addWidget(self.tabwidget)
+        self.addWidget(self.fallback)
 
-    self.addWidget( self.tabwidget )
-    self.addWidget( self.fallback )
+        self.setCurrentWidget(self.fallback)
 
-    self.setCurrentWidget( self.fallback )
+        self.tabwidget.numberOfTabChanged.connect(self.switchView)
 
-    self.tabwidget.numberOfTabChanged.connect( self.switchView )
+    @pyqtSlot(int)
+    def switchView(self, tabcount):
 
-
-  @pyqtSlot( int )
-  def switchView( self, tabcount ):
-
-    current = self.tabwidget if tabcount > 0 else self.fallback
-    self.setCurrentWidget( current )
+        current = self.tabwidget if tabcount > 0 else self.fallback
+        self.setCurrentWidget(current)

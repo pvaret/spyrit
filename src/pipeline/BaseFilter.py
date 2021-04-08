@@ -28,127 +28,117 @@ from .ChunkData import ChunkTypeMismatch
 
 class BaseFilter:
 
-  ## This class attribute lists the chunk types that this filter will process.
-  ## Those unlisted will be passed down the filter chain untouched.
+    ## This class attribute lists the chunk types that this filter will process.
+    ## Those unlisted will be passed down the filter chain untouched.
 
-  relevant_types = ChunkType.all()
+    relevant_types = ChunkType.all()
 
+    def __init__(self, context=None):
 
-  def __init__( self, context=None ):
+        self.sink = None
+        self.context = context
+        self.postponedChunk = []
 
-    self.sink           = None
-    self.context        = context
-    self.postponedChunk = []
+        self.resetInternalState()
 
-    self.resetInternalState()
+    def setSink(self, sink):
 
+        self.sink = sink
 
-  def setSink( self, sink ):
+    def postpone(self, chunk):
 
-    self.sink = sink
+        if self.postponedChunk:
+            raise Exception("Duplicate postponed chunk!")
 
+        else:
+            self.postponedChunk = chunk
 
-  def postpone( self, chunk ):
+    def processChunk(self, chunk):
 
-    if self.postponedChunk:
-      raise Exception( "Duplicate postponed chunk!" )
+        ## This is the default implementation, which does nothing.
+        ## Override this to implement your filter.
+        ## Note that this must be a generator or return a list.
 
-    else:
-      self.postponedChunk = chunk
+        yield chunk
 
+    def resetInternalState(self):
 
-  def processChunk( self, chunk ):
+        ## Initialize the filter at the beginning of a connection (or when
+        ## reconnecting). For instance the Telnet filter would drop all negociated
+        ## options.
+        ## Override this when implementing your filter if your filter uses any
+        ## internal data.
 
-    ## This is the default implementation, which does nothing.
-    ## Override this to implement your filter.
-    ## Note that this must be a generator or return a list.
+        self.postponedChunk = []
 
-    yield chunk
+    def concatPostponed(self, chunk):
 
+        if not self.postponedChunk:
+            return chunk
 
-  def resetInternalState( self ):
+        chunk_type, _ = chunk
 
-    ## Initialize the filter at the beginning of a connection (or when
-    ## reconnecting). For instance the Telnet filter would drop all negociated
-    ## options.
-    ## Override this when implementing your filter if your filter uses any
-    ## internal data.
+        if chunk_type == ChunkType.PACKETBOUND:
+            ## This chunk type is a special case, and is never merged with other
+            ## chunks.
+            return chunk
 
-    self.postponedChunk = []
+        ## If there was some bit of chunk that we postponed earlier...
+        postponed = self.postponedChunk
+        self.postponedChunk = None
+        ## We retrieve it...
 
+        try:
+            ## And try to merge it with the new chunk.
+            chunk = concat_chunks(postponed, chunk)
 
-  def concatPostponed( self, chunk ):
+        except ChunkTypeMismatch:
+            ## If they're incompatible, it means the postponed chunk was really
+            ## complete, so we send it downstream.
+            self.sink(postponed)
 
-    if not self.postponedChunk:
-      return chunk
+        return chunk
 
-    chunk_type, _ = chunk
+    def feedChunk(self, chunk):
 
-    if chunk_type == ChunkType.PACKETBOUND:
-      ## This chunk type is a special case, and is never merged with other
-      ## chunks.
-      return chunk
+        chunk_type, _ = chunk
 
-    ## If there was some bit of chunk that we postponed earlier...
-    postponed = self.postponedChunk
-    self.postponedChunk = None
-    ## We retrieve it...
+        if chunk_type & self.relevant_types:
 
-    try:
-      ## And try to merge it with the new chunk.
-      chunk = concat_chunks( postponed, chunk )
+            if self.postponedChunk:
+                chunk = self.concatPostponed(chunk)
 
-    except ChunkTypeMismatch:
-      ## If they're incompatible, it means the postponed chunk was really
-      ## complete, so we send it downstream.
-      self.sink( postponed )
+            ## At this point, the postponed chunk has either been merged with
+            ## the new one, or been sent downstream. At any rate, it's been dealt
+            ## with, and self.postponedChunk is empty.
+            ## This mean that the postponed chunk should ALWAYS have been cleared
+            ## when processChunk() is called. If not, there's something shifty
+            ## going on...
 
-    return chunk
+            for chunk in self.processChunk(chunk):
+                self.sink(chunk)
 
+        else:
+            self.sink(chunk)
 
-  def feedChunk( self, chunk ):
+    def formatForSending(self, data):
 
-    chunk_type, _ = chunk
+        ## Reimplement this function if the filter inherently requires the data
+        ## sent to the world to be modified. I.e., the telnet filter would escape
+        ## occurences of the IAC in the data.
 
-    if chunk_type & self.relevant_types:
+        return data
 
-      if self.postponedChunk:
-        chunk = self.concatPostponed( chunk )
+    def notifify(self, notification, *args):
 
-      ## At this point, the postponed chunk has either been merged with
-      ## the new one, or been sent downstream. At any rate, it's been dealt
-      ## with, and self.postponedChunk is empty.
-      ## This mean that the postponed chunk should ALWAYS have been cleared
-      ## when processChunk() is called. If not, there's something shifty
-      ## going on...
+        if not self.context:
+            return
 
-      for chunk in self.processChunk( chunk ):
-        self.sink( chunk )
+        self.context.notify(notification, *args)
 
-    else:
-      self.sink( chunk )
+    def bindNotificationListener(self, notification, callback):
 
+        if not self.context:
+            return
 
-  def formatForSending( self, data ):
-
-    ## Reimplement this function if the filter inherently requires the data
-    ## sent to the world to be modified. I.e., the telnet filter would escape
-    ## occurences of the IAC in the data.
-
-    return data
-
-
-  def notifify( self, notification, *args ):
-
-    if not self.context:
-      return
-
-    self.context.notify( notification, *args )
-
-
-  def bindNotificationListener( self, notification, callback ):
-
-    if not self.context:
-      return
-
-    self.context.bindNotificationListener( notification, callback )
+        self.context.bindNotificationListener(notification, callback)

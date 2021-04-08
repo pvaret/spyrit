@@ -28,45 +28,43 @@ from PyQt5.QtWidgets import QDialogButtonBox
 from Separator import Separator
 
 
-class PrettyOptionDialog( QDialog ):
+class PrettyOptionDialog(QDialog):
+    def __init__(
+        self, mapper, panel, header=None, oklabel=None, title=None, parent=None
+    ):
 
-  def __init__( self, mapper, panel,
-                header=None, oklabel=None, title=None, parent=None ):
+        QDialog.__init__(self, parent)
 
-    QDialog.__init__( self, parent )
+        self.header = header
+        self.panel = panel
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
 
-    self.header    = header
-    self.panel     = panel
-    self.buttonbox = QDialogButtonBox( QDialogButtonBox.Ok
-                                     | QDialogButtonBox.Cancel )
+        self.okbutton = self.buttonbox.button(QDialogButtonBox.Ok)
 
-    self.okbutton = self.buttonbox.button( QDialogButtonBox.Ok )
+        if oklabel:
+            self.okbutton.setText(oklabel)
 
-    if oklabel:
-      self.okbutton.setText( oklabel )
+        if title:
+            self.setWindowTitle(title)
 
-    if title:
-      self.setWindowTitle( title )
+        mapper.settingsValid.connect(self.okbutton.setEnabled)
+        mapper.emitSignals()
 
-    mapper.settingsValid.connect( self.okbutton.setEnabled )
-    mapper.emitSignals()
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
 
-    self.buttonbox.accepted.connect( self.accept )
-    self.buttonbox.rejected.connect( self.reject )
+        self.relayout()
 
-    self.relayout()
+    def relayout(self):
 
+        if self.layout():
+            return
 
-  def relayout( self ):
+        self.setLayout(QVBoxLayout(self))
 
-    if self.layout():
-      return
+        if self.header:
+            self.layout().addWidget(self.header)
 
-    self.setLayout( QVBoxLayout( self ) )
-
-    if self.header:
-      self.layout().addWidget( self.header )
-
-    self.layout().addWidget( self.panel )
-    self.layout().addWidget( Separator( self ) )
-    self.layout().addWidget( self.buttonbox )
+        self.layout().addWidget(self.panel)
+        self.layout().addWidget(Separator(self))
+        self.layout().addWidget(self.buttonbox)

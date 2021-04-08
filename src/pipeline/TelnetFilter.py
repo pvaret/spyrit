@@ -30,112 +30,126 @@ from .BaseFilter import BaseFilter
 from .ChunkData import ChunkType
 
 
-def bytechr( i ):
-  return bytes( [ i ] )
+def bytechr(i):
+    return bytes([i])
 
 
-class TelnetFilter( BaseFilter ):
+class TelnetFilter(BaseFilter):
 
-  relevant_types = ChunkType.BYTES
+    relevant_types = ChunkType.BYTES
 
-  SE   = bytechr( 240 )  ## End option subnegotiation
-  NOP  = bytechr( 241 )  ## No operation
-  DM   = bytechr( 242 )  ## Data mark for Synch operation
-  BRK  = bytechr( 243 )  ## Break
-  IP   = bytechr( 244 )  ## Interrupt process
-  AO   = bytechr( 245 )  ## Abort output
-  AYT  = bytechr( 246 )  ## Are You There function
-  EC   = bytechr( 247 )  ## Erase character
-  EL   = bytechr( 248 )  ## Erase line
-  GA   = bytechr( 249 )  ## Go ahead
-  SB   = bytechr( 250 )  ## Begin option subnegotiation
+    SE = bytechr(240)  ## End option subnegotiation
+    NOP = bytechr(241)  ## No operation
+    DM = bytechr(242)  ## Data mark for Synch operation
+    BRK = bytechr(243)  ## Break
+    IP = bytechr(244)  ## Interrupt process
+    AO = bytechr(245)  ## Abort output
+    AYT = bytechr(246)  ## Are You There function
+    EC = bytechr(247)  ## Erase character
+    EL = bytechr(248)  ## Erase line
+    GA = bytechr(249)  ## Go ahead
+    SB = bytechr(250)  ## Begin option subnegotiation
 
-  WILL = bytechr( 251 )
-  WONT = bytechr( 252 )
-  DO   = bytechr( 253 )
-  DONT = bytechr( 254 )
+    WILL = bytechr(251)
+    WONT = bytechr(252)
+    DO = bytechr(253)
+    DONT = bytechr(254)
 
-  IAC  = bytechr( 255 )
+    IAC = bytechr(255)
 
-  match = re.compile(
-      IAC
-    + b"(?:"
-    +   b"(?P<cmd>" + b"|".join( [ NOP, DM, BRK, IP, AO,
-                                   AYT, EC, EL, GA, IAC ] ) + b")"
-    +   b"|"
-    +   b"(?:"
-    +     b"(?P<cmdopt>" + WILL + b"|" + WONT + b"|" + DO + b"|" + DONT + b")"
-    +     b"(?P<opt>.)"
-    +   b")"
-    +   b"|"
-    +   b"(?:"
-    +     SB
-    +     b"(?P<subopt>.)"
-    +     b"(?P<subparam>.*)"
-    +     IAC + SE
-    +   b")"
-    + b")"
-  )
+    match = re.compile(
+        IAC
+        + b"(?:"
+        + b"(?P<cmd>"
+        + b"|".join([NOP, DM, BRK, IP, AO, AYT, EC, EL, GA, IAC])
+        + b")"
+        + b"|"
+        + b"(?:"
+        + b"(?P<cmdopt>"
+        + WILL
+        + b"|"
+        + WONT
+        + b"|"
+        + DO
+        + b"|"
+        + DONT
+        + b")"
+        + b"(?P<opt>.)"
+        + b")"
+        + b"|"
+        + b"(?:"
+        + SB
+        + b"(?P<subopt>.)"
+        + b"(?P<subparam>.*)"
+        + IAC
+        + SE
+        + b")"
+        + b")"
+    )
 
-  unfinished = re.compile(
-      IAC
-    + b"("
-    +   WILL + b"|" + WONT + b"|" + DO + b"|" + DONT
-    +   b"("
-    +     SB + b".{0,256}"
-    +   b")"
-    + b")?"
-    + b"$"
-  )
+    unfinished = re.compile(
+        IAC
+        + b"("
+        + WILL
+        + b"|"
+        + WONT
+        + b"|"
+        + DO
+        + b"|"
+        + DONT
+        + b"("
+        + SB
+        + b".{0,256}"
+        + b")"
+        + b")?"
+        + b"$"
+    )
 
+    def processChunk(self, chunk):
 
-  def processChunk( self, chunk ):
+        _, text = chunk
 
-    _, text = chunk
+        while len(text) > 0:
 
-    while len( text ) > 0:
+            telnet = self.match.search(text)
 
-      telnet = self.match.search( text )
+            if telnet:
 
-      if telnet:
+                head = text[: telnet.start()]
+                text = text[telnet.end() :]
 
-        head = text[ :telnet.start() ]
-        text = text[ telnet.end():   ]
+                if head:
+                    yield (ChunkType.BYTES, head)
 
-        if head:
-          yield ( ChunkType.BYTES, head )
+                parameters = telnet.groupdict()
 
-        parameters = telnet.groupdict()
+                command = parameters["cmd"] or parameters["cmdopt"]
+                option = parameters["opt"]
 
-        command = parameters[ "cmd" ] or parameters[ "cmdopt" ]
-        option  = parameters[ "opt" ]
+                if command == self.IAC:
+                    ## This is an escaped IAC. Yield it as such.
+                    yield (ChunkType.BYTES, self.IAC)
+                    continue
 
-        if command == self.IAC:
-          ## This is an escaped IAC. Yield it as such.
-          yield ( ChunkType.BYTES, self.IAC )
-          continue
+                ## TODO: Implement other commands?
 
-        ## TODO: Implement other commands?
+                elif command in (self.WILL, self.WONT, self.DO, self.DONT):
+                    pass  ## TODO: Implement option negociation.
 
-        elif command in ( self.WILL, self.WONT, self.DO, self.DONT ):
-          pass ## TODO: Implement option negociation.
+            else:
+                ## The remaining text doesn't contain any complete Telnet sequence.
+                ## So we quit the loop.
+                break
 
-      else:
-        ## The remaining text doesn't contain any complete Telnet sequence.
-        ## So we quit the loop.
-        break
+        if text:
+            if self.unfinished.search(text):  ## Remaining text contains an
+                ## unfinished Telnet sequence!
+                self.postpone((ChunkType.BYTES, text))
 
+            else:
+                yield (ChunkType.BYTES, text)
 
-    if text:
-      if self.unfinished.search( text ): ## Remaining text contains an
-                                         ## unfinished Telnet sequence!
-        self.postpone( ( ChunkType.BYTES, text ) )
+    def formatForSending(self, data):
 
-      else:
-        yield ( ChunkType.BYTES, text )
-
-
-  def formatForSending( self, data ):
-
-    ## Escape the character 0xff in accordance with the telnet specification.
-    return data.replace( self.IAC, self.IAC * 2 )
+        ## Escape the character 0xff in accordance with the telnet specification.
+        return data.replace(self.IAC, self.IAC * 2)

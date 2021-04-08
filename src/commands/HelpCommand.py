@@ -25,133 +25,120 @@ from textwrap import dedent
 from PyQt5.QtWidgets import QApplication
 
 from .BaseCommand import BaseCommand
-from Globals     import CMDCHAR
-from Globals     import HELP
+from Globals import CMDCHAR
+from Globals import HELP
 
 
+class HelpCommand(BaseCommand):
+    def cmd(self, world, cmdname=None, subcmdname=None):
 
-class HelpCommand( BaseCommand ):
+        commands = QApplication.instance().core.commands
 
-  def cmd( self, world, cmdname=None, subcmdname=None ):
+        if cmdname:
 
-    commands = QApplication.instance().core.commands
+            cmd = commands.lookupCommand(cmdname)
 
-    if cmdname:
+            if not cmd:
+                return self.helpNoSuchCommand(world, cmdname)
 
-      cmd = commands.lookupCommand( cmdname )
+            if subcmdname:
+                subcmd = cmd.getCallableForName(cmdname, subcmdname)
 
-      if not cmd:
-        return self.helpNoSuchCommand( world, cmdname )
+                if not subcmd:
+                    return self.helpNoSuchCommand(world, cmdname, subcmdname)
 
-      if subcmdname:
-        subcmd = cmd.getCallableForName( cmdname, subcmdname )
+                return self.helpCommand(world, subcmd, cmdname, subcmdname)
 
-        if not subcmd:
-          return self.helpNoSuchCommand( world, cmdname, subcmdname )
+            return self.helpCommand(world, cmd, cmdname)
 
-        return self.helpCommand( world, subcmd, cmdname, subcmdname )
+        return self.helpAll(world)
 
-      return self.helpCommand( world, cmd, cmdname )
+    def helpNoSuchCommand(self, world, cmdname, subcmdname=None):
 
-    return self.helpAll( world )
+        if subcmdname:
+            cmdname += " " + subcmdname
 
-
-  def helpNoSuchCommand( self, world, cmdname, subcmdname=None ):
-
-    if subcmdname:
-      cmdname += " " + subcmdname
-
-    help_txt = """
+        help_txt = """
         %(cmdname)s: no such command.
         Type %(CMDCHAR)s%(HELP)s for help on commands."""
 
-    ctx = { "CMDCHAR": CMDCHAR,
-            "cmdname": cmdname,
-            "HELP": HELP }
+        ctx = {"CMDCHAR": CMDCHAR, "cmdname": cmdname, "HELP": HELP}
 
-    world.info( dedent( help_txt ).strip() % ctx )
+        world.info(dedent(help_txt).strip() % ctx)
 
+    def helpCommand(self, world, cmd, cmdname, subcmdname=None):
 
-  def helpCommand( self, world, cmd, cmdname, subcmdname=None ):
+        if subcmdname:
+            cmdname += " " + subcmdname
 
-    if subcmdname:
-      cmdname += " " + subcmdname
+        help_txt = self.get_help(cmd)
 
-    help_txt = self.get_help( cmd )
+        if not help_txt:
+            world.info("No help on command '%s'." % cmdname)
+            return
 
-    if not help_txt:
-      world.info( "No help on command '%s'." % cmdname  )
-      return
+        cmd = CMDCHAR + cmdname
 
-    cmd = CMDCHAR + cmdname
+        ctx = {"CMDCHAR": CMDCHAR, "cmdname": cmdname, "cmd": cmd, "HELP": HELP}
 
-    ctx = { "CMDCHAR": CMDCHAR,
-            "cmdname": cmdname,
-            "cmd":     cmd,
-            "HELP":    HELP }
+        help_txt = "Help on '%(CMDCHAR)s%(cmdname)s':\n" + help_txt
+        world.info(help_txt % ctx)
 
-    help_txt = "Help on '%(CMDCHAR)s%(cmdname)s':\n" + help_txt
-    world.info( help_txt % ctx )
+    def get_short_help(self, cmd):
 
+        if cmd.__doc__:
+            return cmd.__doc__.split("\n")[0].strip()
 
-  def get_short_help( self, cmd ):
+        return None
 
-    if cmd.__doc__:
-      return cmd.__doc__.split( "\n" )[0].strip()
+    def get_help(self, cmd):
 
-    return None
+        if not cmd.__doc__:
+            return None
 
+        doc = dedent(cmd.__doc__)
 
-  def get_help( self, cmd ):
+        if not hasattr(cmd, "subcmds") or len(cmd.subcmds) == 0:
+            return doc
 
-    if not cmd.__doc__:
-      return None
+        helptxt = [doc]
+        helptxt += [""]
+        helptxt += ["Subcommands:"]
 
-    doc = dedent( cmd.__doc__ )
+        ljust = max(len(c) for c in cmd.subcmds.keys()) + 2
 
-    if not hasattr( cmd, "subcmds" ) or len( cmd.subcmds ) == 0:
-      return doc
+        for subcmdname, subcmd in sorted(cmd.subcmds.items()):
 
-    helptxt  = [ doc ]
-    helptxt += [ "" ]
-    helptxt += [ "Subcommands:" ]
+            doc = subcmd.__doc__
 
-    ljust = max( len( c ) for c in cmd.subcmds.keys() ) + 2
+            if doc:
+                line = "  %s " % (subcmdname.ljust(ljust)) + doc.split("\n")[0].strip()
+                helptxt.append(line)
 
-    for subcmdname, subcmd in sorted( cmd.subcmds.items() ):
+        helptxt += [""]
+        helptxt += [
+            "Type '/help COMMAND SUBCOMMAND' for specific help on a " "subcommand."
+        ]
 
-      doc = subcmd.__doc__
+        return "\n".join(helptxt)
 
-      if doc:
-        line = ( "  %s " % ( subcmdname.ljust( ljust ) )
-               + doc.split( "\n" )[0].strip() )
-        helptxt.append( line )
+    def helpAll(self, world):
 
-    helptxt += [ "" ]
-    helptxt += [ "Type '/help COMMAND SUBCOMMAND' for specific help on a "
-                 "subcommand." ]
+        helptxt = ["Available commands:\n"]
 
-    return "\n".join( helptxt )
+        cmd_registry = QApplication.instance().core.commands
 
+        ljust = max(len(c) for c in cmd_registry.commands.keys()) + 2
 
-  def helpAll( self, world ):
+        for cmdname in sorted(cmd_registry.commands.keys()):
 
-    helptxt = [ "Available commands:\n" ]
+            cmd = cmd_registry.lookupCommand(cmdname)
+            help = self.get_short_help(cmd)
 
-    cmd_registry = QApplication.instance().core.commands
+            if help:
+                helptxt.append(CMDCHAR + "%s" % cmdname.ljust(ljust) + help)
 
-    ljust = max( len( c ) for c in cmd_registry.commands.keys() ) + 2
+        helptxt += [""]
+        helptxt += ["Type '%shelp COMMAND' for more help on a command." % CMDCHAR]
 
-    for cmdname in sorted( cmd_registry.commands.keys() ):
-
-      cmd  = cmd_registry.lookupCommand( cmdname )
-      help = self.get_short_help( cmd )
-
-      if help:
-        helptxt.append( CMDCHAR + "%s" % cmdname.ljust( ljust ) + help )
-
-    helptxt += [ "" ]
-    helptxt += [ "Type '%shelp COMMAND' for more help on a command."
-                 % CMDCHAR ]
-
-    world.info( "\n".join( helptxt ) )
+        world.info("\n".join(helptxt))

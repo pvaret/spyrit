@@ -34,188 +34,182 @@ import types
 from weakref import ref
 
 
-class WeakCallableRef( object ):
+class WeakCallableRef(object):
 
-  """
-  Implements a weakref for callables, be they functions or methods.
+    """
+    Implements a weakref for callables, be they functions or methods.
 
-  Due to implementation details, native Python weakrefs on bound methods always
-  expire right away. WeakCallableRef, on the other hand, only expires bound
-  method references when the object the method is bound to expires. It
-  otherwise behaves like native Python weakref for other callables (functions
-  and static methods).
+    Due to implementation details, native Python weakrefs on bound methods always
+    expire right away. WeakCallableRef, on the other hand, only expires bound
+    method references when the object the method is bound to expires. It
+    otherwise behaves like native Python weakref for other callables (functions
+    and static methods).
 
-  To demonstrate, let's create callables of all three kinds:
+    To demonstrate, let's create callables of all three kinds:
 
-  >>> def test1():
-  ...   pass
+    >>> def test1():
+    ...   pass
 
-  >>> class TestClass:
-  ...   def test2( self ): pass
-  ...   @staticmethod
-  ...   def test3(): pass
+    >>> class TestClass:
+    ...   def test2( self ): pass
+    ...   @staticmethod
+    ...   def test3(): pass
 
-  >>> test_obj = TestClass()
+    >>> test_obj = TestClass()
 
-  And a little function to tell us when a ref is deleted:
+    And a little function to tell us when a ref is deleted:
 
-  >>> def call_on_expire( ref ):
-  ...   print( "Deleted %r!" % ref )
+    >>> def call_on_expire( ref ):
+    ...   print( "Deleted %r!" % ref )
 
-  Ok. And now, let's create the weakrefs.
+    Ok. And now, let's create the weakrefs.
 
-  >>> func_ref        = WeakCallableRef( test1, call_on_expire )
-  >>> bound_meth_ref  = WeakCallableRef( test_obj.test2, call_on_expire )
-  >>> static_meth_ref = WeakCallableRef( TestClass.test3, call_on_expire )
+    >>> func_ref        = WeakCallableRef( test1, call_on_expire )
+    >>> bound_meth_ref  = WeakCallableRef( test_obj.test2, call_on_expire )
+    >>> static_meth_ref = WeakCallableRef( TestClass.test3, call_on_expire )
 
-  The original callable can be retrieved by calling the weakref:
+    The original callable can be retrieved by calling the weakref:
 
-  >>> print( func_ref() )  #doctest: +ELLIPSIS
-  <function test1 at ...>
+    >>> print( func_ref() )  #doctest: +ELLIPSIS
+    <function test1 at ...>
 
-  >>> print( bound_meth_ref() )  #doctest: +ELLIPSIS
-  <bound method TestClass.test2 ...>
+    >>> print( bound_meth_ref() )  #doctest: +ELLIPSIS
+    <bound method TestClass.test2 ...>
 
-  >>> print( static_meth_ref() )  #doctest: +ELLIPSIS
-  <function ...test3 ...>
+    >>> print( static_meth_ref() )  #doctest: +ELLIPSIS
+    <function ...test3 ...>
 
-  When the original callable disappears, the notification function is
-  triggered.
+    When the original callable disappears, the notification function is
+    triggered.
 
-  >>> import gc
-  >>> del test1  #doctest: +ELLIPSIS
-  Deleted <...WeakCallableRef...(test1)...>!
+    >>> import gc
+    >>> del test1  #doctest: +ELLIPSIS
+    Deleted <...WeakCallableRef...(test1)...>!
 
-  >>> del test_obj  #doctest: +ELLIPSIS
-  Deleted <...WeakCallableRef...(test2)...>!
+    >>> del test_obj  #doctest: +ELLIPSIS
+    Deleted <...WeakCallableRef...(test2)...>!
 
-  >>> del TestClass ; _ = gc.collect()  #doctest: +ELLIPSIS
-  Deleted <...WeakCallableRef...(test3)...>!
+    >>> del TestClass ; _ = gc.collect()  #doctest: +ELLIPSIS
+    Deleted <...WeakCallableRef...(test3)...>!
 
-  And if called, the weakrefs must now return None:
+    And if called, the weakrefs must now return None:
 
-  >>> print( func_ref() )
-  None
-  >>> print( bound_meth_ref() )
-  None
-  >>> print( static_meth_ref() )
-  None
+    >>> print( func_ref() )
+    None
+    >>> print( bound_meth_ref() )
+    None
+    >>> print( static_meth_ref() )
+    None
 
-  """
+    """
 
-  def __init__( self, fn, callback=None ):
+    def __init__(self, fn, callback=None):
 
-    assert callable( fn )
+        assert callable(fn)
 
-    self._objref   = None
-    self._fnref    = None
-    self._class    = None
-    self._dead     = False
-    self._callback = callback
-    self._fnname   = ""
+        self._objref = None
+        self._fnref = None
+        self._class = None
+        self._dead = False
+        self._callback = callback
+        self._fnname = ""
 
-    obj = getattr( fn, "__self__", None )
+        obj = getattr(fn, "__self__", None)
 
-    if obj is not None:  ## fn is a bound method
-      func = getattr( fn, "__func__" )
-      self._objref = ref( obj,  self.markDead )
-      self._fnref  = ref( func, self.markDead )
-      self._class  = getattr( fn, "__class__" )
-      self._fnname = getattr( func, "__name__" )
+        if obj is not None:  ## fn is a bound method
+            func = getattr(fn, "__func__")
+            self._objref = ref(obj, self.markDead)
+            self._fnref = ref(func, self.markDead)
+            self._class = getattr(fn, "__class__")
+            self._fnname = getattr(func, "__name__")
 
-    else:  ## fn is a static method or a plain function
-      self._fnref  = ref( fn, self.markDead )
-      self._fnname = getattr( fn, "__name__" )
+        else:  ## fn is a static method or a plain function
+            self._fnref = ref(fn, self.markDead)
+            self._fnname = getattr(fn, "__name__")
 
+    def markDead(self, objref):
 
-  def markDead( self, objref ):
+        if not self._dead:
 
-    if not self._dead:
+            callback = self._callback
 
-      callback = self._callback
+            self._dead = True
+            self._objref = None
+            self._fnref = None
+            self._class = None
+            self._callback = None
 
-      self._dead     = True
-      self._objref   = None
-      self._fnref    = None
-      self._class    = None
-      self._callback = None
+            if callback:
+                return callback(self)
 
-      if callback:
-        return callback( self )
+    def __call__(self):
 
+        if self._objref:  ## bound method
 
-  def __call__( self ):
+            ## Bind the method on the fly, and return it.
+            fn = self._fnref()
+            obj = self._objref()
 
-    if self._objref:  ## bound method
+            if None in (fn, obj):
+                return None
 
-      ## Bind the method on the fly, and return it.
-      fn  = self._fnref()
-      obj = self._objref()
+            return types.MethodType(fn, obj)
 
-      if None in ( fn, obj ):
-        return None
+        elif self._fnref:
+            return self._fnref()
 
-      return types.MethodType( fn, obj )
+        else:
+            return None
 
-    elif self._fnref:
-      return self._fnref()
+    def __repr__(self):
 
-    else:
-      return None
-
-
-  def __repr__( self ):
-
-    return "<%s instance at %s (%s)%s>" % (
-             self.__class__,
-             hex( id( self ) ),
-             self._fnname,
-             self._dead and "; dead" or ""
-           )
-
+        return "<%s instance at %s (%s)%s>" % (
+            self.__class__,
+            hex(id(self)),
+            self._fnname,
+            self._dead and "; dead" or "",
+        )
 
 
 class WeakCallable:
 
-  """
-  Wraps a callable into a weakly referenced proxy object.
+    """
+    Wraps a callable into a weakly referenced proxy object.
 
-  If the proxy object is called after the reference is deleted, this raises a
-  ReferenceError.
+    If the proxy object is called after the reference is deleted, this raises a
+    ReferenceError.
 
-  >>> def test1():
-  ...   print( "Function called!" )
+    >>> def test1():
+    ...   print( "Function called!" )
 
-  >>> test_ref = WeakCallable( test1 )
-  >>> test_ref()
-  Function called!
+    >>> test_ref = WeakCallable( test1 )
+    >>> test_ref()
+    Function called!
 
-  >>> del test1
-  >>> test_ref()  #doctest: +ELLIPSIS
-  Traceback (most recent call last):
-  ...
-  ReferenceError: Attempted to call dead WeakCallable...
+    >>> del test1
+    >>> test_ref()  #doctest: +ELLIPSIS
+    Traceback (most recent call last):
+    ...
+    ReferenceError: Attempted to call dead WeakCallable...
 
-  """
+    """
 
-  def __init__( self, fn ):
+    def __init__(self, fn):
 
-    self._ref = WeakCallableRef( fn )
+        self._ref = WeakCallableRef(fn)
 
+    def __call__(self, *args, **kwargs):
 
-  def __call__( self, *args, **kwargs ):
+        fn = self._ref()
+        if fn is not None:
+            return fn(*args, **kwargs)
 
-    fn = self._ref()
-    if fn is not None:
-      return fn( *args, **kwargs )
+        raise ReferenceError("Attempted to call dead WeakCallable %s!" % self)
 
-    raise ReferenceError( "Attempted to call dead WeakCallable %s!" % self )
+    def __repr__(self):
 
-
-  def __repr__( self ):
-
-    return "<%s instance at %s%s>" % (
-             self.__class__,
-             hex( id( self ) ),
-             ( self._ref() is None ) and "; dead" or ""
-           )
+        return "<%s instance at %s%s>" % (
+            self.__class__,
+            hex(id(self)),
+            (self._ref() is None) and "; dead" or "",
+        )

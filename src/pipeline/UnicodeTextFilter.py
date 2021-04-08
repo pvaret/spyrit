@@ -26,62 +26,54 @@ import codecs
 from Messages import messages
 
 from .BaseFilter import BaseFilter
-from .ChunkData  import ChunkType
+from .ChunkData import ChunkType
 
 
+class UnicodeTextFilter(BaseFilter):
 
+    relevant_types = ChunkType.BYTES
 
-class UnicodeTextFilter( BaseFilter ):
+    def __init__(self, context, encoding):
 
-  relevant_types = ChunkType.BYTES
+        self.decoder = None
+        self.encoding = "ascii"
 
+        BaseFilter.__init__(self, context)
 
-  def __init__( self, context, encoding ):
+        self.setEncoding(encoding)
+        self.bindNotificationListener("encoding_changed", self.setEncoding)
 
-    self.decoder  = None
-    self.encoding = "ascii"
+    def setEncoding(self, encoding):
 
-    BaseFilter.__init__( self, context )
+        assert type(encoding) is type("")
 
-    self.setEncoding( encoding )
-    self.bindNotificationListener( "encoding_changed", self.setEncoding )
+        try:
+            codecs.lookup(encoding)
 
+        except LookupError:
 
-  def setEncoding( self, encoding ):
+            messages.warn("Unknown encoding '%s'; reverting to Latin1." % encoding)
+            encoding = "latin1"
 
-    assert type( encoding ) is type( "" )
+        self.encoding = encoding
+        self.decoder = codecs.getincrementaldecoder(self.encoding)("replace")
 
-    try:
-      codecs.lookup( encoding )
+    def resetInternalState(self):
 
-    except LookupError:
+        BaseFilter.resetInternalState(self)
 
-      messages.warn( "Unknown encoding '%s'; reverting to Latin1."
-                     % encoding )
-      encoding = "latin1"
+        if self.decoder:
+            self.decoder.reset()
 
-    self.encoding = encoding
-    self.decoder  = codecs.getincrementaldecoder( self.encoding ) ( "replace" )
+    def processChunk(self, chunk):
 
+        _, payload = chunk
 
-  def resetInternalState( self ):
+        text = self.decoder.decode(payload)
 
-    BaseFilter.resetInternalState( self )
+        if text:
+            yield (ChunkType.TEXT, text)
 
-    if self.decoder:
-      self.decoder.reset()
+    def formatForSending(self, data):
 
-
-  def processChunk( self, chunk ):
-
-    _, payload = chunk
-
-    text = self.decoder.decode( payload )
-
-    if text:
-      yield ( ChunkType.TEXT, text )
-
-
-  def formatForSending( self, data ):
-
-    return data.encode( self.encoding, "replace" )
+        return data.encode(self.encoding, "replace")

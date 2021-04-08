@@ -25,26 +25,26 @@ import os.path
 
 from PlatformSpecific import platformSpecific
 
-SETTINGS_DIR             = platformSpecific.get_settings_dir()
-SETTINGS_FILE            = platformSpecific.get_settings_file()
+SETTINGS_DIR = platformSpecific.get_settings_dir()
+SETTINGS_FILE = platformSpecific.get_settings_file()
 SETTINGS_FILE_CANDIDATES = [
-    os.path.join( dir, platformSpecific.CONFIG_FILE )
-    for dir in [ SETTINGS_DIR ] + platformSpecific.get_old_settings_dirs()
+    os.path.join(dir, platformSpecific.CONFIG_FILE)
+    for dir in [SETTINGS_DIR] + platformSpecific.get_old_settings_dirs()
 ]
-STATE_FILE            = platformSpecific.get_state_file()
+STATE_FILE = platformSpecific.get_state_file()
 STATE_FILE_CANDIDATES = [
-    os.path.join( dir, platformSpecific.STATE_FILE )
-    for dir in [ SETTINGS_DIR ] + platformSpecific.get_old_settings_dirs()
+    os.path.join(dir, platformSpecific.STATE_FILE)
+    for dir in [SETTINGS_DIR] + platformSpecific.get_old_settings_dirs()
 ]
-LOG_DIR = os.path.join( SETTINGS_DIR, "logs" )
+LOG_DIR = os.path.join(SETTINGS_DIR, "logs")
 
 FILE_ENCODING = "UTF-8"
 
 
-if not os.path.exists( SETTINGS_DIR ):
+if not os.path.exists(SETTINGS_DIR):
 
-  try:
-    os.makedirs( SETTINGS_DIR )
+    try:
+        os.makedirs(SETTINGS_DIR)
 
-  except ( IOError, OSError ):
-    pass
+    except (IOError, OSError):
+        pass

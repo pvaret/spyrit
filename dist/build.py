@@ -77,79 +77,87 @@ importlib.import_module( "@BOOTSTRAP@" )
 """.strip()
 
 
-def make_source_archive( filename: Text ) -> bytes:
+def make_source_archive(filename: Text) -> bytes:
 
-  return base64.encodebytes( bz2.compress( open( filename, "rb" ).read() ) )
-
-
-def compile_module_dict( modules: List[ Tuple[ Text, Text ] ] ) -> Text:
-
-  mods = []
-
-  for ( modulename, filename ) in sorted( modules ):
-    if not filename:
-      continue
-
-    bc = make_source_archive( filename )
-    mods.append( "    %s: ( %s, b\"\"\"\\\n%s\"\"\" )"
-                 % ( repr( modulename ),
-                     repr( filename ),
-                     bc.decode( "latin1" ) ) )
-
-  return "{\n%s\n}" % ",\n".join( mods )
+    return base64.encodebytes(bz2.compress(open(filename, "rb").read()))
 
 
-def make_launcher( modules: List[ Tuple[ Text, Text ] ] ):
+def compile_module_dict(modules: List[Tuple[Text, Text]]) -> Text:
 
-  return LAUNCHER_STUB % { "modules": compile_module_dict( modules ) }
+    mods = []
+
+    for (modulename, filename) in sorted(modules):
+        if not filename:
+            continue
+
+        bc = make_source_archive(filename)
+        mods.append(
+            '    %s: ( %s, b"""\\\n%s""" )'
+            % (repr(modulename), repr(filename), bc.decode("latin1"))
+        )
+
+    return "{\n%s\n}" % ",\n".join(mods)
 
 
-def build( inputname: Text, outputname: Text = None, verbose: bool = True ):
+def make_launcher(modules: List[Tuple[Text, Text]]):
 
-  dirname, scriptname = os.path.split( inputname )
-  previous_dir = os.path.abspath( os.getcwd() )
+    return LAUNCHER_STUB % {"modules": compile_module_dict(modules)}
 
-  if dirname:
-    os.chdir( dirname )
 
-  mf = ModuleFinder( path=[ "." ] )
-  mf.run_script( scriptname )
+def build(inputname: Text, outputname: Text = None, verbose: bool = True):
 
-  # Type checking wrongly thinks that Module object have no __file__ or
-  # __path__ attributes. :/
-  libs: List[ Tuple[ Text, Text ] ]
-  libs = [ ( name, mod.__file__ )  # type: ignore
-           for ( name, mod ) in mf.modules.items() ]
+    dirname, scriptname = os.path.split(inputname)
+    previous_dir = os.path.abspath(os.getcwd())
 
-  if verbose:
-    mf.report()
+    if dirname:
+        os.chdir(dirname)
 
-  output = make_launcher( libs )
-  os.chdir( previous_dir )
+    mf = ModuleFinder(path=["."])
+    mf.run_script(scriptname)
 
-  if not outputname:
-    print( output )
+    # Type checking wrongly thinks that Module object have no __file__ or
+    # __path__ attributes. :/
+    libs: List[Tuple[Text, Text]]
+    libs = [(name, mod.__file__) for (name, mod) in mf.modules.items()]  # type: ignore
 
-  else:
-    open( outputname, "w" ).write( output )
+    if verbose:
+        mf.report()
+
+    output = make_launcher(libs)
+    os.chdir(previous_dir)
+
+    if not outputname:
+        print(output)
+
+    else:
+        open(outputname, "w").write(output)
 
 
 def main():
 
-  parser = argparse.ArgumentParser(
-      description="Builds all of a Python script's Python dependencies into a "
-                  "single Python file." )
-  parser.add_argument( "input", metavar="INPUT.py",
-                       help="the input python file" )
-  parser.add_argument( "output", metavar="OUTPUT.py", nargs="?",
-                       help="the output python file", default=None )
-  parser.add_argument( "-v", "--verbose", action="store_true",
-                       help="display information on the collected modules" )
+    parser = argparse.ArgumentParser(
+        description="Builds all of a Python script's Python dependencies into a "
+        "single Python file."
+    )
+    parser.add_argument("input", metavar="INPUT.py", help="the input python file")
+    parser.add_argument(
+        "output",
+        metavar="OUTPUT.py",
+        nargs="?",
+        help="the output python file",
+        default=None,
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="display information on the collected modules",
+    )
 
-  args = parser.parse_args()
+    args = parser.parse_args()
 
-  return build( args.input, args.output, args.verbose )
+    return build(args.input, args.output, args.verbose)
 
 
 if __name__ == "__main__":
-  main()
+    main()

@@ -22,56 +22,54 @@
 ##
 
 
-HAS_PYGAME=False
+HAS_PYGAME = False
 
 try:
-  import pygame
-  HAS_PYGAME=True
+    import pygame
+
+    HAS_PYGAME = True
 
 except ImportError:
-  ## Pygame not found. Bummer.
-  pass
+    ## Pygame not found. Bummer.
+    pass
 
 
 FREQUENCY = 44100  ## hz
-SIZE      = -16    ## 16 bits, signed
-CHANNELS  = 1      ## mono
-BUFFER    = 1024   ## bytes
+SIZE = -16  ## 16 bits, signed
+CHANNELS = 1  ## mono
+BUFFER = 1024  ## bytes
 
 
 class PygameBackend:
 
-  name = "SDL"
+    name = "SDL"
 
-  def __init__( self ):
+    def __init__(self):
 
-    self.mixer = None
+        self.mixer = None
 
+    def isAvailable(self):
 
-  def isAvailable( self ):
+        if not HAS_PYGAME:
+            return False
 
-    if not HAS_PYGAME:
-      return False
+        self.mixer = pygame.mixer
 
-    self.mixer = pygame.mixer
+        try:
+            self.mixer.init(FREQUENCY, SIZE, CHANNELS, BUFFER)
 
-    try:
-      self.mixer.init( FREQUENCY, SIZE, CHANNELS, BUFFER )
+        except pygame.error:
+            return False
 
-    except pygame.error:
-      return False
+        return True
 
-    return True
+    def play(self, soundfile):
 
+        if self.mixer:
+            sound = self.mixer.Sound(soundfile)
+            sound.play()
 
-  def play( self, soundfile ):
+    def __del__(self):
 
-    if self.mixer:
-      sound = self.mixer.Sound( soundfile )
-      sound.play()
-
-
-  def __del__( self ):
-
-    if self.mixer:
-      self.mixer.quit()
+        if self.mixer:
+            self.mixer.quit()

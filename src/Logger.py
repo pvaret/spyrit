@@ -25,9 +25,9 @@ import time
 
 from os.path import basename, dirname, isdir
 
-from Globals     import ESC
-from Globals     import FORMAT_PROPERTIES
-from Globals     import compute_closest_ansi_color
+from Globals import ESC
+from Globals import FORMAT_PROPERTIES
+from Globals import compute_closest_ansi_color
 from FormatStack import FormatStack
 
 from pipeline.ChunkData import ChunkType
@@ -36,212 +36,188 @@ from pipeline.ChunkData import FlowControl
 from SingleShotTimer import SingleShotTimer
 
 
-class PlainLogger( object ):
+class PlainLogger(object):
 
-  log_chunk_types = ChunkType.TEXT | ChunkType.FLOWCONTROL
-  encoding = "utf-8"
+    log_chunk_types = ChunkType.TEXT | ChunkType.FLOWCONTROL
+    encoding = "utf-8"
 
+    def __init__(self, world, logfile):
 
-  def __init__( self, world, logfile ):
+        self.world = world
+        self.logfile = logfile
 
-    self.world   = world
-    self.logfile = logfile
+        self.is_logging = False
+        self.buffer = []
 
-    self.is_logging = False
-    self.buffer     = []
+        self.flush_timer = SingleShotTimer(self.flushBuffer)
+        self.flush_timer.setInterval(100)  ## ms
 
-    self.flush_timer = SingleShotTimer( self.flushBuffer )
-    self.flush_timer.setInterval( 100 )  ## ms
+    def logChunk(self, chunk):
 
+        if not self.is_logging:
+            return
 
-  def logChunk( self, chunk ):
+        chunk_type, payload = chunk
 
-    if not self.is_logging:
-      return
+        if chunk_type == ChunkType.TEXT:
+            self.doLogText(payload)
 
-    chunk_type, payload = chunk
+        elif chunk == (ChunkType.FLOWCONTROL, FlowControl.LINEFEED):
+            self.doLogText("\n")
 
-    if chunk_type == ChunkType.TEXT:
-      self.doLogText( payload )
+        else:
+            return
 
-    elif chunk == ( ChunkType.FLOWCONTROL, FlowControl.LINEFEED ):
-      self.doLogText( "\n" )
+        self.flush_timer.start()
 
-    else:
-      return
+    def doLogText(self, text):
 
-    self.flush_timer.start()
+        assert type(text) is type("")
+        self.buffer.append(text.encode(self.encoding, "replace"))
 
+    def doLogStart(self):
 
-  def doLogText( self, text ):
+        now = time.strftime("%c", time.localtime())
+        self.doLogText("%% Log start for %s on %s.\n" % (self.world.title(), now))
 
-    assert type( text ) is type( "" )
-    self.buffer.append( text.encode( self.encoding, "replace" ) )
+    def doLogStop(self):
 
+        now = time.strftime("%c", time.localtime())
+        self.doLogText("%% Log end on %s.\n" % now)
 
-  def doLogStart( self ):
+    def flushBuffer(self):
 
-    now = time.strftime( "%c", time.localtime() )
-    self.doLogText( "%% Log start for %s on %s.\n" % ( self.world.title(), now ) )
+        if self.is_logging and self.buffer:
 
+            self.logfile.write(b"".join(self.buffer))
+            self.logfile.flush()
+            self.buffer[:] = []
 
-  def doLogStop( self ):
+    def start(self):
 
-    now = time.strftime( "%c", time.localtime() )
-    self.doLogText( "%% Log end on %s.\n" % now )
+        if self.is_logging:
+            return
 
+        self.is_logging = True
+        self.doLogStart()
+        ## TODO: move info message out of logger?
+        self.world.info("Started logging to %s" % basename(self.logfile.name))
 
-  def flushBuffer( self ):
+        self.flushBuffer()
 
-    if self.is_logging and self.buffer:
+    def stop(self):
 
-      self.logfile.write( b"".join( self.buffer ) )
-      self.logfile.flush()
-      self.buffer[:] = []
+        if not self.is_logging:
+            return
 
+        self.doLogStop()
+        ## TODO: move info message out of logger?
+        self.world.info("Stopped logging.")
 
-  def start( self ):
+        self.flushBuffer()
+        self.is_logging = False
 
-    if self.is_logging:
-      return
+    def __del__(self):
 
-    self.is_logging = True
-    self.doLogStart()
-    ## TODO: move info message out of logger?
-    self.world.info( "Started logging to %s" % basename( self.logfile.name ) )
-
-    self.flushBuffer()
-
-
-  def stop( self ):
-
-    if not self.is_logging:
-      return
-
-    self.doLogStop()
-    ## TODO: move info message out of logger?
-    self.world.info( "Stopped logging." )
-
-    self.flushBuffer()
-    self.is_logging = False
-
-
-  def __del__( self ):
-
-     self.stop()
-
-
-
-
+        self.stop()
 
 
 class AnsiFormatter:
+    def __init__(self, buffer):
 
-  def __init__( self, buffer ):
+        self.buffer = buffer
 
-    self.buffer = buffer
+    def setProperty(self, property, value):
 
+        if property == FORMAT_PROPERTIES.BOLD:
+            self.buffer.append(ESC + b"[1m")
 
-  def setProperty( self, property, value ):
+        elif property == FORMAT_PROPERTIES.ITALIC:
+            self.buffer.append(ESC + b"[3m")
 
-    if   property == FORMAT_PROPERTIES.BOLD:
-        self.buffer.append( ESC + b"[1m" )
+        elif property == FORMAT_PROPERTIES.UNDERLINE:
+            self.buffer.append(ESC + b"[4m")
 
-    elif property == FORMAT_PROPERTIES.ITALIC:
-        self.buffer.append( ESC + b"[3m" )
+        elif property == FORMAT_PROPERTIES.COLOR:
 
-    elif property == FORMAT_PROPERTIES.UNDERLINE:
-        self.buffer.append( ESC + b"[4m" )
+            ansi_color = compute_closest_ansi_color(value)
+            self.buffer.append(ESC + b"[38;5;%dm" % ansi_color)
 
-    elif property == FORMAT_PROPERTIES.COLOR:
+        elif property == FORMAT_PROPERTIES.BACKGROUND:
 
-        ansi_color = compute_closest_ansi_color( value )
-        self.buffer.append( ESC + b"[38;5;%dm" % ansi_color )
+            ansi_color = compute_closest_ansi_color(value)
+            self.buffer.append(ESC + b"[48;5;%dm" % ansi_color)
 
-    elif property == FORMAT_PROPERTIES.BACKGROUND:
+    def clearProperty(self, property):
 
-        ansi_color = compute_closest_ansi_color( value )
-        self.buffer.append( ESC + b"[48;5;%dm" % ansi_color )
+        if property == FORMAT_PROPERTIES.BOLD:
+            self.buffer.append(ESC + b"[22m")
 
+        elif property == FORMAT_PROPERTIES.ITALIC:
+            self.buffer.append(ESC + b"[23m")
 
+        elif property == FORMAT_PROPERTIES.UNDERLINE:
+            self.buffer.append(ESC + b"[24m")
 
-  def clearProperty( self, property ):
+        elif property == FORMAT_PROPERTIES.COLOR:
+            self.buffer.append(ESC + b"[39m")
 
-    if   property == FORMAT_PROPERTIES.BOLD:
-        self.buffer.append( ESC + b"[22m" )
-
-    elif property == FORMAT_PROPERTIES.ITALIC:
-        self.buffer.append( ESC + b"[23m" )
-
-    elif property == FORMAT_PROPERTIES.UNDERLINE:
-        self.buffer.append( ESC + b"[24m" )
-
-    elif property == FORMAT_PROPERTIES.COLOR:
-        self.buffer.append( ESC + b"[39m" )
-
-    elif property == FORMAT_PROPERTIES.BACKGROUND:
-        self.buffer.append( ESC + b"[49m" )
+        elif property == FORMAT_PROPERTIES.BACKGROUND:
+            self.buffer.append(ESC + b"[49m")
 
 
+class AnsiLogger(PlainLogger):
 
-class AnsiLogger( PlainLogger ):
+    log_chunk_types = PlainLogger.log_chunk_types | ChunkType.HIGHLIGHT | ChunkType.ANSI
 
-  log_chunk_types = ( PlainLogger.log_chunk_types
-                      | ChunkType.HIGHLIGHT | ChunkType.ANSI )
+    def __init__(self, *args):
+
+        super(AnsiLogger, self).__init__(*args)
+
+        self.format_stack = FormatStack(AnsiFormatter(self.buffer))
+
+    def logChunk(self, chunk):
+
+        chunk_type, payload = chunk
+
+        if chunk_type & (ChunkType.HIGHLIGHT | ChunkType.ANSI):
+            self.format_stack.processChunk(chunk)
+
+        else:
+            super(AnsiLogger, self).logChunk(chunk)
+
+    def doLogStop(self):
+
+        ## TODO: decide if we want to also store the current format somewhere, in
+        ## case we want to re-apply it if the user re-starts the log.
+        self.buffer.append(ESC + b"[m")
+        super(AnsiLogger, self).doLogStop()
 
 
-  def __init__( self, *args ):
+def create_logger_for_world(world, logfilename):
 
-    super( AnsiLogger, self ).__init__( *args )
+    dir = dirname(logfilename)
 
-    self.format_stack = FormatStack( AnsiFormatter( self.buffer ) )
+    if not isdir(dir):
 
+        try:
+            os.makedirs(dir)
 
-  def logChunk( self, chunk ):
+        except (IOError, OSError):
+            pass
 
-    chunk_type, payload = chunk
+    file = world.openFileOrErr(logfilename, "a+b")
 
-    if chunk_type & ( ChunkType.HIGHLIGHT | ChunkType.ANSI ):
-      self.format_stack.processChunk( chunk )
+    if not file:
+        return None
 
+    if world.settings._log._ansi:
+        LoggerClass = AnsiLogger
     else:
-      super( AnsiLogger, self ).logChunk( chunk )
+        LoggerClass = PlainLogger
 
+    logger = LoggerClass(world, file)
 
-  def doLogStop( self ):
+    world.socketpipeline.addSink(logger.logChunk, logger.log_chunk_types)
 
-    ## TODO: decide if we want to also store the current format somewhere, in
-    ## case we want to re-apply it if the user re-starts the log.
-    self.buffer.append( ESC + b"[m" )
-    super( AnsiLogger, self ).doLogStop()
-
-
-
-
-def create_logger_for_world( world, logfilename ):
-
-  dir = dirname( logfilename )
-
-  if not isdir( dir ):
-
-    try:
-      os.makedirs( dir )
-
-    except ( IOError, OSError ):
-      pass
-
-  file = world.openFileOrErr( logfilename, "a+b" )
-
-  if not file:
-    return None
-
-  if world.settings._log._ansi:
-    LoggerClass = AnsiLogger
-  else:
-    LoggerClass = PlainLogger
-
-  logger = LoggerClass( world, file )
-
-  world.socketpipeline.addSink( logger.logChunk, logger.log_chunk_types )
-
-  return logger
+    return logger

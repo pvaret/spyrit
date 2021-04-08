@@ -23,11 +23,11 @@
 from PosixSpecific import PosixSpecific
 
 
-class MacosSpecific( PosixSpecific ):
+class MacosSpecific(PosixSpecific):
 
-  should_repaint_on_scroll = True
-  default_font             = "Monaco"
+    should_repaint_on_scroll = True
+    default_font = "Monaco"
 
-  def get_sound_backends( self ):
+    def get_sound_backends(self):
 
-    return [ "qsound" ]
+        return ["qsound"]

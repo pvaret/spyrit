@@ -21,7 +21,7 @@
 ##
 
 
-import os.path
+import os
 
 from PlatformSpecific import platformSpecific
 

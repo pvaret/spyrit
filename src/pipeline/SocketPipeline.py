@@ -46,7 +46,7 @@ from SingleShotTimer import SingleShotTimer
 class SocketPipeline(QObject):
     def __init__(self, settings):
 
-        QObject.__init__(self)
+        super().__init__()
 
         self.net_settings = settings._net
 
@@ -195,7 +195,8 @@ class SocketPipeline(QObject):
     @pyqtSlot()
     def readSocket(self):
 
-        data = bytes(self.socket.readAll())
+        # PyQt auto-converts from C++ char* to Python bytes.
+        data: bytes = self.socket.readAll().data()
         self.buffer.append(data)
 
         self.flush_timer.start()
@@ -206,9 +207,7 @@ class SocketPipeline(QObject):
         del self.buffer[:]
         self.pipeline.feedBytes(data)
 
-    def send(self, data):
-
-        assert isinstance(data, type(""))
+    def send(self, data: str):
 
         if not self.socket.state() == self.socket.ConnectedState:
 
@@ -217,7 +216,8 @@ class SocketPipeline(QObject):
 
         data = self.pipeline.formatForSending(data)
 
-        self.socket.write(data)
+        encoding = self.net_settings._encoding
+        self.socket.write(data.encode(encoding, "replace"))
         self.socket.flush()
 
     def addSink(self, sink, types=ChunkType.all()):

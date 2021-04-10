@@ -4,11 +4,10 @@
 import argparse
 import bz2
 import base64
-import os.path
+import os
 
 from modulefinder import ModuleFinder
 from typing import List
-from typing import Text
 from typing import Tuple
 
 
@@ -77,12 +76,12 @@ importlib.import_module( "@BOOTSTRAP@" )
 """.strip()
 
 
-def make_source_archive(filename: Text) -> bytes:
+def make_source_archive(filename: str) -> bytes:
 
     return base64.encodebytes(bz2.compress(open(filename, "rb").read()))
 
 
-def compile_module_dict(modules: List[Tuple[Text, Text]]) -> Text:
+def compile_module_dict(modules: List[Tuple[str, str]]) -> str:
 
     mods = []
 
@@ -99,12 +98,12 @@ def compile_module_dict(modules: List[Tuple[Text, Text]]) -> Text:
     return "{\n%s\n}" % ",\n".join(mods)
 
 
-def make_launcher(modules: List[Tuple[Text, Text]]):
+def make_launcher(modules: List[Tuple[str, str]]):
 
     return LAUNCHER_STUB % {"modules": compile_module_dict(modules)}
 
 
-def build(inputname: Text, outputname: Text = None, verbose: bool = True):
+def build(inputname: str, outputname: str = None, verbose: bool = True):
 
     dirname, scriptname = os.path.split(inputname)
     previous_dir = os.path.abspath(os.getcwd())
@@ -117,7 +116,7 @@ def build(inputname: Text, outputname: Text = None, verbose: bool = True):
 
     # Type checking wrongly thinks that Module object have no __file__ or
     # __path__ attributes. :/
-    libs: List[Tuple[Text, Text]]
+    libs: List[Tuple[str, str]]
     libs = [(name, mod.__file__) for (name, mod) in mf.modules.items()]  # type: ignore
 
     if verbose:
@@ -139,7 +138,9 @@ def main():
         description="Builds all of a Python script's Python dependencies into a "
         "single Python file."
     )
-    parser.add_argument("input", metavar="INPUT.py", help="the input python file")
+    parser.add_argument(
+        "input", metavar="INPUT.py", help="the input python file"
+    )
     parser.add_argument(
         "output",
         metavar="OUTPUT.py",

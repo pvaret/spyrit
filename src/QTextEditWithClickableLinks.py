@@ -35,7 +35,7 @@ class QTextEditWithClickableLinks(QTextEdit):
 
     def __init__(self, parent=None):
 
-        super(QTextEditWithClickableLinks, self).__init__(parent)
+        super().__init__(parent)
 
         self.previous_anchor = ""
         self.click_pos = QPoint()
@@ -44,7 +44,7 @@ class QTextEditWithClickableLinks(QTextEdit):
         self.setMouseTracking(True)
 
         flags = self.textInteractionFlags()
-        flags |= Qt.LinksAccessibleByMouse
+        flags |= Qt.LinksAccessibleByMouse  # type: ignore - '|' is a valid op here
         self.setTextInteractionFlags(flags)
 
         self.linkClicked.connect(self.onLinkClicked)

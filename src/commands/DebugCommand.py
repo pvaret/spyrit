@@ -19,6 +19,7 @@
 ## Debugging-related command.
 ##
 
+import builtins
 
 from .BaseCommand import BaseCommand
 
@@ -35,7 +36,7 @@ class DebugCommand(BaseCommand):
 
         if args:
 
-            exc = __builtins__.get(args[0], None)
+            exc = getattr(builtins, args[0], None)
 
             try:
                 is_an_exception = issubclass(exc, BaseException)

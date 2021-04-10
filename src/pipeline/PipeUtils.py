@@ -26,6 +26,7 @@ from .ChunkData import ChunkType
 def insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks):
 
     pos = 0
+    target_pos = 0
     new_chunk = None
 
     for i, chunk in enumerate(chunkbuffer):

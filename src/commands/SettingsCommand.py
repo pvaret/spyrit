@@ -20,6 +20,8 @@
 ##
 
 
+from typing import Any
+
 from PyQt5.QtWidgets import QApplication
 
 from Utilities import format_as_table
@@ -263,7 +265,7 @@ class SettingsCommand(BaseCommand):
 
         columns = [list_settings]
 
-        DEFAULT = object()  ## marker for the case of default values.
+        DEFAULT: Any = object()  ## marker for the case of default values.
 
         for node in (DEFAULT, settings, worldsettings):
 
@@ -275,8 +277,10 @@ class SettingsCommand(BaseCommand):
                     node if node is not DEFAULT else worldsettings, k
                 )
 
-                if s is None:  ## The key doesn't exist in this context. This is
-                    value = " "  ## likely a world-only key.
+                if s is None:
+                    ## The key doesn't exist in this context. This is likely a
+                    ## world-only key.
+                    value = " "
 
                 elif node is DEFAULT:
                     value = s.serialize(

@@ -191,9 +191,9 @@ class SmartMatch(RegexMatch):
         ## re-escape according to the rules of Python's re module.
 
         replacements = (
-            ("\[", "["),
-            ("\]", "]"),
-            ("\*", "*"),
+            (r"\[", "["),
+            (r"\]", "]"),
+            (r"\*", "*"),
             ("\\" * 2, "\\"),
         )
 

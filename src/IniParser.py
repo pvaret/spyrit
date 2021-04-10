@@ -29,6 +29,8 @@
 
 import re
 
+from typing import cast
+
 
 RE_SECTION = re.compile(r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE)
 RE_KEYVALUE = re.compile(r"^(\w(?:[-.]?\w+)*)\s*=\s*(.*)", re.UNICODE)
@@ -354,7 +356,7 @@ def ini_to_struct(ini_text):
 
             skipsection = False
 
-            depth = result["sectiondepth"]
+            depth = cast(int, result["sectiondepth"])
 
             if depth > len(struct_stack) + 1:
                 ## Okay, this subsection is too deep, i.e. it looks something like:

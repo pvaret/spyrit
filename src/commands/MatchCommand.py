@@ -30,7 +30,7 @@ class MatchCommand(BaseCommand):
 
     def cmd_add(self, world, pattern, group=None, type="smart"):
 
-        """
+        r"""
         Add a new match pattern.
 
         Usage: %(cmd)s <pattern> [<group>] [type="smart"|"regex"]
@@ -64,7 +64,7 @@ class MatchCommand(BaseCommand):
         Examples:
             %(cmd)s "You have received a message from *"
             %(cmd)s "[player] pages: [message]" group=pages
-            %(cmd)s "From afar, (?P<player>\w+) pages (?P<message>.+)" group=pages type=regex
+            %(cmd)s "(?P<player>\w+) pages: (?P<message>.+)" group=pages type=regex
 
         """
 

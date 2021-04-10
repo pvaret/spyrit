@@ -25,7 +25,7 @@
 HAS_PYGAME = False
 
 try:
-    import pygame
+    import pygame  # type: ignore - it's okay if this is missing.
 
     HAS_PYGAME = True
 

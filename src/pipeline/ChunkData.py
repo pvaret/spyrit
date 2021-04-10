@@ -21,7 +21,10 @@
 ##
 
 
-from localenum import IntEnum
+from enum import IntEnum
+
+from Globals import FORMAT_PROPERTIES
+from Globals import ANSI_COLORS as COL
 
 
 class ChunkTypeMismatch(Exception):
@@ -102,9 +105,6 @@ def chunk_repr(chunk):
 
 
 ## ANSI-related data:
-
-from Globals import FORMAT_PROPERTIES
-from Globals import ANSI_COLORS as COL
 
 ANSI_MAPPING = (
     (b"1", (FORMAT_PROPERTIES.BOLD, True)),

@@ -128,7 +128,7 @@ class Pipeline(QObject):
             if type & types:
                 self.sinks[type].add(callback)
 
-    def formatForSending(self, data):
+    def formatForSending(self, data: str) -> str:
 
         for filter in reversed(self.filters):
             data = filter.formatForSending(data)

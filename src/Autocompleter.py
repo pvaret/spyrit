@@ -26,8 +26,10 @@ import re
 import bisect
 
 from collections import deque
+from typing import List, Optional, Tuple
 
 from PyQt5.QtGui import QTextCursor
+from PyQt5.QtWidgets import QTextEdit
 
 from pipeline.ChunkData import ChunkType
 from pipeline.ChunkData import FlowControl
@@ -59,10 +61,10 @@ class CompletionList:
         self.wordpipe.appendleft(word)
         self.wordcount[word] = self.wordcount.setdefault(word, 0) + 1
 
-        l = len(self.words)
+        n = len(self.words)
         i = bisect.bisect_left(self.words, (key, word))
 
-        if not (i < l and self.words[i] == (key, word)):
+        if not (i < n and self.words[i] == (key, word)):
 
             ## Only add this word to the list if it's not already there.
             bisect.insort(self.words, (key, word), i, i)
@@ -90,9 +92,9 @@ class CompletionList:
 
         j = i
         k = i - 1
-        l = len(self.words)
+        n = len(self.words)
 
-        while j < l and self.words[j][0].startswith(key):
+        while j < n and self.words[j][0].startswith(key):
             j += 1
         while k > 0 and self.words[k][0].startswith(key):
             k -= 1
@@ -106,16 +108,16 @@ class Autocompleter:
     ## 'é') plus a few punctuation signs so long as they are inside the matched
     ## word.
 
-    wordmatch = re.compile("\w+[\w:`'.-]*\w+", re.U)
-    startwordmatch = re.compile("\w+[\w:`'.-]*$", re.U)
-    endwordmatch = re.compile("^[\w:`'.-]*", re.U)
+    wordmatch = re.compile(r"\w+[\w:`'.-]*\w+", re.U)
+    startwordmatch = re.compile(r"\w+[\w:`'.-]*$", re.U)
+    endwordmatch = re.compile(r"^[\w:`'.-]*", re.U)
 
     def __init__(self):
 
         self.completionlist = CompletionList()
         self.textedit = None
         self.buffer = []
-        self.matchstate = None
+        self.matchstate: Optional[Tuple[QTextCursor, List[str]]] = None
 
     def selectCurrentWord(self, tc):
 
@@ -187,7 +189,7 @@ class Autocompleter:
         self.matchstate = None
         self.textedit = None
 
-    def complete(self, textedit):
+    def complete(self, textedit: QTextEdit):
 
         self.textedit = textedit
 
@@ -213,7 +215,9 @@ class Autocompleter:
         currently_cycling = False
         result = []
 
-        if self.matchstate:  ## If a previous ongoing completion exists...
+        if (
+            self.matchstate is not None
+        ):  ## If a previous ongoing completion exists...
 
             lastcursor, lastresult = self.matchstate
 

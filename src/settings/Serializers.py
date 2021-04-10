@@ -39,7 +39,6 @@ from typing import Generic
 from typing import Iterable
 from typing import List as ListType
 from typing import Optional
-from typing import Text
 from typing import TypeVar
 
 from PyQt5.QtCore import QPoint
@@ -57,8 +56,8 @@ from Utilities import unquote
 
 
 def split(
-    string: Text, sep: Text = ",", esc: Text = BS, quotes: Text = '"'
-) -> Iterable[Text]:
+    string: str, sep: str = ",", esc: str = BS, quotes: str = '"'
+) -> Iterable[str]:
     r"""
     Splits a string along the given single-character separator (by default, a
     comma).
@@ -121,11 +120,11 @@ Value = TypeVar("Value")
 
 class BaseSerializer(abc.ABC, Generic[Value]):
     @abc.abstractmethod
-    def serialize(self, value: Value) -> Text:
+    def serialize(self, value: Value) -> str:
         pass
 
     @abc.abstractmethod
-    def deserialize(self, string: Text) -> Value:
+    def deserialize(self, string: str) -> Value:
         pass
 
     # TODO: Not very clean. Find a way to make it cleaner? Or maybe remove it
@@ -139,7 +138,7 @@ class BaseSerializer(abc.ABC, Generic[Value]):
 
 
 class Int(BaseSerializer):
-    def deserialize(self, string: Text) -> int:
+    def deserialize(self, string: str) -> int:
 
         try:
             return int(string)
@@ -147,7 +146,7 @@ class Int(BaseSerializer):
         except ValueError:
             return 0
 
-    def serialize(self, int_: int) -> Text:
+    def serialize(self, int_: int) -> str:
 
         if isinstance(int_, int):
             return "%d" % int_
@@ -156,7 +155,7 @@ class Int(BaseSerializer):
 
 
 class Str(BaseSerializer):
-    def deserialize(self, string: Text) -> Optional[Text]:
+    def deserialize(self, string: str) -> Optional[str]:
 
         ## The empty string deserializes to None.
         if not string:
@@ -164,7 +163,7 @@ class Str(BaseSerializer):
 
         return unquote(string)
 
-    def serialize(self, string: Text) -> Text:
+    def serialize(self, string: str) -> str:
 
         ## None serializes to the empty string.
         if string is None:
@@ -174,16 +173,16 @@ class Str(BaseSerializer):
 
 
 class Bool(BaseSerializer):
-    def deserialize(self, string: Text) -> bool:
+    def deserialize(self, string: str) -> bool:
 
         return string.strip().lower() in ("1", "y", "yes", "on", "true")
 
-    def serialize(self, bool_: bool) -> Text:
+    def serialize(self, bool_: bool) -> str:
 
         return "True" if bool_ else "False"
 
 
-class List(BaseSerializer):
+class List(BaseSerializer[Value]):
 
     SEP = ","
     QUOTE = '"'
@@ -193,7 +192,7 @@ class List(BaseSerializer):
         self.sub_serializer = sub_serializer
         BaseSerializer.__init__(self)
 
-    def serialize(self, list_: ListType[Value]) -> Text:
+    def serialize(self, list_: ListType[Value]) -> str:
 
         result = []
 
@@ -207,7 +206,7 @@ class List(BaseSerializer):
 
         return self.SEP.join(result)
 
-    def deserialize(self, string: Text) -> ListType[Value]:
+    def deserialize(self, string: str) -> ListType[Value]:
 
         result = []
 
@@ -238,9 +237,9 @@ class Format(BaseSerializer):
     ## Its deserialized form is a dictionary.
     ## We also store format-related constants on it.
 
-    def serialize(self, format: FormatType) -> Text:
+    def serialize(self, format: FormatType) -> str:
 
-        props: ListType[Text] = []
+        props: ListType[str] = []
 
         for k, v in format.items():
 
@@ -258,7 +257,7 @@ class Format(BaseSerializer):
 
         return " ; ".join(props)
 
-    def deserialize(self, format: Text) -> FormatType:
+    def deserialize(self, format: str) -> FormatType:
 
         d: FormatType = {}
 
@@ -286,20 +285,20 @@ class Format(BaseSerializer):
 
 
 class KeySequence(BaseSerializer):
-    def deserializeDefault(self, string: Text) -> QKeySequence:
+    def deserializeDefault(self, string: str) -> Optional[QKeySequence]:
 
         ## QKeySequence.fromString uses PortableText by default, and so do our
         ## defaults:
         return QKeySequence.fromString(string) if string is not None else None
 
-    def serialize(self, seq: Optional[QKeySequence]) -> Text:
+    def serialize(self, seq: Optional[QKeySequence]) -> str:
 
         if seq is not None:
             return seq.toString(QKeySequence.NativeText)
 
         return ""
 
-    def deserialize(self, string: Text) -> QKeySequence:
+    def deserialize(self, string: str) -> QKeySequence:
 
         return QKeySequence.fromString(string, QKeySequence.NativeText)
 
@@ -308,11 +307,11 @@ class Size(BaseSerializer):
 
     SEP = r"[x,]"
 
-    def serialize(self, size: QSize) -> Text:
+    def serialize(self, size: QSize) -> str:
 
         return "%dx%d" % (size.width(), size.height())
 
-    def deserialize(self, string: Text) -> QSize:
+    def deserialize(self, string: str) -> QSize:
 
         string = string.lower().strip()
 
@@ -330,11 +329,11 @@ class Size(BaseSerializer):
 
 
 class Point(BaseSerializer):
-    def serialize(self, point: QPoint) -> Text:
+    def serialize(self, point: QPoint) -> str:
 
         return "%dx%d" % (point.x(), point.y())
 
-    def deserialize(self, string: Text) -> QPoint:
+    def deserialize(self, string: str) -> QPoint:
 
         string = string.lower().strip()
 
@@ -352,13 +351,13 @@ class Point(BaseSerializer):
 
 
 class Pattern(BaseSerializer):
-    def serialize(self, pattern: BaseMatch) -> Text:
+    def serialize(self, pattern: BaseMatch) -> str:
 
         ## TODO: Not great. Replace the repr() with a proper serialization
         ## function.
         return quote(repr(pattern))
 
-    def deserialize(self, string: Text) -> Optional[BaseMatch]:
+    def deserialize(self, string: str) -> Optional[BaseMatch]:
 
         string = unquote(string)
 
@@ -380,7 +379,7 @@ class Pattern(BaseSerializer):
             class_ = SmartMatch
 
         try:
-            return class_(string)
+            return class_(string)  # type: ignore - class_ is in fact set.
 
         except MatchCreationError:
             return None

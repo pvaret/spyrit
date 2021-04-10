@@ -43,7 +43,7 @@ class PrettyPanelHeader(QFrame):
       border: 8px inset %s;
       border-image: url(:ui/header_borders) 8px repeat stretch;
     }
-  """
+    """
 
     def __init__(self, title, icon=None, desc=None, parent=None):
 
@@ -82,7 +82,9 @@ class PrettyPanelHeader(QFrame):
         if icon:
             i = QLabel(self)
             i.setPixmap(icon)
-            layout.addWidget(i, 0, Qt.AlignLeft | Qt.AlignVCenter)
+            layout.addWidget(
+                i, 0, Qt.AlignmentFlag(Qt.AlignLeft | Qt.AlignVCenter)
+            )
 
         label = '<font size="+2"><b>%s</b></font>' % title
 
@@ -93,6 +95,8 @@ class PrettyPanelHeader(QFrame):
         text.setAlignment(Qt.AlignRight)
 
         text.setTextFormat(Qt.RichText)
-        layout.addWidget(text, 0, Qt.AlignRight | Qt.AlignVCenter)
+        layout.addWidget(
+            text, 0, Qt.AlignmentFlag(Qt.AlignRight | Qt.AlignVCenter)
+        )
 
         self.setLayout(layout)

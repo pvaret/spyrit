@@ -24,6 +24,8 @@
 
 import re
 
+from typing import Optional, Tuple, cast
+
 from Globals import ANSI_COLORS_EXTENDED
 from Globals import FORMAT_PROPERTIES
 from Globals import ESC
@@ -56,7 +58,7 @@ class AnsiFilter(BaseFilter):
         ## sure that self.highlighted and self.current_colors are defined.
 
         self.highlighted, self.current_colors = self.defaultColors()
-        BaseFilter.resetInternalState(self)
+        super().resetInternalState()
 
     def defaultColors(self):
 
@@ -70,7 +72,7 @@ class AnsiFilter(BaseFilter):
         current_colors = self.current_colors
         highlighted = self.highlighted
 
-        chunk_type, text = chunk
+        _, text = chunk
 
         while text:
 
@@ -130,14 +132,19 @@ class AnsiFilter(BaseFilter):
 
                     continue
 
-                prop, value = ANSI_TO_FORMAT.get(param, (None, None))
-
-                if not prop:  ## Unknown ANSI code. Ignore.
+                if param not in ANSI_TO_FORMAT:
+                    ## Unknown ANSI code. Ignore.
                     continue
+
+                prop, value = ANSI_TO_FORMAT[param]
 
                 if prop == FORMAT_PROPERTIES.COLOR:
 
-                    (c_unhighlighted, c_highlighted) = current_colors = value
+                    ## TODO: refactor to add proper type safety.
+                    current_colors = cast(
+                        Tuple[Optional[str], Optional[str]], value
+                    )
+                    (c_unhighlighted, c_highlighted) = current_colors
 
                     if highlighted:
                         format[FORMAT_PROPERTIES.COLOR] = c_highlighted
@@ -152,6 +159,9 @@ class AnsiFilter(BaseFilter):
                     ## According to spec, this actually means highlighted colors.
 
                     highlighted = value
+
+                    # TODO: Clean up the property system to be type safe.
+                    current_colors = cast(Tuple[str, str], current_colors)
 
                     c_unhighlighted, c_highlighted = current_colors
 

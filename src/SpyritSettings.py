@@ -46,7 +46,6 @@ from settings.Serializers import Pattern
 from settings.Serializers import Point
 from settings.Serializers import Size
 from settings.Serializers import Str
-from settings.Serializers import Text
 from settings.Settings import Settings
 
 
@@ -274,7 +273,7 @@ def find_and_read(file_candidates, encoding=FILE_ENCODING):
     return None, ""
 
 
-def _load(schema, candidates: Sequence[Text]):
+def _load(schema, candidates: Sequence[str]):
 
     settings = Settings()
     settings.loadSchema(schema)
@@ -297,7 +296,7 @@ def load_state():
     return _load(STATE_SCHEMA, STATE_FILE_CANDIDATES)
 
 
-def _save(settings, filename: Text):
+def _save(settings, filename: str):
 
     settings_text = "## version: %d\n" % (VERSION) + struct_to_ini(
         settings.dump()

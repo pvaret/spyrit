@@ -23,7 +23,7 @@
 
 
 try:
-    from PyQt5.QtMultimedia import QSound
+    from PyQt5.QtMultimedia import QSound  # type: ignore - it's ok if this is missing.
 
 except ImportError:
     ## QtMultimedia is optional and may not be installed.

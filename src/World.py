@@ -272,7 +272,6 @@ class World(QObject):
 
     def openFileOrErr(self, filename, mode="rb"):
 
-        local_encoding = QApplication.instance().local_encoding
         filename = os.path.expanduser(filename)
         basename = os.path.basename(filename)
 
@@ -287,9 +286,9 @@ class World(QObject):
             self.info("Error: %s: %s" % (basename, errormsg))
             return None
 
-    def loadFile(self, filename=None, blocksize=2048):
+    def loadFile(self, filename: str = "", blocksize: int = 2048):
 
-        if filename is None:
+        if not filename:
 
             filename = self.selectFile(
                 caption="Select the file to load",

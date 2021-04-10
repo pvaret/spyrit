@@ -2,7 +2,6 @@
 
 
 import sys
-import time
 import socket
 import random
 
@@ -30,7 +29,9 @@ if __name__ == "__main__":
     s.bind(("127.0.0.1", port))
     s.listen(5)
 
-    print("Running on port %d. Enter 'stop' in client to stop the server." % port)
+    print(
+        "Running on port %d. Enter 'stop' in client to stop the server." % port
+    )
 
     while True:
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
         clientsocket.shutdown(socket.SHUT_RDWR)
         clientsocket.close()
 
-        if "stop" in msg.lower():
+        if b"stop" in msg.lower():
             break
 
     s.close()

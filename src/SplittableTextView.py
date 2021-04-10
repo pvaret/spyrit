@@ -46,7 +46,6 @@ from PyQt5.QtWidgets import QScrollBar
 from PyQt5.QtWidgets import QApplication
 
 
-from CheckVersions import qt_version
 from SingleShotTimer import SingleShotTimer
 from PlatformSpecific import platformSpecific
 
@@ -59,7 +58,7 @@ class LineCount(QLabel):
         super(LineCount, self).__init__(parent)
 
         self.setAutoFillBackground(True)
-        self.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.setAlignment(Qt.AlignmentFlag(Qt.AlignHCenter | Qt.AlignVCenter))
         self.setMargin(1)
         self.hide()
 
@@ -247,7 +246,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
         ## fixed-pitch fonts:
         font.setFixedPitch(True)
         font.setStyleHint(font.TypeWriter)
-        font.setStyleStrategy(font.PreferOutline | font.PreferMatch)
+        font.setStyleStrategy(
+            QFont.StyleStrategy(font.PreferOutline | font.PreferMatch)
+        )
 
         self.setFont(font)
 

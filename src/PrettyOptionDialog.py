@@ -38,7 +38,9 @@ class PrettyOptionDialog(QDialog):
         self.header = header
         self.panel = panel
         self.buttonbox = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+            QDialogButtonBox.StandardButton(
+                QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+            )
         )
 
         self.okbutton = self.buttonbox.button(QDialogButtonBox.Ok)

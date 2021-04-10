@@ -20,7 +20,6 @@
 
 
 from typing import Optional
-from typing import Sequence
 
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QObject
@@ -28,7 +27,7 @@ from PyQt5.QtCore import QObject
 # TODO: Using BaseNode directly kind of sucks. Find a way to make this cleaner?
 # Settings "derived" from the root setting graph should be accessible through a
 # dedicated API, without poking at the low-level details of settings Nodes.
-from settings.Settings import BaseNode
+# from settings.Settings import BaseNode
 from SpyritSettings import WORLDS
 from Utilities import normalize_text
 from World import World
@@ -45,7 +44,7 @@ class WorldsSettings:
         self.settings = settings[WORLDS]
         self.state = state[WORLDS]
 
-    def getAllWorldSettings(self) -> Sequence[BaseNode]:
+    def getAllWorldSettings(self):
 
         return self.settings.nodes.values()
 
@@ -58,7 +57,7 @@ class WorldsSettings:
 
         return self.state.proto.build("*", self.state)
 
-    def lookupStateForSettings(self, settings: BaseNode) -> BaseNode:
+    def lookupStateForSettings(self, settings):
 
         if settings._name:
             key = normalize_text(settings._name)
@@ -80,7 +79,7 @@ class WorldsManager(QObject):
 
     def __init__(self, settings, state):
 
-        QObject.__init__(self)
+        super().__init__()
 
         self.ws = WorldsSettings(settings, state)
 
@@ -137,7 +136,7 @@ class WorldsManager(QObject):
 
         return wsettings
 
-    def newWorldState(self) -> BaseNode:
+    def newWorldState(self):
 
         return self.ws.newWorldState()
 
@@ -152,7 +151,7 @@ class WorldsManager(QObject):
         self.generateMappings()
         self.worldListChanged.emit()
 
-    def newWorld(self, settings: BaseNode) -> World:
+    def newWorld(self, settings) -> World:
 
         state = self.ws.lookupStateForSettings(settings)
 

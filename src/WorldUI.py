@@ -47,7 +47,7 @@ class WorldUI(QSplitter):
 
     def __init__(self, world, parent=None):
 
-        QSplitter.__init__(self, Qt.Vertical, parent)
+        super().__init__(Qt.Vertical, parent)
 
         self.world = world
 
@@ -246,18 +246,20 @@ class WorldUI(QSplitter):
 
         self.world.stopLogging()
 
-        self.setParent(None)
+        self.setParent(None)  # type: ignore - actually a valid call.
 
-        self.world.worldui = None
-        self.world.logger = None
-        self.output_manager.world = None
-        self.actionset.parent = None
-        self.inputui.world = None
-        self.inputui.history.inputwidget = None
-        self.inputui.history.actionset = None
-        self.secondaryinputui.world = None
-        self.secondaryinputui.history.inputwidget = None
-        self.secondaryinputui.history.actionset = None
+        # Manual cleanup. We want to avoid leaking references all over the place.
+        # TODO: Add some kind of test to check whether this is still needed.
+        del self.world.worldui
+        del self.world.logger
+        del self.output_manager.world
+        del self.actionset.parent
+        del self.inputui.world
+        del self.inputui.history
+        del self.inputui
+        del self.secondaryinputui.world
+        del self.secondaryinputui.history
+        del self.secondaryinputui
 
         for f in self.world.socketpipeline.pipeline.filters:
             f.context = None
@@ -279,4 +281,4 @@ class WorldUI(QSplitter):
         ## WORKAROUND: PyQt doesn't seem to properly declare the slot for this
         ## method, so we must override it. :/
 
-        QSplitter.setFocusProxy(self, widget)
+        super().setFocusProxy(widget)

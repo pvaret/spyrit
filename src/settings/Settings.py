@@ -38,7 +38,6 @@ from typing import List
 from typing import Mapping
 from typing import Optional
 from typing import Protocol
-from typing import Text
 from typing import Type
 from typing import Union
 
@@ -56,7 +55,7 @@ NO_VALUE = __NoValue()
 ROOT = "@"
 
 
-class MatchingDict(dict, Mapping[Text, Any]):
+class MatchingDict(dict, Mapping[str, Any]):
     """
     A dictionary whose keys are glob patterns, and where key lookup is matched
     against those patterns. Requires the keys to be strings.
@@ -84,7 +83,7 @@ class MatchingDict(dict, Mapping[Text, Any]):
         except KeyError:
             return False
 
-    def __getitem__(self, key: Text) -> Any:
+    def __getitem__(self, key: str) -> Any:
 
         try:
             return super(MatchingDict, self).__getitem__(key)
@@ -98,7 +97,7 @@ class MatchingDict(dict, Mapping[Text, Any]):
         raise KeyError(key)
 
 
-def validateAttr(attr: Text) -> Optional[Text]:
+def validateAttr(attr: str) -> Optional[str]:
     """
     Determines whether the parameter begins with one underscore '_' but not two.
     Returns None otherwise.  Attributes beginning with one underscore will be
@@ -119,20 +118,20 @@ class TextDictProtocol(Protocol):
     AttrProxyDictMixin.
     """
 
-    def __getitem__(self, key: Text) -> Any:
+    def __getitem__(self, key: str) -> Any:
         pass
 
-    def __setitem__(self, key: Text, value: Any):
+    def __setitem__(self, key: str, value: Any):
         pass
 
-    def __delitem__(self, key: Text):
+    def __delitem__(self, key: str):
         pass
 
 
 class AttrProxyDictMixin(TextDictProtocol):
     """
     This mixin makes a dict's keys accessible as attributes. Inherit from it in
-    your dict-like class with Text keys, and you can then access:
+    your dict-like class with str keys, and you can then access:
       d[ "somekey" ]
     as:
       d._somekey
@@ -164,7 +163,7 @@ class AttrProxyDictMixin(TextDictProtocol):
 
     """
 
-    def __getattr__(self, attr: Text) -> Any:
+    def __getattr__(self, attr: str) -> Any:
 
         vattr = validateAttr(attr)
 
@@ -180,7 +179,7 @@ class AttrProxyDictMixin(TextDictProtocol):
         except KeyError as e:
             raise AttributeError(attr) from e
 
-    def __setattr__(self, attr: Text, value: Any):
+    def __setattr__(self, attr: str, value: Any):
 
         vattr = validateAttr(attr)
 
@@ -191,7 +190,7 @@ class AttrProxyDictMixin(TextDictProtocol):
             ## If this is a 'normal' attribute, treat it the normal way.
             super(AttrProxyDictMixin, self).__setattr__(attr, value)
 
-    def __delattr__(self, attr: Text):
+    def __delattr__(self, attr: str):
 
         vattr = validateAttr(attr)
 
@@ -217,7 +216,7 @@ class BaseNode(abc.ABC):
     fallback_value: Any
 
     @abc.abstractmethod
-    def getFullPath(self) -> List[Text]:
+    def getFullPath(self) -> List[str]:
         pass
 
     @abc.abstractmethod
@@ -234,9 +233,9 @@ class BaseNode(abc.ABC):
 
 
 class Leaf(BaseNode):
-    def __init__(self, key: Text, container: "Node"):
+    def __init__(self, key: str, container: "Node"):
 
-        self.key: Text = key
+        self.key: str = key
         self.inherit: Optional[Leaf] = None
         self.notifier = CallbackRegistry()
         self.own_value: Any = NO_VALUE
@@ -247,12 +246,12 @@ class Leaf(BaseNode):
 
         return True
 
-    def __repr__(self) -> Text:
+    def __repr__(self) -> str:
 
         key_path = ".".join(self.getFullPath())
         return "<Leaf %s>: %r" % (key_path, self.own_value)
 
-    def getFullPath(self) -> List[Text]:
+    def getFullPath(self) -> List[str]:
 
         if self.container is None:
             return []
@@ -308,21 +307,21 @@ class Leaf(BaseNode):
 class Node(BaseNode, AttrProxyDictMixin):
     def __init__(self, key, container):
 
-        self.key: Text = key
-        self.proto: NodeProto = None
-        self.nodes: Dict[Text, BaseNode] = {}
-        self.inherit: Node = None
+        self.key: str = key
+        self.proto: Optional[NodeProto] = None
+        self.nodes: Dict[str, BaseNode] = {}
+        self.inherit: Optional[Node] = None
         self.container: Node = container
 
     def isLeaf(self) -> bool:
 
         return False
 
-    def __repr__(self) -> Text:
+    def __repr__(self) -> str:
 
         return "<Node %s>" % (".".join(self.getFullPath()) or ".")
 
-    def getFullPath(self) -> List[Text]:
+    def getFullPath(self) -> List[str]:
 
         if self.container is None:
             return []
@@ -333,7 +332,7 @@ class Node(BaseNode, AttrProxyDictMixin):
 
         self.inherit = inherit
 
-    def get(self, key: Text):
+    def get(self, key: str):
 
         if "." in key:
             head, tail = key.split(".", 1)
@@ -351,26 +350,26 @@ class Node(BaseNode, AttrProxyDictMixin):
 
         return node
 
-    def __iter__(self) -> Iterable[Text]:
+    def __iter__(self) -> Iterable[str]:
 
         return iter(self.nodes)
 
-    def __getitem__(self, key: Text) -> BaseNode:
+    def __getitem__(self, key: str) -> BaseNode:
 
         node = self.get(key)
         return node.value()
 
-    def __setitem__(self, key: Text, value: Any):
+    def __setitem__(self, key: str, value: Any):
 
         node = self.get(key)
         node.setValue(value)
 
-    def __delitem__(self, key: Text):
+    def __delitem__(self, key: str):
 
         node = self.get(key)
         node.delValue()
 
-    def asDict(self) -> Dict[Text, Any]:
+    def asDict(self) -> Dict[str, Any]:
 
         ret = {}
         for k, v in self.nodes.items():
@@ -453,23 +452,23 @@ class Node(BaseNode, AttrProxyDictMixin):
 
         return result
 
-    def onChange(self, key: Text, callback: Callable):
+    def onChange(self, key: str, callback: Callable):
 
         leaf = self.get(key)
         leaf.notifier.add(callback)
 
 
 class NodeProto(object):
-    def __init__(self, key: Text, klass: Type[BaseNode]):
+    def __init__(self, key: str, klass: Type[BaseNode]):
 
-        self.key: Text = key
-        self.nodes: Dict[Text, NodeProto] = MatchingDict()
+        self.key: str = key
+        self.nodes: Dict[str, NodeProto] = MatchingDict()
         self.klass: Type[BaseNode] = klass
-        self.inherit: Optional[Text] = None
-        self.metadata: Dict[Text, Any] = {}
+        self.inherit: Optional[str] = None
+        self.metadata: Dict[str, Any] = {}
         self.default_value: Any = None
 
-    def get(self, key: Text) -> "NodeProto":
+    def get(self, key: str) -> "NodeProto":
 
         if "." in key:
             key, subkey = key.split(".")
@@ -477,7 +476,7 @@ class NodeProto(object):
 
         return self.nodes[key]
 
-    def new(self, key: Text, klass: Type[BaseNode]) -> "NodeProto":
+    def new(self, key: str, klass: Type[BaseNode]) -> "NodeProto":
 
         if "." in key:
             key, subkey = key.split(".", 1)
@@ -490,7 +489,7 @@ class NodeProto(object):
 
         return self.nodes[key]
 
-    def build(self, key: Text, container: Node) -> Union[Node, Leaf]:
+    def build(self, key: str, container: Node) -> Union[Node, Leaf]:
 
         node: Union[Node, Leaf]
         inherit_container: Optional[Node] = None

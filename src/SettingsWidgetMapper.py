@@ -21,6 +21,8 @@
 ##
 
 
+from typing import Any
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot
@@ -30,22 +32,23 @@ from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QCheckBox
 
 
-qlineedit_not_empty = lambda qlineedit: len(qlineedit.text()) > 0
+def qlineedit_not_empty(qlineedit: QLineEdit):
+    return len(qlineedit.text()) > 0
 
 
 class BaseWidgetMapper(QObject):
 
-    widget_class = None
+    widget_class: Any = None
     widget_value_setter = None
-    widget_signal_name = None
-    widget_value_class = None
-    settings_value_class = None
+    widget_signal_name: str = "--UNSET--"
+    widget_value_class: Any = None
+    settings_value_class: Any = None
 
     valueChanged = pyqtSignal(object)
 
     def __init__(self, widget):
 
-        QObject.__init__(self)
+        super().__init__()
 
         self.widget = widget
         self.widget_signal = getattr(widget, self.widget_signal_name)

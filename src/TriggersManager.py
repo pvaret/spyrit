@@ -75,7 +75,7 @@ class HighlightAction:
                 if token not in match.groupdict():
                     continue
 
-                start, end = match.span(self.token)
+                start, end = match.span(token)
 
             if start == end:
                 continue
@@ -309,7 +309,7 @@ class TriggersManager:
                 group.addMatch(match)
 
             for action_type, action_params in trigger[ACTIONS].asDict().items():
-                if not action_type in self.actionregistry:
+                if action_type not in self.actionregistry:
                     ## Well bummer. Corrupted settings? Not much we can do.
                     continue
                 action_class = self.actionregistry[action_type]

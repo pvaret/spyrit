@@ -28,9 +28,9 @@
 """
 
 
-import sys
 import types
 
+from typing import cast
 from weakref import ref
 
 
@@ -153,7 +153,7 @@ class WeakCallableRef(object):
             if None in (fn, obj):
                 return None
 
-            return types.MethodType(fn, obj)
+            return types.MethodType(cast(types.FunctionType, fn), obj)
 
         elif self._fnref:
             return self._fnref()

@@ -327,7 +327,7 @@ class MainWindow(QMainWindow):
 
         self.hide()
         mb = self.menuBar()
-        mb.setParent(None)
+        mb.setParent(None)  # type: ignore - this is actually legal PyQt.
         mb.deleteLater()
 
         ## And we're done, and can quit.

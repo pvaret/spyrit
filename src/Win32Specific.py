@@ -21,6 +21,9 @@
 
 
 import os.path
+
+from typing import cast
+
 import winpaths
 
 
@@ -38,13 +41,12 @@ class Win32Specific:
         return winpaths.get_homedir()
 
     def get_settings_dir(self):
-        return os.path.join(winpaths.get_appdata(), self.CONFIG_DIR)
+        appdata = cast(str, winpaths.get_appdata())
+        return os.path.join(appdata, self.CONFIG_DIR)
 
     def get_old_settings_dirs(self):
-        return [
-            os.path.join(winpaths.get_appdata(), dir)
-            for dir in self.OLD_CONFIG_DIRS
-        ]
+        appdata = cast(str, winpaths.get_appdata())
+        return [os.path.join(appdata, dir) for dir in self.OLD_CONFIG_DIRS]
 
     def get_settings_file(self):
         return os.path.join(self.get_settings_dir(), self.CONFIG_FILE)

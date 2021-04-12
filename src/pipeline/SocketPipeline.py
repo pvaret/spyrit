@@ -208,16 +208,19 @@ class SocketPipeline(QObject):
         del self.buffer[:]
         self.pipeline.feedBytes(data)
 
-    def send(self, data: bytes):
+    def send(self, data: str):
 
         if not self.socket.state() == self.socket.ConnectedState:
 
             ## Don't write anything if the socket is not connected.
             return
 
-        data = self.pipeline.formatForSending(data)
+        encoding = self.net_settings._encoding
+        databytes = self.pipeline.formatForSending(
+            data.encode(encoding, errors="replace")
+        )
 
-        self.socket.write(data)
+        self.socket.write(databytes)
         self.socket.flush()
 
     def addSink(self, sink, types=ChunkType.all()):

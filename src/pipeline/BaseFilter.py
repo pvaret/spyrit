@@ -121,7 +121,7 @@ class BaseFilter:
         else:
             self.sink(chunk)
 
-    def formatForSending(self, data):
+    def formatForSending(self, data: bytes) -> bytes:
 
         ## Reimplement this function if the filter inherently requires the data
         ## sent to the world to be modified. I.e., the telnet filter would escape

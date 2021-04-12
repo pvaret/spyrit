@@ -26,7 +26,6 @@
 import re
 
 from .BaseFilter import BaseFilter
-
 from .ChunkData import ChunkType
 
 
@@ -124,7 +123,6 @@ class TelnetFilter(BaseFilter):
                 parameters = telnet.groupdict()
 
                 command = parameters["cmd"] or parameters["cmdopt"]
-                option = parameters["opt"]
 
                 if command == self.IAC:
                     ## This is an escaped IAC. Yield it as such.
@@ -149,7 +147,7 @@ class TelnetFilter(BaseFilter):
             else:
                 yield (ChunkType.BYTES, text)
 
-    def formatForSending(self, data):
+    def formatForSending(self, data: bytes) -> bytes:
 
         ## Escape the character 0xff in accordance with the telnet specification.
         return data.replace(self.IAC, self.IAC * 2)

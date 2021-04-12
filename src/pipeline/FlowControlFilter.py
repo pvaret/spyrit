@@ -36,7 +36,7 @@ class FlowControlFilter(BaseFilter):
     relevant_types = ChunkType.TEXT
 
     match = re.compile(r"(\r|\n)")
-    unix_like_cr = re.compile(r"(?<!\r)\n")
+    unix_like_cr = re.compile(rb"(?<!\r)\n")
 
     chunkmapping = {
         "\n": (ChunkType.FLOWCONTROL, FlowControl.LINEFEED),
@@ -73,7 +73,7 @@ class FlowControlFilter(BaseFilter):
         if text:
             yield (ChunkType.TEXT, text)
 
-    def formatForSending(self, data):
+    def formatForSending(self, data: bytes) -> bytes:
 
         ## Transform UNIX-like CR into telnet-like CRLF.
-        return self.unix_like_cr.sub("\r\n", data)
+        return self.unix_like_cr.sub(b"\r\n", data)

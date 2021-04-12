@@ -43,9 +43,7 @@ class UnicodeTextFilter(BaseFilter):
         self.setEncoding(encoding)
         self.bindNotificationListener("encoding_changed", self.setEncoding)
 
-    def setEncoding(self, encoding):
-
-        assert type(encoding) is type("")
+    def setEncoding(self, encoding: str):
 
         try:
             codecs.lookup(encoding)
@@ -62,7 +60,7 @@ class UnicodeTextFilter(BaseFilter):
 
     def resetInternalState(self):
 
-        BaseFilter.resetInternalState(self)
+        super().resetInternalState()
 
         if self.decoder:
             self.decoder.reset()
@@ -75,7 +73,3 @@ class UnicodeTextFilter(BaseFilter):
 
         if text:
             yield (ChunkType.TEXT, text)
-
-    def formatForSending(self, data):
-
-        return data.encode(self.encoding, "replace")

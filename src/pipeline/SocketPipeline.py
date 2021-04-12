@@ -20,6 +20,7 @@
 ## socket and manages connection/disconnection and everything.
 ##
 
+from typing import List
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot
@@ -64,7 +65,7 @@ class SocketPipeline(QObject):
 
         self.using_ssl = False
         self.socket = None
-        self.buffer = []
+        self.buffer: List[bytes] = []
 
         self.flush_timer = SingleShotTimer(self.flushBuffer)
 
@@ -207,7 +208,7 @@ class SocketPipeline(QObject):
         del self.buffer[:]
         self.pipeline.feedBytes(data)
 
-    def send(self, data: str):
+    def send(self, data: bytes):
 
         if not self.socket.state() == self.socket.ConnectedState:
 
@@ -216,8 +217,7 @@ class SocketPipeline(QObject):
 
         data = self.pipeline.formatForSending(data)
 
-        encoding = self.net_settings._encoding
-        self.socket.write(data.encode(encoding, "replace"))
+        self.socket.write(data)
         self.socket.flush()
 
     def addSink(self, sink, types=ChunkType.all()):

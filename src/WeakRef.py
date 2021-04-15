@@ -34,10 +34,7 @@ import weakref
 from typing import Callable, Generic, Optional, TypeVar, Union, cast
 
 
-## This should normally be constrained to Callable subtypes only. But doing so causes
-## the function signature to be lost from the type system when dereferencing the ref.
-## TODO: Report bug?
-FnType = TypeVar("FnType")
+CallableT = TypeVar("CallableT", bound=Callable)
 
 
 class FunctionRef:
@@ -74,7 +71,7 @@ class MethodRef:
         return types.MethodType(fn, obj)
 
 
-class WeakCallableRef(Generic[FnType]):
+class WeakCallableRef(Generic[CallableT]):
 
     """
     Implements a weakref for callables, be they functions or methods.
@@ -107,6 +104,7 @@ class WeakCallableRef(Generic[FnType]):
     >>> func_ref        = WeakCallableRef( test1, call_on_expire )
     >>> bound_meth_ref  = WeakCallableRef( test_obj.test2, call_on_expire )
     >>> static_meth_ref = WeakCallableRef( TestClass.test3, call_on_expire )
+    >>> class_ref       = WeakCallableRef( TestClass )
 
     The original callable can be retrieved by calling the weakref:
 
@@ -118,6 +116,9 @@ class WeakCallableRef(Generic[FnType]):
 
     >>> print( static_meth_ref() )  #doctest: +ELLIPSIS
     <function ...test3 ...>
+
+    >>> print( class_ref() )  #doctest: +ELLIPSIS
+    <class '....TestClass'>
 
     When the original callable disappears, the notification function is
     triggered.
@@ -140,13 +141,16 @@ class WeakCallableRef(Generic[FnType]):
     None
     >>> print( static_meth_ref() )
     None
+    >>> print( class_ref() )
+    None
 
     """
 
     def __init__(
-        self, fn: FnType, callback: Callable[["WeakCallableRef"], None] = None
+        self,
+        fn: CallableT,
+        callback: Callable[["WeakCallableRef"], None] = None,
     ):
-
         self._ref: Optional[Union[FunctionRef, MethodRef]]
         self._callback = callback
 
@@ -154,12 +158,12 @@ class WeakCallableRef(Generic[FnType]):
             self._name = fn.__name__
             self._ref = MethodRef(fn, self.markDead)
 
-        elif isinstance(fn, types.FunctionType):
+        elif isinstance(fn, types.FunctionType) or isinstance(fn, type):
             self._name = fn.__name__
             self._ref = FunctionRef(fn, self.markDead)
 
         else:
-            raise TypeError("%r must be a function or a method" % fn)
+            raise TypeError("%r must be a function, class or method" % fn)
 
     def markDead(self, unused_objref) -> None:
 
@@ -173,10 +177,10 @@ class WeakCallableRef(Generic[FnType]):
             if callback:
                 callback(self)
 
-    def __call__(self) -> Optional[FnType]:
+    def __call__(self) -> Optional[CallableT]:
 
         if self._ref is not None:
-            return cast(FnType, self._ref.ref())
+            return cast(CallableT, self._ref.ref())
 
         return None
 

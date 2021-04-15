@@ -29,12 +29,52 @@
 
 
 import types
+import weakref
 
-from typing import cast
-from weakref import ref
+from typing import Callable, Generic, Optional, TypeVar, Union, cast
 
 
-class WeakCallableRef(object):
+## This should normally be constrained to Callable subtypes only. But doing so causes
+## the function signature to be lost from the type system when dereferencing the ref.
+## TODO: Report bug?
+FnType = TypeVar("FnType")
+
+
+class FunctionRef:
+    def __init__(
+        self,
+        fn: types.FunctionType,
+        callback: Callable[[weakref.ReferenceType], None],
+    ):
+        self._fnref = weakref.ref(fn, callback)
+
+    def ref(self) -> Optional[types.FunctionType]:
+        return self._fnref()
+
+
+class MethodRef:
+    def __init__(
+        self,
+        fn: types.MethodType,
+        callback: Callable[[weakref.ReferenceType], None],
+    ):
+        self._objref = weakref.ref(fn.__self__, callback)
+        self._fnref = weakref.ref(fn.__func__, callback)
+
+    def ref(self) -> Optional[types.MethodType]:
+
+        ## Bind the method on the fly, and return it.
+        fn = self._fnref()
+        obj = self._objref()
+
+        if None in (fn, obj):
+            return None
+
+        assert fn is not None  ## Help out the type checker.
+        return types.MethodType(fn, obj)
+
+
+class WeakCallableRef(Generic[FnType]):
 
     """
     Implements a weakref for callables, be they functions or methods.
@@ -82,15 +122,15 @@ class WeakCallableRef(object):
     When the original callable disappears, the notification function is
     triggered.
 
-    >>> import gc
     >>> del test1  #doctest: +ELLIPSIS
-    Deleted <...WeakCallableRef...(test1)...>!
+    Deleted <WeakCallableRef instance at ... (test1); dead>!
 
     >>> del test_obj  #doctest: +ELLIPSIS
-    Deleted <...WeakCallableRef...(test2)...>!
+    Deleted <WeakCallableRef instance at ... (test2); dead>!
 
+    >>> import gc
     >>> del TestClass ; _ = gc.collect()  #doctest: +ELLIPSIS
-    Deleted <...WeakCallableRef...(test3)...>!
+    Deleted <WeakCallableRef instance at ... (test3); dead>!
 
     And if called, the weakrefs must now return None:
 
@@ -103,113 +143,48 @@ class WeakCallableRef(object):
 
     """
 
-    def __init__(self, fn, callback=None):
+    def __init__(
+        self, fn: FnType, callback: Callable[["WeakCallableRef"], None] = None
+    ):
 
-        assert callable(fn)
-
-        self._objref = None
-        self._fnref = None
-        self._class = None
-        self._dead = False
+        self._ref: Optional[Union[FunctionRef, MethodRef]]
         self._callback = callback
-        self._fnname = ""
 
-        obj = getattr(fn, "__self__", None)
+        if isinstance(fn, types.MethodType):
+            self._name = fn.__name__
+            self._ref = MethodRef(fn, self.markDead)
 
-        if obj is not None:  ## fn is a bound method
-            func = getattr(fn, "__func__")
-            self._objref = ref(obj, self.markDead)
-            self._fnref = ref(func, self.markDead)
-            self._class = getattr(fn, "__class__")
-            self._fnname = getattr(func, "__name__")
+        elif isinstance(fn, types.FunctionType):
+            self._name = fn.__name__
+            self._ref = FunctionRef(fn, self.markDead)
 
-        else:  ## fn is a static method or a plain function
-            self._fnref = ref(fn, self.markDead)
-            self._fnname = getattr(fn, "__name__")
+        else:
+            raise TypeError("%r must be a function or a method" % fn)
 
-    def markDead(self, objref):
+    def markDead(self, unused_objref) -> None:
 
-        if not self._dead:
+        if self._ref is not None:
 
             callback = self._callback
 
-            self._dead = True
-            self._objref = None
-            self._fnref = None
-            self._class = None
+            self._ref = None
             self._callback = None
 
             if callback:
-                return callback(self)
+                callback(self)
 
-    def __call__(self):
+    def __call__(self) -> Optional[FnType]:
 
-        if self._objref:  ## bound method
+        if self._ref is not None:
+            return cast(FnType, self._ref.ref())
 
-            ## Bind the method on the fly, and return it.
-            fn = self._fnref()
-            obj = self._objref()
+        return None
 
-            if None in (fn, obj):
-                return None
-
-            return types.MethodType(cast(types.FunctionType, fn), obj)
-
-        elif self._fnref:
-            return self._fnref()
-
-        else:
-            return None
-
-    def __repr__(self):
+    def __repr__(self) -> str:
 
         return "<%s instance at %s (%s)%s>" % (
-            self.__class__,
+            self.__class__.__name__,
             hex(id(self)),
-            self._fnname,
-            self._dead and "; dead" or "",
-        )
-
-
-class WeakCallable:
-
-    """
-    Wraps a callable into a weakly referenced proxy object.
-
-    If the proxy object is called after the reference is deleted, this raises a
-    ReferenceError.
-
-    >>> def test1():
-    ...   print( "Function called!" )
-
-    >>> test_ref = WeakCallable( test1 )
-    >>> test_ref()
-    Function called!
-
-    >>> del test1
-    >>> test_ref()  #doctest: +ELLIPSIS
-    Traceback (most recent call last):
-    ...
-    ReferenceError: Attempted to call dead WeakCallable...
-
-    """
-
-    def __init__(self, fn):
-
-        self._ref = WeakCallableRef(fn)
-
-    def __call__(self, *args, **kwargs):
-
-        fn = self._ref()
-        if fn is not None:
-            return fn(*args, **kwargs)
-
-        raise ReferenceError("Attempted to call dead WeakCallable %s!" % self)
-
-    def __repr__(self):
-
-        return "<%s instance at %s%s>" % (
-            self.__class__,
-            hex(id(self)),
-            (self._ref() is None) and "; dead" or "",
+            self._name,
+            "; dead" if self._ref is None else "",
         )

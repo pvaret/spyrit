@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import QFrame
 class Separator(QFrame):
     def __init__(self, parent=None):
 
-        QFrame.__init__(self, parent)
+        super().__init__(parent)
 
         self.setLineWidth(1)
         self.setMidLineWidth(0)

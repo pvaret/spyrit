@@ -129,7 +129,8 @@ class BaseFilter:
 
         return data
 
-    def notifify(self, notification, *args):
+    ## TODO: Check if this is used anywhere. Else, delete.
+    def notify(self, notification, *args):
 
         if not self.context:
             return

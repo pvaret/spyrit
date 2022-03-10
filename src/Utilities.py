@@ -107,9 +107,9 @@ def make_unicode_translation_table():
 
     d = {}
 
-    def is_latin_letter(l):
+    def is_latin_letter(letter):
 
-        return category(l)[0] == "L"
+        return category(letter)[0] == "L"
 
     for i in range(0x1FFF):
 
@@ -124,7 +124,7 @@ def make_unicode_translation_table():
 
         ## Decompose, then keep only Latin letters in the result.
         cn = normalize("NFKD", c)
-        cn = "".join([l for l in cn if is_latin_letter(l)])
+        cn = "".join([letter for letter in cn if is_latin_letter(letter)])
 
         if cn and cn != c:
             d[i] = cn

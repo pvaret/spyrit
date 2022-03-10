@@ -22,6 +22,7 @@
 ##
 
 
+from typing import Any, Callable
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal
 
@@ -33,6 +34,9 @@ from SingleShotTimer import SingleShotTimer
 from CallbackRegistry import CallbackRegistry
 
 
+_ChunkT = tuple[ChunkType, Any]
+
+
 class Pipeline(QObject):
 
     PROMPT_TIMEOUT = 700  ## ms
@@ -42,11 +46,11 @@ class Pipeline(QObject):
 
     def __init__(self):
 
-        QObject.__init__(self)
+        super().__init__()
 
         self.filters = []
-        self.outputBuffer = []
-        self.sinks = dict((type, CallbackRegistry()) for type in ChunkType)
+        self.outputBuffer: list[_ChunkT] = []
+        self.sinks = dict((type_, CallbackRegistry()) for type_ in ChunkType)
 
         self.notification_registry = {}
 
@@ -119,7 +123,9 @@ class Pipeline(QObject):
 
         self.filters.append(filter)
 
-    def addSink(self, callback, types=ChunkType.all()):
+    def addSink(
+        self, callback: Callable[[ChunkType], None], types=ChunkType.all()
+    ):
 
         ## 'callback' should be a callable that accepts and handles a chunk.
 

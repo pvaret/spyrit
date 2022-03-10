@@ -34,7 +34,7 @@ import weakref
 from typing import Callable, Generic, Optional, TypeVar, Union, cast
 
 
-CallableT = TypeVar("CallableT", bound=Callable)
+_CallableT = TypeVar("_CallableT", bound=Callable)
 
 
 class FunctionRef:
@@ -71,7 +71,7 @@ class MethodRef:
         return types.MethodType(fn, obj)
 
 
-class WeakCallableRef(Generic[CallableT]):
+class WeakCallableRef(Generic[_CallableT]):
 
     """
     Implements a weakref for callables, be they functions or methods.
@@ -148,7 +148,7 @@ class WeakCallableRef(Generic[CallableT]):
 
     def __init__(
         self,
-        fn: CallableT,
+        fn: _CallableT,
         callback: Callable[["WeakCallableRef"], None] = None,
     ):
         self._ref: Optional[Union[FunctionRef, MethodRef]]
@@ -177,10 +177,10 @@ class WeakCallableRef(Generic[CallableT]):
             if callback:
                 callback(self)
 
-    def __call__(self) -> Optional[CallableT]:
+    def __call__(self) -> Optional[_CallableT]:
 
         if self._ref is not None:
-            return cast(CallableT, self._ref.ref())
+            return cast(_CallableT, self._ref.ref())
 
         return None
 

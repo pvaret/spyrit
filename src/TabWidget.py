@@ -34,7 +34,7 @@ class TabBar(QTabBar):
 
     def __init__(self, *args, **kwargs):
 
-        QTabBar.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.last_middle_click_index = None
 
@@ -45,7 +45,7 @@ class TabBar(QTabBar):
             i = self.tabAt(e.pos())
             self.last_middle_click_index = i
 
-        QTabBar.mousePressEvent(self, e)
+        super().mousePressEvent(e)
 
     def mouseReleaseEvent(self, e):
 
@@ -62,7 +62,7 @@ class TabBar(QTabBar):
             e.accept()
 
         else:
-            QTabBar.mouseReleaseEvent(self, e)
+            super().mouseReleaseEvent(e)
 
         self.last_middle_click_index = None
 
@@ -74,7 +74,7 @@ class TabWidget(QTabWidget):
 
     def __init__(self, *args, **kwargs):
 
-        QTabWidget.__init__(self, *args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.setTabBar(TabBar(self))
 
@@ -119,7 +119,7 @@ class FallbackTabWidget(QStackedWidget):
 
     def __init__(self, parent=None, tabwidget=None, fallback=None):
 
-        QStackedWidget.__init__(self, parent)
+        super().__init__(parent)
 
         if fallback is None:
             fallback = QWidget(parent)

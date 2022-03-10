@@ -33,7 +33,7 @@ class PrettyOptionDialog(QDialog):
         self, mapper, panel, header=None, oklabel=None, title=None, parent=None
     ):
 
-        QDialog.__init__(self, parent)
+        super().__init__(parent)
 
         self.header = header
         self.panel = panel

@@ -47,7 +47,7 @@ class PlainLogger(object):
         self.logfile = logfile
 
         self.is_logging = False
-        self.buffer = []
+        self.buffer: list[bytes] = []
 
         self.flush_timer = SingleShotTimer(self.flushBuffer)
         self.flush_timer.setInterval(100)  ## ms
@@ -70,9 +70,8 @@ class PlainLogger(object):
 
         self.flush_timer.start()
 
-    def doLogText(self, text):
+    def doLogText(self, text: str) -> None:
 
-        assert type(text) is type("")
         self.buffer.append(text.encode(self.encoding, "replace"))
 
     def doLogStart(self):

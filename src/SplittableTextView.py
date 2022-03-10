@@ -356,9 +356,10 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         height = self.viewport().height()
 
+        ## Note the call to toSize() to convert the QSizeF to a QSize.
         y = (
             e.y()
-            + self.document().size().height()
+            + self.document().size().toSize().height()
             - height
             - self.scrollbar.value()
         )
@@ -490,7 +491,8 @@ class SplittableTextView(QTextEditWithClickableLinks):
             return
 
         doc = self.document()
-        doc_height = doc.size().height()
+        ## Note the call to toSize() to convert the QSizeF to a QSize.
+        doc_height = doc.size().toSize().height()
 
         if clip_r != e.rect():
             p.setClipRect(clip_r)

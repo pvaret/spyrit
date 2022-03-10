@@ -82,7 +82,7 @@ class TabDelegate(QObject):
 
     def __getattr__(self, attr):
 
-        if not attr in self.DELEGATES:
+        if attr not in self.DELEGATES:
             raise AttributeError(attr)
 
         ## Might raise AttributeError, which is okay:

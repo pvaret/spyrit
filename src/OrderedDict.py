@@ -27,50 +27,52 @@
 """
 
 
-class OrderedDict(object):
+from typing import Any, Iterable
+
+
+class OrderedDict:
     """
     A dict class the remembers the insertion order of its elements.
 
-    >>> def make_example_dict():
-    ...   d = OrderedDict()
-    ...   d[ "a" ] = 1
-    ...   d[ "b" ] = 2
-    ...   d[ "c" ] = 3
-    ...   d[ "d" ] = 4
-    ...   return d
-
-    >>> def print_in_order( d ):
-    ...   print (
-    ...     "{"
-    ...   + ", ".join(
-    ...       ( "%s:%s" % ( repr( k ), repr( v ) ) for k, v in d.items() )
-    ...     )
-    ...   + "}"
-    ...   )
-    >>> print_in_order( make_example_dict() )
+    >>> d = OrderedDict()
+    >>> d["a"] = 1
+    >>> d["b"] = 2
+    >>> d["c"] = 3
+    >>> d["d"] = 4
+    >>> print(d)
     {'a':1, 'b':2, 'c':3, 'd':4}
 
     """
 
-    def __init__(self):
+    def __init__(self, init: Iterable[tuple[Any, Any]] = ()):
 
         self.__dict = {}
         self.__ordered_keys = []
 
+        for k, v in init:
+            self[k] = v
+
+    def __repr__(self):
+        return (
+            "{"
+            + ", ".join(("%s:%s" % (repr(k), repr(v)) for k, v in self.items()))
+            + "}"
+        )
+
     def __setitem__(self, key, value):
         """
-        >>> d = make_example_dict()
-        >>> d[ "e" ] = 5
-        >>> print_in_order( d )
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> d["e"] = 5
+        >>> print(d)
         {'a':1, 'b':2, 'c':3, 'd':4, 'e':5}
 
-        >>> d[ "c" ] = 5
-        >>> print_in_order( d )
+        >>> d["c"] = 5
+        >>> print(d)
         {'a':1, 'b':2, 'c':5, 'd':4, 'e':5}
 
         """
 
-        ## Setting an already existing key does not change its position.
+        # Setting an already existing key does not change its position.
         if key not in self.__dict:
             self.__ordered_keys.append(key)
 
@@ -78,10 +80,10 @@ class OrderedDict(object):
 
     def __getitem__(self, key):
         """
-        >>> d = make_example_dict()
-        >>> d[ "b" ]
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> d["b"]
         2
-        >>> d[ "e" ]  #doctest: +ELLIPSIS
+        >>> d["e"]  #doctest: +ELLIPSIS
         Traceback (most recent call last):
         ...
         KeyError: ...
@@ -95,9 +97,9 @@ class OrderedDict(object):
 
     def __delitem__(self, key):
         """
-        >>> d = make_example_dict()
-        >>> del d[ "c" ]
-        >>> print_in_order( d )
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> del d["c"]
+        >>> print(d)
         {'a':1, 'b':2, 'd':4}
 
         >>> del d[ "c" ]  #doctest: +ELLIPSIS
@@ -115,7 +117,7 @@ class OrderedDict(object):
 
     def __contains__(self, key):
         """
-        >>> d = make_example_dict()
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
         >>> "a" in d
         True
         >>> "e" in d
@@ -127,9 +129,9 @@ class OrderedDict(object):
 
     def __iter__(self):
         """
-        >>> d = make_example_dict()
-        >>> for k in iter( d ):
-        ...   print( k )
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> for k in iter(d):
+        ...   print(k)
         a
         b
         c
@@ -141,14 +143,13 @@ class OrderedDict(object):
 
     def values(self):
         """
-        >>> d = make_example_dict()
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
         >>> for v in d.values():
-        ...   print( v )
+        ...   print(v)
         1
         2
         3
         4
-
 
         """
 
@@ -156,12 +157,12 @@ class OrderedDict(object):
 
     def setdefault(self, key, defaultvalue):
         """
-        >>> d = make_example_dict()
-        >>> print( d.setdefault( "a", 5 ) )
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> print(d.setdefault("a", 5 ))
         1
-        >>> print( d.setdefault( "e", 6 ) )
+        >>> print(d.setdefault("e", 6))
         6
-        >>> print_in_order( d )
+        >>> print(d)
         {'a':1, 'b':2, 'c':3, 'd':4, 'e':6}
 
         """
@@ -173,9 +174,9 @@ class OrderedDict(object):
 
     def items(self):
         """
-        >>> d = make_example_dict()
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
         >>> for k, v in d.items():
-        ...   print( ( k, v ) )
+        ...   print((k, v))
         ('a', 1)
         ('b', 2)
         ('c', 3)
@@ -187,9 +188,9 @@ class OrderedDict(object):
 
     def insert(self, index, key, value):
         """
-        >>> d = make_example_dict()
-        >>> d.insert( 2, "e", 5 )
-        >>> print_in_order( d )
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> d.insert(2, "e", 5)
+        >>> print(d)
         {'a':1, 'b':2, 'e':5, 'c':3, 'd':4}
 
         """
@@ -202,12 +203,12 @@ class OrderedDict(object):
 
     def lastvalue(self):
         """
-        >>> d = make_example_dict()
-        >>> print( d.lastvalue() )
+        >>> d = OrderedDict((("a", 1), ("b", 2), ("c", 3), ("d", 4)))
+        >>> print(d.lastvalue())
         4
 
         >>> d = OrderedDict()
-        >>> print( d.lastvalue() )
+        >>> print(d.lastvalue())
         None
 
         """

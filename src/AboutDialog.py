@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -57,7 +57,7 @@ This software uses the <i><a
   icons imported from the <a href="http://www.oxygen-icons.org/">Oxygen</a>
   set.<br/>
 <br/>
-%(name)s is &#169;2007-2021 P. Varet, and licensed under the
+%(name)s is &#169;2007-2022 P. Varet, and licensed under the
   <a href="http://www.gnu.org/licenses/old-licenses/gpl-2.0.html">GNU
   General Public License</a>.<br/>
 """.strip()

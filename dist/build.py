@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import argparse
 import bz2
@@ -13,7 +12,6 @@ from typing import Tuple
 
 LAUNCHER_STUB = """
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import base64
 import bz2

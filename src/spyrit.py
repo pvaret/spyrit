@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 # Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
 #

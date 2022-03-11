@@ -81,7 +81,7 @@ def make_source_archive(filename: str) -> bytes:
 
 def compile_module_dict(modules: List[Tuple[str, str]]) -> str:
 
-    mods = []
+    mods: list[str] = []
 
     for (modulename, filename) in sorted(modules):
         if not filename:
@@ -101,7 +101,7 @@ def make_launcher(modules: List[Tuple[str, str]]):
     return LAUNCHER_STUB % {"modules": compile_module_dict(modules)}
 
 
-def build(inputname: str, outputname: str = None, verbose: bool = True):
+def build(inputname: str, outputname: str = "", verbose: bool = True):
 
     dirname, scriptname = os.path.split(inputname)
     previous_dir = os.path.abspath(os.getcwd())
@@ -112,10 +112,13 @@ def build(inputname: str, outputname: str = None, verbose: bool = True):
     mf = ModuleFinder(path=["."])
     mf.run_script(scriptname)
 
-    # Type checking wrongly thinks that Module object have no __file__ or
-    # __path__ attributes. :/
     libs: List[Tuple[str, str]]
-    libs = [(name, mod.__file__) for (name, mod) in mf.modules.items()]  # type: ignore
+    libs = [
+        # Type checking wrongly thinks that Module object have no __file__ or
+        # __path__ attributes. :/
+        (name, mod.__file__)  # type: ignore
+        for (name, mod) in mf.modules.items()
+    ]
 
     if verbose:
         mf.report()
@@ -133,8 +136,8 @@ def build(inputname: str, outputname: str = None, verbose: bool = True):
 def main():
 
     parser = argparse.ArgumentParser(
-        description="Builds all of a Python script's Python dependencies into a "
-        "single Python file."
+        description="Builds all of a Python script's Python dependencies "
+        "into a single Python file."
     )
     parser.add_argument(
         "input", metavar="INPUT.py", help="the input python file"

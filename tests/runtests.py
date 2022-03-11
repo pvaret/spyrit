@@ -19,7 +19,7 @@ OPTIONS = (
 )
 
 
-def is_rst_doctest(fname):
+def is_rst_doctest(fname: str) -> bool:
 
     if not fname.lower().endswith(".rst"):
         return False
@@ -34,7 +34,7 @@ def is_rst_doctest(fname):
     return False
 
 
-def is_python_module_doctest(fname):
+def is_python_module_doctest(fname: str) -> bool:
 
     if not fname.lower().endswith(".py"):
         return False
@@ -53,7 +53,7 @@ def find_all_tests():
 
     for DIR in (SPYRIT_DIR, THIS_DIR):
 
-        for current, dirs, files in os.walk(DIR):
+        for current, _, files in os.walk(DIR):
 
             for f in files:
 

@@ -86,7 +86,7 @@ class MatchingDict(dict, Mapping[str, Any]):
     def __getitem__(self, key: str) -> Any:
 
         try:
-            return super(MatchingDict, self).__getitem__(key)
+            return super().__getitem__(key)
         except KeyError:
             pass
 
@@ -188,7 +188,7 @@ class AttrProxyDictMixin(TextDictProtocol):
 
         else:
             ## If this is a 'normal' attribute, treat it the normal way.
-            super(AttrProxyDictMixin, self).__setattr__(attr, value)
+            super().__setattr__(attr, value)
 
     def __delattr__(self, attr: str):
 
@@ -197,7 +197,7 @@ class AttrProxyDictMixin(TextDictProtocol):
         if vattr is None:
             ## If this is a 'normal' attribute, treat it the normal way
             ## and then return.
-            super(AttrProxyDictMixin, self).__delattr__(attr)
+            super().__delattr__(attr)
 
             return
 
@@ -554,7 +554,7 @@ class NodeProto(object):
 class Settings(Node):
     def __init__(self):
 
-        super(Settings, self).__init__(ROOT, None)
+        super().__init__(ROOT, None)
 
         self.proto = NodeProto(ROOT, self.__class__)
 

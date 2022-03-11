@@ -46,7 +46,7 @@ class LED:
 class TabIconBlinker(QObject):
     def __init__(self, tab):
 
-        QObject.__init__(self, parent=tab)
+        super().__init__(parent=tab)
 
         self.led = LED()
         self.tab = tab

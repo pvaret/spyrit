@@ -163,7 +163,7 @@ class SettingsWidgetMapper(QObject):
 
     def __init__(self, settings):
 
-        QObject.__init__(self)
+        super().__init__()
 
         self.settings = settings
         self.option_path_for_widget = {}

@@ -35,7 +35,7 @@ class TriggersFilter(BaseFilter):
         self.buffer = []
         self.setManager(manager)
 
-        BaseFilter.__init__(self, context)
+        super().__init__(context)
 
     def setManager(self, manager):
 
@@ -48,7 +48,7 @@ class TriggersFilter(BaseFilter):
     def resetInternalState(self):
 
         self.buffer = []
-        BaseFilter.resetInternalState(self)
+        super().resetInternalState()
 
     def noOp(self, chunk):
 

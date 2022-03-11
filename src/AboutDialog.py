@@ -85,7 +85,7 @@ AUTHORS = """
 class AboutDialog(QDialog):
     def __init__(self, settings, parent=None):
 
-        QDialog.__init__(self, parent)
+        super().__init__(parent)
 
         self.setLayout(QVBoxLayout(self))
 

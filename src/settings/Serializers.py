@@ -190,7 +190,7 @@ class List(BaseSerializer[Value]):
     def __init__(self, sub_serializer: BaseSerializer):
 
         self.sub_serializer = sub_serializer
-        BaseSerializer.__init__(self)
+        super().__init__()
 
     def serialize(self, list_: ListType[Value]) -> str:
 

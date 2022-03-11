@@ -61,7 +61,7 @@ class World(QObject):
 
     def __init__(self, settings=None, state=None):
 
-        QObject.__init__(self)
+        super().__init__()
 
         worldsmanager = QApplication.instance().core.worlds
         if not settings:

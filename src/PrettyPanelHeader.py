@@ -47,7 +47,7 @@ class PrettyPanelHeader(QFrame):
 
     def __init__(self, title, icon=None, desc=None, parent=None):
 
-        QFrame.__init__(self, parent)
+        super().__init__(parent)
 
         ## The object gets a name so that we can apply the stylesheet to it
         ## specifically.

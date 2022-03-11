@@ -40,7 +40,7 @@ class WorldInputUI(QTextEdit):
 
     def __init__(self, parent, world, shouldsavehistory=True):
 
-        QTextEdit.__init__(self, parent)
+        super().__init__(parent)
 
         self.setTabChangesFocus(True)
         self.setAcceptRichText(False)
@@ -138,7 +138,7 @@ class WorldInputUI(QTextEdit):
             e.accept()
 
         else:
-            QTextEdit.keyPressEvent(self, e)
+            super().keyPressEvent(e)
 
     @pyqtSlot()
     def clearAndSend(self):
@@ -166,7 +166,7 @@ class WorldInputUI(QTextEdit):
 
     def focusInEvent(self, e):
 
-        QTextEdit.focusInEvent(self, e)
+        super().focusInEvent(e)
 
         ## Notify other possible interested parties that this widget now has the
         ## focus.

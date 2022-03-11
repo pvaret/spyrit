@@ -38,7 +38,7 @@ class UnicodeTextFilter(BaseFilter):
         self.decoder = None
         self.encoding = "ascii"
 
-        BaseFilter.__init__(self, context)
+        super().__init__(context)
 
         self.setEncoding(encoding)
         self.bindNotificationListener("encoding_changed", self.setEncoding)

@@ -46,7 +46,7 @@ class SpyritCore(QObject):
         self, settings, state, worlds, commands, triggers, tmprc, sound
     ):
 
-        super(SpyritCore, self).__init__()
+        super().__init__()
 
         self.settings = settings
         self.state = state

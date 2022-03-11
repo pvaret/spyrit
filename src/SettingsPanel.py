@@ -30,7 +30,7 @@ class SettingsPanel(QWidget):
 
     def __init__(self, mapper):
 
-        QWidget.__init__(self)
+        super().__init__()
 
         self.setLayout(QFormLayout())
         self.layout().setContentsMargins(*self.MARGINS)

@@ -47,7 +47,7 @@ from WorldUI import WorldUI
 class MainWindow(QMainWindow):
     def __init__(self, settings, state):
 
-        QMainWindow.__init__(self)
+        super().__init__()
 
         ## Set up main window according to its configuration.
 

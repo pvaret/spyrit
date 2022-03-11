@@ -63,14 +63,14 @@ class QTextEditWithClickableLinks(QTextEdit):
 
             self.previous_anchor = maybe_anchor
 
-        return super(QTextEditWithClickableLinks, self).mouseMoveEvent(e)
+        return super().mouseMoveEvent(e)
 
     def mousePressEvent(self, e):
 
         self.click_pos = e.pos()
         self.click_link = self.anchorAt(e.pos())
 
-        return super(QTextEditWithClickableLinks, self).mousePressEvent(e)
+        return super().mousePressEvent(e)
 
     def mouseReleaseEvent(self, e):
 
@@ -78,7 +78,7 @@ class QTextEditWithClickableLinks(QTextEdit):
             if self.click_link and self.click_link == self.anchorAt(e.pos()):
                 self.linkClicked.emit(self.click_link)
 
-        return super(QTextEditWithClickableLinks, self).mouseReleaseEvent(e)
+        return super().mouseReleaseEvent(e)
 
     def onLinkClicked(self, href):
 

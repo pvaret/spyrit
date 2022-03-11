@@ -43,7 +43,7 @@ pyqtRemoveInputHook()
 class Application(QApplication):
     def __init__(self, args):
 
-        QApplication.__init__(self, args)
+        super().__init__(args)
 
         self.args = args
         self.bootstrapped = False

@@ -175,7 +175,7 @@ class AnsiLogger(PlainLogger):
 
     def __init__(self, *args):
 
-        super(AnsiLogger, self).__init__(*args)
+        super().__init__(*args)
 
         self.format_stack = FormatStack(AnsiFormatter(self.buffer))
 
@@ -187,14 +187,14 @@ class AnsiLogger(PlainLogger):
             self.format_stack.processChunk(chunk)
 
         else:
-            super(AnsiLogger, self).logChunk(chunk)
+            super().logChunk(chunk)
 
     def doLogStop(self):
 
         ## TODO: decide if we want to also store the current format somewhere, in
         ## case we want to re-apply it if the user re-starts the log.
         self.buffer.append(ESC + b"[m")
-        super(AnsiLogger, self).doLogStop()
+        super().doLogStop()
 
 
 def create_logger_for_world(world, logfilename):

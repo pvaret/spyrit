@@ -28,7 +28,7 @@ class EmbeddedModuleLoader( importlib.abc.SourceLoader ):
 
   def __init__( self, modules ):
 
-    super( EmbeddedModuleLoader, self ).__init__()
+    super().__init__()
     self.modules = modules
     self.sources = {}
 
@@ -51,7 +51,7 @@ class EmbeddedModuleFinder( importlib.abc.MetaPathFinder ):
 
   def __init__( self, modules ):
 
-    super( EmbeddedModuleFinder, self ).__init__()
+    super().__init__()
     self.loader = EmbeddedModuleLoader( modules )
     self.modules = modules
 

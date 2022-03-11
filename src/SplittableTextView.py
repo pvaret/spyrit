@@ -55,7 +55,7 @@ from QTextEditWithClickableLinks import QTextEditWithClickableLinks
 class LineCount(QLabel):
     def __init__(self, parent):
 
-        super(LineCount, self).__init__(parent)
+        super().__init__(parent)
 
         self.setAutoFillBackground(True)
         self.setAlignment(Qt.AlignmentFlag(Qt.AlignHCenter | Qt.AlignVCenter))
@@ -116,7 +116,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def __init__(self, parent=None):
 
-        super(SplittableTextView, self).__init__(parent)
+        super().__init__(parent)
 
         self.setReadOnly(True)
         self.setUndoRedoEnabled(False)
@@ -376,7 +376,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def mouseMoveEvent(self, e):
 
-        return super(SplittableTextView, self).mouseMoveEvent(
+        return super().mouseMoveEvent(
             self.remapMouseEvent(e)
         )
 
@@ -400,7 +400,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
             cur = self.cursorForPosition(e.pos())
             self.setTextCursor(cur)
 
-        res = super(SplittableTextView, self).mousePressEvent(
+        res = super().mousePressEvent(
             self.remapMouseEvent(e)
         )
 
@@ -419,7 +419,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
         block = self.scrollbar.blockSignals(True)
         val = self.scrollbar.value()
 
-        res = super(SplittableTextView, self).mouseReleaseEvent(
+        res = super().mouseReleaseEvent(
             self.remapMouseEvent(e)
         )
 
@@ -432,7 +432,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def mouseDoubleClickEvent(self, e):
 
-        return super(SplittableTextView, self).mouseDoubleClickEvent(
+        return super().mouseDoubleClickEvent(
             self.remapMouseEvent(e)
         )
 
@@ -457,7 +457,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         if self.atbottom or not self.split_scrollback:
 
-            super(SplittableTextView, self).paintEvent(e)
+            super().paintEvent(e)
             return
 
         ## Draw the top half of the viewport if necessary.
@@ -465,7 +465,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
         top_r = e.rect().intersected(self.splitTopRect())
 
         if not top_r.isEmpty():
-            super(SplittableTextView, self).paintEvent(QPaintEvent(top_r))
+            super().paintEvent(QPaintEvent(top_r))
 
         ## Likewise the bottom half.
         ## Create painter.
@@ -618,7 +618,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def resizeEvent(self, e):
 
-        res = super(SplittableTextView, self).resizeEvent(e)
+        res = super().resizeEvent(e)
 
         self.onRangeChanged(self.scrollbar.minimum(), self.scrollbar.maximum())
         self.setMoreAnchor()
@@ -633,7 +633,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
         ## It is only used in our own code to ensure cursor visibility in case of
         ## split scrollback.
 
-        super(SplittableTextView, self).ensureCursorVisible()
+        super().ensureCursorVisible()
 
         if self.split_scrollback and not self.atbottom:
 

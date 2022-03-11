@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## World.py
-##
-## Holds the class that manages the state of a world: input, output, connection
-## and disconnection, etc.
-##
+#
+# World.py
+#
+# Holds the class that manages the state of a world: input, output, connection
+# and disconnection, etc.
+#
 
 
 import os
@@ -167,17 +167,17 @@ class World(QObject):
         logfile = os.path.join(logdir, logfile)
 
         if not os.path.exists(logfile):
-            ## File name is available. Good!
+            # File name is available. Good!
             return logfile
 
         base, ext = os.path.splitext(logfile)
 
         if self.last_log_filename and self.last_log_filename.startswith(base):
-            ## File exists but already seems to belong to this session. Keep using
-            ## it.
+            # File exists but already seems to belong to this session. Keep using
+            # it.
             return self.last_log_filename
 
-        ## File exists. Compute an available variant in the form "filename_X.ext".
+        # File exists. Compute an available variant in the form "filename_X.ext".
         candidate = base + "_%d" + ext
         existing = set(glob(base + "_*" + ext))
 
@@ -193,14 +193,14 @@ class World(QObject):
 
     def startLogging(self):
 
-        ## TODO: Prompt for a logfile name if none is recorded in settings
+        # TODO: Prompt for a logfile name if none is recorded in settings
 
         logfile = self.computeLogFileName()
 
         if self.logger:
 
             if logfile == self.last_log_filename:
-                ## We're already logging to the correct file! Good.
+                # We're already logging to the correct file! Good.
                 return
 
             self.logger.stop()
@@ -278,7 +278,7 @@ class World(QObject):
         try:
             return open(
                 filename, mode
-            )  ## NB: filename can be unicode. That's OK!
+            )  # NB: filename can be unicode. That's OK!
 
         except (IOError, OSError) as e:
 

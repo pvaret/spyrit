@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Serializers.py
-##
-## Serializers are small classes that know how to serialize and deserialize
-## settings values to and from strings, and can also compute a default value
-## from the default string.
-##
+#
+# Serializers.py
+#
+# Serializers are small classes that know how to serialize and deserialize
+# settings values to and from strings, and can also compute a default value
+# from the default string.
+#
 
 
 """
@@ -82,33 +82,33 @@ def split(
     for pos, c in enumerate(string):
 
         if in_escape:
-            ## Current character is escaped. Move on.
+            # Current character is escaped. Move on.
             in_escape = False
             continue
 
         if c == esc:
-            ## Next character will be escaped.
+            # Next character will be escaped.
             in_escape = True
             continue
 
         if current_quote is None:
-            ## Not in a quoted section.
+            # Not in a quoted section.
 
             if c == sep:
-                ## Found an unquoted separator! Split.
+                # Found an unquoted separator! Split.
                 yield string[last_pos:pos]
-                last_pos = pos + 1  ## Skip the separator itself.
+                last_pos = pos + 1  # Skip the separator itself.
 
             elif c in quotes:
-                ## This is the start of a quoted section.
+                # This is the start of a quoted section.
                 current_quote = c
 
             continue
 
-        ## In a quoted section. Do nothing until the section ends.
+        # In a quoted section. Do nothing until the section ends.
 
         if c == current_quote:
-            ## This is the end of the quoted section.
+            # This is the end of the quoted section.
             current_quote = None
 
     if last_pos < len(string):
@@ -157,7 +157,7 @@ class Int(BaseSerializer):
 class Str(BaseSerializer):
     def deserialize(self, string: str) -> Optional[str]:
 
-        ## The empty string deserializes to None.
+        # The empty string deserializes to None.
         if not string:
             return None
 
@@ -165,7 +165,7 @@ class Str(BaseSerializer):
 
     def serialize(self, string: str) -> str:
 
-        ## None serializes to the empty string.
+        # None serializes to the empty string.
         if string is None:
             return ""
 
@@ -212,9 +212,9 @@ class List(BaseSerializer[Value]):
 
         for item in split(string, sep=self.SEP, quotes=self.QUOTE):
 
-            ## Because the string serializer uses quote(), which escapes the "
-            ## character, the following is guaranteed to only be true when we've
-            ## added the quotes ourselves in serialize().
+            # Because the string serializer uses quote(), which escapes the "
+            # character, the following is guaranteed to only be true when we've
+            # added the quotes ourselves in serialize().
 
             if item[0] == item[-1] == self.QUOTE:
                 item = item[1:-1]
@@ -224,18 +224,18 @@ class List(BaseSerializer[Value]):
         return result
 
 
-## TODO: Make format properties an actual type.
+# TODO: Make format properties an actual type.
 FormatType = Dict[Any, Any]
 
 
 class Format(BaseSerializer):
 
-    ## FORMAT describes the formatting for a given piece of text: color,
-    ## italic, underlined...
-    ## Its string serialization is a semicolon-separated list of tokens and
-    ## looks like this: "color:#ffffff; italic; bold".
-    ## Its deserialized form is a dictionary.
-    ## We also store format-related constants on it.
+    # FORMAT describes the formatting for a given piece of text: color,
+    # italic, underlined...
+    # Its string serialization is a semicolon-separated list of tokens and
+    # looks like this: "color:#ffffff; italic; bold".
+    # Its deserialized form is a dictionary.
+    # We also store format-related constants on it.
 
     def serialize(self, format: FormatType) -> str:
 
@@ -287,8 +287,8 @@ class Format(BaseSerializer):
 class KeySequence(BaseSerializer):
     def deserializeDefault(self, string: str) -> Optional[QKeySequence]:
 
-        ## QKeySequence.fromString uses PortableText by default, and so do our
-        ## defaults:
+        # QKeySequence.fromString uses PortableText by default, and so do our
+        # defaults:
         return QKeySequence.fromString(string) if string is not None else None
 
     def serialize(self, seq: Optional[QKeySequence]) -> str:
@@ -353,8 +353,8 @@ class Point(BaseSerializer):
 class Pattern(BaseSerializer):
     def serialize(self, pattern: BaseMatch) -> str:
 
-        ## TODO: Not great. Replace the repr() with a proper serialization
-        ## function.
+        # TODO: Not great. Replace the repr() with a proper serialization
+        # function.
         return quote(repr(pattern))
 
     def deserialize(self, string: str) -> Optional[BaseMatch]:

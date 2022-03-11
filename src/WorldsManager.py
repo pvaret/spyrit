@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## This file holds the WorldsManager class, which manages world properties and
-## looks up, creates or deletes world configuration objects.
-##
+#
+# This file holds the WorldsManager class, which manages world properties and
+# looks up, creates or deletes world configuration objects.
+#
 
 
 from typing import Optional
@@ -50,7 +50,7 @@ class WorldsSettings:
 
     def newWorldSettings(self):
 
-        ## TODO: Add createSection() to nodes that would do the right thing?
+        # TODO: Add createSection() to nodes that would do the right thing?
         return self.settings.proto.build("*", self.settings)
 
     def newWorldState(self):
@@ -83,7 +83,7 @@ class WorldsManager(QObject):
 
         self.ws = WorldsSettings(settings, state)
 
-        ## Safety measure: ensure all worlds have a valid name.
+        # Safety measure: ensure all worlds have a valid name.
         n = 0
 
         for settings in self.ws.getAllWorldSettings():
@@ -96,8 +96,8 @@ class WorldsManager(QObject):
 
     def generateMappings(self):
 
-        ## Provide mappings to lookup worlds based on their name and based on
-        ## their (host, port) connection pair.
+        # Provide mappings to lookup worlds based on their name and based on
+        # their (host, port) connection pair.
 
         self.name_mapping = dict(
             (self.normalize(settings._name), settings)
@@ -117,7 +117,7 @@ class WorldsManager(QObject):
 
     def worldList(self):
 
-        ## Return world names, sorted by normalized value.
+        # Return world names, sorted by normalized value.
         worlds = (world._name for world in self.ws.getAllWorldSettings())
         return sorted(worlds, key=lambda s: self.normalize(s))
 
@@ -144,7 +144,7 @@ class WorldsManager(QObject):
 
         settings = world.settings
         state = world.state
-        key = self.normalize(settings._name)  ## TODO: Ensure unicity!
+        key = self.normalize(settings._name)  # TODO: Ensure unicity!
 
         self.ws.saveWorldSettings(key, settings, state)
 
@@ -178,7 +178,7 @@ class WorldsManager(QObject):
 
         if settings and len(settings) == 1:
 
-            ## One matching configuration found, and only one.
+            # One matching configuration found, and only one.
             return self.newWorld(settings[0])
 
         return None

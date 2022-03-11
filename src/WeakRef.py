@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## WeakRef.py
-##
-## Implements a bunch of weakly referenced objects and containers.
-##
+#
+# WeakRef.py
+#
+# Implements a bunch of weakly referenced objects and containers.
+#
 
 """
 
@@ -60,14 +60,14 @@ class MethodRef:
 
     def ref(self) -> Optional[types.MethodType]:
 
-        ## Bind the method on the fly, and return it.
+        # Bind the method on the fly, and return it.
         fn = self._fnref()
         obj = self._objref()
 
         if None in (fn, obj):
             return None
 
-        assert fn is not None  ## Help out the type checker.
+        assert fn is not None  # Help out the type checker.
         return types.MethodType(fn, obj)
 
 

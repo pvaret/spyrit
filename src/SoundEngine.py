@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## SoundEngine.py
-##
-## Contains the SoundEngine class, our simple sound player. It tries to locate
-## a backend that works on the user's platform and then uses it for playback.
-##
+#
+# SoundEngine.py
+#
+# Contains the SoundEngine class, our simple sound player. It tries to locate
+# a backend that works on the user's platform and then uses it for playback.
+#
 
 
 import os.path
@@ -92,7 +92,7 @@ class SoundEngine:
         if not os.path.isfile(filename):
             return False, "%s: not a valid file." % soundfile
 
-        ## TODO: Check that filename is a valid WAV file.
+        # TODO: Check that filename is a valid WAV file.
 
         self.backend.play(filename)
         return True, None

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## MainWindow.py
-##
-## Holds the MainWindow class, which contains all the core GUI of the program.
-##
+#
+# MainWindow.py
+#
+# Holds the MainWindow class, which contains all the core GUI of the program.
+#
 
 
 from PyQt5.QtCore import pyqtSlot
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
 
         super().__init__()
 
-        ## Set up main window according to its configuration.
+        # Set up main window according to its configuration.
 
         self.setWindowTitle(settings._app._name)
 
@@ -65,7 +65,7 @@ class MainWindow(QMainWindow):
         if pos and not pos.isNull():
             self.move(pos)
 
-        ## Create the central widget.
+        # Create the central widget.
 
         default_pane = QLabel()
         default_pane.setAlignment(Qt.AlignCenter)
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
 
         self.tabwidget.currentChanged.connect(self.setCurrentWorldToolbar)
 
-        ## Create all the actions.
+        # Create all the actions.
 
         self.actionset = ActionSet(self)
 
@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
         self.actionset.bindAction("nexttab", self.tabwidget.nextTab)
         self.actionset.bindAction("previoustab", self.tabwidget.previousTab)
 
-        ## Create menus.
+        # Create menus.
 
         menubar = self.menuBar()
         menubar.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
         self.menu_help.addAction(self.action_about)
         self.menu_help.addAction(self.action_aboutqt)
 
-        ## Create toolbars.
+        # Create toolbars.
 
         self.toolbar_main = QToolBar("Main Toolbar", self)
         self.toolbar_main.setMovable(False)
@@ -130,37 +130,37 @@ class MainWindow(QMainWindow):
 
         self.addToolBar(self.toolbar_main)
 
-        ## Create and add dynamic world list action.
+        # Create and add dynamic world list action.
 
         connectaction = self.menu_connect.menuAction()
         self.toolbar_main.addAction(connectaction)
 
-        ## ... And don't forget to set the button for that action to the correct
-        ## menu popup mode.
+        # ... And don't forget to set the button for that action to the correct
+        # menu popup mode.
 
         connectbutton = self.toolbar_main.widgetForAction(connectaction)
         connectbutton.setPopupMode(QToolButton.InstantPopup)
 
-        ## Add remaining toolbar actions.
+        # Add remaining toolbar actions.
 
         self.toolbar_main.addAction(self.action_newworld)
         self.toolbar_main.addSeparator()
         self.toolbar_main.addAction(self.action_quit)
         self.toolbar_main.addSeparator()
 
-        ## This will be populated when Worlds are created.
+        # This will be populated when Worlds are created.
         self.toolbar_world = None
 
-        ## Link configuration changes to the appropriate updaters.
+        # Link configuration changes to the appropriate updaters.
 
         self.initial_style = QApplication.style().objectName()
 
-        ## Apply configuration:
+        # Apply configuration:
 
         self.refreshStyle()
         self.refreshIcons()
 
-        ## And bind it to the appropriate configuration keys:
+        # And bind it to the appropriate configuration keys:
 
         settings._ui.onChange("style", self.refreshStyle)
         settings._ui.onChange("toolbar.icon_size", self.refreshIcons)
@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
         worldsmanager = QApplication.instance().core.worlds
         worldsmanager.worldListChanged.connect(self.refreshMenuWorlds)
 
-        ## And with this, our Main Window is created, whee!
+        # And with this, our Main Window is created, whee!
 
     def refreshStyle(self):
 
@@ -284,7 +284,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
 
-        ## Confirm close if some worlds are still connected.
+        # Confirm close if some worlds are still connected.
 
         connectedworlds = [
             w
@@ -304,33 +304,33 @@ class MainWindow(QMainWindow):
                 event.ignore()
                 return
 
-        ## Ensure all the current worlds cut their connections.
-        ## Note the use of list(), since the structure changes size during the
-        ## iteration.
+        # Ensure all the current worlds cut their connections.
+        # Note the use of list(), since the structure changes size during the
+        # iteration.
 
         for w in list(QApplication.instance().core.openworlds):
 
             w.disconnectFromWorld()
             w.worldui.doClose()
 
-        ## Save the main window's geometry when it's about to be closed.
+        # Save the main window's geometry when it's about to be closed.
 
         state = QApplication.instance().core.state
 
         state._ui._window._size = self.size()
         state._ui._window._pos = self.pos()
 
-        ## WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
-        ## which sometimes causes a segfault when exiting. The following works
-        ## around the bug by removing the menu bar from the main window's widget
-        ## hierarchy and deleting it ourselves.
+        # WORKAROUND: The version of PyQt that ships in Ubuntu Lucid has a bug
+        # which sometimes causes a segfault when exiting. The following works
+        # around the bug by removing the menu bar from the main window's widget
+        # hierarchy and deleting it ourselves.
 
         self.hide()
         mb = self.menuBar()
         mb.setParent(None)  # type: ignore - this is actually legal PyQt.
         mb.deleteLater()
 
-        ## And we're done, and can quit.
+        # And we're done, and can quit.
         event.accept()
 
     def actionNewWorld(self):

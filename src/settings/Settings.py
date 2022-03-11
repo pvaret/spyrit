@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Settings.py
-##
-## Implements the core settings paraphernalia.
-##
+#
+# Settings.py
+#
+# Implements the core settings paraphernalia.
+#
 
 """
 :doctest:
@@ -51,7 +51,7 @@ class __NoValue(object):
 
 NO_VALUE = __NoValue()
 
-## A dummy key name for the root node of the settings.
+# A dummy key name for the root node of the settings.
 ROOT = "@"
 
 
@@ -168,9 +168,9 @@ class AttrProxyDictMixin(TextDictProtocol):
         vattr = validateAttr(attr)
 
         if vattr is None:
-            ## This is neither an existing native attribute, nor a 'special'
-            ## attribute name that should be read off the mapped dictionary,
-            ## so we raise an AttributeError.
+            # This is neither an existing native attribute, nor a 'special'
+            # attribute name that should be read off the mapped dictionary,
+            # so we raise an AttributeError.
             raise AttributeError(attr)
 
         try:
@@ -187,7 +187,7 @@ class AttrProxyDictMixin(TextDictProtocol):
             self[vattr] = value
 
         else:
-            ## If this is a 'normal' attribute, treat it the normal way.
+            # If this is a 'normal' attribute, treat it the normal way.
             super().__setattr__(attr, value)
 
     def __delattr__(self, attr: str):
@@ -195,8 +195,8 @@ class AttrProxyDictMixin(TextDictProtocol):
         vattr = validateAttr(attr)
 
         if vattr is None:
-            ## If this is a 'normal' attribute, treat it the normal way
-            ## and then return.
+            # If this is a 'normal' attribute, treat it the normal way
+            # and then return.
             super().__delattr__(attr)
 
             return
@@ -208,8 +208,8 @@ class AttrProxyDictMixin(TextDictProtocol):
             raise AttributeError(attr) from e
 
 
-## TODO: Finish. Use a Protocol instead! See
-## https://mypy.readthedocs.io/en/stable/protocols.html.
+# TODO: Finish. Use a Protocol instead! See
+# https://mypy.readthedocs.io/en/stable/protocols.html.
 class BaseNode(abc.ABC):
 
     proto: "NodeProto"
@@ -494,8 +494,8 @@ class NodeProto(object):
         node: Union[Node, Leaf]
         inherit_container: Optional[Node] = None
 
-        ## 1/ Figure out what node to build, by looking it up in the prototype tree
-        ## then searching this prototype for inheritance information.
+        # 1/ Figure out what node to build, by looking it up in the prototype tree
+        # then searching this prototype for inheritance information.
 
         if key in self.nodes:
 
@@ -515,7 +515,7 @@ class NodeProto(object):
 
                 inherit_pattern = inherit_pattern[1:]
                 inherit_container = inherit_container.container
-                ## TODO: inherit from subcontainers?
+                # TODO: inherit from subcontainers?
 
             if inherit_container is None:
                 raise KeyError(key)
@@ -534,13 +534,13 @@ class NodeProto(object):
         node.proto = proto
         node.fallback_value = proto.default_value
 
-        ## 2/ Set up inheritance given the provided information.
+        # 2/ Set up inheritance given the provided information.
 
         if inherit_container is not None:
 
             inherit_node = inherit_container.get(key)
 
-            ## Sanity test:
+            # Sanity test:
             assert type(inherit_node) is type(
                 node
             ), "Type mismatch in Settings hierarchy!"

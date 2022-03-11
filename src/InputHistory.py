@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## InputHistory.py
-##
-## Holds the InputHistory class, which manages the history of what the user
-## typed in the input widget.
-##
+#
+# InputHistory.py
+#
+# Holds the InputHistory class, which manages the history of what the user
+# typed in the input widget.
+#
 
 
 from PyQt5.QtGui import QTextCursor
@@ -81,7 +81,7 @@ class InputHistory:
         self.currenttext = ""
         self.cursor = -1
 
-        ## Don't update if text hasn't changed:
+        # Don't update if text hasn't changed:
 
         if self.history and self.history[0] == text:
             return

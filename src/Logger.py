@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Logger.py
-##
-## Holds the class that manages logging of a world's output to a text file.
-##
+#
+# Logger.py
+#
+# Holds the class that manages logging of a world's output to a text file.
+#
 
 
 import os
@@ -50,7 +50,7 @@ class PlainLogger(object):
         self.buffer: list[bytes] = []
 
         self.flush_timer = SingleShotTimer(self.flushBuffer)
-        self.flush_timer.setInterval(100)  ## ms
+        self.flush_timer.setInterval(100)  # ms
 
     def logChunk(self, chunk):
 
@@ -101,7 +101,7 @@ class PlainLogger(object):
 
         self.is_logging = True
         self.doLogStart()
-        ## TODO: move info message out of logger?
+        # TODO: move info message out of logger?
         self.world.info("Started logging to %s" % basename(self.logfile.name))
 
         self.flushBuffer()
@@ -112,7 +112,7 @@ class PlainLogger(object):
             return
 
         self.doLogStop()
-        ## TODO: move info message out of logger?
+        # TODO: move info message out of logger?
         self.world.info("Stopped logging.")
 
         self.flushBuffer()
@@ -191,8 +191,8 @@ class AnsiLogger(PlainLogger):
 
     def doLogStop(self):
 
-        ## TODO: decide if we want to also store the current format somewhere, in
-        ## case we want to re-apply it if the user re-starts the log.
+        # TODO: decide if we want to also store the current format somewhere, in
+        # case we want to re-apply it if the user re-starts the log.
         self.buffer.append(ESC + b"[m")
         super().doLogStop()
 

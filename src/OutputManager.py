@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## OutputManager.py
-##
-## This file contains the OutputManager class, which is in charge of content
-## management in the output UI: text insertion, formatting, search, etc.
-##
+#
+# OutputManager.py
+#
+# This file contains the OutputManager class, which is in charge of content
+# management in the output UI: text insertion, formatting, search, etc.
+#
 
 
 from PyQt5.QtGui import QTextCursor
@@ -35,7 +35,7 @@ from pipeline.ChunkData import FlowControl
 from pipeline.ChunkData import NetworkState
 
 
-## This is used a lot, so define it right away.
+# This is used a lot, so define it right away.
 
 NL = "\n"
 
@@ -189,5 +189,5 @@ class OutputManager:
 
         self.textcursor.insertText(LEFTARROW + " " + text, self.infoformat)
         self.pending_newline = (
-            True  ## There is always a new line after info text.
+            True  # There is always a new line after info text.
         )

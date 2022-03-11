@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## SpyritSettings.py
-##
-## Holds the definition of Spyrit settings.
-##
+#
+# SpyritSettings.py
+#
+# Holds the definition of Spyrit settings.
+#
 
 
 import codecs
@@ -60,7 +60,7 @@ def for_all_sections(section_schema):
     return {"sections": (("*", section_schema),)}
 
 
-## Section names.
+# Section names.
 WORLDS = "worlds"
 TRIGGERS = "triggers"
 MATCHES = "matches"
@@ -68,7 +68,7 @@ ACTIONS = "actions"
 SHORTCUTS = "shortcuts"
 
 
-## Schema for matches
+# Schema for matches
 TRIGGERS_SCHEMA = {
     "keys": (("name", {"serializer": Str(), "default": None}),),
     "sections": (
@@ -90,7 +90,7 @@ TRIGGERS_SCHEMA = {
 }
 
 
-## Schema for keyboard shortcuts
+# Schema for keyboard shortcuts
 SHORTCUTS_SCHEMA = {
     "default_metadata": {"serializer": KeySequence()},
     "keys": (
@@ -119,7 +119,7 @@ SHORTCUTS_SCHEMA = {
     ),
 }
 
-## Schema for whole application and every world
+# Schema for whole application and every world
 WORLDS_SCHEMA = {
     "keys": (
         ("name", {"serializer": Str(), "default": None}),
@@ -184,7 +184,7 @@ SETTINGS_SCHEMA = {
     ),
 }
 
-## Schema for stateful data that isn't really settings
+# Schema for stateful data that isn't really settings
 STATE_SCHEMA = {
     "keys": (
         ("ui.window.pos", {"serializer": Point()}),
@@ -298,7 +298,7 @@ def load_state():
 
 def _save(settings, filename: str):
 
-    settings_text = "## version: %d\n" % (VERSION) + struct_to_ini(
+    settings_text = "# version: %d\n" % (VERSION) + struct_to_ini(
         settings.dump()
     )
 
@@ -307,7 +307,7 @@ def _save(settings, filename: str):
         writer(open(filename, "wb"), "ignore").write(settings_text)
 
     except (LookupError, IOError, OSError):
-        ## Well shucks.
+        # Well shucks.
         pass
 
 

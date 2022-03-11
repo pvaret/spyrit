@@ -28,8 +28,8 @@ __revision__ = "$Rev$"
 __date__ = "$Date$"
 __copyright__ = "Python license"
 
-## Modified 2020/05/01 to remove Python 2 compatibility code.
-## Modified 2021/04/10 to reformat and add type safety.
+# Modified 2020/05/01 to remove Python 2 compatibility code.
+# Modified 2021/04/10 to reformat and add type safety.
 
 
 import os
@@ -37,7 +37,7 @@ import os
 try:
     import winreg
 except ImportError:
-    ## Well, whoops. Presumably we're not running Windows. Pass silently.
+    # Well, whoops. Presumably we're not running Windows. Pass silently.
     pass
 
 else:
@@ -143,7 +143,7 @@ else:
             _get_reg_machine_value(SHELL_FOLDERS, "Common AppData"),
             vendor,
             prog,
-            *args
+            *args,
         )
 
     def get_shellfolders(branch=HKCU, key=SHELL_FOLDERS):

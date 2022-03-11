@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Pipeline.py
-##
-## This file defines the class Pipeline, which manages the tokenization of
-## a network stream into typed chunks: telnet code, ANSI code, etc...
-## It works by assembling a series of Filters.
-##
+#
+# Pipeline.py
+#
+# This file defines the class Pipeline, which manages the tokenization of
+# a network stream into typed chunks: telnet code, ANSI code, etc...
+# It works by assembling a series of Filters.
+#
 
 
 from typing import Any, Callable
@@ -39,7 +39,7 @@ _ChunkT = tuple[ChunkType, Any]
 
 class Pipeline(QObject):
 
-    PROMPT_TIMEOUT = 700  ## ms
+    PROMPT_TIMEOUT = 700  # ms
 
     flushBegin = pyqtSignal()
     flushEnd = pyqtSignal()
@@ -59,14 +59,14 @@ class Pipeline(QObject):
 
     def feedBytes(self, packet, blocksize=2048):
 
-        ## 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
-        ## and feed that to the real chunk sink.
+        # 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
+        # and feed that to the real chunk sink.
 
         while packet:
 
-            ## Splitting the packet into chunks of limited size makes for slightly
-            ## slower processing overall, but better responsiveness, when processing
-            ## large packets.
+            # Splitting the packet into chunks of limited size makes for slightly
+            # slower processing overall, but better responsiveness, when processing
+            # large packets.
             bytes, packet = packet[:blocksize], packet[blocksize:]
 
             self.feedChunk(thePacketStartChunk, autoflush=False)
@@ -86,9 +86,9 @@ class Pipeline(QObject):
 
         self.filters[0].feedChunk(chunk)
 
-        ## When the above call returns, the chunk as been fully processed through
-        ## the chain of filters, and the resulting chunks are waiting in the
-        ## output bucket. So we can flush it.
+        # When the above call returns, the chunk as been fully processed through
+        # the chain of filters, and the resulting chunks are waiting in the
+        # output bucket. So we can flush it.
 
         if autoflush:
             self.flushOutputBuffer()
@@ -112,7 +112,7 @@ class Pipeline(QObject):
 
     def addFilter(self, filterclass, **kwargs):
 
-        kwargs.setdefault("context", self)  ## Set up context if needed.
+        kwargs.setdefault("context", self)  # Set up context if needed.
 
         filter = filterclass(**kwargs)
 
@@ -127,7 +127,7 @@ class Pipeline(QObject):
         self, callback: Callable[[ChunkType], None], types=ChunkType.all()
     ):
 
-        ## 'callback' should be a callable that accepts and handles a chunk.
+        # 'callback' should be a callable that accepts and handles a chunk.
 
         for type in ChunkType:
 

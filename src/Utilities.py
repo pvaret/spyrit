@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Utilities.py
-##
-## This file contains various utility functions.
-##
+#
+# Utilities.py
+#
+# This file contains various utility functions.
+#
 
 """
 :doctest:
@@ -56,10 +56,10 @@ def quote(string, esc=BS):
 
     """
 
-    ## Escape the escape character itself:
+    # Escape the escape character itself:
     string = string.replace(esc, esc + esc)
 
-    ## Then escape the rest:
+    # Then escape the rest:
     for from_, to in DEFAULT_ESCAPES.items():
         string = string.replace(from_, esc + to)
 
@@ -122,7 +122,7 @@ def make_unicode_translation_table():
         if not is_latin_letter(c):
             continue
 
-        ## Decompose, then keep only Latin letters in the result.
+        # Decompose, then keep only Latin letters in the result.
         cn = normalize("NFKD", c)
         cn = "".join([letter for letter in cn if is_latin_letter(letter)])
 
@@ -207,8 +207,8 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
     app = QApplication.instance()
 
-    ## KeyboardInterrupt is a special case.
-    ## We don't raise the error dialog when it occurs.
+    # KeyboardInterrupt is a special case.
+    # We don't raise the error dialog when it occurs.
     if issubclass(exc_type, KeyboardInterrupt):
 
         if app:

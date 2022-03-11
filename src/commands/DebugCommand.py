@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## DebugCommands.py
-##
-## Debugging-related command.
-##
+#
+# DebugCommands.py
+#
+# Debugging-related command.
+#
 
 import builtins
 
@@ -26,11 +26,11 @@ from .BaseCommand import BaseCommand
 
 class DebugCommand(BaseCommand):
 
-    ## No docstring. This is not a user-visible command.
+    # No docstring. This is not a user-visible command.
 
     def cmd_raise(self, world, *args):
 
-        ## No docstring. This is not a user-visible subcommand.
+        # No docstring. This is not a user-visible subcommand.
 
         e = None
 
@@ -41,7 +41,7 @@ class DebugCommand(BaseCommand):
             try:
                 is_an_exception = issubclass(exc, BaseException)
 
-            except TypeError:  ## exc is not a class!
+            except TypeError:  # exc is not a class!
                 is_an_exception = False
 
             if is_an_exception:
@@ -54,7 +54,7 @@ class DebugCommand(BaseCommand):
 
     def cmd_execute(self, world, filename):
 
-        ## No docstring. This is not a user-visible subcommand.
+        # No docstring. This is not a user-visible subcommand.
 
         f = world.openFileOrErr(filename)
 
@@ -65,7 +65,7 @@ class DebugCommand(BaseCommand):
 
     def cmd_load(self, world, filename=None, blocksize=None):
 
-        ## No docstring. This is not a user-visible subcommand.
+        # No docstring. This is not a user-visible subcommand.
 
         if blocksize is not None and not blocksize.isdigit():
             blocksize = None

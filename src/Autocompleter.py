@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Autocompleter.py
-##
-## This is the Autocompleter class. It provides World Input widgets with the
-## ability to tab-complete based on what has been fed into the World Output
-## widget.
-##
+#
+# Autocompleter.py
+#
+# This is the Autocompleter class. It provides World Input widgets with the
+# ability to tab-complete based on what has been fed into the World Output
+# widget.
+#
 
 
 import re
@@ -44,9 +44,9 @@ class CompletionList:
 
         self.words = []
 
-        ## Keep track of words, so we can remove the oldest ones from the list.
-        ## Useful in order to avoid having completions 'polluted' by entries from
-        ## 20 screens back that you no longer care about.
+        # Keep track of words, so we can remove the oldest ones from the list.
+        # Useful in order to avoid having completions 'polluted' by entries from
+        # 20 screens back that you no longer care about.
 
         self.wordcount = {}
         self.wordpipe = deque()
@@ -66,10 +66,10 @@ class CompletionList:
 
         if not (i < n and self.words[i] == (key, word)):
 
-            ## Only add this word to the list if it's not already there.
+            # Only add this word to the list if it's not already there.
             bisect.insort(self.words, (key, word), i, i)
 
-        ## And now, cull the word list if it's grown too big.
+        # And now, cull the word list if it's grown too big.
 
         while len(self.words) > MAX_WORD_LIST_LENGTH:
 
@@ -104,9 +104,9 @@ class CompletionList:
 
 class Autocompleter:
 
-    ## This matches all alphanumeric characters (including Unicode ones, such as
-    ## 'é') plus a few punctuation signs so long as they are inside the matched
-    ## word.
+    # This matches all alphanumeric characters (including Unicode ones, such as
+    # 'é') plus a few punctuation signs so long as they are inside the matched
+    # word.
 
     wordmatch = re.compile(r"\w+[\w:`'.-]*\w+", re.U)
     startwordmatch = re.compile(r"\w+[\w:`'.-]*$", re.U)
@@ -121,20 +121,20 @@ class Autocompleter:
 
     def selectCurrentWord(self, tc):
 
-        ## Alright. Our problem here is that we'd like to select the current word,
-        ## but Qt's idea of what makes up a word is, it seems, inconsistent across
-        ## Qt versions, and also incompatible with what Spyrit itself considers a
-        ## word.
-        ## For instance, in the name "O'hara", Qt considers "O" and "hara" to be
-        ## separate words, which doesn't work at all for us.
-        ## Hence, this method, which essentially does a
-        ## QTextCursor.select( WordUnderCursor ), but, our way. Phew.
+        # Alright. Our problem here is that we'd like to select the current word,
+        # but Qt's idea of what makes up a word is, it seems, inconsistent across
+        # Qt versions, and also incompatible with what Spyrit itself considers a
+        # word.
+        # For instance, in the name "O'hara", Qt considers "O" and "hara" to be
+        # separate words, which doesn't work at all for us.
+        # Hence, this method, which essentially does a
+        # QTextCursor.select( WordUnderCursor ), but, our way. Phew.
 
         tc.clearSelection()
 
         pos = tc.position()
 
-        ## Determine right half of word.
+        # Determine right half of word.
 
         tc.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
         line_end = str(tc.selectedText())
@@ -145,7 +145,7 @@ class Autocompleter:
         else:
             word_after = ""
 
-        ## Determine left half of word.
+        # Determine left half of word.
 
         tc.setPosition(pos)
 
@@ -158,7 +158,7 @@ class Autocompleter:
         else:
             word_before = ""
 
-        ## And select both halves.
+        # And select both halves.
 
         word = word_before + word_after
 
@@ -177,7 +177,7 @@ class Autocompleter:
         pos = tc.position()
         tc.movePosition(QTextCursor.EndOfLine)
 
-        if tc.position() == pos:  ## Cursor was at end of line.
+        if tc.position() == pos:  # Cursor was at end of line.
             tc.insertText(" ")
 
         else:
@@ -205,36 +205,36 @@ class Autocompleter:
 
             return
 
-        ## Try to determine if we were previously cycling through a match list.
-        ## This is not the textbook perfect way to do this; but then, the textbook
-        ## perfect way involves monitoring events on the QTextEdit to see if the
-        ## user did something other than autocomplete since last time, this here
-        ## method is considerably less involved and, thanks to the magic of
-        ## QTextCursor.isCopyOf(), quite reliable.
+        # Try to determine if we were previously cycling through a match list.
+        # This is not the textbook perfect way to do this; but then, the textbook
+        # perfect way involves monitoring events on the QTextEdit to see if the
+        # user did something other than autocomplete since last time, this here
+        # method is considerably less involved and, thanks to the magic of
+        # QTextCursor.isCopyOf(), quite reliable.
 
         currently_cycling = False
         result = []
 
         if (
             self.matchstate is not None
-        ):  ## If a previous ongoing completion exists...
+        ):  # If a previous ongoing completion exists...
 
             lastcursor, lastresult = self.matchstate
 
             if lastcursor.isCopyOf(
                 textedit.textCursor()
-            ):  ## Is it still relevant?
+            ):  # Is it still relevant?
 
                 currently_cycling = True
                 result = lastresult
 
-            else:  ## This is a new completion after all.
+            else:  # This is a new completion after all.
                 self.matchstate = None
 
         if not currently_cycling:
             result = self.completionlist.lookup(prefix)
 
-        ## Case one: no match. Do nothing.
+        # Case one: no match. Do nothing.
 
         if len(result) == 0:
 
@@ -243,14 +243,14 @@ class Autocompleter:
 
             return
 
-        ## All the following cases modify the textedit's content, so we apply the
-        ## cursor back to the QTextEdit.
+        # All the following cases modify the textedit's content, so we apply the
+        # cursor back to the QTextEdit.
 
         textedit.setTextCursor(tc)
 
         if not currently_cycling:
 
-            ## Case two: one match. Insert it!
+            # Case two: one match. Insert it!
 
             if len(result) == 1:
 
@@ -259,29 +259,29 @@ class Autocompleter:
 
                 return
 
-            ## Case three: several matches that all end with the same substring.
-            ## Complete the prefix with that substring.
+            # Case three: several matches that all end with the same substring.
+            # Complete the prefix with that substring.
 
             suffixes = [match[len(prefix) :] for match in result]
 
-            if len(set(suffixes)) == 1:  ## All matches have the same suffix.
+            if len(set(suffixes)) == 1:  # All matches have the same suffix.
 
                 self.insertResult(prefix + suffixes.pop())
                 self.finalize()
 
                 return
 
-        ## Case four: several entirely distinct matches. Cycle through the list.
+        # Case four: several entirely distinct matches. Cycle through the list.
 
-        result = result[1:] + result[:1]  ## Cycle matches.
+        result = result[1:] + result[:1]  # Cycle matches.
         self.insertResult(result[-1])
 
-        ## And save the state of the completion cycle.
+        # And save the state of the completion cycle.
 
         self.matchstate = (textedit.textCursor(), result)
         self.textedit = None
 
-        ## And done!
+        # And done!
 
     def insertResult(self, result):
 

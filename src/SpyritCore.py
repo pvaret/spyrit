@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## SpyritCore.py
-##
-## Implements the 'brain' object that controls the primary subsystems in
-## Spyrit.
-##
+#
+# SpyritCore.py
+#
+# Implements the 'brain' object that controls the primary subsystems in
+# Spyrit.
+#
 
 
 from weakref import WeakSet
@@ -59,15 +59,15 @@ class SpyritCore(QObject):
 
         self.openworlds = WeakSet()
 
-        ## Set up a MOTD to properly welcome our user:
+        # Set up a MOTD to properly welcome our user:
 
         MOTD = (
             "Welcome to %s %s!" % (settings._app._name, settings._app._version),
             "Type %shelp for help on available commands." % CMDCHAR,
         )
 
-        ## Note the use of iter(), so the MOTD is only displayed once for the whole
-        ## application.
+        # Note the use of iter(), so the MOTD is only displayed once for the whole
+        # application.
         self.motd = iter(MOTD)
 
     @pyqtSlot()

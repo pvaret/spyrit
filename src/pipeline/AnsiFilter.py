@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## AnsiFilter.py
-##
-## This file contains the AnsiFilter class, which parses out ANSI format codes
-## from the stream, generates the corresponding chunks and sends them
-## downstream.
-##
+#
+# AnsiFilter.py
+#
+# This file contains the AnsiFilter class, which parses out ANSI format codes
+# from the stream, generates the corresponding chunks and sends them
+# downstream.
+#
 
 
 import re
@@ -39,8 +39,8 @@ class AnsiFilter(BaseFilter):
 
     relevant_types = ChunkType.BYTES
 
-    ## For the time being, we only catch the SGR (Set Graphics Rendition) part
-    ## of the ECMA 48 specification (a.k.a. ANSI escape codes).
+    # For the time being, we only catch the SGR (Set Graphics Rendition) part
+    # of the ECMA 48 specification (a.k.a. ANSI escape codes).
 
     CSI8b = b"\x9b"
 
@@ -54,8 +54,8 @@ class AnsiFilter(BaseFilter):
 
     def resetInternalState(self):
 
-        ## Note: this method is called by the base class's __init__, so we're
-        ## sure that self.highlighted and self.current_colors are defined.
+        # Note: this method is called by the base class's __init__, so we're
+        # sure that self.highlighted and self.current_colors are defined.
 
         self.highlighted, self.current_colors = self.defaultColors()
         super().resetInternalState()
@@ -63,8 +63,8 @@ class AnsiFilter(BaseFilter):
     def defaultColors(self):
 
         return (
-            False,  ## highlight
-            ANSI_TO_FORMAT.get(b"39")[1],  ## default colors
+            False,  # highlight
+            ANSI_TO_FORMAT.get(b"39")[1],  # default colors
         )
 
     def processChunk(self, chunk):
@@ -80,7 +80,7 @@ class AnsiFilter(BaseFilter):
 
             if not ansi:
 
-                ## Done with the ANSI parsing in this chunk! Bail out.
+                # Done with the ANSI parsing in this chunk! Bail out.
                 break
 
             head, text = text[: ansi.start()], text[ansi.end() :]
@@ -90,7 +90,7 @@ class AnsiFilter(BaseFilter):
 
             parameters = bytes(ansi.groups()[0])
 
-            if not parameters:  ## ESC [ m, like ESC [ 0 m, resets the format.
+            if not parameters:  # ESC [ m, like ESC [ 0 m, resets the format.
 
                 yield (ChunkType.ANSI, {})
 
@@ -105,7 +105,7 @@ class AnsiFilter(BaseFilter):
 
                 param = list_params.pop(0)
 
-                ## Special case: extended 256 color codes require special treatment.
+                # Special case: extended 256 color codes require special treatment.
 
                 if len(list_params) >= 2 and param in [b"38", b"48"]:
 
@@ -121,9 +121,9 @@ class AnsiFilter(BaseFilter):
 
                         continue
 
-                ## Carry on with the standard cases.
+                # Carry on with the standard cases.
 
-                if param == b"0":  ## ESC [ 0 m -- reset the format!
+                if param == b"0":  # ESC [ 0 m -- reset the format!
 
                     yield (ChunkType.ANSI, {})
 
@@ -133,14 +133,14 @@ class AnsiFilter(BaseFilter):
                     continue
 
                 if param not in ANSI_TO_FORMAT:
-                    ## Unknown ANSI code. Ignore.
+                    # Unknown ANSI code. Ignore.
                     continue
 
                 prop, value = ANSI_TO_FORMAT[param]
 
                 if prop == FORMAT_PROPERTIES.COLOR:
 
-                    ## TODO: refactor to add proper type safety.
+                    # TODO: refactor to add proper type safety.
                     current_colors = cast(
                         Tuple[Optional[str], Optional[str]], value
                     )
@@ -156,7 +156,7 @@ class AnsiFilter(BaseFilter):
 
                 if prop == FORMAT_PROPERTIES.BOLD:
 
-                    ## According to spec, this actually means highlighted colors.
+                    # According to spec, this actually means highlighted colors.
 
                     highlighted = value
 
@@ -165,23 +165,23 @@ class AnsiFilter(BaseFilter):
 
                     c_unhighlighted, c_highlighted = current_colors
 
-                    if value:  ## Colors are now highlighted.
+                    if value:  # Colors are now highlighted.
                         format[FORMAT_PROPERTIES.COLOR] = c_highlighted
 
                     else:
                         format[FORMAT_PROPERTIES.COLOR] = c_unhighlighted
 
-                    if False:  ## Ignore 'bold' meaning of this ANSI code?
-                        continue  ## TODO: Make it a parameter.
+                    if False:  # Ignore 'bold' meaning of this ANSI code?
+                        continue  # TODO: Make it a parameter.
 
-                ## Other cases: italic, underline and such. Just pass the value along.
+                # Other cases: italic, underline and such. Just pass the value along.
 
                 format[prop] = value
 
             if format:
                 yield (ChunkType.ANSI, format)
 
-        ## Done searching for complete ANSI sequences.
+        # Done searching for complete ANSI sequences.
 
         self.current_colors = current_colors
         self.highlighted = highlighted
@@ -192,9 +192,9 @@ class AnsiFilter(BaseFilter):
 
             if possible_unfinished:
 
-                ## Remaining text ends with an unfinished ANSI sequence!
-                ## So we feed what remains of the raw text, if any, down the pipe, and
-                ## then postpone the unfinished ANSI sequence.
+                # Remaining text ends with an unfinished ANSI sequence!
+                # So we feed what remains of the raw text, if any, down the pipe, and
+                # then postpone the unfinished ANSI sequence.
 
                 startmatch = possible_unfinished.start()
 

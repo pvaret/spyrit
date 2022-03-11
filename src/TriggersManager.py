@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## TriggersManager.py
-##
-## This class manages matches, triggers, and their association based on a
-## given world's configuration.
-##
+#
+# TriggersManager.py
+#
+# This class manages matches, triggers, and their association based on a
+# given world's configuration.
+#
 
 
 import os.path
@@ -115,7 +115,7 @@ class PlayAction:
 
     name = "play"
 
-    ## Don't try to play several sounds at once even if several matches are found.
+    # Don't try to play several sounds at once even if several matches are found.
     multiple_matches_per_line = False
 
     @classmethod
@@ -154,7 +154,7 @@ class GagAction:
 
     name = "gag"
 
-    ## If a line is gagged, all processing stops right away.
+    # If a line is gagged, all processing stops right away.
     multiple_matches_per_line = False
 
     @classmethod
@@ -167,9 +167,9 @@ class GagAction:
 
     def __call__(self, match, chunkbuffer):
 
-        ## TODO: (here and everywhere else): process buffer in order by adding
-        ## updated chunks to a new buffer and then substituting buffer contents
-        ## in-place.
+        # TODO: (here and everywhere else): process buffer in order by adding
+        # updated chunks to a new buffer and then substituting buffer contents
+        # in-place.
         for i in reversed(range(len(chunkbuffer))):
 
             chunk = chunkbuffer[i]
@@ -221,7 +221,7 @@ class LinkAction:
         if url is None:
             url = match.group(0)
 
-        ## TODO: Allow URL substitutions?
+        # TODO: Allow URL substitutions?
 
         href = {
             FORMAT_PROPERTIES.HREF: url,
@@ -272,9 +272,9 @@ class MatchGroup:
 
 
 DEFAULT_MATCHES = [
-    ## Given the match group a name that contains non-alphanumeric character so
-    ## that it can't conflict with user-defined match groups.
-    ## TODO: Maybe allow anonymous groups for internal usage?
+    # Given the match group a name that contains non-alphanumeric character so
+    # that it can't conflict with user-defined match groups.
+    # TODO: Maybe allow anonymous groups for internal usage?
     MatchGroup("*HTTP_LINKS*")
     .addMatch(RegexMatch(URL_RE))
     .addAction(LinkAction()),
@@ -299,7 +299,7 @@ class TriggersManager:
             )
             return [child for _, child in children]
 
-        ## TODO: Handle per-world settings.
+        # TODO: Handle per-world settings.
         all_groups = settings[TRIGGERS]
 
         for trigger in children_in_order(all_groups):
@@ -310,7 +310,7 @@ class TriggersManager:
 
             for action_type, action_params in trigger[ACTIONS].asDict().items():
                 if action_type not in self.actionregistry:
-                    ## Well bummer. Corrupted settings? Not much we can do.
+                    # Well bummer. Corrupted settings? Not much we can do.
                     continue
                 action_class = self.actionregistry[action_type]
                 action, _ = action_class.factory(action_params)
@@ -325,8 +325,8 @@ class TriggersManager:
 
         if group is None:
 
-            ## If no group name is given: use the smallest available number as the
-            ## group name.
+            # If no group name is given: use the smallest available number as the
+            # group name.
 
             existing_number_groups = [
                 int(g) for g in self.groups.keys() if g.isdigit()
@@ -411,9 +411,9 @@ class TriggersManager:
         for matchgroup, matchresult in self.findMatches(line):
             for action in matchgroup.actions.values():
 
-                ## TODO: make this cleaner. Using the class is not nice. Ideally we'd
-                ## overhaul the action serialization system and reserve the 'name'
-                ## attribute for this.
+                # TODO: make this cleaner. Using the class is not nice. Ideally we'd
+                # overhaul the action serialization system and reserve the 'name'
+                # attribute for this.
                 action_class = id(action.__class__)
                 if (
                     action_class in already_performed_on_this_line
@@ -430,10 +430,10 @@ class TriggersManager:
 
     def save(self, settings):
 
-        ## Configuration is about to be saved. Serialize our current setup into the
-        ## configuration.
+        # Configuration is about to be saved. Serialize our current setup into the
+        # configuration.
 
-        ## TODO: Handle per-world settings.
+        # TODO: Handle per-world settings.
         try:
             del settings.nodes[TRIGGERS]
 

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## Globals.py
-##
-## This file describes various bits of global data.
-##
+#
+# Globals.py
+#
+# This file describes various bits of global data.
+#
 
 """
 
@@ -34,8 +34,8 @@ from PyQt5.QtGui import QTextFormat
 
 class FORMAT_PROPERTIES:
 
-    ## Format property identifiers are defined on the basis of Qt properties.
-    ## This saves us time when we apply them during the rendering process.
+    # Format property identifiers are defined on the basis of Qt properties.
+    # This saves us time when we apply them during the rendering process.
 
     BOLD = QTextFormat.FontWeight
     ITALIC = QTextFormat.FontItalic
@@ -51,7 +51,7 @@ class FORMAT_PROPERTIES:
 # it's jarring, and dark blue is unreadable on a black background.
 class ANSI_COLORS:
 
-    ## Dark colors:
+    # Dark colors:
 
     black = "#000000"
     red = "#800000"
@@ -62,7 +62,7 @@ class ANSI_COLORS:
     cyan = "#008080"
     lightgray = "#c0c0c0"
 
-    ## Light colors:
+    # Light colors:
 
     darkgray = "#808080"
     red_h = "#ff0000"
@@ -74,10 +74,10 @@ class ANSI_COLORS:
     white = "#ffffff"
 
 
-## ANSI colors for 256 color terminals:
+# ANSI colors for 256 color terminals:
 
 ANSI_COLORS_EXTENDED = {
-    ## Base colors:
+    # Base colors:
     0: ANSI_COLORS.black,
     1: ANSI_COLORS.red,
     2: ANSI_COLORS.green,
@@ -94,7 +94,7 @@ ANSI_COLORS_EXTENDED = {
     13: ANSI_COLORS.magenta_h,
     14: ANSI_COLORS.cyan_h,
     15: ANSI_COLORS.white,
-    ## Extended colors:
+    # Extended colors:
     16: "#000000",
     17: "#00005f",
     18: "#000087",
@@ -311,7 +311,7 @@ ANSI_COLORS_EXTENDED = {
     229: "#ffffaf",
     230: "#ffffd7",
     231: "#ffffff",
-    ## 24 shades of grey:
+    # 24 shades of grey:
     232: "#080808",
     233: "#121212",
     234: "#1c1c1c",
@@ -339,7 +339,7 @@ ANSI_COLORS_EXTENDED = {
 }
 
 
-## A regex to match URLs:
+# A regex to match URLs:
 
 
 def re_group(regex):
@@ -360,15 +360,15 @@ def re_either(*regexes):
 URL_RE = (
     r"\b"
     + re_either(
-        re_either(  ## Recognizable prefix
+        re_either(  # Recognizable prefix
             r"https?://",
             r"www\.",
         )
         + re_group(r"[\d\w_-]+\.")
-        + r"*\w+",  ## Host
-        re_group(r"\d{1,3}\.") + r"{3}" + r"\d{1,3}",  ## IP
+        + r"*\w+",  # Host
+        re_group(r"\d{1,3}\.") + r"{3}" + r"\d{1,3}",  # IP
     )
-    + re_optional(r":\d+")  ## Port
+    + re_optional(r":\d+")  # Port
     + re_optional(
         r"/"
         + re_optional(
@@ -421,13 +421,13 @@ def compute_closest_ansi_color(rgb):
     return curr_index
 
 
-## Special characters:
+# Special characters:
 
 ESC = b"\x1b"
 LEFTARROW = chr(0x2192)
 
 
-## Command-related globals.
+# Command-related globals.
 
 CMDCHAR = "/"
 HELP = "help"

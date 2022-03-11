@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## PipeUtils.py
-##
-## This file contains pipeline-related utilities.
-##
+#
+# PipeUtils.py
+#
+# This file contains pipeline-related utilities.
+#
 
 
 from .ChunkData import ChunkType
@@ -31,9 +31,9 @@ def insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks):
 
     for i, chunk in enumerate(chunkbuffer):
 
-        if not new_chunk:  ## Pop the next chunk to insert...
+        if not new_chunk:  # Pop the next chunk to insert...
 
-            if not new_chunks:  ## ... Assuming there is one, of course.
+            if not new_chunks:  # ... Assuming there is one, of course.
                 return
 
             target_pos, new_chunk = new_chunks.pop(0)

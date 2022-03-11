@@ -1,14 +1,14 @@
 #!/bin/bash
 
-## Setup directories:
+# Setup directories:
 
 _THIS_DIR="$(dirname $(realpath "$0"))"
 _OLD_DIR=$(pwd)
 
 
 
-## Try to find a dialog tool on the computer, to alert the user in case of
-## errors:
+# Try to find a dialog tool on the computer, to alert the user in case of
+# errors:
 
 _DIALOG=''
 
@@ -29,7 +29,7 @@ done
 
 
 
-## Did we find a Python 3 install?
+# Did we find a Python 3 install?
 
 if [[ -z $_PYTHON
       || ! $($_PYTHON -c "import sys ; print( sys.version_info[0] )") == "3" ]] ; then
@@ -41,7 +41,7 @@ fi
 
 
 
-## Build resources if needed.
+# Build resources if needed.
 
 _RCC=pyrcc5
 _BUILD_RESOURCES=0
@@ -61,7 +61,7 @@ if [[ $_BUILD_RESOURCES == "1" ]] ; then
     $_RCC resources/resources.qrc -o resources.py
     cd $_OLD_DIR
   else
-    ## pyrcc not found. :(
+    # pyrcc not found. :(
     errmsg="$_RCC not found. Unable to compile graphical resources. Spyrit will still run, but it won't look good."
     echo $errmsg
     [[ ! -z $_DIALOG ]] && $_DIALOG"$errmsg"
@@ -70,7 +70,7 @@ fi
 
 
 
-## Launch Spyrit, but only check dependencies:
+# Launch Spyrit, but only check dependencies:
 
 cd $_THIS_DIR/src
 errmsg=$($_PYTHON spyrit.py --check-dependencies-only)
@@ -80,7 +80,7 @@ cd $_OLD_DIR
 
 
 
-## Display the error.
+# Display the error.
 
 if [[ $errstate != 0 ]] ; then
   echo $errmsg
@@ -90,7 +90,7 @@ fi
 
 
 
-## Launch Spyrit for real.
+# Launch Spyrit for real.
 
 cd $_THIS_DIR/src
 $_PYTHON spyrit.py $@

@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## WorldUI.py
-##
-## Contains the WorldUI class, which manages a world's widget for reading and
-## writing.
-##
+#
+# WorldUI.py
+#
+# Contains the WorldUI class, which manages a world's widget for reading and
+# writing.
+#
 
 
 from PyQt5.QtCore import Qt
@@ -55,7 +55,7 @@ class WorldUI(QSplitter):
             self.windowAlert, ChunkType.PACKETBOUND | ChunkType.NETWORK
         )
 
-        ## Setup input and output UI.
+        # Setup input and output UI.
 
         self.outputui = SplittableTextView(self)
         self.addWidget(self.outputui)
@@ -103,19 +103,19 @@ class WorldUI(QSplitter):
         self.inputui.focusChanged.connect(self.setFocusProxy)
         self.secondaryinputui.focusChanged.connect(self.setFocusProxy)
 
-        ## Setup autocompleter.
+        # Setup autocompleter.
 
         self.autocompleter = Autocompleter()
         world.socketpipeline.addSink(self.autocompleter.sink)
 
-        ## Setup splitter.
+        # Setup splitter.
 
         self.setChildrenCollapsible(False)
         self.setSizes(world.state._ui._splitter._sizes)
 
         self.splitterMoved.connect(self.saveSplitterPosition)
 
-        ## Create toolbar and bind World-related actions.
+        # Create toolbar and bind World-related actions.
 
         self.toolbar = QToolBar()
         self.toolbar.setMovable(False)
@@ -202,7 +202,7 @@ class WorldUI(QSplitter):
 
         if is_now_visible:
 
-            ## Ensure the currently visible world has focus.
+            # Ensure the currently visible world has focus.
             self.setFocus()
 
     def windowAlert(self):
@@ -234,12 +234,12 @@ class WorldUI(QSplitter):
             ):
                 return
 
-        ## The following line is outside the above if statement because the world,
-        ## even if not connected, might be *trying* to connect.
+        # The following line is outside the above if statement because the world,
+        # even if not connected, might be *trying* to connect.
 
         self.world.disconnectFromWorld()
 
-        ## Then, schedule the closing of the world.
+        # Then, schedule the closing of the world.
         QTimer.singleShot(0, self.doClose)
 
     def doClose(self):
@@ -278,7 +278,7 @@ class WorldUI(QSplitter):
     @pyqtSlot("QWidget")
     def setFocusProxy(self, widget):
 
-        ## WORKAROUND: PyQt doesn't seem to properly declare the slot for this
-        ## method, so we must override it. :/
+        # WORKAROUND: PyQt doesn't seem to properly declare the slot for this
+        # method, so we must override it. :/
 
         super().setFocusProxy(widget)

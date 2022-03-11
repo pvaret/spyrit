@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## WorldInputUI.py
-##
-## This files holds the WorldInputUI class, which is the input box in which
-## you type stuff to be sent to the world.
-##
+#
+# WorldInputUI.py
+#
+# This files holds the WorldInputUI class, which is the input box in which
+# you type stuff to be sent to the world.
+#
 
 
 from PyQt5.QtCore import Qt
@@ -55,11 +55,11 @@ class WorldInputUI(QTextEdit):
         self.actionset.bindAction("historydown", self.historyDown)
         self.actionset.bindAction("autocomplete", self.autocomplete)
 
-        ## Apply configuration:
+        # Apply configuration:
 
         self.refresh()
 
-        ## And bind it to key changes:
+        # And bind it to key changes:
 
         for key in ["font.color", "font.name", "font.size", "background.color"]:
             self.settings._ui._input.onChange(key, self.refresh)
@@ -68,10 +68,10 @@ class WorldInputUI(QTextEdit):
 
     def refresh(self):
 
-        ## Unlike the output UI, which is very specific to the problem domain --
-        ## i.e. MU*s, the input box should be whatever's convenient to the
-        ## user, and already configured in their system. This is why we use
-        ## system default values when nothing specific is configured.
+        # Unlike the output UI, which is very specific to the problem domain --
+        # i.e. MU*s, the input box should be whatever's convenient to the
+        # user, and already configured in their system. This is why we use
+        # system default values when nothing specific is configured.
 
         style_elements = []
 
@@ -106,11 +106,11 @@ class WorldInputUI(QTextEdit):
 
     def keyPressEvent(self, e):
 
-        ## Custom key sequence handler: since all our shortcuts are configurable,
-        ## and are allowed to override the default QTextEdit shortcuts, we have to
-        ## override the key event handler to preempt the use of those shortcuts.
-        ## Note: This still doesn't work for Tab & Shift+Tab, which are handled
-        ## straight in QWidget.event() by Qt.
+        # Custom key sequence handler: since all our shortcuts are configurable,
+        # and are allowed to override the default QTextEdit shortcuts, we have to
+        # override the key event handler to preempt the use of those shortcuts.
+        # Note: This still doesn't work for Tab & Shift+Tab, which are handled
+        # straight in QWidget.event() by Qt.
 
         key = QKeySequence(int(e.modifiers()) + e.key())
 
@@ -123,7 +123,7 @@ class WorldInputUI(QTextEdit):
                     e.accept()
                     return
 
-        ## Special case: disallow overriding of Return/Enter.
+        # Special case: disallow overriding of Return/Enter.
 
         alt_ctrl_shift = e.modifiers() & (
             Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier
@@ -168,7 +168,7 @@ class WorldInputUI(QTextEdit):
 
         super().focusInEvent(e)
 
-        ## Notify other possible interested parties that this widget now has the
-        ## focus.
+        # Notify other possible interested parties that this widget now has the
+        # focus.
 
         self.focusChanged.emit(self)

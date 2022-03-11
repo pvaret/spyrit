@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## SocketPipeline.py
-##
-## This file holds the SocketPipeline class, which connects a Pipeline to a
-## socket and manages connection/disconnection and everything.
-##
+#
+# SocketPipeline.py
+#
+# This file holds the SocketPipeline class, which connects a Pipeline to a
+# socket and manages connection/disconnection and everything.
+#
 
 from typing import List
 
@@ -93,7 +93,7 @@ class SocketPipeline(QObject):
 
             if (
                 self.net_settings._ssl
-            ):  ## SSL was requested but is not available...
+            ):  # SSL was requested but is not available...
                 messages.warn(
                     "SSL functions not available; attempting "
                     "unencrypted connection instead..."
@@ -173,7 +173,7 @@ class SocketPipeline(QObject):
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.TIMEOUT))
 
         elif error == QAbstractSocket.RemoteHostClosedError:
-            pass  ## It's okay, we handle it as a disconnect.
+            pass  # It's okay, we handle it as a disconnect.
 
         else:
             self.pipeline.feedChunk(
@@ -183,10 +183,10 @@ class SocketPipeline(QObject):
     @pyqtSlot("const QList<QSslError> &")
     def handleSslErrors(self, errors):
 
-        ## We take note of the errors... and then discard them.
-        ## SSL validation errors are very common because many legitimate servers
-        ## are just not going to fork money over certificates, and nobody's
-        ## going to blame them for it.
+        # We take note of the errors... and then discard them.
+        # SSL validation errors are very common because many legitimate servers
+        # are just not going to fork money over certificates, and nobody's
+        # going to blame them for it.
 
         for err in errors:
             messages.warn("SSL Error: " + err.errorString())
@@ -212,7 +212,7 @@ class SocketPipeline(QObject):
 
         if not self.socket.state() == self.socket.ConnectedState:
 
-            ## Don't write anything if the socket is not connected.
+            # Don't write anything if the socket is not connected.
             return
 
         encoding = self.net_settings._encoding

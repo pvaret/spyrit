@@ -29,7 +29,7 @@ Setup a sink for the Pipeline:
 
 And test the behavior.
 
->>> ansi_seq = bytearray([27]) + b"[4m"  ## underline
+>>> ansi_seq = bytearray([27]) + b"[4m"  # underline
 >>> p.feedBytes( ansi_seq[0:1] )
 >>> p.sweepPrompt()
 >>> p.feedBytes( ansi_seq[1:] )

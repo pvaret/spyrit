@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## ChunkData.py
-##
-## This file holds the various bits of chunk data that are going to transit
-## through our pipeline.
-##
+#
+# ChunkData.py
+#
+# This file holds the various bits of chunk data that are going to transit
+# through our pipeline.
+#
 
 
 from enum import IntEnum
@@ -36,7 +36,7 @@ class ChunkTypeMismatch(Exception):
     pass
 
 
-## Define chunk types:
+# Define chunk types:
 
 
 class ChunkType(IntEnum):
@@ -57,7 +57,7 @@ class ChunkType(IntEnum):
         return sum(ct.value for ct in cls)
 
 
-## Chunk-related functions:
+# Chunk-related functions:
 
 
 def concat_chunks(chunk1, chunk2):
@@ -65,8 +65,8 @@ def concat_chunks(chunk1, chunk2):
     chunk1_type, chunk1_payload = chunk1
     chunk2_type, chunk2_payload = chunk2
 
-    ## Only chunks of the same type and whose data are strings can be
-    ## concatenated.
+    # Only chunks of the same type and whose data are strings can be
+    # concatenated.
     if chunk1_type != chunk2_type or type(chunk2_payload) not in (
         type(b""),
         type(""),
@@ -78,9 +78,9 @@ def concat_chunks(chunk1, chunk2):
             % (chunk1_type, chunk2_type)
         )
 
-    ## The chunks are compatible, so we concatenate their data.
-    ## We just need to be careful in case one of the two is None,
-    ## because None and strings don't add up too well.
+    # The chunks are compatible, so we concatenate their data.
+    # We just need to be careful in case one of the two is None,
+    # because None and strings don't add up too well.
     if chunk1_payload is None:
         return (chunk2_type, chunk2_payload or None)
 
@@ -104,7 +104,7 @@ def chunk_repr(chunk):
     return "<Chunk: %s; %r>" % (type_str, payload)
 
 
-## ANSI-related data:
+# ANSI-related data:
 
 ANSI_MAPPING = (
     (b"1", (FORMAT_PROPERTIES.BOLD, True)),
@@ -123,9 +123,9 @@ ANSI_MAPPING = (
     (b"35", (FORMAT_PROPERTIES.COLOR, (COL.magenta, COL.magenta_h))),
     (b"36", (FORMAT_PROPERTIES.COLOR, (COL.cyan, COL.cyan_h))),
     (b"37", (FORMAT_PROPERTIES.COLOR, (COL.lightgray, COL.white))),
-    ## Extended 256 color format:
+    # Extended 256 color format:
     (b"38", (FORMAT_PROPERTIES.COLOR, (None, None))),
-    ## Reset:
+    # Reset:
     (b"39", (FORMAT_PROPERTIES.COLOR, (None, COL.white))),
     (b"40", (FORMAT_PROPERTIES.BACKGROUND, COL.black)),
     (b"41", (FORMAT_PROPERTIES.BACKGROUND, COL.red)),
@@ -135,16 +135,16 @@ ANSI_MAPPING = (
     (b"45", (FORMAT_PROPERTIES.BACKGROUND, COL.magenta)),
     (b"46", (FORMAT_PROPERTIES.BACKGROUND, COL.cyan)),
     (b"47", (FORMAT_PROPERTIES.BACKGROUND, COL.white)),
-    ## Extended 256 color format:
+    # Extended 256 color format:
     (b"48", (FORMAT_PROPERTIES.BACKGROUND, None)),
-    ## Reset:
+    # Reset:
     (b"49", (FORMAT_PROPERTIES.BACKGROUND, None)),
 )
 
 ANSI_TO_FORMAT = dict(ANSI_MAPPING)
 
 
-## Network-related data:
+# Network-related data:
 
 
 class NetworkState(IntEnum):
@@ -161,7 +161,7 @@ class NetworkState(IntEnum):
     OTHERERROR = 9
 
 
-## Packet-related data:
+# Packet-related data:
 
 
 class PacketBoundary(IntEnum):
@@ -173,12 +173,12 @@ thePacketStartChunk = (ChunkType.PACKETBOUND, PacketBoundary.START)
 thePacketEndChunk = (ChunkType.PACKETBOUND, PacketBoundary.END)
 
 
-## Prompt-sweeper chunk:
+# Prompt-sweeper chunk:
 
 thePromptSweepChunk = (ChunkType.PROMPTSWEEP, None)
 
 
-## Flow control data:
+# Flow control data:
 
 
 class FlowControl(IntEnum):

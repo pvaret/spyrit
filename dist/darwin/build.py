@@ -67,7 +67,7 @@ PACKDIR = os.path.join(MOUNTROOT, "%s" % APPNAME, "%s.app" % APPNAME)
 
 def cleanup():
 
-    ## Removes build and dist folders as well as old images before running setup.
+    # Removes build and dist folders as well as old images before running setup.
 
     os.system(" ".join([RM, "-rf", BUILDDIR]))
     os.system(" ".join([RM, "-rf", DISTDIR]))
@@ -76,20 +76,23 @@ def cleanup():
 
 def build():
 
-    ## Uses py2app to create Mac application from source.
+    # Uses py2app to create Mac application from source.
 
     sys.argv.append("py2app")
 
     setup(
-        app=APP, data_files=[], options={"py2app": OPTIONS}, setup_requires=["py2app"]
+        app=APP,
+        data_files=[],
+        options={"py2app": OPTIONS},
+        setup_requires=["py2app"],
     )
 
 
 def prune():
 
-    ## Manually remove Frameworks or libraries we know will NOT be used. This
-    ## is a dangerous solution at best but can lead up to a final image 50 to 60%
-    ## smaller than the full set.
+    # Manually remove Frameworks or libraries we know will NOT be used. This
+    # is a dangerous solution at best but can lead up to a final image 50 to 60%
+    # smaller than the full set.
 
     for path in PRUNE:
 
@@ -99,13 +102,13 @@ def prune():
 
 def package():
 
-    ## Packages the built .app into a shiny DMG template we'll resize
-    ## on the spot to fit the genrated application's size as closely as
-    ## possible (to within a couple MB).
+    # Packages the built .app into a shiny DMG template we'll resize
+    # on the spot to fit the genrated application's size as closely as
+    # possible (to within a couple MB).
 
-    ## We first need to compute the necessary size for our final DMG.
-    ## Then we'll resize our template DMG, mount it and copy the app. Then
-    ## we unmount it, convert it to a compressed DMG and we're done.
+    # We first need to compute the necessary size for our final DMG.
+    # Then we'll resize our template DMG, mount it and copy the app. Then
+    # we unmount it, convert it to a compressed DMG and we're done.
 
     appSize = os.popen(" ".join([DUSAGE, "-sm", APPDIR])).read().split()[0]
     appSize = float(appSize)
@@ -114,7 +117,7 @@ def package():
     os.system(" ".join([HDIUTIL, CONVERT2SP]))
     os.system(" ".join([HDIUTIL, RESIZE % fullSize]))
 
-    ## Custom mountpoint must exist
+    # Custom mountpoint must exist
 
     os.system(" ".join([MKDIR, MOUNTROOT]))
 

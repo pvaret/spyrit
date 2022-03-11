@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## ActionSet.py
-##
-## This holds the ActionSet class, which abstracts the QActions used by the
-## software.
-##
+#
+# ActionSet.py
+#
+# This holds the ActionSet class, which abstracts the QActions used by the
+# software.
+#
 
 
 from PyQt5.QtCore import Qt
@@ -37,7 +37,7 @@ class ActionSet:
         self.closures = []
 
         self.actions = {
-            ## Global actions
+            # Global actions
             "about": ("About %s..." % settings._app._name, ":/app/icon"),
             "aboutqt": ("About Qt...", ":/icon/qt-logo"),
             "newworld": ("New world...", ":/icon/new_world"),
@@ -46,7 +46,7 @@ class ActionSet:
             "nexttab": ("Next Tab", None),
             "previoustab": ("Previous Tab", None),
             "closetab": ("Close Tab", ":/icon/close"),
-            ## Per-world actions
+            # Per-world actions
             "connect": ("Connect", ":/icon/connect"),
             "disconnect": ("Disconnect", ":/icon/disconnect"),
             "historyup": ("History up", ":/icon/up"),
@@ -63,8 +63,8 @@ class ActionSet:
             "toggle2ndinput": ("Toggle secondary input", None),
         }
 
-        ## Very few actions have a specific role, so it's more effective to put
-        ## roles in their own structure rather than in the one above.
+        # Very few actions have a specific role, so it's more effective to put
+        # roles in their own structure rather than in the one above.
 
         self.roles = {
             "about": QAction.AboutRole,
@@ -72,7 +72,7 @@ class ActionSet:
             "quit": QAction.QuitRole,
         }
 
-        ## Likewise, custom shortcut contexts.
+        # Likewise, custom shortcut contexts.
 
         self.contexts = {
             "historyup": Qt.WidgetShortcut,
@@ -93,8 +93,8 @@ class ActionSet:
 
         def set_action_shortcut():
 
-            ## Note how this closure uses 'settings', 'a' and 'action' as bound
-            ## variables.
+            # Note how this closure uses 'settings', 'a' and 'action' as bound
+            # variables.
 
             shortcut = settings[action]
 
@@ -103,13 +103,13 @@ class ActionSet:
             else:
                 a.setShortcut(QKeySequence())
 
-        ## Call it once:
+        # Call it once:
         set_action_shortcut()
 
         settings.onChange(action, set_action_shortcut)
 
-        ## Keep a reference to the closure, so it's not garbage-collected
-        ## right away.
+        # Keep a reference to the closure, so it's not garbage-collected
+        # right away.
         self.closures.append(set_action_shortcut)
 
         role = self.roles.get(action)
@@ -124,8 +124,8 @@ class ActionSet:
 
         a.triggered.connect(slot)
 
-        ## It is necessary to add the action to a widget before its shortcuts will
-        ## work.
+        # It is necessary to add the action to a widget before its shortcuts will
+        # work.
         self.parent.addAction(a)
 
         return a

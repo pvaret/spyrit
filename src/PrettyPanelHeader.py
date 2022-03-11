@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## PrettyPanelHeader.py
-##
-## This file holds the class PrettyPanelHeader, which is a widget that creates
-## a pretty header suitable for option panels and such.
-##
+#
+# PrettyPanelHeader.py
+#
+# This file holds the class PrettyPanelHeader, which is a widget that creates
+# a pretty header suitable for option panels and such.
+#
 
 
 from PyQt5.QtCore import Qt
@@ -30,13 +30,13 @@ from PyQt5.QtWidgets import QSizePolicy
 
 class PrettyPanelHeader(QFrame):
 
-    ## A few spacing constants used during the layout:
+    # A few spacing constants used during the layout:
 
     SPACING = 20
     MARGIN = 15
 
-    ## The header's stylesheet. The actual colors will be filled in when the
-    ## hader is instanciated.
+    # The header's stylesheet. The actual colors will be filled in when the
+    # hader is instanciated.
 
     STYLESHEET = """
     QFrame#header {
@@ -49,24 +49,24 @@ class PrettyPanelHeader(QFrame):
 
         super().__init__(parent)
 
-        ## The object gets a name so that we can apply the stylesheet to it
-        ## specifically.
+        # The object gets a name so that we can apply the stylesheet to it
+        # specifically.
 
         self.setObjectName("header")
 
-        ## The colors that are used in the stylesheet are retrieved from the
-        ## currently configured palette.
+        # The colors that are used in the stylesheet are retrieved from the
+        # currently configured palette.
 
         dark = self.palette().dark().color().name()
 
         self.setStyleSheet(self.STYLESHEET % dark)
 
-        ## Legacy setup for platforms that don't support stylesheets (yet).
+        # Legacy setup for platforms that don't support stylesheets (yet).
 
         self.setFrameShape(QFrame.StyledPanel)
         self.setFrameShadow(QFrame.Plain)
 
-        ## Layout stuff.
+        # Layout stuff.
 
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
 
@@ -77,7 +77,7 @@ class PrettyPanelHeader(QFrame):
             self.MARGIN, self.MARGIN, self.MARGIN, self.MARGIN
         )
 
-        ## And creation of the header's contents.
+        # And creation of the header's contents.
 
         if icon:
             i = QLabel(self)

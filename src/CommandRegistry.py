@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## CommandRegistry.py
-##
-## This holds the command registry that knows about commands and how to run
-## them.
-##
+#
+# CommandRegistry.py
+#
+# This holds the command registry that knows about commands and how to run
+# them.
+#
 
 
 from Globals import CMDCHAR
@@ -40,7 +40,7 @@ class CommandRegistry:
         cmdname = cmdname.strip().lower()
         self.commands[cmdname] = command_class()
 
-    ## TODO: rename this to lookup(), implement it on BaseCommand too.
+    # TODO: rename this to lookup(), implement it on BaseCommand too.
     def lookupCommand(self, command):
 
         return self.commands.get(command.strip().lower())
@@ -58,10 +58,10 @@ class CommandRegistry:
 
         cmdname, possible_cmdname, remainder = self.parseCommand(cmdline)
 
-        if not possible_cmdname:  ## Empty command line. Do nothing.
+        if not possible_cmdname:  # Empty command line. Do nothing.
             return
 
-        if not cmdname:  ## Command not found.
+        if not cmdname:  # Command not found.
 
             help_txt = """
                  %(possible_cmdname)s: no such command.
@@ -84,7 +84,7 @@ class CommandRegistry:
         args, kwargs = command.parseArgs(remainder)
         cmd_callable = command.getCallableForName(cmdname, subcmdname)
 
-        if cmd_callable is None:  ## Command not found!
+        if cmd_callable is None:  # Command not found!
 
             complete_cmdname = cmdname
 

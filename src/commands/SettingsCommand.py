@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## SettingsCommand.py
-##
-## Commands to manage the settings.
-##
+#
+# SettingsCommand.py
+#
+# Commands to manage the settings.
+#
 
 
 from typing import Any
@@ -78,7 +78,7 @@ class SettingsCommand(BaseCommand):
         try:
             del settings[setting]
 
-        except KeyError:  ## Playing it safe...
+        except KeyError:  # Playing it safe...
             pass
 
         return (True, None)
@@ -218,15 +218,15 @@ class SettingsCommand(BaseCommand):
         worldsettings = world.settings
         settings = QApplication.instance().core.settings
 
-        ## 1/ Retrieve list of settings to list, based on the argument given by the
-        ## user:
+        # 1/ Retrieve list of settings to list, based on the argument given by the
+        # user:
 
         if setting is not None:
             setting = setting.lower().strip()
 
         if (
             setting is None
-        ):  ## No argument given. Show only non-default settings.
+        ):  # No argument given. Show only non-default settings.
 
             list_settings = []
 
@@ -239,7 +239,7 @@ class SettingsCommand(BaseCommand):
                             list_settings.append(k)
                             break
 
-                    except KeyError:  ## Happens if a key exists only on worlds.
+                    except KeyError:  # Happens if a key exists only on worlds.
                         pass
 
             if not list_settings:
@@ -257,7 +257,7 @@ class SettingsCommand(BaseCommand):
 
             list_settings = [setting]
 
-        ## 2/ Format and display as a table:
+        # 2/ Format and display as a table:
 
         output = "Current settings:\n"
 
@@ -265,7 +265,7 @@ class SettingsCommand(BaseCommand):
 
         columns = [list_settings]
 
-        DEFAULT: Any = object()  ## marker for the case of default values.
+        DEFAULT: Any = object()  # marker for the case of default values.
 
         for node in (DEFAULT, settings, worldsettings):
 
@@ -278,8 +278,8 @@ class SettingsCommand(BaseCommand):
                 )
 
                 if s is None:
-                    ## The key doesn't exist in this context. This is likely a
-                    ## world-only key.
+                    # The key doesn't exist in this context. This is likely a
+                    # world-only key.
                     value = " "
 
                 elif node is DEFAULT:

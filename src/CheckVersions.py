@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## CheckVersions.py
-##
-## This file implements our dependency version checks.
-##
+#
+# CheckVersions.py
+#
+# This file implements our dependency version checks.
+#
 
 
 REQUIRED_PYTHON_VERSION = (3, 6)
@@ -52,7 +52,7 @@ def qt_version():
 
     from PyQt5.QtCore import qVersion
 
-    ## Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
+    # Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
     return tuple(int(c) for c in qVersion().split(".")[0:2])
 
 

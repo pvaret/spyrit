@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-## Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
-##
-## This file is part of Spyrit.
-##
-## Spyrit is free software; you can redistribute it and/or modify it under the
-## terms of the GNU General Public License version 2 as published by the Free
-## Software Foundation.
-##
-## You should have received a copy of the GNU General Public License along with
-## Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-## Fifth Floor, Boston, MA  02110-1301  USA
-##
+# Copyright (c) 2007-2021 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
 
-##
-## IniParser.py
-##
-## Implements the loading and saving of settings.
-##
+#
+# IniParser.py
+#
+# Implements the loading and saving of settings.
+#
 
 """
 :doctest:
@@ -227,14 +227,14 @@ SETTINGS_UPDATERS = {
 
 def parse_settings_version(text):
 
-    ## If not found, version is assumed to be the latest. This is not ideal, but
-    ## if we're not sure what version a given configuration file is, best not to
-    ## touch it.
+    # If not found, version is assumed to be the latest. This is not ideal, but
+    # if we're not sure what version a given configuration file is, best not to
+    # touch it.
     version = VERSION
 
     v = re.compile(r"^\#*\s*version\s*:\s*(?P<version>\d+)\s*$")
 
-    ## Look for version tag in first few lines:
+    # Look for version tag in first few lines:
     for i, line in enumerate(text.split("\n")):
 
         m = v.match(line)
@@ -243,7 +243,7 @@ def parse_settings_version(text):
             version = int(m.group("version"))
             break
 
-        if i > 2:  ## Tag not found in first 3 lines...
+        if i > 2:  # Tag not found in first 3 lines...
             break
 
     return version
@@ -264,7 +264,7 @@ def parse_settings(text):
             struct = updater(struct)
 
         else:
-            ## Well, bummer, can't update struct. Return as is and hope for the best.
+            # Well, bummer, can't update struct. Return as is and hope for the best.
             break
 
     return struct
@@ -276,7 +276,7 @@ def parse_ini_line(line):
 
     line = line.strip()
 
-    if line and line[0] in ("#", ";"):  ## Line is a comment.
+    if line and line[0] in ("#", ";"):  # Line is a comment.
         return None
 
     m = RE_SECTION.match(line)
@@ -332,7 +332,7 @@ def ini_to_struct(ini_text):
 
     KEYS, SECTIONS = 0, 1
 
-    struct = ({}, {})  ## keys, subsections
+    struct = ({}, {})  # keys, subsections
     current_struct = struct
 
     struct_stack = []
@@ -348,22 +348,22 @@ def ini_to_struct(ini_text):
         key = result["key"]
         section = result["section"]
 
-        if key and not skipsection:  ## This is a key/value line.
+        if key and not skipsection:  # This is a key/value line.
 
             current_struct[KEYS][key] = result["value"]
 
-        elif section:  ## This is a section line.
+        elif section:  # This is a section line.
 
             skipsection = False
 
             depth = cast(int, result["sectiondepth"])
 
             if depth > len(struct_stack) + 1:
-                ## Okay, this subsection is too deep, i.e. it looks something like:
-                ##   [[ some section ]]
-                ##   ...
-                ##    [[[[ some subsection ]]]]
-                ## ... which is not good. So we skip it.
+                # Okay, this subsection is too deep, i.e. it looks something like:
+                #   [[ some section ]]
+                #   ...
+                #    [[[[ some subsection ]]]]
+                # ... which is not good. So we skip it.
                 skipsection = True
                 continue
 

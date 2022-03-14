@@ -21,7 +21,8 @@
 
 
 try:
-    from PyQt5.QtMultimedia import QSound  # type: ignore - it's ok if this is missing.
+    # Ignore typing info, since the import might not exist.
+    from PyQt5.QtMultimedia import QSound  # type: ignore
 
 except ImportError:
     # QtMultimedia is optional and may not be installed.
@@ -32,10 +33,10 @@ class QSoundBackend:
 
     name = "Native (Qt)"
 
-    def isAvailable(self):
+    def isAvailable(self) -> bool:
 
         return QSound is not None
 
-    def play(self, soundfile):
+    def play(self, soundfile: str) -> None:
 
-        QSound.play(soundfile)
+        QSound is not None and QSound.play(soundfile)

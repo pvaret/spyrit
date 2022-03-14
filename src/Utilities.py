@@ -24,6 +24,9 @@
 
 """
 
+from types import TracebackType
+from typing import cast
+
 
 DEFAULT_ESCAPES = {
     "\n": "n",
@@ -36,14 +39,14 @@ DEFAULT_ESCAPES = {
 BS = "\\"
 
 
-def check_ssl_is_available():
+def check_ssl_is_available() -> bool:
 
     from PyQt5 import QtNetwork
 
     return QtNetwork.QSslSocket.supportsSsl()
 
 
-def quote(string, esc=BS):
+def quote(string: str, esc: str = BS) -> str:
     r"""
     Escapes typical control characters in the given string.
 
@@ -64,7 +67,7 @@ def quote(string, esc=BS):
     return string
 
 
-def unquote(string, esc=BS):
+def unquote(string: str, esc: str = BS) -> str:
     r"""
     Unquote a string. Reverse operation to quote().
 
@@ -79,7 +82,7 @@ def unquote(string, esc=BS):
 
     """
 
-    result = []
+    result: list[str] = []
     in_escape = False
     escapes = dict((v, k) for (k, v) in DEFAULT_ESCAPES.items())
 
@@ -99,13 +102,13 @@ def unquote(string, esc=BS):
     return "".join(result)
 
 
-def make_unicode_translation_table():
+def make_unicode_translation_table() -> dict[int, str]:
 
     from unicodedata import normalize, category
 
-    d = {}
+    d: dict[int, str] = {}
 
-    def is_latin_letter(letter):
+    def is_latin_letter(letter: str) -> bool:
 
         return category(letter)[0] == "L"
 
@@ -134,7 +137,7 @@ UNICODE_TRANSLATION_TABLE = make_unicode_translation_table()
 
 
 def remove_accents(
-    string: str, translation_table=UNICODE_TRANSLATION_TABLE
+    string: str, translation_table: dict[int, str] = UNICODE_TRANSLATION_TABLE
 ) -> str:
     """
     Filters the diacritics off Latin characters in the given Unicode string.
@@ -194,16 +197,23 @@ Spyrit will now close.</qt>
 """.strip()
 
 
-def handle_exception(exc_type, exc_value, exc_traceback):
+def handle_exception(
+    exc_type: type[BaseException],
+    exc_value: BaseException,
+    exc_traceback: TracebackType,
+):
 
     import sys
     import os.path
     import traceback
 
-    from PyQt5.QtWidgets import QMessageBox
     from PyQt5.QtWidgets import QApplication
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QWidget
 
-    app = QApplication.instance()
+    from Application import Application
+
+    app = cast(Application, QApplication.instance())
 
     # KeyboardInterrupt is a special case.
     # We don't raise the error dialog when it occurs.
@@ -214,7 +224,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
         return
 
-    filename, line, dummy, dummy = traceback.extract_tb(exc_traceback).pop()
+    filename, line, _, _ = traceback.extract_tb(exc_traceback).pop()
     filename = os.path.basename(filename)
     error = "%s: %s" % (exc_type.__name__, exc_value)
 
@@ -226,7 +236,10 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     args = dict(filename=filename, line=line, error=error)
 
     QMessageBox.critical(
-        window, "Oh dear...", CRASH_MSG % args, buttons=QMessageBox.Close
+        cast(QWidget, window),
+        "Oh dear...",
+        CRASH_MSG % args,
+        buttons=QMessageBox.StandardButton.Close,
     )
 
     print("Spyrit has closed due to an error. This is the full error report:")
@@ -234,13 +247,12 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     print(
         "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
     )
-    if app:
+    if app and app.core:
         app.core.atExit()
-
     sys.exit(1)
 
 
-def format_as_table(columns, headers):
+def format_as_table(columns: list[list[str]], headers: list[str]) -> str:
     """
     Format a set of columns and headers as a table.
 

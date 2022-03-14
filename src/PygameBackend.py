@@ -20,12 +20,12 @@
 #
 
 
-HAS_PYGAME = False
+_pygame_is_available = False
 
 try:
     import pygame  # type: ignore - it's okay if this is missing.
 
-    HAS_PYGAME = True
+    _pygame_is_available = True
 
 except ImportError:
     # Pygame not found. Bummer.
@@ -46,9 +46,9 @@ class PygameBackend:
 
         self.mixer = None
 
-    def isAvailable(self):
+    def isAvailable(self) -> bool:
 
-        if not HAS_PYGAME:
+        if not _pygame_is_available:
             return False
 
         self.mixer = pygame.mixer
@@ -61,13 +61,13 @@ class PygameBackend:
 
         return True
 
-    def play(self, soundfile):
+    def play(self, soundfile: str) -> None:
 
         if self.mixer:
             sound = self.mixer.Sound(soundfile)
             sound.play()
 
-    def __del__(self):
+    def __del__(self) -> None:
 
         if self.mixer:
             self.mixer.quit()

@@ -38,7 +38,7 @@ def safe_call(fn, args):
     # given function with the right number of parameters if more than required
     # are passed.
 
-    (fn_args, varargs, varkw, defaults) = inspect.getargspec(fn)
+    (fn_args, varargs, _, _) = inspect.getargspec(fn)
 
     if varargs:
         return fn(*args)

@@ -20,19 +20,17 @@
 #
 
 
-from typing import Any, Callable
+from typing import Callable
+
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSignal
 
-from .ChunkData import ChunkType
+from .ChunkData import ChunkType, ChunkT
 from .ChunkData import thePromptSweepChunk
 from .ChunkData import thePacketStartChunk, thePacketEndChunk
 
 from SingleShotTimer import SingleShotTimer
 from CallbackRegistry import CallbackRegistry
-
-
-_ChunkT = tuple[ChunkType, Any]
 
 
 class Pipeline(QObject):
@@ -47,7 +45,7 @@ class Pipeline(QObject):
         super().__init__()
 
         self.filters = []
-        self.outputBuffer: list[_ChunkT] = []
+        self.outputBuffer: list[ChunkT] = []
         self.sinks = dict((type_, CallbackRegistry()) for type_ in ChunkType)
 
         self.notification_registry = {}
@@ -55,25 +53,25 @@ class Pipeline(QObject):
         self.prompt_timer = SingleShotTimer(self.sweepPrompt)
         self.prompt_timer.setInterval(self.PROMPT_TIMEOUT)
 
-    def feedBytes(self, packet, blocksize=2048):
+    def feedBytes(self, packet: bytes, blocksize: int = 2048) -> None:
 
-        # 'packet' is a block of raw, unprocessed bytes. We make a chunk out of it
-        # and feed that to the real chunk sink.
+        # 'packet' is a block of raw, unprocessed bytes. We make a chunk out of
+        # it and feed that to the real chunk sink.
 
         while packet:
 
-            # Splitting the packet into chunks of limited size makes for slightly
-            # slower processing overall, but better responsiveness, when processing
-            # large packets.
-            bytes, packet = packet[:blocksize], packet[blocksize:]
+            # Splitting the packet into chunks of limited size makes for
+            # slightly slower processing overall, but better responsiveness,
+            # when processing large packets.
+            newbytes, packet = packet[:blocksize], packet[blocksize:]
 
             self.feedChunk(thePacketStartChunk, autoflush=False)
-            self.feedChunk((ChunkType.BYTES, bytes), autoflush=False)
+            self.feedChunk((ChunkType.BYTES, newbytes), autoflush=False)
             self.feedChunk(thePacketEndChunk)
 
         self.prompt_timer.start()
 
-    def sweepPrompt(self):
+    def sweepPrompt(self) -> None:
 
         self.feedChunk(thePromptSweepChunk)
 
@@ -91,11 +89,11 @@ class Pipeline(QObject):
         if autoflush:
             self.flushOutputBuffer()
 
-    def appendToOutputBuffer(self, chunk):
+    def appendToOutputBuffer(self, chunk) -> None:
 
         self.outputBuffer.append(chunk)
 
-    def flushOutputBuffer(self):
+    def flushOutputBuffer(self) -> None:
 
         self.flushBegin.emit()
 
@@ -108,7 +106,7 @@ class Pipeline(QObject):
 
         self.outputBuffer = []
 
-    def addFilter(self, filterclass, **kwargs):
+    def addFilter(self, filterclass, **kwargs) -> None:
 
         kwargs.setdefault("context", self)  # Set up context if needed.
 
@@ -122,8 +120,10 @@ class Pipeline(QObject):
         self.filters.append(filter)
 
     def addSink(
-        self, callback: Callable[[ChunkType], None], types=ChunkType.all()
-    ):
+        self,
+        callback: Callable[[ChunkType], None],
+        types: int = ChunkType.all(),
+    ) -> None:
 
         # 'callback' should be a callable that accepts and handles a chunk.
 
@@ -139,19 +139,21 @@ class Pipeline(QObject):
 
         return data
 
-    def resetInternalState(self):
+    def resetInternalState(self) -> None:
 
         for f in self.filters:
             f.resetInternalState()
 
-    def notify(self, notification, *args):
+    def notify(self, notification: str, *args: str) -> None:
 
         callbacks = self.notification_registry.get(notification)
 
         if callbacks:
             callbacks.triggerAll(*args)
 
-    def bindNotificationListener(self, notification, callback):
+    def bindNotificationListener(
+        self, notification: str, callback: Callable[..., None]
+    ) -> None:
 
         if notification not in self.notification_registry:
             self.notification_registry[notification] = CallbackRegistry()

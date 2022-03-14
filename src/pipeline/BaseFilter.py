@@ -19,9 +19,12 @@
 #
 
 
-from .ChunkData import ChunkType
+from typing import Callable, Iterable, Optional
+
+from .ChunkData import ChunkType, ChunkT
 from .ChunkData import concat_chunks
 from .ChunkData import ChunkTypeMismatch
+from .Pipeline import Pipeline
 
 
 class BaseFilter:
@@ -29,21 +32,21 @@ class BaseFilter:
     # This class attribute lists the chunk types that this filter will process.
     # Those unlisted will be passed down the filter chain untouched.
 
-    relevant_types = ChunkType.all()
+    relevant_types: int = ChunkType.all()
 
-    def __init__(self, context=None):
+    def __init__(self, context: Pipeline):
 
-        self.sink = None
-        self.context = context
-        self.postponedChunk = []
+        self.sink: Callable[[ChunkT], None] = lambda _: None
+        self.context: Pipeline = context
+        self.postponedChunk: Optional[ChunkT] = None
 
         self.resetInternalState()
 
-    def setSink(self, sink):
+    def setSink(self, sink: Callable[[ChunkT], None]) -> None:
 
         self.sink = sink
 
-    def postpone(self, chunk):
+    def postpone(self, chunk: ChunkT) -> None:
 
         if self.postponedChunk:
             raise Exception("Duplicate postponed chunk!")
@@ -51,7 +54,7 @@ class BaseFilter:
         else:
             self.postponedChunk = chunk
 
-    def processChunk(self, chunk):
+    def processChunk(self, chunk: ChunkT) -> Iterable[ChunkT]:
 
         # This is the default implementation, which does nothing.
         # Override this to implement your filter.
@@ -59,17 +62,17 @@ class BaseFilter:
 
         yield chunk
 
-    def resetInternalState(self):
+    def resetInternalState(self) -> None:
 
         # Initialize the filter at the beginning of a connection (or when
-        # reconnecting). For instance the Telnet filter would drop all negociated
-        # options.
+        # reconnecting). For instance the Telnet filter would drop all
+        # negociated options.
         # Override this when implementing your filter if your filter uses any
         # internal data.
 
-        self.postponedChunk = []
+        self.postponedChunk = None
 
-    def concatPostponed(self, chunk):
+    def concatPostponed(self, chunk: ChunkT):
 
         if not self.postponedChunk:
             return chunk
@@ -97,7 +100,7 @@ class BaseFilter:
 
         return chunk
 
-    def feedChunk(self, chunk):
+    def feedChunk(self, chunk: ChunkT):
 
         chunk_type, _ = chunk
 
@@ -128,14 +131,16 @@ class BaseFilter:
         return data
 
     # TODO: Check if this is used anywhere. Else, delete.
-    def notify(self, notification, *args):
+    def notify(self, notification: str, *args: str) -> None:
 
         if not self.context:
             return
 
         self.context.notify(notification, *args)
 
-    def bindNotificationListener(self, notification, callback):
+    def bindNotificationListener(
+        self, notification: str, callback: Callable[..., None]
+    ):
 
         if not self.context:
             return

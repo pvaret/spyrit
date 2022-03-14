@@ -20,6 +20,7 @@
 
 
 from enum import IntEnum
+from typing import Any
 
 from Globals import FORMAT_PROPERTIES
 from Globals import ANSI_COLORS as COL
@@ -55,10 +56,13 @@ class ChunkType(IntEnum):
         return sum(ct.value for ct in cls)
 
 
+ChunkT = tuple[ChunkType, Any]
+
+
 # Chunk-related functions:
 
 
-def concat_chunks(chunk1, chunk2):
+def concat_chunks(chunk1: ChunkT, chunk2: ChunkT) -> ChunkT:
 
     chunk1_type, chunk1_payload = chunk1
     chunk2_type, chunk2_payload = chunk2
@@ -66,8 +70,8 @@ def concat_chunks(chunk1, chunk2):
     # Only chunks of the same type and whose data are strings can be
     # concatenated.
     if chunk1_type != chunk2_type or type(chunk2_payload) not in (
-        type(b""),
-        type(""),
+        bytes,
+        str,
         bytearray,
     ):
 
@@ -86,15 +90,10 @@ def concat_chunks(chunk1, chunk2):
         return (chunk1_type, chunk1_payload + (chunk2_payload or ""))
 
 
-def chunk_repr(chunk):
+def chunk_repr(chunk: ChunkT) -> str:
 
     chunk_type, payload = chunk
-
-    if not isinstance(chunk_type, ChunkType):
-        type_str = "(unknown)"
-
-    else:
-        type_str = chunk_type.name
+    type_str = chunk_type.name
 
     if payload is None:
         return "<Chunk: %s>" % type_str
@@ -167,13 +166,13 @@ class PacketBoundary(IntEnum):
     END = 1
 
 
-thePacketStartChunk = (ChunkType.PACKETBOUND, PacketBoundary.START)
-thePacketEndChunk = (ChunkType.PACKETBOUND, PacketBoundary.END)
+thePacketStartChunk: ChunkT = (ChunkType.PACKETBOUND, PacketBoundary.START)
+thePacketEndChunk: ChunkT = (ChunkType.PACKETBOUND, PacketBoundary.END)
 
 
 # Prompt-sweeper chunk:
 
-thePromptSweepChunk = (ChunkType.PROMPTSWEEP, None)
+thePromptSweepChunk: ChunkT = (ChunkType.PROMPTSWEEP, None)
 
 
 # Flow control data:

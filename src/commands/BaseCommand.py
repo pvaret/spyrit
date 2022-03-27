@@ -22,7 +22,9 @@ from PyQt5.QtWidgets import QApplication
 
 from .CommandParsing import parse_command
 from .CommandParsing import parse_arguments
+
 from Globals import HELP, CMDCHAR
+from World import World
 
 
 class BaseCommand:
@@ -33,7 +35,7 @@ class BaseCommand:
 
     def __init__(self):
 
-        self.subcmds = {}
+        self.subcmds: dict[str, str] = {}
 
         for name in dir(self):
 
@@ -42,12 +44,14 @@ class BaseCommand:
             if callable(attr) and name.startswith(self.CMD + "_"):
                 self.subcmds[name[len(self.CMD + "_") :].lower()] = attr
 
-    def cmd(self, world, *args, **kwargs):
+    def cmd(self, world: World, *args: str, **kwargs: str):
 
         # Default implementation that only displays help. Overload this in
         # subclasses.
 
-        commands = QApplication.instance().core.commands
+        app = QApplication.instance()
+        assert app is not None
+        commands = app.core.commands
 
         # TODO: Clean this up; store cmd name when registering it.
         cmdname = [k for k, v in commands.commands.items() if v is self][0]

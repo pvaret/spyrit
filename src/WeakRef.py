@@ -29,21 +29,31 @@
 import types
 import weakref
 
-from typing import Callable, Generic, Optional, TypeVar, Union, cast
+from typing import Any, Callable, Generic, Optional, TypeVar, Union, cast
 
 
-_CallableT = TypeVar("_CallableT", bound=Callable)
+_CallableT = TypeVar("_CallableT", types.MethodType, types.FunctionType, type)
 
 
 class FunctionRef:
     def __init__(
         self,
-        fn: types.FunctionType,
-        callback: Callable[[weakref.ReferenceType], None],
+        fn: Union[types.FunctionType, type],
+        callback: Callable[
+            [
+                weakref.ReferenceType[
+                    Union[
+                        types.FunctionType,
+                        type,
+                    ]
+                ]
+            ],
+            None,
+        ],
     ):
         self._fnref = weakref.ref(fn, callback)
 
-    def ref(self) -> Optional[types.FunctionType]:
+    def ref(self) -> Optional[Union[types.FunctionType, type]]:
         return self._fnref()
 
 
@@ -51,9 +61,9 @@ class MethodRef:
     def __init__(
         self,
         fn: types.MethodType,
-        callback: Callable[[weakref.ReferenceType], None],
+        callback: Callable[[weakref.ReferenceType[Any]], None],
     ):
-        self._objref = weakref.ref(fn.__self__, callback)
+        self._objref = weakref.ref(fn.__self__)
         self._fnref = weakref.ref(fn.__func__, callback)
 
     def ref(self) -> Optional[types.MethodType]:
@@ -62,11 +72,10 @@ class MethodRef:
         fn = self._fnref()
         obj = self._objref()
 
-        if None in (fn, obj):
+        if fn is None or obj is None:
             return None
 
-        assert fn is not None  # Help out the type checker.
-        return types.MethodType(fn, obj)
+        return types.MethodType(cast(Callable[..., Any], fn), obj)
 
 
 class WeakCallableRef(Generic[_CallableT]):
@@ -74,9 +83,9 @@ class WeakCallableRef(Generic[_CallableT]):
     """
     Implements a weakref for callables, be they functions or methods.
 
-    Due to implementation details, native Python weakrefs on bound methods always
-    expire right away. WeakCallableRef, on the other hand, only expires bound
-    method references when the object the method is bound to expires. It
+    Due to implementation details, native Python weakrefs on bound methods
+    always expire right away. WeakCallableRef, on the other hand, only expires
+    bound method references when the object the method is bound to expires. It
     otherwise behaves like native Python weakref for other callables (functions
     and static methods).
 
@@ -147,7 +156,9 @@ class WeakCallableRef(Generic[_CallableT]):
     def __init__(
         self,
         fn: _CallableT,
-        callback: Callable[["WeakCallableRef"], None] = None,
+        callback: Optional[
+            Callable[["WeakCallableRef[_CallableT]"], None]
+        ] = None,
     ):
         self._ref: Optional[Union[FunctionRef, MethodRef]]
         self._callback = callback
@@ -163,7 +174,7 @@ class WeakCallableRef(Generic[_CallableT]):
         else:
             raise TypeError("%r must be a function, class or method" % fn)
 
-    def markDead(self, unused_objref) -> None:
+    def markDead(self, _: Any) -> None:
 
         if self._ref is not None:
 

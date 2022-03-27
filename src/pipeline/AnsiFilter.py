@@ -58,7 +58,7 @@ class AnsiFilter(BaseFilter):
         self.highlighted, self.current_colors = self.defaultColors()
         super().resetInternalState()
 
-    def defaultColors(self):
+    def defaultColors(self) -> tuple[bool, tuple[str, str]]:
 
         return (
             False,  # highlight
@@ -103,7 +103,8 @@ class AnsiFilter(BaseFilter):
 
                 param = list_params.pop(0)
 
-                # Special case: extended 256 color codes require special treatment.
+                # Special case: extended 256 color codes require special
+                # treatment.
 
                 if len(list_params) >= 2 and param in [b"38", b"48"]:
 
@@ -172,7 +173,8 @@ class AnsiFilter(BaseFilter):
                     if False:  # Ignore 'bold' meaning of this ANSI code?
                         continue  # TODO: Make it a parameter.
 
-                # Other cases: italic, underline and such. Just pass the value along.
+                # Other cases: italic, underline and such. Just pass the value
+                # along.
 
                 format[prop] = value
 
@@ -191,8 +193,8 @@ class AnsiFilter(BaseFilter):
             if possible_unfinished:
 
                 # Remaining text ends with an unfinished ANSI sequence!
-                # So we feed what remains of the raw text, if any, down the pipe, and
-                # then postpone the unfinished ANSI sequence.
+                # So we feed what remains of the raw text, if any, down the
+                # pipe, and then postpone the unfinished ANSI sequence.
 
                 startmatch = possible_unfinished.start()
 

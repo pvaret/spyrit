@@ -26,7 +26,7 @@ class DebugCommand(BaseCommand):
 
     # No docstring. This is not a user-visible command.
 
-    def cmd_raise(self, world, *args):
+    def cmd_raise(self, _, *args: str) -> None:
 
         # No docstring. This is not a user-visible subcommand.
 
@@ -34,7 +34,7 @@ class DebugCommand(BaseCommand):
 
         if args:
 
-            exc = getattr(builtins, args[0], None)
+            exc = getattr(builtins, args[0], Exception)
 
             try:
                 is_an_exception = issubclass(exc, BaseException)
@@ -59,7 +59,7 @@ class DebugCommand(BaseCommand):
         if not f:
             return
 
-        exec(f.read())
+        exec(f.read())  # nosec - tell bandit we know this is unsafe.
 
     def cmd_load(self, world, filename=None, blocksize=None):
 

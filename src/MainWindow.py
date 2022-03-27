@@ -39,6 +39,7 @@ from TabDelegate import TabDelegate
 from TabIconBlinker import TabIconBlinker
 from TabWidget import FallbackTabWidget
 from TabWidget import TabWidget
+from World import World
 from WorldUI import WorldUI
 
 
@@ -66,7 +67,7 @@ class MainWindow(QMainWindow):
         # Create the central widget.
 
         default_pane = QLabel()
-        default_pane.setAlignment(Qt.AlignCenter)
+        default_pane.setAlignment(Qt.AlignmentFlag.AlignCenter)
         default_pane.setPixmap(QPixmap(":/app/logo"))
 
         self.tabwidget = TabWidget(self)
@@ -103,7 +104,7 @@ class MainWindow(QMainWindow):
         # Create menus.
 
         menubar = self.menuBar()
-        menubar.setContextMenuPolicy(Qt.PreventContextMenu)
+        menubar.setContextMenuPolicy(Qt.ContextMenuPolicy.PreventContextMenu)
 
         self.menu_file = menubar.addMenu("File")
         self.menu_file.addAction(self.action_quit)
@@ -123,8 +124,12 @@ class MainWindow(QMainWindow):
         self.toolbar_main = QToolBar("Main Toolbar", self)
         self.toolbar_main.setMovable(False)
         self.toolbar_main.setFloatable(False)
-        self.toolbar_main.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.toolbar_main.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolbar_main.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.PreventContextMenu
+        )
+        self.toolbar_main.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+        )
 
         self.addToolBar(self.toolbar_main)
 
@@ -137,7 +142,7 @@ class MainWindow(QMainWindow):
         # menu popup mode.
 
         connectbutton = self.toolbar_main.widgetForAction(connectaction)
-        connectbutton.setPopupMode(QToolButton.InstantPopup)
+        connectbutton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
 
         # Add remaining toolbar actions.
 
@@ -257,7 +262,7 @@ class MainWindow(QMainWindow):
 
         return dummy
 
-    def newWorldUI(self, world):
+    def newWorldUI(self, world: World) -> int:
 
         self.setUpdatesEnabled(False)
 

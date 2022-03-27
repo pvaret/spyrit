@@ -30,9 +30,9 @@ class SearchManager:
         self.settings = settings
 
         self.cursor = None
-        self.previous_search = None
+        self.previous_search: str = ""
 
-    def find(self, string=None):
+    def find(self, string: str = ""):
 
         # An empty search string means repeating the last search.
 
@@ -65,8 +65,8 @@ class SearchManager:
 
         if cursor.isNull():  # String was not found!
 
-            # Clear selection by setting an empty cursor, and scroll back to bottom
-            # of window.
+            # Clear selection by setting an empty cursor, and scroll back to
+            # bottom of window.
 
             cursor = QTextCursor(document)
             textedit.setTextCursor(cursor)

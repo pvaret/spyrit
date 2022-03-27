@@ -22,11 +22,12 @@
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtGui import QTextCharFormat
 
-
-from Globals import LEFTARROW
 from FormatStack import FormatStack
-from SearchManager import SearchManager
+from Globals import LEFTARROW
 from QTextFormatFormatter import QTextFormatFormatter
+from SearchManager import SearchManager
+from SplittableTextView import SplittableTextView
+from World import World
 
 from pipeline.ChunkData import ChunkType
 from pipeline.ChunkData import FlowControl
@@ -39,7 +40,7 @@ NL = "\n"
 
 
 class OutputManager:
-    def __init__(self, world, textview):
+    def __init__(self, world: World, textview: SplittableTextView):
 
         self.world = world
         self.view_settings = world.settings._ui._view

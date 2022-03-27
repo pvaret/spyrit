@@ -115,6 +115,6 @@ class AboutDialog(QDialog):
 
         button = QPushButton("Ok")
         self.layout().addWidget(button)
-        self.layout().setAlignment(button, Qt.AlignHCenter)
+        self.layout().setAlignment(button, Qt.AlignmentFlag.AlignHCenter)
 
         button.clicked.connect(self.accept)

@@ -61,7 +61,9 @@ class World(QObject):
 
         super().__init__()
 
-        worldsmanager = QApplication.instance().core.worlds
+        app = QApplication.instance()
+        assert app is not None
+        worldsmanager = app.core.worlds
         if not settings:
             settings = worldsmanager.newWorldSettings()
         if not state:
@@ -82,7 +84,7 @@ class World(QObject):
 
         self.status = Status.DISCONNECTED
 
-        self.socketpipeline = SocketPipeline(settings)
+        self.socketpipeline: SocketPipeline = SocketPipeline(settings)
         self.socketpipeline.addSink(self.sink, ChunkType.NETWORK)
 
     def title(self):
@@ -99,7 +101,9 @@ class World(QObject):
 
     def save(self):
 
-        QApplication.instance().core.worlds.saveWorld(self)
+        app = QApplication.instance()
+        assert app is not None
+        app.core.worlds.saveWorld(self)
 
     def setUI(self, worldui):
 
@@ -171,11 +175,12 @@ class World(QObject):
         base, ext = os.path.splitext(logfile)
 
         if self.last_log_filename and self.last_log_filename.startswith(base):
-            # File exists but already seems to belong to this session. Keep using
-            # it.
+            # File exists but already seems to belong to this session. Keep
+            # using it.
             return self.last_log_filename
 
-        # File exists. Compute an available variant in the form "filename_X.ext".
+        # File exists. Compute an available variant in the form
+        # "filename_X.ext".
         candidate = base + "_%d" + ext
         existing = set(glob(base + "_*" + ext))
 
@@ -322,14 +327,16 @@ class World(QObject):
 
     def flushPendingInput(self):
 
+        app = QApplication.instance()
+        assert app is not None
+
         while self.input:
 
             text = self.input.pop(0)
 
             if text.startswith(CMDCHAR):
-                QApplication.instance().core.commands.runCmdLine(
-                    self, text[len(CMDCHAR) :]
-                )
+
+                app.core.commands.runCmdLine(self, text[len(CMDCHAR) :])
 
             else:
                 self.socketpipeline.send(text + "\r\n")

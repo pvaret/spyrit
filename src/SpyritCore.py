@@ -64,12 +64,12 @@ class SpyritCore(QObject):
             "Type %shelp for help on available commands." % CMDCHAR,
         )
 
-        # Note the use of iter(), so the MOTD is only displayed once for the whole
-        # application.
+        # Note the use of iter(), so the MOTD is only displayed once for the
+        # whole application.
         self.motd = iter(MOTD)
 
     @pyqtSlot()
-    def atExit(self):
+    def atExit(self) -> None:
 
         self.tmprc.cleanup()
         self.triggers.save(self.settings)

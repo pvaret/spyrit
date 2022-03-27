@@ -17,7 +17,7 @@
 #
 
 
-from typing import Optional
+from typing import Callable, Optional
 
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QObject
@@ -26,6 +26,7 @@ from PyQt5.QtCore import QObject
 # Settings "derived" from the root setting graph should be accessible through a
 # dedicated API, without poking at the low-level details of settings Nodes.
 # from settings.Settings import BaseNode
+from settings.Settings import Settings, Node
 from SpyritSettings import WORLDS
 from Utilities import normalize_text
 from World import World
@@ -37,12 +38,12 @@ class WorldsSettings:
     WorldsManager requires.
     """
 
-    def __init__(self, settings, state):
+    def __init__(self, settings: Settings, state: Settings):
 
-        self.settings = settings[WORLDS]
-        self.state = state[WORLDS]
+        self.settings: Node = settings[WORLDS]
+        self.state: Node = state[WORLDS]
 
-    def getAllWorldSettings(self):
+    def getAllWorldSettings(self) -> dict[str, Node]:
 
         return self.settings.nodes.values()
 
@@ -117,7 +118,8 @@ class WorldsManager(QObject):
 
         # Return world names, sorted by normalized value.
         worlds = (world._name for world in self.ws.getAllWorldSettings())
-        return sorted(worlds, key=lambda s: self.normalize(s))
+        key: Callable[[str], str] = lambda s: self.normalize(s)
+        return sorted(worlds, key=key)
 
     def newWorldSettings(self, host="", port=0, ssl=False, name=""):
 

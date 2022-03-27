@@ -20,6 +20,8 @@
 
 from .BaseCommand import BaseCommand
 
+from World import World
+
 
 class FindCommand(BaseCommand):
 
@@ -38,6 +40,7 @@ class FindCommand(BaseCommand):
 
     """
 
-    def cmd(self, world, text=None):
+    def cmd(self, world: World, text: str = ""):
 
+        assert world.worldui is not None
         world.worldui.output_manager.findInHistory(text)

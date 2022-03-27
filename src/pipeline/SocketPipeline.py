@@ -18,8 +18,6 @@
 # socket and manages connection/disconnection and everything.
 #
 
-from typing import List
-
 from PyQt5.QtCore import QObject
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication
@@ -49,7 +47,9 @@ class SocketPipeline(QObject):
 
         self.net_settings = settings._net
 
-        self.triggersmanager = QApplication.instance().core.triggers
+        app = QApplication.instance()
+        assert app is not None
+        self.triggersmanager = app.core.triggers
 
         self.pipeline = Pipeline()
 
@@ -63,7 +63,7 @@ class SocketPipeline(QObject):
 
         self.using_ssl = False
         self.socket = None
-        self.buffer: List[bytes] = []
+        self.buffer: list[bytes] = []
 
         self.flush_timer = SingleShotTimer(self.flushBuffer)
 
@@ -221,6 +221,6 @@ class SocketPipeline(QObject):
         self.socket.write(databytes)
         self.socket.flush()
 
-    def addSink(self, sink, types=ChunkType.all()):
+    def addSink(self, sink, types: int = ChunkType.all()) -> None:
 
         self.pipeline.addSink(sink, types)

@@ -25,12 +25,17 @@ from PyQt5.QtWidgets import QApplication
 from .BaseCommand import BaseCommand
 from Globals import CMDCHAR
 from Globals import HELP
+from World import World
 
 
 class HelpCommand(BaseCommand):
-    def cmd(self, world, cmdname=None, subcmdname=None):
+    def cmd(
+        self, world: World, cmdname: str = "", subcmdname: str = ""
+    ) -> None:
 
-        commands = QApplication.instance().core.commands
+        app = QApplication.instance()
+        assert app is not None
+        commands = app.core.commands
 
         if cmdname:
 

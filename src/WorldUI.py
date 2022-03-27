@@ -19,6 +19,8 @@
 #
 
 
+from typing import Optional
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QSize
 from PyQt5.QtCore import QTimer
@@ -27,27 +29,29 @@ from PyQt5.QtCore import pyqtSignal
 
 from PyQt5.QtWidgets import QStyle
 from PyQt5.QtWidgets import QToolBar
+from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QSplitter
 from PyQt5.QtWidgets import QApplication
 
 from pipeline.ChunkData import ChunkType
 from ActionSet import ActionSet
-from WorldInputUI import WorldInputUI
 from Autocompleter import Autocompleter
-from OutputManager import OutputManager
 from ConfirmDialog import confirmDialog
+from OutputManager import OutputManager
 from SplittableTextView import SplittableTextView
+from World import World
+from WorldInputUI import WorldInputUI
 
 
 class WorldUI(QSplitter):
 
     requestAttention = pyqtSignal()
 
-    def __init__(self, world, parent=None):
+    def __init__(self, world: World, parent: Optional[QWidget] = None):
 
-        super().__init__(Qt.Vertical, parent)
+        super().__init__(Qt.Orientation.Vertical, parent)
 
-        self.world = world
+        self.world: World = world
 
         self.world.socketpipeline.addSink(
             self.windowAlert, ChunkType.PACKETBOUND | ChunkType.NETWORK
@@ -174,13 +178,17 @@ class WorldUI(QSplitter):
 
         self.world.setUI(self)
 
-        for line in QApplication.instance().core.motd:
+        app = QApplication.instance()
+        assert app is not None
+        for line in app.core.motd:
             self.world.info(line)
 
     def updateToolBarIcons(self, size):
 
         if not size:
-            size = QApplication.style().pixelMetric(QStyle.PM_ToolBarIconSize)
+            size = QApplication.style().pixelMetric(
+                QStyle.PixelMetric.PM_ToolBarIconSize
+            )
 
         new_size = QSize(size, size)
         self.toolbar.setIconSize(new_size)
@@ -205,11 +213,12 @@ class WorldUI(QSplitter):
 
     def windowAlert(self):
 
-        if not self.world:
+        app = QApplication.instance()
+        if not self.world or app is None:
             return
 
         if self.world.settings._ui._window._alert:
-            QApplication.instance().alert(self.window())
+            app.alert(self.window())
 
         self.requestAttention.emit()
 
@@ -219,7 +228,7 @@ class WorldUI(QSplitter):
         self.world.state._ui._splitter._sizes = self.sizes()
 
     @pyqtSlot()
-    def close(self):
+    def close(self) -> bool:
 
         if self.world.isConnected():
 
@@ -230,15 +239,17 @@ class WorldUI(QSplitter):
                 "Close tab",
                 self,
             ):
-                return
+                return False
 
-        # The following line is outside the above if statement because the world,
-        # even if not connected, might be *trying* to connect.
+        # The following line is outside the above if statement because the
+        # world, even if not connected, might be *trying* to connect.
 
         self.world.disconnectFromWorld()
 
         # Then, schedule the closing of the world.
         QTimer.singleShot(0, self.doClose)
+
+        return True
 
     def doClose(self):
 
@@ -246,7 +257,8 @@ class WorldUI(QSplitter):
 
         self.setParent(None)  # type: ignore - actually a valid call.
 
-        # Manual cleanup. We want to avoid leaking references all over the place.
+        # Manual cleanup. We want to avoid leaking references all over the
+        # place.
         # TODO: Add some kind of test to check whether this is still needed.
         del self.world.worldui
         del self.world.logger
@@ -258,19 +270,17 @@ class WorldUI(QSplitter):
         del self.secondaryinputui.world
         del self.secondaryinputui.history
         del self.secondaryinputui
+        del self.outputui
 
         for f in self.world.socketpipeline.pipeline.filters:
-            f.context = None
-            f.sink = None
+            del f.context
+            del f.sink
 
-        self.world.socketpipeline.pipeline = None
-        self.world.socketpipeline = None
-        self.outputui = None
-        self.inputui = None
-        self.secondaryinputui = None
-        self.output_manager = None
+        del self.world.socketpipeline.pipeline
+        del self.world.socketpipeline
+        del self.output_manager
 
-        self.world = None
+        del self.world
         self.deleteLater()
 
     @pyqtSlot("QWidget")

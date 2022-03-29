@@ -19,7 +19,6 @@
 
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtWidgets import QTabBar
@@ -36,31 +35,34 @@ class TabBar(QTabBar):
 
         self.last_middle_click_index = None
 
-    def mousePressEvent(self, e):
-
-        if e.button() == Qt.MiddleButton and self.tabsClosable():
-
-            i = self.tabAt(e.pos())
-            self.last_middle_click_index = i
-
-        super().mousePressEvent(e)
-
-    def mouseReleaseEvent(self, e):
-
-        i = self.tabAt(e.pos())
+    def mousePressEvent(self, event):  # type: ignore
 
         if (
-            e.button() == Qt.MiddleButton
+            event.button() == Qt.MouseButton.MiddleButton
+            and self.tabsClosable()
+        ):
+
+            i = self.tabAt(event.pos())
+            self.last_middle_click_index = i
+
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):  # type: ignore
+
+        i = self.tabAt(event.pos())
+
+        if (
+            event.button() == Qt.MouseButton.MiddleButton
             and self.tabsClosable()
             and i is not None
             and i == self.last_middle_click_index
         ):
 
-            self.tabCloseRequested.emit(i)
-            e.accept()
+            self.tabCloseRequested.emit(i)  # type: ignore
+            event.accept()
 
         else:
-            super().mouseReleaseEvent(e)
+            super().mouseReleaseEvent(event)
 
         self.last_middle_click_index = None
 
@@ -76,20 +78,20 @@ class TabWidget(QTabWidget):
 
         self.setTabBar(TabBar(self))
 
-    def tabInserted(self, i):
+    def tabInserted(self, index):
 
-        # Ensures that the 'currentChanged( int )' signal is sent when the tab bar
-        # is modified, even if Qt doesn't think it should.
+        # Ensures that the 'currentChanged( int )' signal is sent when the tab
+        # bar is modified, even if Qt doesn't think it should.
 
-        self.currentChanged.emit(self.currentIndex())
+        self.currentChanged.emit(self.currentIndex())  # type: ignore
         self.numberOfTabChanged.emit(self.count())
 
-    def tabRemoved(self, i):
+    def tabRemoved(self, index):
 
-        # Ensures that the 'currentChanged( int )' signal is sent when the tab bar
-        # is modified, even if Qt doesn't think it should.
+        # Ensures that the 'currentChanged( int )' signal is sent when the tab
+        # bar is modified, even if Qt doesn't think it should.
 
-        self.currentChanged.emit(self.currentIndex())
+        self.currentChanged.emit(self.currentIndex())  # type: ignore
         self.numberOfTabChanged.emit(self.count())
 
     def previousTab(self):
@@ -108,7 +110,7 @@ class TabWidget(QTabWidget):
 
         i = self.currentIndex()
         if i >= 0:
-            self.tabCloseRequested.emit(i)
+            self.tabCloseRequested.emit(i)  # type: ignore
 
 
 class FallbackTabWidget(QStackedWidget):
@@ -137,8 +139,7 @@ class FallbackTabWidget(QStackedWidget):
 
         self.tabwidget.numberOfTabChanged.connect(self.switchView)
 
-    @pyqtSlot(int)
-    def switchView(self, tabcount):
+    def switchView(self, tabcount: int):
 
         current = self.tabwidget if tabcount > 0 else self.fallback
         self.setCurrentWidget(current)

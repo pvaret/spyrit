@@ -61,7 +61,9 @@ class SearchManager:
             cursor = QTextCursor(document)
             cursor.movePosition(QTextCursor.End)
 
-        cursor = document.find(string, cursor, QTextDocument.FindBackward)
+        cursor = document.find(
+            string, cursor, QTextDocument.FindFlag.FindBackward
+        )
 
         if cursor.isNull():  # String was not found!
 

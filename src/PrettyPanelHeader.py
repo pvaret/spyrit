@@ -81,7 +81,11 @@ class PrettyPanelHeader(QFrame):
             i = QLabel(self)
             i.setPixmap(icon)
             layout.addWidget(
-                i, 0, Qt.AlignmentFlag(Qt.AlignLeft | Qt.AlignVCenter)
+                i,
+                0,
+                Qt.AlignmentFlag(
+                    Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+                ),
             )
 
         label = '<font size="+2"><b>%s</b></font>' % title
@@ -90,11 +94,15 @@ class PrettyPanelHeader(QFrame):
             label += '<br><font size="-1"><i>%s</i></font>' % desc
 
         text = QLabel(label, self)
-        text.setAlignment(Qt.AlignRight)
+        text.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        text.setTextFormat(Qt.RichText)
+        text.setTextFormat(Qt.TextFormat.RichText)
         layout.addWidget(
-            text, 0, Qt.AlignmentFlag(Qt.AlignRight | Qt.AlignVCenter)
+            text,
+            0,
+            Qt.AlignmentFlag(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            ),
         )
 
         self.setLayout(layout)

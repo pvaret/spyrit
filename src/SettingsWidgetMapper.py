@@ -66,7 +66,7 @@ class BaseWidgetMapper(QObject):
 
     def setValue(self, settings_value):
 
-        if settings_value is None:
+        if settings_value is None or self.widget_value_setter is None:
             return
 
         assert isinstance(settings_value, self.settings_value_class)
@@ -75,9 +75,15 @@ class BaseWidgetMapper(QObject):
 
         self.widget_value_setter(self.widget, widget_value)
 
-    widgetToSettingsValue = (
-        settingsToWidgetValue
-    ) = lambda instance, value: value
+    @staticmethod
+    def widgetToSettingsValue(value):
+
+        return value
+
+    @staticmethod
+    def settingsToWidgetValue(value):
+
+        return value
 
     def setValidator(self, validator):
 
@@ -103,13 +109,15 @@ class QLineEditMapper(BaseWidgetMapper):
     widget_value_class = str
     settings_value_class = str
 
-    def widgetToSettingsValue(self, widget_value):
+    @staticmethod
+    def widgetToSettingsValue(value):
 
-        return str(widget_value)
+        return str(value)
 
-    def settingsToWidgetValue(self, settings_value):
+    @staticmethod
+    def settingsToWidgetValue(value):
 
-        return str(settings_value)
+        return str(value)
 
 
 class QSpinBoxMapper(BaseWidgetMapper):
@@ -129,13 +137,15 @@ class QCheckBoxMapper(BaseWidgetMapper):
     widget_value_class = int
     settings_value_class = bool
 
-    def widgetToSettingsValue(self, widget_value):
+    @staticmethod
+    def widgetToSettingsValue(value):
 
-        return widget_value == Qt.Checked
+        return value == Qt.CheckState.Checked
 
-    def settingsToWidgetValue(self, settings_value):
+    @staticmethod
+    def settingsToWidgetValue(value):
 
-        return Qt.Checked if settings_value else Qt.Unchecked
+        return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
 
 
 def get_mapper(widget):
@@ -176,17 +186,17 @@ class SettingsWidgetMapper(QObject):
 
         return widget_mapper
 
-    @pyqtSlot(object)
     def updateSettingsValue(self, value):
 
         widget_mapper = self.sender()
 
-        if widget_mapper.validate():
+        if isinstance(widget_mapper, BaseWidgetMapper):
+            if widget_mapper.validate():
 
-            option_path = self.option_path_for_widget[widget_mapper]
-            self.settings[option_path] = value
+                option_path = self.option_path_for_widget[widget_mapper]
+                self.settings[option_path] = value
 
-        self.emitSignals()
+            self.emitSignals()
 
     def emitSignals(self):
 

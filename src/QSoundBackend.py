@@ -39,4 +39,5 @@ class QSoundBackend:
 
     def play(self, soundfile: str) -> None:
 
-        QSound is not None and QSound.play(soundfile)
+        if QSound is not None:
+            QSound.play(soundfile)

@@ -57,8 +57,10 @@ class TabDelegate(QObject):
 
         self.is_current_tab = False
 
-        self.tabwidget.currentChanged.connect(self.onTabChanged)
-        self.tabwidget.tabCloseRequested.connect(self.onTabCloseRequested)
+        self.tabwidget.currentChanged.connect(self.onTabChanged)  # type: ignore
+        self.tabwidget.tabCloseRequested.connect(  # type: ignore
+            self.onTabCloseRequested
+        )
 
     @pyqtSlot(int)
     def onTabChanged(self, i):

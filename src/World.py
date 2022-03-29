@@ -25,7 +25,6 @@ import time
 from glob import glob
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QApplication
@@ -63,7 +62,7 @@ class World(QObject):
 
         app = QApplication.instance()
         assert app is not None
-        worldsmanager = app.core.worlds
+        worldsmanager = app.core.worlds  # type: ignore
         if not settings:
             settings = worldsmanager.newWorldSettings()
         if not state:
@@ -103,7 +102,7 @@ class World(QObject):
 
         app = QApplication.instance()
         assert app is not None
-        app.core.worlds.saveWorld(self)
+        app.core.worlds.saveWorld(self)  # type: ignore
 
     def setUI(self, worldui):
 
@@ -140,7 +139,6 @@ class World(QObject):
 
         self.socketpipeline.abort()
 
-    @pyqtSlot()
     def connectionStatusChanged(self):
 
         if self.status == Status.CONNECTED:
@@ -336,7 +334,9 @@ class World(QObject):
 
             if text.startswith(CMDCHAR):
 
-                app.core.commands.runCmdLine(self, text[len(CMDCHAR) :])
+                app.core.commands.runCmdLine(  # type: ignore
+                    self, text[len(CMDCHAR) :]
+                )
 
             else:
                 self.socketpipeline.send(text + "\r\n")

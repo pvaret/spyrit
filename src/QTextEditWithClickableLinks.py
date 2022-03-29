@@ -42,7 +42,7 @@ class QTextEditWithClickableLinks(QTextEdit):
         self.setMouseTracking(True)
 
         flags = self.textInteractionFlags()
-        flags |= Qt.LinksAccessibleByMouse  # type: ignore - '|' is a valid op here
+        flags |= Qt.TextInteractionFlag.LinksAccessibleByMouse
         self.setTextInteractionFlags(flags)
 
         self.linkClicked.connect(self.onLinkClicked)
@@ -54,10 +54,10 @@ class QTextEditWithClickableLinks(QTextEdit):
         if maybe_anchor != self.previous_anchor:
 
             if maybe_anchor:
-                self.viewport().setCursor(Qt.PointingHandCursor)
+                self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
 
             else:
-                self.viewport().setCursor(Qt.ArrowCursor)
+                self.viewport().setCursor(Qt.CursorShape.ArrowCursor)
 
             self.previous_anchor = maybe_anchor
 

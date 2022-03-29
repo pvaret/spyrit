@@ -28,4 +28,4 @@ class SingleShotTimer(QTimer):
 
         super().__init__()
         self.setSingleShot(True)
-        self.timeout.connect(slot)
+        self.timeout.connect(slot)  # type:ignore

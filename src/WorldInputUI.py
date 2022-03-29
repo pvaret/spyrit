@@ -20,7 +20,6 @@
 
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtGui import QKeySequence
@@ -105,10 +104,10 @@ class WorldInputUI(QTextEdit):
     def keyPressEvent(self, e):
 
         # Custom key sequence handler: since all our shortcuts are configurable,
-        # and are allowed to override the default QTextEdit shortcuts, we have to
-        # override the key event handler to preempt the use of those shortcuts.
-        # Note: This still doesn't work for Tab & Shift+Tab, which are handled
-        # straight in QWidget.event() by Qt.
+        # and are allowed to override the default QTextEdit shortcuts, we have
+        # to override the key event handler to preempt the use of those
+        # shortcuts. Note: This still doesn't work for Tab & Shift+Tab, which
+        # are handled straight in QWidget.event() by Qt.
 
         key = QKeySequence(int(e.modifiers()) + e.key())
 
@@ -124,12 +123,14 @@ class WorldInputUI(QTextEdit):
         # Special case: disallow overriding of Return/Enter.
 
         alt_ctrl_shift = e.modifiers() & (
-            Qt.ShiftModifier | Qt.ControlModifier | Qt.AltModifier
+            Qt.KeyboardModifier.ShiftModifier
+            | Qt.KeyboardModifier.ControlModifier
+            | Qt.KeyboardModifier.AltModifier
         )
 
         if (
-            e.key() in (Qt.Key_Return, Qt.Key_Enter)
-            and alt_ctrl_shift == Qt.NoModifier
+            e.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
+            and alt_ctrl_shift == Qt.KeyboardModifier.NoModifier
         ):
 
             self.returnPressed.emit()
@@ -138,7 +139,6 @@ class WorldInputUI(QTextEdit):
         else:
             super().keyPressEvent(e)
 
-    @pyqtSlot()
     def clearAndSend(self):
 
         text = str(self.toPlainText())

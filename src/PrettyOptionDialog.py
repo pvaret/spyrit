@@ -37,11 +37,14 @@ class PrettyOptionDialog(QDialog):
         self.panel = panel
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton(
-                QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+                QDialogButtonBox.StandardButton.Ok
+                | QDialogButtonBox.StandardButton.Cancel
             )
         )
 
-        self.okbutton = self.buttonbox.button(QDialogButtonBox.Ok)
+        self.okbutton = self.buttonbox.button(
+            QDialogButtonBox.StandardButton.Ok
+        )
 
         if oklabel:
             self.okbutton.setText(oklabel)
@@ -52,8 +55,8 @@ class PrettyOptionDialog(QDialog):
         mapper.settingsValid.connect(self.okbutton.setEnabled)
         mapper.emitSignals()
 
-        self.buttonbox.accepted.connect(self.accept)
-        self.buttonbox.rejected.connect(self.reject)
+        self.buttonbox.accepted.connect(self.accept)  # type: ignore
+        self.buttonbox.rejected.connect(self.reject)  # type: ignore
 
         self.relayout()
 

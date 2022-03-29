@@ -19,6 +19,8 @@
 #
 
 
+from typing import cast
+
 from PyQt5.QtWidgets import QWidget, QFormLayout
 
 
@@ -42,6 +44,6 @@ class SettingsPanel(QWidget):
         if label is None:
             label = " "
 
-        self.layout().addRow(label, widget)
+        cast(QFormLayout, self.layout()).addRow(label, widget)
 
         return self.mapper.bind(node_path, widget)

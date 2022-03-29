@@ -49,9 +49,9 @@ class HighlightAction:
     @classmethod
     def factory(cls, format):
         # TODO: !! This in fact no longer works with the /match command. Fix it.
-        # This may be tricky because that command expects one highlight = one token,
-        # whereas in the new design the highlight action takes care of all the
-        # highlights in the group.
+        # This may be tricky because that command expects one highlight = one
+        # token, whereas in the new design the highlight action takes care of
+        # all the highlights in the group.
 
         if not format:
             return None, "Invalid format!"
@@ -113,7 +113,8 @@ class PlayAction:
 
     name = "play"
 
-    # Don't try to play several sounds at once even if several matches are found.
+    # Don't try to play several sounds at once even if several matches are
+    # found.
     multiple_matches_per_line = False
 
     @classmethod
@@ -133,7 +134,8 @@ class PlayAction:
 
     def __call__(self, match, chunkbuffer):
 
-        QApplication.instance().core.sound.play(self.soundfile or ":/sound/pop")
+        core = QApplication.instance().core  # type: ignore
+        core.sound.play(self.soundfile or ":/sound/pop")
 
     def params(self):
 
@@ -323,8 +325,8 @@ class TriggersManager:
 
         if group is None:
 
-            # If no group name is given: use the smallest available number as the
-            # group name.
+            # If no group name is given: use the smallest available number as
+            # the group name.
 
             existing_number_groups = [
                 int(g) for g in self.groups.keys() if g.isdigit()
@@ -409,9 +411,9 @@ class TriggersManager:
         for matchgroup, matchresult in self.findMatches(line):
             for action in matchgroup.actions.values():
 
-                # TODO: make this cleaner. Using the class is not nice. Ideally we'd
-                # overhaul the action serialization system and reserve the 'name'
-                # attribute for this.
+                # TODO: make this cleaner. Using the class is not nice. Ideally
+                # we'd overhaul the action serialization system and reserve the
+                # 'name' attribute for this.
                 action_class = id(action.__class__)
                 if (
                     action_class in already_performed_on_this_line
@@ -428,8 +430,8 @@ class TriggersManager:
 
     def save(self, settings):
 
-        # Configuration is about to be saved. Serialize our current setup into the
-        # configuration.
+        # Configuration is about to be saved. Serialize our current setup into
+        # the configuration.
 
         # TODO: Handle per-world settings.
         try:

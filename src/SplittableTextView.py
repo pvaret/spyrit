@@ -56,7 +56,11 @@ class LineCount(QLabel):
         super().__init__(parent)
 
         self.setAutoFillBackground(True)
-        self.setAlignment(Qt.AlignmentFlag(Qt.AlignHCenter | Qt.AlignVCenter))
+        self.setAlignment(
+            Qt.AlignmentFlag(
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+            )
+        )
         self.setMargin(1)
         self.hide()
 
@@ -119,10 +123,10 @@ class SplittableTextView(QTextEditWithClickableLinks):
         self.setReadOnly(True)
         self.setUndoRedoEnabled(False)
         self.setAutoFormatting(QTextEdit.AutoNone)
-        self.viewport().setCursor(Qt.ArrowCursor)
+        self.viewport().setCursor(Qt.CursorShape.ArrowCursor)
 
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
         self.atbottom = True
         self.scrollbar = self.verticalScrollBar()
@@ -132,11 +136,13 @@ class SplittableTextView(QTextEditWithClickableLinks):
         self.next_page_position = 0
         self.previous_selection = -1, -1
 
-        self.scrollbar.valueChanged.connect(self.onScroll)
-        self.scrollbar.rangeChanged.connect(self.onRangeChanged)
+        self.scrollbar.valueChanged.connect(self.onScroll)  # type: ignore
+        self.scrollbar.rangeChanged.connect(self.onRangeChanged)  # type: ignore
 
-        self.textChanged.connect(self.perhapsRepaintText)
-        self.selectionChanged.connect(self.perhapsRepaintSelection)
+        self.textChanged.connect(self.perhapsRepaintText)  # type: ignore
+        self.selectionChanged.connect(  # type: ignore
+            self.perhapsRepaintSelection
+        )
 
         self.computeLineStep()
         self.more = LineCount(self)
@@ -144,20 +150,25 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def setWordWrapColumn(self, column):
 
-        # WORKAROUND: Normally we'd use WrapAtWordBoundaryOrAnywhere and leave the
-        # scrollbar the heck alone. But that option doesn't work as advertised in
-        # Qt 5.2+ and so we have to use WordWrap instead, and account for the case
-        # where a line doesn't fit in the view's width. Bummer.
+        # WORKAROUND: Normally we'd use WrapAtWordBoundaryOrAnywhere and leave
+        # the scrollbar the heck alone. But that option doesn't work as
+        # advertised in Qt 5.2+ and so we have to use WordWrap instead, and
+        # account for the case where a line doesn't fit in the view's width.
+        # Bummer.
 
         if column > 0:
             self.setLineWrapMode(self.FixedColumnWidth)
             self.setWordWrapMode(QTextOption.WordWrap)
-            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+            self.setHorizontalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAsNeeded
+            )
 
         else:
             self.setLineWrapMode(self.WidgetWidth)
             self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-            self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setHorizontalScrollBarPolicy(
+                Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            )
 
         self.setLineWrapColumnOrWidth(column)
 
@@ -218,9 +229,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
         if not cur.hasSelection():
             return
 
-        # setKeepPositionOnInsert() only works on position, not anchor, so we need
-        # to ensure the anchor is at the start of the selection and the position
-        # at the end. Feh.
+        # setKeepPositionOnInsert() only works on position, not anchor, so we
+        # need to ensure the anchor is at the start of the selection and the
+        # position at the end. Feh.
 
         start, end = cur.selectionStart(), cur.selectionEnd()
         cur.setPosition(start)
@@ -299,8 +310,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
         if not self.atbottom:
             self.update()
 
-    @pyqtSlot(int)
-    def onScroll(self, pos):
+    def onScroll(self, pos: int):
 
         # Scrollbar values are not reliable when the widget is not visible:
         if not self.isVisible():
@@ -333,7 +343,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
         else:
             height = pos + self.viewport().height()
 
-        l, t, r, b = self.getContentsMargins()
+        _, t, _, b = self.getContentsMargins()
 
         return height - self.scrollbar.singleStep() - t - b - 1
 
@@ -391,7 +401,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         cur = self.textCursor()
 
-        if cur.hasSelection() and e.buttons() & Qt.LeftButton:
+        if cur.hasSelection() and e.buttons() & Qt.MouseButton.LeftButton:
 
             cur = self.cursorForPosition(e.pos())
             self.setTextCursor(cur)
@@ -405,10 +415,10 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
     def mouseReleaseEvent(self, e):
 
-        # WORKAROUND: The same workaround as above is used here. Without it, Qt's
-        # calling of ensureCursorVisible() while handling the mouse release event
-        # causes the viewport to scroll if the mouse is released in the split
-        # area.
+        # WORKAROUND: The same workaround as above is used here. Without it,
+        # Qt's calling of ensureCursorVisible() while handling the mouse release
+        # event causes the viewport to scroll if the mouse is released in the
+        # split area.
 
         block = self.scrollbar.blockSignals(True)
         val = self.scrollbar.value()
@@ -470,7 +480,8 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         if e.rect().contains(e.rect().left(), split_y):
 
-            p.setPen(QApplication.instance().palette().color(QPalette.Window))
+            app = QApplication.instance()
+            p.setPen(app.palette().color(QPalette.Window))  # type: ignore
             p.drawLine(0, split_y, width, split_y)
 
         # Clip painter.
@@ -498,7 +509,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         palette = self.palette()
 
-        focus = QApplication.instance().focusWidget() is self
+        focus = QApplication.instance().focusWidget() is self  # type: ignore
         cgroup = QPalette.Active if focus else QPalette.Inactive
 
         if cur.hasSelection():
@@ -514,7 +525,6 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         doc.documentLayout().draw(p, ctx)
 
-    @pyqtSlot()
     def pingPage(self):
 
         # Paging implementation:
@@ -540,11 +550,10 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         self.scrollbar.setValue(self.scrollbar.minimum())
 
-    @pyqtSlot(int, int)
-    def onRangeChanged(self, min, max):
+    def onRangeChanged(self, min: int, max: int):
 
-        # 'min' and 'max' are the values emitted by the scrollbar's 'rangeChanged'
-        # signal.
+        # 'min' and 'max' are the values emitted by the scrollbar's
+        # 'rangeChanged' signal.
 
         pos = self.scrollbar.value()
 
@@ -563,14 +572,16 @@ class SplittableTextView(QTextEditWithClickableLinks):
                 # Case 1: We are paging and have a valid next page break.
 
                 if max > self.next_page_position:
-                    # Case 1.1: Scrolling would move us past the next page break.
+                    # Case 1.1: Scrolling would move us past the next page
+                    # break.
 
                     if pos != self.next_page_position:
                         self.scrollbar.setValue(self.next_page_position)
 
                     else:
                         # If the scrollbar value shouldn't change even though we
-                        # switched to paging mode, trigger scroll event manually.
+                        # switched to paging mode, trigger scroll event
+                        # manually.
                         self.onScroll(pos)
 
                 else:
@@ -607,9 +618,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
         self.computePageStep()
         self.scrollbar.triggerAction(QScrollBar.SliderPageStepAdd)
 
-    def resizeEvent(self, e):
+    def resizeEvent(self, event):  # type: ignore - PyQt arg naming issue
 
-        res = super().resizeEvent(e)
+        res = super().resizeEvent(event)
 
         self.onRangeChanged(self.scrollbar.minimum(), self.scrollbar.maximum())
         self.setMoreAnchor()
@@ -635,8 +646,8 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
             if cur_y > split_y:
 
-                # Okay, the cursor is hidden by our scrollback overlay. Let us scroll
-                # some more so it is visible.
+                # Okay, the cursor is hidden by our scrollback overlay. Let us
+                # scroll some more so it is visible.
 
                 y = self.scrollbar.value()
                 self.scrollbar.setValue(y + cur_y - split_y - 1)

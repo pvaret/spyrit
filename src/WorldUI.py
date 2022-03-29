@@ -24,7 +24,6 @@ from typing import Optional
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QSize
 from PyQt5.QtCore import QTimer
-from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import pyqtSignal
 
 from PyQt5.QtWidgets import QStyle
@@ -115,15 +114,19 @@ class WorldUI(QSplitter):
         self.setChildrenCollapsible(False)
         self.setSizes(world.state._ui._splitter._sizes)
 
-        self.splitterMoved.connect(self.saveSplitterPosition)
+        self.splitterMoved.connect(self.saveSplitterPosition)  # type: ignore
 
         # Create toolbar and bind World-related actions.
 
         self.toolbar = QToolBar()
         self.toolbar.setMovable(False)
         self.toolbar.setFloatable(False)
-        self.toolbar.setContextMenuPolicy(Qt.PreventContextMenu)
-        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+        self.toolbar.setContextMenuPolicy(
+            Qt.ContextMenuPolicy.PreventContextMenu
+        )
+        self.toolbar.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextUnderIcon
+        )
 
         self.toolbar.setWindowTitle(world.title())
 
@@ -180,7 +183,7 @@ class WorldUI(QSplitter):
 
         app = QApplication.instance()
         assert app is not None
-        for line in app.core.motd:
+        for line in app.core.motd:  # type: ignore
             self.world.info(line)
 
     def updateToolBarIcons(self, size):
@@ -203,7 +206,6 @@ class WorldUI(QSplitter):
             self.secondaryinputui.hide()
             self.inputui.setFocus()
 
-    @pyqtSlot(bool)
     def onTabChanged(self, is_now_visible):
 
         if is_now_visible:
@@ -213,21 +215,20 @@ class WorldUI(QSplitter):
 
     def windowAlert(self):
 
+        # TODO: Pass app instance cleanly somehow.
         app = QApplication.instance()
         if not self.world or app is None:
             return
 
         if self.world.settings._ui._window._alert:
-            app.alert(self.window())
+            app.alert(self.window())  # type: ignore
 
         self.requestAttention.emit()
 
-    @pyqtSlot()
     def saveSplitterPosition(self):
 
         self.world.state._ui._splitter._sizes = self.sizes()
 
-    @pyqtSlot()
     def close(self) -> bool:
 
         if self.world.isConnected():
@@ -283,10 +284,10 @@ class WorldUI(QSplitter):
         del self.world
         self.deleteLater()
 
-    @pyqtSlot("QWidget")
-    def setFocusProxy(self, widget):
+    def setFocusProxy(self, *args):
 
         # WORKAROUND: PyQt doesn't seem to properly declare the slot for this
         # method, so we must override it. :/
+        # TODO: Reevalute this workaround in the present (2022).
 
-        super().setFocusProxy(widget)
+        super().setFocusProxy(*args)

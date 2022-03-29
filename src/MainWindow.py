@@ -18,10 +18,10 @@
 #
 
 
+from typing import cast
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import QSize
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QAction
@@ -79,7 +79,9 @@ class MainWindow(QMainWindow):
             FallbackTabWidget(self, self.tabwidget, default_pane)
         )
 
-        self.tabwidget.currentChanged.connect(self.setCurrentWorldToolbar)
+        self.tabwidget.currentChanged.connect(  # type: ignore
+            self.setCurrentWorldToolbar
+        )
 
         # Create all the actions.
 
@@ -87,7 +89,7 @@ class MainWindow(QMainWindow):
 
         self.action_about = self.actionset.bindAction("about", self.actionAbout)
         self.action_aboutqt = self.actionset.bindAction(
-            "aboutqt", QApplication.instance().aboutQt
+            "aboutqt", cast(QApplication, QApplication.instance()).aboutQt
         )
         self.action_newworld = self.actionset.bindAction(
             "newworld", self.actionNewWorld
@@ -170,14 +172,14 @@ class MainWindow(QMainWindow):
 
         self.refreshMenuWorlds()
 
-        worldsmanager = QApplication.instance().core.worlds
+        worldsmanager = QApplication.instance().core.worlds  # type: ignore
         worldsmanager.worldListChanged.connect(self.refreshMenuWorlds)
 
         # And with this, our Main Window is created, whee!
 
     def refreshStyle(self):
 
-        style = QApplication.instance().core.settings._ui._style
+        style = QApplication.instance().core.settings._ui._style  # type: ignore
 
         if not style:
             style = self.initial_style
@@ -189,14 +191,16 @@ class MainWindow(QMainWindow):
 
     def refreshIcons(self):
 
-        size = QApplication.instance().core.settings._ui._toolbar._icon_size
+        core = QApplication.instance().core  # type: ignore
+        size = core.settings._ui._toolbar._icon_size
 
         if not size:
-            size = QApplication.style().pixelMetric(QStyle.PM_ToolBarIconSize)
+            size = QApplication.style().pixelMetric(
+                QStyle.PixelMetric.PM_ToolBarIconSize
+            )
 
         self.toolbar_main.setIconSize(QSize(size, size))
 
-    @pyqtSlot()
     def refreshMenuWorlds(self):
 
         self.setUpdatesEnabled(False)
@@ -210,7 +214,7 @@ class MainWindow(QMainWindow):
 
         self.menu_connect.clear()
 
-        worldsmanager = QApplication.instance().core.worlds
+        worldsmanager = QApplication.instance().core.worlds  # type: ignore
         worlds = worldsmanager.worldList()
 
         if not worlds:
@@ -233,8 +237,7 @@ class MainWindow(QMainWindow):
 
         self.setUpdatesEnabled(True)
 
-    @pyqtSlot(int)
-    def setCurrentWorldToolbar(self, i):
+    def setCurrentWorldToolbar(self, i: int):
 
         self.setUpdatesEnabled(False)
 
@@ -268,9 +271,10 @@ class MainWindow(QMainWindow):
 
         worldui = WorldUI(world, self.tabwidget)
         tab = TabDelegate(self.tabwidget, worldui)
+        assert world.worldui is not None
 
         tab.tabChanged.connect(worldui.onTabChanged)
-        tab.tabCloseRequested.connect(worldui.close)
+        tab.tabCloseRequested.connect(worldui.close)  # type: ignore
 
         blinker = TabIconBlinker(tab)
 
@@ -285,13 +289,13 @@ class MainWindow(QMainWindow):
 
         return pos
 
-    def closeEvent(self, event):
+    def closeEvent(self, event):  # type: ignore - weird arg naming issue.
 
         # Confirm close if some worlds are still connected.
 
         connectedworlds = [
             w
-            for w in QApplication.instance().core.openworlds
+            for w in QApplication.instance().core.openworlds  # type: ignore
             if w.isConnected()
         ]
 
@@ -311,14 +315,14 @@ class MainWindow(QMainWindow):
         # Note the use of list(), since the structure changes size during the
         # iteration.
 
-        for w in list(QApplication.instance().core.openworlds):
+        for w in list(QApplication.instance().core.openworlds):  # type: ignore
 
             w.disconnectFromWorld()
             w.worldui.doClose()
 
         # Save the main window's geometry when it's about to be closed.
 
-        state = QApplication.instance().core.state
+        state = QApplication.instance().core.state  # type: ignore
 
         state._ui._window._size = self.size()
         state._ui._window._pos = self.pos()
@@ -340,31 +344,31 @@ class MainWindow(QMainWindow):
 
         from NewWorldDialog import NewWorldDialog
 
-        worldsmanager = QApplication.instance().core.worlds
+        worldsmanager = QApplication.instance().core.worlds  # type: ignore
         world = worldsmanager.newAnonymousWorld()
         dialog = NewWorldDialog(world.settings, self)
 
         if dialog.exec_():
 
             world.save()
-            QApplication.instance().core.openWorld(world)
+            QApplication.instance().core.openWorld(world)  # type: ignore
 
     def actionQuickConnect(self):
 
         from QuickConnectDialog import QuickConnectDialog
 
-        worldsmanager = QApplication.instance().core.worlds
+        worldsmanager = QApplication.instance().core.worlds  # type: ignore
         world = worldsmanager.newAnonymousWorld()
         dialog = QuickConnectDialog(world.settings, self)
 
         if dialog.exec_():
-            QApplication.instance().core.openWorld(world)
+            QApplication.instance().core.openWorld(world)  # type: ignore
 
     def makeConnectToWorldAction(self, worldname):
 
         action = QAction(worldname.replace("&", "&&"), self)
-        action.setData(QVariant(worldname))
-        action.triggered.connect(self.actionConnectToWorld)
+        action.setData(worldname)
+        action.triggered.connect(self.actionConnectToWorld)  # type: ignore
 
         return action
 
@@ -376,12 +380,12 @@ class MainWindow(QMainWindow):
         if not action:
             return
 
-        worldname = action.data()
-        QApplication.instance().core.openWorldByName(worldname)
+        worldname = action.data()  # type: ignore
+        QApplication.instance().core.openWorldByName(worldname)  # type: ignore
 
     def actionAbout(self):
 
         from AboutDialog import AboutDialog
 
-        settings = QApplication.instance().core.settings
+        settings = QApplication.instance().core.settings  # type: ignore
         AboutDialog(settings, self).exec_()

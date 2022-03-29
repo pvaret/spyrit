@@ -55,12 +55,13 @@ class TabIconBlinker(QObject):
 
         self.blinker = QTimeLine(50, self)  # ms
         self.blinker.setFrameRange(0, 1)
-        self.blinker.frameChanged.connect(self.iconBlink)
-        self.blinker.finished.connect(self.steadyIcon)
+        # TODO: Fix the signal connection typing somehow.
+        self.blinker.frameChanged.connect(self.iconBlink)  # type: ignore
+        self.blinker.finished.connect(self.steadyIcon)  # type: ignore
 
     def startIconBlink(self):
 
-        if self.blinker.state() == QTimeLine.NotRunning:
+        if self.blinker.state() == QTimeLine.State.NotRunning:
             self.blinker.start()
 
     @pyqtSlot(int)
@@ -69,32 +70,28 @@ class TabIconBlinker(QObject):
         led = self.led.select(on=self.is_on, lit=(frame % 2 == 0))
         self.tab.setTabIcon(led)
 
-    @pyqtSlot()
     def steadyIcon(self):
 
-        if self.blinker.state() == QTimeLine.Running:
+        if self.blinker.state() == QTimeLine.State.Running:
             return
 
         led = self.led.select(on=self.is_on, lit=not self.visible)
         self.tab.setTabIcon(led)
 
-    @pyqtSlot(bool)
-    def onTabChanged(self, is_now_visible):
+    def onTabChanged(self, is_now_visible: bool):
 
         self.visible = is_now_visible
 
         if is_now_visible:
             self.steadyIcon()
 
-    @pyqtSlot(bool)
-    def setLedOn(self, is_on=True):
+    def setLedOn(self, is_on: bool = True):
 
         if is_on and not self.is_on:
             self.is_on = True
             self.startIconBlink()
 
-    @pyqtSlot(bool)
-    def setLedOff(self, is_off=True):
+    def setLedOff(self, is_off: bool = True):
 
         if is_off and self.is_on:
             self.is_on = False

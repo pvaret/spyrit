@@ -240,15 +240,18 @@ def handle_exception(
         buttons=QMessageBox.StandardButton.Close,
     )
 
+    if app:
+        # TODO: Maybe make finalization handling safer with a context handler or
+        # something?
+        app.aboutToQuit.emit()  # type: ignore
+
     print("Spyrit has closed due to an error. This is the full error report:")
     print("")
-    print(
-        "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    )
+
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
     if app:
-        # TODO: Somehow make it so the actual type of app is known.
-        app.atExit()  # type: ignore
-    sys.exit(1)
+        app.exit(1)
 
 
 def format_as_table(

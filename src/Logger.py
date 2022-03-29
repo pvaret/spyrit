@@ -179,7 +179,7 @@ class AnsiLogger(PlainLogger):
 
     def logChunk(self, chunk):
 
-        chunk_type, payload = chunk
+        chunk_type, _ = chunk
 
         if chunk_type & (ChunkType.HIGHLIGHT | ChunkType.ANSI):
             self.format_stack.processChunk(chunk)

@@ -119,10 +119,10 @@ class Autocompleter:
 
     def selectCurrentWord(self, tc):
 
-        # Alright. Our problem here is that we'd like to select the current word,
-        # but Qt's idea of what makes up a word is, it seems, inconsistent across
-        # Qt versions, and also incompatible with what Spyrit itself considers a
-        # word.
+        # Alright. Our problem here is that we'd like to select the current
+        # word, but Qt's idea of what makes up a word is, it seems, inconsistent
+        # across Qt versions, and also incompatible with what Spyrit itself
+        # considers a word.
         # For instance, in the name "O'hara", Qt considers "O" and "hara" to be
         # separate words, which doesn't work at all for us.
         # Hence, this method, which essentially does a
@@ -170,6 +170,9 @@ class Autocompleter:
 
     def finalize(self):
 
+        if not self.textedit:
+            return
+
         tc = self.textedit.textCursor()
 
         pos = tc.position()
@@ -204,11 +207,11 @@ class Autocompleter:
             return
 
         # Try to determine if we were previously cycling through a match list.
-        # This is not the textbook perfect way to do this; but then, the textbook
-        # perfect way involves monitoring events on the QTextEdit to see if the
-        # user did something other than autocomplete since last time, this here
-        # method is considerably less involved and, thanks to the magic of
-        # QTextCursor.isCopyOf(), quite reliable.
+        # This is not the textbook perfect way to do this; but then, the
+        # textbook perfect way involves monitoring events on the QTextEdit to
+        # see if the user did something other than autocomplete since last time,
+        # this here method is considerably less involved and, thanks to the
+        # magic of QTextCursor.isCopyOf(), quite reliable.
 
         currently_cycling = False
         result = []

@@ -24,16 +24,17 @@
 
 """
 
+# TODO: Rewrite the whole thing. :/
+
 import abc
 
 from fnmatch import fnmatchcase
-from typing import cast
+from typing import MutableMapping, cast
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Iterable
 from typing import List
-from typing import Mapping
 from typing import Optional
 from typing import Protocol
 from typing import Type
@@ -53,7 +54,7 @@ NO_VALUE = __NoValue()
 ROOT = "@"
 
 
-class MatchingDict(dict, Mapping[str, Any]):
+class MatchingDict(dict[str, Any], MutableMapping[str, Any]):
     """
     A dictionary whose keys are glob patterns, and where key lookup is matched
     against those patterns. Requires the keys to be strings.
@@ -306,7 +307,7 @@ class Node(BaseNode, AttrProxyDictMixin):
     def __init__(self, key, container):
 
         self.key: str = key
-        self.proto: Optional[NodeProto] = None
+        self.proto: Optional[NodeProto] = None  # type: ignore
         self.nodes: Dict[str, BaseNode] = {}
         self.inherit: Optional[Node] = None
         self.container: Node = container
@@ -334,7 +335,7 @@ class Node(BaseNode, AttrProxyDictMixin):
 
         if "." in key:
             head, tail = key.split(".", 1)
-            return self.get(head).get(tail)
+            return self.get(head).get(tail)  # type: ignore
 
         try:
             return self.nodes[key]
@@ -355,17 +356,17 @@ class Node(BaseNode, AttrProxyDictMixin):
     def __getitem__(self, key: str) -> BaseNode:
 
         node = self.get(key)
-        return node.value()
+        return node.value()  # type: ignore
 
     def __setitem__(self, key: str, value: Any):
 
         node = self.get(key)
-        node.setValue(value)
+        node.setValue(value)  # type: ignore
 
     def __delitem__(self, key: str):
 
         node = self.get(key)
-        node.delValue()
+        node.delValue()  # type: ignore
 
     def asDict(self) -> Dict[str, Any]:
 
@@ -373,7 +374,7 @@ class Node(BaseNode, AttrProxyDictMixin):
         for k, v in self.nodes.items():
             if v.isLeaf():
                 if type(v) is Leaf:
-                    ret[k] = cast(Leaf, v).value()
+                    ret[k] = cast(Leaf, v).value()  # type: ignore
             else:
                 ret[k] = cast(Node, v).asDict()
 
@@ -397,7 +398,7 @@ class Node(BaseNode, AttrProxyDictMixin):
 
         try:
             for k, v in value.items():
-                self.get(k).setValue(v)
+                self.get(k).setValue(v)  # type: ignore
         except KeyError:
             raise ValueError(
                 "Expected a dict matching the schema for key %s; "
@@ -422,7 +423,9 @@ class Node(BaseNode, AttrProxyDictMixin):
 
             if node.isLeaf():
 
-                serializer = node.proto.metadata.get("serializer")
+                serializer = node.proto.metadata.get(  # type: ignore
+                    "serializer"
+                )
 
                 if node.isEmpty() or serializer is None:
                     continue
@@ -440,27 +443,27 @@ class Node(BaseNode, AttrProxyDictMixin):
 
                     if node.proto.metadata.get("is_section"):
 
-                        dump = node.dump()
+                        dump = node.dump()  # type: ignore
 
                         if len(dump[KEYS]) + len(dump[SECTIONS]) > 0:
                             result[SECTIONS][subkey] = dump
 
                     else:
-                        stack.append((node, subkey))
+                        stack.append((node, subkey))  # type: ignore
 
         return result
 
-    def onChange(self, key: str, callback: Callable):
+    def onChange(self, key: str, callback: Callable):  # type: ignore
 
         leaf = self.get(key)
-        leaf.notifier.add(callback)
+        leaf.notifier.add(callback)  # type: ignore
 
 
 class NodeProto(object):
     def __init__(self, key: str, klass: Type[BaseNode]):
 
         self.key: str = key
-        self.nodes: Dict[str, NodeProto] = MatchingDict()
+        self.nodes: Dict[str, NodeProto] = MatchingDict()  # type: ignore
         self.klass: Type[BaseNode] = klass
         self.inherit: Optional[str] = None
         self.metadata: Dict[str, Any] = {}
@@ -492,8 +495,8 @@ class NodeProto(object):
         node: Union[Node, Leaf]
         inherit_container: Optional[Node] = None
 
-        # 1/ Figure out what node to build, by looking it up in the prototype tree
-        # then searching this prototype for inheritance information.
+        # 1/ Figure out what node to build, by looking it up in the prototype
+        # tree then searching this prototype for inheritance information.
 
         if key in self.nodes:
 
@@ -518,7 +521,7 @@ class NodeProto(object):
             if inherit_container is None:
                 raise KeyError(key)
 
-            proto = inherit_container.proto.get(key)
+            proto = inherit_container.proto.get(key)  # type: ignore
 
         else:
             raise KeyError(key)
@@ -529,8 +532,8 @@ class NodeProto(object):
             node = Leaf(key, container)
         elif proto.klass is Node:
             node = Node(key, container)
-        node.proto = proto
-        node.fallback_value = proto.default_value
+        node.proto = proto  # type: ignore
+        node.fallback_value = proto.default_value  # type: ignore
 
         # 2/ Set up inheritance given the provided information.
 
@@ -540,12 +543,12 @@ class NodeProto(object):
 
             # Sanity test:
             assert type(inherit_node) is type(
-                node
+                node  # type: ignore
             ), "Type mismatch in Settings hierarchy!"
 
-            node.setInherit(inherit_node)
+            node.setInherit(inherit_node)  # type: ignore
 
-        return node
+        return node  # type: ignore
 
 
 # TODO: Annotate with types once mypy supports recursive types.
@@ -564,7 +567,9 @@ class Settings(Node):
 
             current_proto, current_schema_def = pending_schema_defs.pop(0)
 
-            current_proto.inherit = current_schema_def.get("inherit")
+            current_proto.inherit = current_schema_def.get(  # type: ignore
+                "inherit"
+            )
             # TODO: Remove the "default_metadata" feature? It's only used for
             # shortcuts, and may be better replaced by a little throwaway helper
             # where we define those shortcuts.
@@ -572,7 +577,7 @@ class Settings(Node):
 
             for key, metadata in current_schema_def.get("keys", ()):
 
-                new_proto = current_proto.new(key, klass=Leaf)
+                new_proto = current_proto.new(key, klass=Leaf)  # type: ignore
 
                 new_proto.metadata.update(section_metadata)
                 new_proto.metadata.update(metadata)
@@ -582,7 +587,9 @@ class Settings(Node):
                 serializer = new_proto.metadata.get("serializer")
 
                 if None not in (serializer, default):
-                    default = serializer.deserializeDefault(default)
+                    default = serializer.deserializeDefault(  # type: ignore
+                        default
+                    )
 
                 new_proto.default_value = default
 
@@ -592,7 +599,7 @@ class Settings(Node):
                 new_proto = current_proto
 
                 for key in section_key.split("."):
-                    new_proto = new_proto.new(key, klass=Node)
+                    new_proto = new_proto.new(key, klass=Node)  # type: ignore
                     new_proto.metadata["is_section"] = True
 
                 pending_schema_defs.append((new_proto, sub_schema_def))
@@ -614,12 +621,14 @@ class Settings(Node):
                 except KeyError:
                     continue
 
-                serializer = node.proto.metadata.get("serializer")
+                serializer = node.proto.metadata.get(  # type: ignore
+                    "serializer"
+                )
                 if serializer is None:
                     continue
 
                 value = serializer.deserialize(value)
-                node.setValue(value)
+                node.setValue(value)  # type: ignore
 
             for section, struct in sections.items():
 

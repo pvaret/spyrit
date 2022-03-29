@@ -74,6 +74,8 @@ class CommandRegistry:
             return
 
         command = self.lookupCommand(cmdname)
+        if command is None:
+            return
 
         subcmdname, possible_subcmdname, remainder = command.parseSubCommand(
             remainder

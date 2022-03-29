@@ -125,7 +125,4 @@ class Application(QApplication):
     @pyqtSlot()
     def beforeStop(self):
 
-        if self.core:
-            self.core.atExit()
-
         sys.excepthook = sys.__excepthook__

@@ -42,7 +42,8 @@ class SoundCommand(BaseCommand):
 
         """
 
-        sound = QApplication.instance().core.sound
+        # TODO: Find a way to pass the core instance cleanly.
+        sound = QApplication.instance().core.sound  # type: ignore
 
         filename = os.path.expanduser(filename)
         ok, msg = sound.play(filename)
@@ -66,7 +67,8 @@ class SoundCommand(BaseCommand):
 
         """
 
-        sound = QApplication.instance().core.sound
+        # TODO: Find a way to pass the core instance cleanly.
+        sound = QApplication.instance().core.sound  # type: ignore
 
         registry = sound.registry
         current_backend = sound.backend

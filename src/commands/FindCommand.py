@@ -40,7 +40,8 @@ class FindCommand(BaseCommand):
 
     """
 
-    def cmd(self, world: World, text: str = ""):
+    # TODO: Find a way to make commands type-safe.
+    def cmd(self, world: World, text: str = ""):  # type: ignore
 
         assert world.worldui is not None
         world.worldui.output_manager.findInHistory(text)

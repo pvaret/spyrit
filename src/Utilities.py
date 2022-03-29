@@ -25,7 +25,7 @@
 """
 
 from types import TracebackType
-from typing import cast
+from typing import Sequence, cast
 
 
 DEFAULT_ESCAPES = {
@@ -251,7 +251,9 @@ def handle_exception(
     sys.exit(1)
 
 
-def format_as_table(columns: list[list[str]], headers: list[str]) -> str:
+def format_as_table(
+    columns: Sequence[Sequence[str]], headers: Sequence[str]
+) -> str:
     """
     Format a set of columns and headers as a table.
 
@@ -263,10 +265,11 @@ def format_as_table(columns: list[list[str]], headers: list[str]) -> str:
 
     """
 
+    newcolumns = list(list(column[:]) for column in columns)
     if len(headers) < len(columns):
         headers = list(headers) + [""] * (len(columns) - len(headers))
 
-    for column, header in zip(columns, headers):
+    for column, header in zip(newcolumns, headers):
 
         column.insert(0, header)
         column.insert(1, "-" * len(header))

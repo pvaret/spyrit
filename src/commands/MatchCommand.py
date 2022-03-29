@@ -33,13 +33,14 @@ class MatchCommand(BaseCommand):
 
         Usage: %(cmd)s <pattern> [<group>] [type="smart"|"regex"]
 
-        The <group> parameter lets you specify the name of a group for the match,
-        so patterns with the same semantics and on which the same action must be
-        taken when a match is found, can be put together.
+        The <group> parameter lets you specify the name of a group for the
+        match, so patterns with the same semantics and on which the same action
+        must be taken when a match is found, can be put together.
 
-        If the given group doesn't already exist, it will be automatically created.
-        If the parameter is left unspecified, the command creates a new group using
-        the next available ordinal number as its name, i.e. '1', '2', '3'...
+        If the given group doesn't already exist, it will be automatically
+        created. If the parameter is left unspecified, the command creates a new
+        group using the next available ordinal number as its name, i.e. '1',
+        '2', '3'...
 
         The <type> parameter allows you to choose the syntax for the pattern:
         'smart' or 'regex'. If unspecified, the default is 'smart'.
@@ -62,7 +63,7 @@ class MatchCommand(BaseCommand):
         Examples:
             %(cmd)s "You have received a message from *"
             %(cmd)s "[player] pages: [message]" group=pages
-            %(cmd)s "(?P<player>\w+) pages: (?P<message>.+)" group=pages type=regex
+            %(cmd)s "(?P<player>\w+) pages: (?P<message>.+)" type=regex
 
         """
 
@@ -85,8 +86,8 @@ class MatchCommand(BaseCommand):
 
         Usage: %(cmd)s <group> [<number>]
 
-        If the match pattern number is provided, only that pattern is deleted from
-        the group.  If it isn't, the whole group is deleted.
+        If the match pattern number is provided, only that pattern is deleted
+        from the group.  If it isn't, the whole group is deleted.
 
         Note that if you delete the last pattern from a group, then the group is
         deleted as well.
@@ -96,8 +97,8 @@ class MatchCommand(BaseCommand):
             %(cmd)s pages
 
         Given a match group called 'pages' containing more than three match
-        patterns, the first command deletes the third pattern in the group, and the
-        second command deletes the whole group.
+        patterns, the first command deletes the third pattern in the group, and
+        the second command deletes the whole group.
 
         """
 
@@ -169,12 +170,13 @@ class MatchCommand(BaseCommand):
 
         Action parameters:
           highlight <format> [token=<token>]
-            <format> is a format description. It is a semicolon-separated list of
-              format parameters. Possible format parameters are 'bold', 'italic',
-              'underline' and 'color: #rrggbb' (without quotes). Don't forget to
-              quote the format description.
+            <format> is a format description. It is a semicolon-separated list
+              of format parameters. Possible format parameters are 'bold',
+              'italic', 'underline' and 'color: #rrggbb' (without quotes). Don't
+              forget to quote the format description.
             <token> is the identifier of a token defined in a match pattern. If
-              this argument is omitted, the highlight applies to the whole pattern.
+              this argument is omitted, the highlight applies to the whole
+              pattern.
 
           play [<soundfile>]
             <soundfile> is the path to a WAV sound file. If this argument is
@@ -190,8 +192,8 @@ class MatchCommand(BaseCommand):
           %(cmd)s my_pages highlight "bold ; color: #ffffff"
           %(cmd)s my_pages highlight "underline" token=player
 
-          The above makes the whole line white and bold; the name of the player who
-          pages you is also underlined.
+          The above makes the whole line white and bold; the name of the player
+          who pages you is also underlined.
 
           %(cmd)s my_pages play /path/to/sound.wav
 
@@ -288,7 +290,8 @@ class MatchCommand(BaseCommand):
           %(cmd)s 'Arthur pages: "Hi!"'
 
           The above command reports that the group 'my_pages' matches, with the
-          tokens 'player' and 'message' containing 'Arthur' and 'Hi!' respectively.
+          tokens 'player' and 'message' containing 'Arthur' and 'Hi!'
+          respectively.
 
         """
 
@@ -340,7 +343,7 @@ class MatchCommand(BaseCommand):
         if mgr.isEmpty():
             msg.append("  None.")
 
-        for key, matchgroup in sorted(mgr.groups.items()):
+        for _, matchgroup in sorted(mgr.groups.items()):
 
             group = matchgroup.name
 

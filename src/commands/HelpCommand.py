@@ -29,13 +29,15 @@ from World import World
 
 
 class HelpCommand(BaseCommand):
-    def cmd(
+    # TODO: Find a way to make commands type-safe.
+    def cmd(  # type: ignore
         self, world: World, cmdname: str = "", subcmdname: str = ""
     ) -> None:
 
         app = QApplication.instance()
         assert app is not None
-        commands = app.core.commands
+        # TODO: Find a way to pass the core object cleanly.
+        commands = app.core.commands  # type: ignore
 
         if cmdname:
 
@@ -133,7 +135,8 @@ class HelpCommand(BaseCommand):
 
         helptxt = ["Available commands:\n"]
 
-        cmd_registry = QApplication.instance().core.commands
+        # TODO: Find a way to pass the core object cleanly.
+        cmd_registry = QApplication.instance().core.commands  # type: ignore
 
         ljust = max(len(c) for c in cmd_registry.commands.keys()) + 2
 

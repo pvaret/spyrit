@@ -42,6 +42,7 @@ class SettingsCommand(BaseCommand):
     def _getValue(self, settings, setting):
 
         s = self._getSerializer(settings, setting)
+        assert s is not None
         value = s.serialize(settings[setting])
 
         if value is None:
@@ -92,7 +93,8 @@ class SettingsCommand(BaseCommand):
 
         """
 
-        settings = QApplication.instance().core.settings
+        # TODO: Find a clean way to pass the settings.
+        settings = QApplication.instance().core.settings  # type: ignore
 
         ok, msg = self._setValue(settings, setting, args)
 
@@ -138,7 +140,8 @@ class SettingsCommand(BaseCommand):
 
         """
 
-        settings = QApplication.instance().core.settings
+        # TODO: Find a clean way to pass the settings.
+        settings = QApplication.instance().core.settings  # type: ignore
 
         ok, msg = self._resetValue(settings, setting)
 
@@ -200,12 +203,12 @@ class SettingsCommand(BaseCommand):
 
         Usage: %(cmd)s [<setting> | all]
 
-        By default, only the values differing from the defaults are shown.
-        If an optional setting argument is given, list all values for that setting
+        By default, only the values differing from the defaults are shown. If an
+        optional setting argument is given, list all values for that setting
         (default, global, world.)
 
-        If the optional argument 'all' is given, then all values for all settings
-        are listed.
+        If the optional argument 'all' is given, then all values for all
+        settings are listed.
 
         Examples:
             %(cmd)s ui.view.font.name
@@ -214,10 +217,11 @@ class SettingsCommand(BaseCommand):
         """
 
         worldsettings = world.settings
-        settings = QApplication.instance().core.settings
+        # TODO: Find a clean way to pass the settings.
+        settings = QApplication.instance().core.settings  # type: ignore
 
-        # 1/ Retrieve list of settings to list, based on the argument given by the
-        # user:
+        # 1/ Retrieve list of settings to list, based on the argument given by
+        # the user:
 
         if setting is not None:
             setting = setting.lower().strip()

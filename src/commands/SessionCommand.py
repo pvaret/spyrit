@@ -61,7 +61,8 @@ class SessionCommand(BaseCommand):
 
         """
 
-        QApplication.instance().closeAllWindows()
+        # TODO: Find a way to pass the app instance cleanly.
+        QApplication.instance().closeAllWindows()  # type: ignore
 
     def cmd_close(self, world):
 

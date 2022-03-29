@@ -51,7 +51,8 @@ class BaseCommand:
 
         app = QApplication.instance()
         assert app is not None
-        commands = app.core.commands
+        # TODO: Find a way to pass the core object cleanly.
+        commands = app.core.commands  # type: ignore
 
         # TODO: Clean this up; store cmd name when registering it.
         cmdname = [k for k, v in commands.commands.items() if v is self][0]

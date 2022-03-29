@@ -30,6 +30,7 @@ __copyright__ = "Python license"
 
 # Modified 2020/05/01 to remove Python 2 compatibility code.
 # Modified 2021/04/10 to reformat and add type safety.
+# Modified 2022/03/29 to ignore type linting problems on Linux.
 
 
 import os
@@ -50,8 +51,8 @@ else:
         r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
     )
 
-    HKCU = winreg.HKEY_CURRENT_USER
-    HKLM = winreg.HKEY_LOCAL_MACHINE
+    HKCU = winreg.HKEY_CURRENT_USER  # type: ignore
+    HKLM = winreg.HKEY_LOCAL_MACHINE  # type: ignore
 
     # helper functions
 
@@ -86,10 +87,10 @@ else:
         if possible.
         """
 
-        key = winreg.OpenKey(key, subkey)
+        key = winreg.OpenKey(key, subkey)  # type: ignore
 
         try:
-            ret = winreg.QueryValueEx(key, name)
+            ret = winreg.QueryValueEx(key, name)  # type: ignore
 
         except WindowsError:  # type: ignore - actually valid on Windows.
             return ""
@@ -98,7 +99,7 @@ else:
 
             key.Close()
 
-            if ret[1] == winreg.REG_EXPAND_SZ:
+            if ret[1] == winreg.REG_EXPAND_SZ:  # type: ignore
                 return expandvars(ret[0])
 
             else:
@@ -117,7 +118,7 @@ else:
     # public functions
 
     def get_appdata():
-        """Return path of directory where apps should store user specific data."""
+        "Return path of directory where apps should store user specific data."
 
         return _get_reg_user_value(SHELL_FOLDERS, "AppData")
 
@@ -149,7 +150,7 @@ else:
     def get_shellfolders(branch=HKCU, key=SHELL_FOLDERS):
         """Return mapping of shell folder names (current user) to paths."""
 
-        key = winreg.OpenKey(branch, key)
+        key = winreg.OpenKey(branch, key)  # type: ignore
         folders = {}
         i = 0
 
@@ -157,9 +158,9 @@ else:
 
             try:
 
-                ret = winreg.EnumValue(key, i)
+                ret = winreg.EnumValue(key, i)  # type: ignore
 
-                if ret[2] == winreg.REG_EXPAND_SZ:
+                if ret[2] == winreg.REG_EXPAND_SZ:  # type: ignore
                     folders[ret[0]] = expandvars(ret[1])
 
                 else:
@@ -186,6 +187,6 @@ else:
         return os.path.join(get_appdata(), vendor, prog, *args)
 
     def get_windir():
-        """Convenience function to get path to windows installation directory."""
+        "Convenience function to get path to windows installation directory."
 
         return str(os.environ["WINDIR"])

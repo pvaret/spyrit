@@ -49,7 +49,8 @@ class SocketPipeline(QObject):
 
         app = QApplication.instance()
         assert app is not None
-        self.triggersmanager = app.core.triggers
+        # TODO: Find a way to pass the core instance.
+        self.triggersmanager = app.core.triggers  # type: ignore
 
         self.pipeline = Pipeline()
 
@@ -83,8 +84,8 @@ class SocketPipeline(QObject):
             self.using_ssl = True
             self.socket = QSslSocket()
 
-            self.socket.encrypted.connect(self.reportEncrypted)
-            self.socket.sslErrors.connect(self.handleSslErrors)
+            self.socket.encrypted.connect(self.reportEncrypted)  # type: ignore
+            self.socket.sslErrors.connect(self.handleSslErrors)  # type: ignore
 
         else:
             self.socket = QTcpSocket()
@@ -97,51 +98,54 @@ class SocketPipeline(QObject):
                     "unencrypted connection instead..."
                 )
 
-        self.socket.stateChanged.connect(self.reportStateChange)
-        self.socket.error.connect(self.reportError)
-        self.socket.readyRead.connect(self.readSocket)
+        self.socket.stateChanged.connect(self.reportStateChange)  # type: ignore
+        self.socket.error.connect(self.reportError)  # type: ignore
+        self.socket.readyRead.connect(self.readSocket)  # type: ignore
 
     def connectToHost(self):
 
         if not self.socket:
             self.setupSocket()
+        assert self.socket is not None
 
         self.pipeline.resetInternalState()
 
         params = (self.net_settings._host, self.net_settings._port)
 
         if self.using_ssl:
-            self.socket.connectToHostEncrypted(*params)
+            self.socket.connectToHostEncrypted(*params)  # type: ignore
 
         else:
             self.socket.connectToHost(*params)
 
     def disconnectFromHost(self):
 
-        self.socket.disconnectFromHost()
+        if self.socket:
+            self.socket.disconnectFromHost()
 
     def abort(self):
 
-        self.socket.abort()
-        self.socket.close()
+        if self.socket:
+            self.socket.abort()
+            self.socket.close()
 
     @pyqtSlot("QAbstractSocket::SocketState")
     def reportStateChange(self, state):
 
         self.flushBuffer()
 
-        if state == QAbstractSocket.HostLookupState:
+        if state == QAbstractSocket.SocketState.HostLookupState:
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.RESOLVING))
 
-        elif state == QAbstractSocket.ConnectingState:
+        elif state == QAbstractSocket.SocketState.ConnectingState:
             self.pipeline.feedChunk(
                 (ChunkType.NETWORK, NetworkState.CONNECTING)
             )
 
-        elif state == QAbstractSocket.ConnectedState:
+        elif state == QAbstractSocket.SocketState.ConnectedState:
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.CONNECTED))
 
-        elif state == QAbstractSocket.UnconnectedState:
+        elif state == QAbstractSocket.SocketState.UnconnectedState:
             self.pipeline.feedChunk(
                 (ChunkType.NETWORK, NetworkState.DISCONNECTED)
             )
@@ -157,20 +161,20 @@ class SocketPipeline(QObject):
 
         self.flushBuffer()
 
-        if error == QAbstractSocket.ConnectionRefusedError:
+        if error == QAbstractSocket.SocketError.ConnectionRefusedError:
             self.pipeline.feedChunk(
                 (ChunkType.NETWORK, NetworkState.CONNECTIONREFUSED)
             )
 
-        elif error == QAbstractSocket.HostNotFoundError:
+        elif error == QAbstractSocket.SocketError.HostNotFoundError:
             self.pipeline.feedChunk(
                 (ChunkType.NETWORK, NetworkState.HOSTNOTFOUND)
             )
 
-        elif error == QAbstractSocket.SocketTimeoutError:
+        elif error == QAbstractSocket.SocketError.SocketTimeoutError:
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.TIMEOUT))
 
-        elif error == QAbstractSocket.RemoteHostClosedError:
+        elif error == QAbstractSocket.SocketError.RemoteHostClosedError:
             pass  # It's okay, we handle it as a disconnect.
 
         else:
@@ -189,10 +193,14 @@ class SocketPipeline(QObject):
         for err in errors:
             messages.warn("SSL Error: " + err.errorString())
 
+        assert isinstance(self.socket, QSslSocket)
         self.socket.ignoreSslErrors()
 
     @pyqtSlot()
     def readSocket(self):
+
+        if self.socket is None:
+            return
 
         # PyQt auto-converts from C++ char* to Python bytes.
         data: bytes = self.socket.readAll().data()
@@ -208,7 +216,13 @@ class SocketPipeline(QObject):
 
     def send(self, data: str):
 
-        if not self.socket.state() == self.socket.ConnectedState:
+        if self.socket is None:
+            return
+
+        if (
+            not self.socket.state()
+            == QAbstractSocket.SocketState.ConnectedState
+        ):
 
             # Don't write anything if the socket is not connected.
             return

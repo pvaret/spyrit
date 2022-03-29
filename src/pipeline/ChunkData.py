@@ -138,6 +138,7 @@ ANSI_MAPPING = (
     (b"49", (FORMAT_PROPERTIES.BACKGROUND, None)),
 )
 
+# TODO: This is a big, not typesafe structure. Fix it.
 ANSI_TO_FORMAT = dict(ANSI_MAPPING)
 
 

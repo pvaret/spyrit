@@ -42,12 +42,12 @@ class AnsiFilter(BaseFilter):
 
     CSI8b = b"\x9b"
 
-    CSI = b"(?:" + ESC + br"\[" + b"|" + CSI8b + b")"
+    CSI = b"(?:" + ESC + rb"\[" + b"|" + CSI8b + b")"
 
-    match = re.compile(CSI + br"((?:\d+;?)*)" + b"m")
+    match = re.compile(CSI + rb"((?:\d+;?)*)" + b"m")
 
     unfinished = re.compile(
-        b"|".join([b"(" + code + b"$)" for code in (ESC, CSI + br"[\d;]*")])
+        b"|".join([b"(" + code + b"$)" for code in (ESC, CSI + rb"[\d;]*")])
     )
 
     def resetInternalState(self):
@@ -62,7 +62,8 @@ class AnsiFilter(BaseFilter):
 
         return (
             False,  # highlight
-            ANSI_TO_FORMAT.get(b"39")[1],  # default colors
+            # default colors
+            ANSI_TO_FORMAT.get(b"39")[1],  # type: ignore
         )
 
     def processChunk(self, chunk):
@@ -108,7 +109,7 @@ class AnsiFilter(BaseFilter):
 
                 if len(list_params) >= 2 and param in [b"38", b"48"]:
 
-                    prop = ANSI_TO_FORMAT.get(param)[0]
+                    prop = ANSI_TO_FORMAT.get(param)[0]  # type: ignore
                     param = list_params.pop(0)
 
                     if param == b"5":
@@ -135,7 +136,7 @@ class AnsiFilter(BaseFilter):
                     # Unknown ANSI code. Ignore.
                     continue
 
-                prop, value = ANSI_TO_FORMAT[param]
+                prop, value = ANSI_TO_FORMAT[param]  # type: ignore
 
                 if prop == FORMAT_PROPERTIES.COLOR:
 
@@ -176,7 +177,8 @@ class AnsiFilter(BaseFilter):
                 # Other cases: italic, underline and such. Just pass the value
                 # along.
 
-                format[prop] = value
+                if prop is not None:
+                    format[prop] = value
 
             if format:
                 yield (ChunkType.ANSI, format)

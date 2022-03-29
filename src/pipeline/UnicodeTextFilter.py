@@ -33,8 +33,8 @@ class UnicodeTextFilter(BaseFilter):
 
     def __init__(self, context, encoding):
 
-        self.decoder = None
         self.encoding = "ascii"
+        self.decoder = codecs.getincrementaldecoder(self.encoding)("replace")
 
         super().__init__(context)
 

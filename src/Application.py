@@ -47,9 +47,12 @@ class Application(QApplication):
         self.bootstrapped = False
         # Try to guess the local encoding.
         self.local_encoding = locale.getpreferredencoding()
-        self.core = None
 
-        self.aboutToQuit.connect(self.beforeStop)
+        # TODO: Find a solution so Qt signals typecheck correctly.
+        self.aboutToQuit.connect(self.beforeStop)  # type: ignore
+
+        # And create the core object for Spyrit:
+        self.core = construct_spyrit_core(self)
 
     def bootstrap(self):
 
@@ -61,9 +64,9 @@ class Application(QApplication):
 
         # Attempt to load resources. Log error if resources not found.
         try:
-            import resources
+            __import__("resources")
 
-        except ImportError:
+        except ModuleNotFoundError:
             messages.warn(
                 "Resource file not found. No graphics will be loaded."
             )
@@ -74,10 +77,7 @@ class Application(QApplication):
         # Setup icon.
         self.setWindowIcon(QIcon(":/app/icon"))
 
-        # And create the core object for Spyrit:
-        self.core = construct_spyrit_core(self)
-
-    def exec_(self):
+    def doExec(self):
 
         if not self.bootstrapped:
             self.bootstrap()
@@ -89,8 +89,8 @@ class Application(QApplication):
     def afterStart(self):
 
         # This method is called once, right after the start of the event loop.
-        # It is used to set up things that we only want done after the event loop
-        # has begun running.
+        # It is used to set up things that we only want done after the event
+        # loop has begun running.
 
         sys.excepthook = handle_exception
 
@@ -124,5 +124,8 @@ class Application(QApplication):
 
     @pyqtSlot()
     def beforeStop(self):
+
+        if self.core:
+            self.core.atExit()
 
         sys.excepthook = sys.__excepthook__

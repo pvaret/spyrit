@@ -22,10 +22,7 @@ from typing import Callable, Optional
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtCore import QObject
 
-# TODO: Using BaseNode directly kind of sucks. Find a way to make this cleaner?
-# Settings "derived" from the root setting graph should be accessible through a
-# dedicated API, without poking at the low-level details of settings Nodes.
-# from settings.Settings import BaseNode
+# TODO: Settings need drastic overhauling to make them typesafe.
 from settings.Settings import Settings, Node
 from SpyritSettings import WORLDS
 from Utilities import normalize_text
@@ -40,36 +37,36 @@ class WorldsSettings:
 
     def __init__(self, settings: Settings, state: Settings):
 
-        self.settings: Node = settings[WORLDS]
-        self.state: Node = state[WORLDS]
+        self.settings = settings[WORLDS]
+        self.state = state[WORLDS]
 
     def getAllWorldSettings(self) -> dict[str, Node]:
 
-        return self.settings.nodes.values()
+        return self.settings.nodes.values()  # type: ignore
 
     def newWorldSettings(self):
 
         # TODO: Add createSection() to nodes that would do the right thing?
-        return self.settings.proto.build("*", self.settings)
+        return self.settings.proto.build("*", self.settings)  # type: ignore
 
     def newWorldState(self):
 
-        return self.state.proto.build("*", self.state)
+        return self.state.proto.build("*", self.state)  # type: ignore
 
     def lookupStateForSettings(self, settings):
 
         if settings._name:
             key = normalize_text(settings._name)
-            if key in self.state:
-                return self.state[key]
+            if key in self.state:  # type: ignore
+                return self.state[key]  # type: ignore
 
         return self.newWorldState()
 
     def saveWorldSettings(self, key, settings, state):
 
         # TODO: Guarantee unicity?
-        self.settings.nodes[key] = settings
-        self.state.nodes[key] = state
+        self.settings.nodes[key] = settings  # type: ignore
+        self.state.nodes[key] = state  # type: ignore
 
 
 class WorldsManager(QObject):
@@ -87,9 +84,9 @@ class WorldsManager(QObject):
 
         for settings in self.ws.getAllWorldSettings():
 
-            if not settings._name:
+            if not settings._name:  # type: ignore
                 n += 1
-                settings._name = "(Unnamed %d)" % n
+                settings._name = "(Unnamed %d)" % n  # type: ignore
 
         self.generateMappings()
 
@@ -99,7 +96,7 @@ class WorldsManager(QObject):
         # their (host, port) connection pair.
 
         self.name_mapping = dict(
-            (self.normalize(settings._name), settings)
+            (self.normalize(settings._name), settings)  # type: ignore
             for settings in self.ws.getAllWorldSettings()
         )
 
@@ -107,7 +104,7 @@ class WorldsManager(QObject):
 
         for settings in self.ws.getAllWorldSettings():
             self.hostport_mapping.setdefault(
-                (settings._net._host, settings._net._port), []
+                (settings._net._host, settings._net._port), []  # type: ignore
             ).append(settings)
 
     def normalize(self, name):
@@ -117,7 +114,10 @@ class WorldsManager(QObject):
     def worldList(self):
 
         # Return world names, sorted by normalized value.
-        worlds = (world._name for world in self.ws.getAllWorldSettings())
+        worlds = (
+            world._name  # type: ignore
+            for world in self.ws.getAllWorldSettings()
+        )
         key: Callable[[str], str] = lambda s: self.normalize(s)
         return sorted(worlds, key=key)
 
@@ -126,13 +126,13 @@ class WorldsManager(QObject):
         wsettings = self.ws.newWorldSettings()
 
         if name:
-            wsettings._name = name
+            wsettings._name = name  # type: ignore
         if host:
-            wsettings._net._host = host
+            wsettings._net._host = host  # type: ignore
         if port:
-            wsettings._net._port = port
+            wsettings._net._port = port  # type: ignore
         if ssl:
-            wsettings._net._ssl = ssl
+            wsettings._net._ssl = ssl  # type: ignore
 
         return wsettings
 

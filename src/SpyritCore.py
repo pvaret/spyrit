@@ -22,7 +22,6 @@
 from weakref import WeakSet
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSlot
 
 from MainWindow import MainWindow
 from SoundEngine import SoundEngine
@@ -68,7 +67,6 @@ class SpyritCore(QObject):
         # whole application.
         self.motd = iter(MOTD)
 
-    @pyqtSlot()
     def atExit(self) -> None:
 
         self.tmprc.cleanup()
@@ -105,6 +103,9 @@ class SpyritCore(QObject):
             self.openWorld(self.worlds.newAnonymousWorld(host, port, ssl))
 
     def openWorld(self, world):
+
+        if self.mw is None:
+            return
 
         self.openworlds.add(world)
         self.mw.newWorldUI(world)

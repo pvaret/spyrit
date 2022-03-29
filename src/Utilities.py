@@ -211,9 +211,7 @@ def handle_exception(
     from PyQt5.QtWidgets import QMessageBox
     from PyQt5.QtWidgets import QWidget
 
-    from Application import Application
-
-    app = cast(Application, QApplication.instance())
+    app = cast(QApplication, QApplication.instance())
 
     # KeyboardInterrupt is a special case.
     # We don't raise the error dialog when it occurs.
@@ -247,8 +245,9 @@ def handle_exception(
     print(
         "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
     )
-    if app and app.core:
-        app.core.atExit()
+    if app:
+        # TODO: Somehow make it so the actual type of app is known.
+        app.atExit()  # type: ignore
     sys.exit(1)
 
 

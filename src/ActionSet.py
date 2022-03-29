@@ -24,19 +24,21 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QAction
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QWidget
 
 
 class ActionSet:
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
 
         self.parent = parent
 
-        settings = QApplication.instance().core.settings
+        # TODO: pass settings directly.
+        self.settings = QApplication.instance().core.settings  # type: ignore
         self.closures = []
 
         self.actions = {
             # Global actions
-            "about": ("About %s..." % settings._app._name, ":/app/icon"),
+            "about": ("About %s..." % self.settings._app._name, ":/app/icon"),
             "aboutqt": ("About Qt...", ":/icon/qt-logo"),
             "newworld": ("New world...", ":/icon/new_world"),
             "quickconnect": ("Quick connect...", None),
@@ -65,17 +67,17 @@ class ActionSet:
         # roles in their own structure rather than in the one above.
 
         self.roles = {
-            "about": QAction.AboutRole,
-            "aboutqt": QAction.AboutQtRole,
-            "quit": QAction.QuitRole,
+            "about": QAction.MenuRole.AboutRole,
+            "aboutqt": QAction.MenuRole.AboutQtRole,
+            "quit": QAction.MenuRole.QuitRole,
         }
 
         # Likewise, custom shortcut contexts.
 
         self.contexts = {
-            "historyup": Qt.WidgetShortcut,
-            "historydown": Qt.WidgetShortcut,
-            "autocomplete": Qt.WidgetShortcut,
+            "historyup": Qt.ShortcutContext.WidgetShortcut,
+            "historydown": Qt.ShortcutContext.WidgetShortcut,
+            "autocomplete": Qt.ShortcutContext.WidgetShortcut,
         }
 
     def bindAction(self, action, slot):
@@ -87,14 +89,14 @@ class ActionSet:
         if icon:
             a.setIcon(QIcon(icon))
 
-        settings = QApplication.instance().core.settings._shortcuts
+        shortcuts = self.settings._shortcuts
 
         def set_action_shortcut():
 
             # Note how this closure uses 'settings', 'a' and 'action' as bound
             # variables.
 
-            shortcut = settings[action]
+            shortcut = shortcuts[action]
 
             if shortcut:
                 a.setShortcut(QKeySequence(shortcut))
@@ -104,7 +106,7 @@ class ActionSet:
         # Call it once:
         set_action_shortcut()
 
-        settings.onChange(action, set_action_shortcut)
+        shortcuts.onChange(action, set_action_shortcut)
 
         # Keep a reference to the closure, so it's not garbage-collected
         # right away.
@@ -120,10 +122,11 @@ class ActionSet:
         if context is not None:
             a.setShortcutContext(context)
 
-        a.triggered.connect(slot)
+        # TODO: Find a solution so Qt signals typecheck correctly.
+        a.triggered.connect(slot)  # type: ignore
 
-        # It is necessary to add the action to a widget before its shortcuts will
-        # work.
+        # It is necessary to add the action to a widget before its shortcuts
+        # will work.
         self.parent.addAction(a)
 
         return a

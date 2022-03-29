@@ -117,4 +117,5 @@ class AboutDialog(QDialog):
         self.layout().addWidget(button)
         self.layout().setAlignment(button, Qt.AlignmentFlag.AlignHCenter)
 
-        button.clicked.connect(self.accept)
+        # TODO: Find a solution so Qt signals typecheck correctly.
+        button.clicked.connect(self.accept)  # type: ignore

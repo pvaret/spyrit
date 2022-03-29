@@ -55,7 +55,7 @@ def main(args):
 
     from Application import Application
 
-    Application(args).exec_()
+    Application(args).doExec()
 
 
 if __name__ == "__main__":

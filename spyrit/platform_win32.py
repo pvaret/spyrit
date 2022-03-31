@@ -1,0 +1,39 @@
+# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+#
+# This file is part of Spyrit.
+#
+# Spyrit is free software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License version 2 as published by the Free
+# Software Foundation.
+#
+# You should have received a copy of the GNU General Public License along with
+# Spyrit; if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+# Fifth Floor, Boston, MA  02110-1301  USA
+#
+
+"""
+Implement platform-specific parameters for Win32 (Windows).
+"""
+
+import os
+
+from . import constants
+from . import default_paths_base
+
+
+class DefaultPaths(default_paths_base.DefaultPathsBase):
+
+    CONFIG_FILE_NAME = constants.CONFIG_FILE_NAME_WINDOWS
+    CONFIG_FOLDER_NAME = constants.CONFIG_FOLDER_NAME_WINDOWS
+
+    def getConfigFileName(self) -> str:
+
+        return self.CONFIG_FILE_NAME
+
+    def getDefaultConfigFolder(self) -> str:
+
+        return os.path.join(self.getAppDataFolder(), self.CONFIG_FOLDER_NAME)
+
+    def getAppDataFolder(self) -> str:
+
+        return os.environ["LOCALAPPDATA"]

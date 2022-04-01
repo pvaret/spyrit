@@ -43,6 +43,7 @@ def main(args: list[str]) -> int:
         show_deps_and_exit(checker)
 
     # Note that we don't pull in any dependencies until now.
+
     from spyrit.bootstrap import bootstrap
 
     return bootstrap(args)

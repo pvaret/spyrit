@@ -22,12 +22,12 @@ from typing import Iterator
 try:
     import PySide6
 except (ModuleNotFoundError, ImportError):
-    PySide6 = None
+    PySide6 = None  # type: ignore
 
 try:
     from PySide6 import QtCore
 except (ModuleNotFoundError, ImportError):
-    QtCore = None
+    QtCore = None  # type: ignore
 
 from . import constants
 
@@ -99,7 +99,8 @@ class DependencyChecker:
 
         # Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
         version_str = str(QtCore.qVersion())
-        version = tuple(int(c) for c in version_str.split(".")[0:2])
+        version_numbers = [int(c) for c in version_str.split(".")]
+        version = version_numbers[0], version_numbers[1]
 
         return True, version
 

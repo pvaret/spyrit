@@ -25,6 +25,7 @@ from typing import Sequence
 from PyQt5.QtCore import QSize
 
 from Globals import ANSI_COLORS as COL
+from Globals import SOLARIZED
 from IniParser import parse_settings
 from IniParser import struct_to_ini
 from IniParser import VERSION
@@ -170,7 +171,7 @@ SETTINGS_SCHEMA = {
         ("ui.input.font.color", {"serializer": Str(), "default": ""}),
         (
             "ui.input.background.color",
-            {"serializer": Str(), "default": COL.white},
+            {"serializer": Str(), "default": SOLARIZED.base3},
         ),
         ("ui.input.max_history", {"serializer": Int(), "default": 0}),
         ("ui.input.save_history", {"serializer": Int(), "default": 10}),

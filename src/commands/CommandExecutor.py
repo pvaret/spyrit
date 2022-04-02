@@ -29,6 +29,8 @@
 
 import inspect
 
+from typing import Any
+
 
 class ExecuteError(RuntimeError):
     pass
@@ -129,14 +131,32 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
     if inspect.isclass(callable):
         raise TypeError("Tried to call match_args_to_function on a class!")
 
-    # TODO: replace with inspect.signature in Python 3.
     try:
-        call_args = inspect.getargspec(callable)
-        expected_args, star_args, star_kwargs, defaults = call_args
+        sig = inspect.signature(callable)
+
     except TypeError:
         raise TypeError(
-            "Tried to call match_args_to_function on a non-Python " "function!"
+            "Tried to call match_args_to_function on a non-Python function!"
         )
+
+    expected_args: list[str] = []
+    star_args = ""
+    star_kwargs = ""
+    defaults: dict[str, Any] = {}
+
+    for parameter in sig.parameters.values():
+        if (
+            parameter.kind == parameter.POSITIONAL_ONLY
+            or parameter.kind == parameter.POSITIONAL_OR_KEYWORD
+            or parameter.kind == parameter.KEYWORD_ONLY
+        ):
+            expected_args.append(parameter.name)
+        elif parameter.kind == inspect.Parameter.VAR_POSITIONAL:
+            star_args = parameter.name
+        elif parameter.kind == inspect.Parameter.VAR_KEYWORD:
+            star_kwargs = parameter.name
+        if parameter.default != parameter.empty:
+            defaults[parameter.name] = parameter.default
 
     # Reminder:
     #   - expected_args is the list of the callable's arguments.
@@ -144,21 +164,10 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
     #   - star_args and star_kwargs are the names of the * and ** arguments
     #     (usually 'args' and 'kwargs').
 
-    # Account for implicit 'self' argument in methods:
-    if inspect.ismethod(callable):
-        expected_args.pop(0)
-
     actual_args = {}
     actual_star_args = []
     actual_star_kwargs = {}
     args = expected_args[:]
-
-    # Transform 'defaults' tuple into dict:
-    if defaults:
-        kw_defaults = dict(zip(args[-len(defaults) :], defaults))
-
-    else:
-        kw_defaults = {}
 
     # STEP 1: Apply unnammed args.
 
@@ -179,7 +188,10 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
 
                 # If not: too many arguments were passed to the callable. Abort.
                 if len(provided_args) > 2:
-                    msg = "Too many parameters! (Did you forget some quotation marks?)"
+                    msg = (
+                        "Too many parameters!"
+                        " (Did you forget some quotation marks?)"
+                    )
 
                 else:
                     msg = "Too many parameters!"
@@ -215,7 +227,7 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
 
     # STEP 3: Apply default values.
 
-    for default_arg, default_value in kw_defaults.items():
+    for default_arg, default_value in defaults.items():
 
         if default_arg not in actual_args:
             actual_args[default_arg] = default_value

@@ -117,7 +117,7 @@ class LineCount(QLabel):
 
 class SplittableTextView(QTextEditWithClickableLinks):
 
-    SPLIT_FACTOR = 0.84  # Corresponds to 1/6th of the height.
+    SPLIT_FACTOR = 0.618  # Corresponds to the golden number.
 
     def __init__(self, parent=None):
 

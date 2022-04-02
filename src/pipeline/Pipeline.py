@@ -22,8 +22,8 @@
 
 from typing import Callable
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import pyqtSignal
 
 from .ChunkData import ChunkType, ChunkT
 from .ChunkData import thePromptSweepChunk

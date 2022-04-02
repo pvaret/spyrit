@@ -26,8 +26,8 @@ import bisect
 from collections import deque
 from typing import List, Optional, Tuple
 
-from PyQt5.QtGui import QTextCursor
-from PyQt5.QtWidgets import QTextEdit
+from PyQt6.QtGui import QTextCursor
+from PyQt6.QtWidgets import QTextEdit
 
 from pipeline.ChunkData import ChunkType
 from pipeline.ChunkData import FlowControl
@@ -134,7 +134,9 @@ class Autocompleter:
 
         # Determine right half of word.
 
-        tc.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+        tc.movePosition(
+            QTextCursor.MoveOperation.EndOfLine, QTextCursor.MoveMode.KeepAnchor
+        )
         line_end = str(tc.selectedText())
 
         m = self.endwordmatch.findall(line_end)
@@ -147,7 +149,10 @@ class Autocompleter:
 
         tc.setPosition(pos)
 
-        tc.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+        tc.movePosition(
+            QTextCursor.MoveOperation.StartOfLine,
+            QTextCursor.MoveMode.KeepAnchor,
+        )
         line_start = str(tc.selectedText())
 
         m = self.startwordmatch.findall(line_start)
@@ -165,7 +170,9 @@ class Autocompleter:
         if len(word) > 0:
 
             tc.movePosition(
-                QTextCursor.Right, QTextCursor.KeepAnchor, len(word)
+                QTextCursor.MoveOperation.Right,
+                QTextCursor.MoveMode.KeepAnchor,
+                len(word),
             )
 
     def finalize(self):
@@ -176,14 +183,14 @@ class Autocompleter:
         tc = self.textedit.textCursor()
 
         pos = tc.position()
-        tc.movePosition(QTextCursor.EndOfLine)
+        tc.movePosition(QTextCursor.MoveOperation.EndOfLine)
 
         if tc.position() == pos:  # Cursor was at end of line.
             tc.insertText(" ")
 
         else:
             tc.setPosition(pos)
-            tc.movePosition(QTextCursor.Right)
+            tc.movePosition(QTextCursor.MoveOperation.Right)
 
         self.textedit.setTextCursor(tc)
 

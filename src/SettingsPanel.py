@@ -21,7 +21,7 @@
 
 from typing import cast
 
-from PyQt5.QtWidgets import QWidget, QFormLayout
+from PyQt6.QtWidgets import QWidget, QFormLayout
 
 
 class SettingsPanel(QWidget):

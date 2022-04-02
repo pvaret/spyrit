@@ -21,8 +21,8 @@
 
 from Globals import FORMAT_PROPERTIES
 
-from PyQt5.QtGui import QColor
-from PyQt5.QtGui import QFont
+from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QFont
 
 
 class QTextFormatFormatter:
@@ -70,7 +70,7 @@ class QTextFormatFormatter:
 
     def _setFontWeightProperty(self, value):
 
-        self.qtextformat.setFontWeight(QFont.Black)
+        self.qtextformat.setFontWeight(QFont.Weight.Black)
 
     def _setHrefProperty(self, value):
 

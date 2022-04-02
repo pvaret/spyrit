@@ -19,12 +19,12 @@
 #
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QKeySequence
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QWidget
 
 
 class ActionSet:

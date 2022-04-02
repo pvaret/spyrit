@@ -18,10 +18,10 @@
 #
 
 
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import QTimeLine
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtCore import QTimeLine
 
 
 class LED:

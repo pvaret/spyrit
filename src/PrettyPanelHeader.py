@@ -19,11 +19,11 @@
 #
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFrame
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtWidgets import QHBoxLayout
-from PyQt5.QtWidgets import QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QFrame
+from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QHBoxLayout
+from PyQt6.QtWidgets import QSizePolicy
 
 
 class PrettyPanelHeader(QFrame):
@@ -61,12 +61,12 @@ class PrettyPanelHeader(QFrame):
 
         # Legacy setup for platforms that don't support stylesheets (yet).
 
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setFrameShadow(QFrame.Plain)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setFrameShadow(QFrame.Shadow.Plain)
 
         # Layout stuff.
 
-        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
 
         layout = QHBoxLayout(self)
 

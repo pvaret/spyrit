@@ -26,8 +26,8 @@
 """
 
 
-from PyQt5.QtGui import QColor
-from PyQt5.QtGui import QTextFormat
+from PyQt6.QtGui import QColor
+from PyQt6.QtGui import QTextFormat
 
 
 class FORMAT_PROPERTIES:
@@ -35,12 +35,12 @@ class FORMAT_PROPERTIES:
     # Format property identifiers are defined on the basis of Qt properties.
     # This saves us time when we apply them during the rendering process.
 
-    BOLD = QTextFormat.FontWeight
-    ITALIC = QTextFormat.FontItalic
-    UNDERLINE = QTextFormat.TextUnderlineStyle
-    COLOR = QTextFormat.ForegroundBrush
-    BACKGROUND = QTextFormat.BackgroundBrush
-    HREF = QTextFormat.AnchorHref
+    BOLD = QTextFormat.Property.FontWeight
+    ITALIC = QTextFormat.Property.FontItalic
+    UNDERLINE = QTextFormat.Property.TextUnderlineStyle
+    COLOR = QTextFormat.Property.ForegroundBrush
+    BACKGROUND = QTextFormat.Property.BackgroundBrush
+    HREF = QTextFormat.Property.AnchorHref
     REVERSED = None
     BLINK = None
 

@@ -19,9 +19,9 @@
 #
 
 
-from PyQt5.QtWidgets import QDialog
-from PyQt5.QtWidgets import QVBoxLayout
-from PyQt5.QtWidgets import QDialogButtonBox
+from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QVBoxLayout
+from PyQt6.QtWidgets import QDialogButtonBox
 
 from Separator import Separator
 

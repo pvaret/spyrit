@@ -18,7 +18,7 @@
 #
 
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from .CommandParsing import parse_command
 from .CommandParsing import parse_arguments

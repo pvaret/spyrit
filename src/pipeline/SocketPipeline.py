@@ -18,12 +18,12 @@
 # socket and manages connection/disconnection and everything.
 #
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtNetwork import QSslSocket
-from PyQt5.QtNetwork import QTcpSocket
-from PyQt5.QtNetwork import QAbstractSocket
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtNetwork import QSslSocket
+from PyQt6.QtNetwork import QTcpSocket
+from PyQt6.QtNetwork import QAbstractSocket
 
 from .Pipeline import Pipeline
 from .AnsiFilter import AnsiFilter
@@ -99,7 +99,7 @@ class SocketPipeline(QObject):
                 )
 
         self.socket.stateChanged.connect(self.reportStateChange)  # type: ignore
-        self.socket.error.connect(self.reportError)  # type: ignore
+        self.socket.errorOccurred.connect(self.reportError)  # type: ignore
         self.socket.readyRead.connect(self.readSocket)  # type: ignore
 
     def connectToHost(self):

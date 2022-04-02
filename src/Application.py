@@ -22,12 +22,12 @@
 import sys
 import locale
 
-from PyQt5.QtGui import QIcon
-from PyQt5.QtGui import QFontDatabase
-from PyQt5.QtCore import QTimer
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import pyqtRemoveInputHook
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QFontDatabase
+from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtCore import pyqtRemoveInputHook
+from PyQt6.QtWidgets import QApplication
 
 
 from Messages import messages
@@ -84,7 +84,7 @@ class Application(QApplication):
 
         QTimer.singleShot(0, self.afterStart)
 
-        return QApplication.exec_()
+        return QApplication.exec()
 
     def afterStart(self):
 

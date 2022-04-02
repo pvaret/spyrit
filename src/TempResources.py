@@ -21,8 +21,8 @@
 
 import os
 
-from PyQt5.QtCore import QFile
-from PyQt5.QtCore import QTemporaryFile
+from PyQt6.QtCore import QFile
+from PyQt6.QtCore import QTemporaryFile
 
 
 class TempResources:

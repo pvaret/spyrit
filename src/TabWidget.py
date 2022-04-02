@@ -18,12 +18,12 @@
 #
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtWidgets import QTabBar
-from PyQt5.QtWidgets import QTabWidget
-from PyQt5.QtWidgets import QStackedWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QTabBar
+from PyQt6.QtWidgets import QTabWidget
+from PyQt6.QtWidgets import QStackedWidget
 
 
 class TabBar(QTabBar):

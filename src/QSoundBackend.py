@@ -22,7 +22,7 @@
 
 try:
     # Ignore typing info, since the import might not exist.
-    from PyQt5.QtMultimedia import QSound  # type: ignore
+    from PyQt6.QtMultimedia import QSound  # type: ignore
 
 except ImportError:
     # QtMultimedia is optional and may not be installed.

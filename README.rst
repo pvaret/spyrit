@@ -17,11 +17,11 @@ ABOUT SPYRIT
 PREREQUISITES
 -------------
 
-**Spyrit** requires Python 3.6 or later, Qt 5.6 or later, and the PyQt5 bindings.
-On Ubuntu and other Debian-like OS, install the package ``python3-pyqt5`` and you will be good to go.
-Alternatively, install it with pip: ``pip install PyQt5``
+**Spyrit** requires Python 3.6 or later, Qt 6.2 or later, and the PyQt6 bindings.
+On Ubuntu and other Debian-like OS, install the package ``python3-pyqt6`` and you will be good to go.
+Alternatively, install it with pip: ``pip install PyQt6``
 
-On Windows, install Python 3.6 or later from http://www.python.org/ and the Windows binary PyQt5 package from http://www.riverbankcomputing.com/software/pyqt/download5 for Python 3.6.
+On Windows, install Python 3.6 or later from http://www.python.org/ and the Windows binary PyQt6 package from https://riverbankcomputing.com/software/pyqt/ for Python 3.6.
 
 Windows and Mac OS X users may want to download the latest binary release for their OS from our Website instead.
 

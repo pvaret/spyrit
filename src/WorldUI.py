@@ -21,16 +21,16 @@
 
 from typing import Optional
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QSize
-from PyQt5.QtCore import QTimer
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import pyqtSignal
 
-from PyQt5.QtWidgets import QStyle
-from PyQt5.QtWidgets import QToolBar
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtWidgets import QSplitter
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QStyle
+from PyQt6.QtWidgets import QToolBar
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtWidgets import QSplitter
+from PyQt6.QtWidgets import QApplication
 
 from pipeline.ChunkData import ChunkType
 from ActionSet import ActionSet

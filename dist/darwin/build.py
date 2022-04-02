@@ -19,7 +19,7 @@ IMGGLOB = "%s-*.*.dmg %s-*.*.sparseimage" % (APPNAME, APPNAME)
 
 APP = [os.path.join("..", "..", "%s.py" % APPNAME)]
 ICON_FILE = os.path.join("..", "..", "resources", "spyrit-logo.icns")
-INCLUDES = ["PyQt5._qt", "sip"]
+INCLUDES = ["PyQt6._qt", "sip"]
 OPTIONS = {"argv_emulation": True, "iconfile": ICON_FILE, "includes": INCLUDES}
 
 PRUNE = [
@@ -36,9 +36,9 @@ PRUNE = [
     ("Frameworks", "QtWebKit.framework"),
     ("Frameworks", "QtXml.framework"),
     ("Frameworks", "QtXmlPatterns.framework"),
-    ("Frameworks", "QtGui.framework", "Versions", "5", "QtGui_debug"),
-    ("Frameworks", "QtCore.framework", "Versions", "5", "QtCore_debug"),
-    ("Frameworks", "QtNetwork.framework", "Versions", "5", "QtNetwork_debug"),
+    ("Frameworks", "QtGui.framework", "Versions", "6", "QtGui_debug"),
+    ("Frameworks", "QtCore.framework", "Versions", "6", "QtCore_debug"),
+    ("Frameworks", "QtNetwork.framework", "Versions", "6", "QtNetwork_debug"),
 ]
 
 HDIUTIL = "hdiutil"

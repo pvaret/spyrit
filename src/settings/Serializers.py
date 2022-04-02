@@ -38,9 +38,9 @@ from typing import List as ListType
 from typing import Optional
 from typing import TypeVar
 
-from PyQt5.QtCore import QPoint
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QKeySequence
+from PyQt6.QtCore import QPoint
+from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QKeySequence
 
 from Globals import FORMAT_PROPERTIES
 from Matches import BaseMatch
@@ -289,13 +289,15 @@ class KeySequence(BaseSerializer[QKeySequence]):
     def serialize(self, value: Optional[QKeySequence]) -> str:
 
         if value is not None:
-            return value.toString(QKeySequence.NativeText)
+            return value.toString(QKeySequence.SequenceFormat.NativeText)
 
         return ""
 
     def deserialize(self, string: str) -> QKeySequence:
 
-        return QKeySequence.fromString(string, QKeySequence.NativeText)
+        return QKeySequence.fromString(
+            string, QKeySequence.SequenceFormat.NativeText
+        )
 
 
 class Size(BaseSerializer[QSize]):

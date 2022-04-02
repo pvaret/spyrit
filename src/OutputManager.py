@@ -19,8 +19,8 @@
 #
 
 
-from PyQt5.QtGui import QTextCursor
-from PyQt5.QtGui import QTextCharFormat
+from PyQt6.QtGui import QTextCursor
+from PyQt6.QtGui import QTextCharFormat
 
 from FormatStack import FormatStack
 from Globals import LEFTARROW

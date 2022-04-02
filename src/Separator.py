@@ -19,7 +19,7 @@
 #
 
 
-from PyQt5.QtWidgets import QFrame
+from PyQt6.QtWidgets import QFrame
 
 
 class Separator(QFrame):
@@ -29,6 +29,6 @@ class Separator(QFrame):
 
         self.setLineWidth(1)
         self.setMidLineWidth(0)
-        self.setFrameShape(QFrame.HLine)
-        self.setFrameShadow(QFrame.Sunken)
+        self.setFrameShape(QFrame.Shape.HLine)
+        self.setFrameShadow(QFrame.Shadow.Sunken)
         self.setMinimumSize(0, 2)

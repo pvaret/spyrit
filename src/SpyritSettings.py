@@ -22,7 +22,7 @@ import codecs
 
 from typing import Sequence
 
-from PyQt5.QtCore import QSize
+from PyQt6.QtCore import QSize
 
 from Globals import ANSI_COLORS as COL
 from Globals import SOLARIZED

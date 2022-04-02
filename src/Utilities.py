@@ -41,7 +41,7 @@ BS = "\\"
 
 def check_ssl_is_available() -> bool:
 
-    from PyQt5 import QtNetwork
+    from PyQt6 import QtNetwork
 
     return QtNetwork.QSslSocket.supportsSsl()
 
@@ -207,9 +207,9 @@ def handle_exception(
     import os.path
     import traceback
 
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtWidgets import QMessageBox
-    from PyQt5.QtWidgets import QWidget
+    from PyQt6.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QMessageBox
+    from PyQt6.QtWidgets import QWidget
 
     app = cast(QApplication, QApplication.instance())
 

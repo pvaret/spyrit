@@ -19,7 +19,7 @@
 
 
 REQUIRED_PYTHON_VERSION = (3, 6)
-REQUIRED_QT_VERSION = (5, 6)
+REQUIRED_QT_VERSION = (6, 2)
 
 
 def check_python_version():
@@ -34,21 +34,21 @@ def check_python_version():
     return False, "Python v%d.%d required!" % REQUIRED_PYTHON_VERSION
 
 
-def check_pyqt5_installed():
+def check_pyqt6_installed():
 
     try:
-        import PyQt5
-        import PyQt5.QtCore
+        import PyQt6
+        import PyQt6.QtCore
 
-        return True, "🗸 Found PyQt v%s." % PyQt5.QtCore.PYQT_VERSION_STR
+        return True, "🗸 Found PyQt v%s." % PyQt6.QtCore.PYQT_VERSION_STR
 
     except ImportError:
-        return False, "PyQt5 bindings required!"
+        return False, "PyQt6 bindings required!"
 
 
 def qt_version():
 
-    from PyQt5.QtCore import qVersion
+    from PyQt6.QtCore import qVersion
 
     # Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
     return tuple(int(c) for c in qVersion().split(".")[0:2])

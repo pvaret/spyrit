@@ -19,19 +19,20 @@
 
 
 from typing import cast
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import QSize
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QAction
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QMenu
-from PyQt5.QtWidgets import QStyle
-from PyQt5.QtWidgets import QToolBar
-from PyQt5.QtWidgets import QToolButton
+
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtCore import QSize
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QMainWindow
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtWidgets import QStyle
+from PyQt6.QtWidgets import QToolBar
+from PyQt6.QtWidgets import QToolButton
 
 from ActionSet import ActionSet
 from ConfirmDialog import confirmDialog
@@ -144,7 +145,9 @@ class MainWindow(QMainWindow):
         # menu popup mode.
 
         connectbutton = self.toolbar_main.widgetForAction(connectaction)
-        connectbutton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        cast(QToolButton, connectbutton).setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup
+        )
 
         # Add remaining toolbar actions.
 
@@ -244,10 +247,10 @@ class MainWindow(QMainWindow):
         if self.toolbar_world:
             self.removeToolBar(self.toolbar_world)
 
-        try:
-            toolbar = self.tabwidget.widget(i).toolbar
-
-        except AttributeError:
+        widget = self.tabwidget.widget(i)
+        if isinstance(widget, WorldUI):
+            toolbar = widget.toolbar
+        else:
             toolbar = None
 
         self.toolbar_world = toolbar
@@ -348,7 +351,7 @@ class MainWindow(QMainWindow):
         world = worldsmanager.newAnonymousWorld()
         dialog = NewWorldDialog(world.settings, self)
 
-        if dialog.exec_():
+        if dialog.exec():
 
             world.save()
             QApplication.instance().core.openWorld(world)  # type: ignore
@@ -361,7 +364,7 @@ class MainWindow(QMainWindow):
         world = worldsmanager.newAnonymousWorld()
         dialog = QuickConnectDialog(world.settings, self)
 
-        if dialog.exec_():
+        if dialog.exec():
             QApplication.instance().core.openWorld(world)  # type: ignore
 
     def makeConnectToWorldAction(self, worldname):
@@ -388,4 +391,4 @@ class MainWindow(QMainWindow):
         from AboutDialog import AboutDialog
 
         settings = QApplication.instance().core.settings  # type: ignore
-        AboutDialog(settings, self).exec_()
+        AboutDialog(settings, self).exec()

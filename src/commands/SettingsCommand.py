@@ -20,7 +20,7 @@
 
 from typing import Any
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from Utilities import format_as_table
 from .BaseCommand import BaseCommand

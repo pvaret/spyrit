@@ -19,12 +19,12 @@
 #
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QUrl
-from PyQt5.QtCore import QPoint
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtGui import QDesktopServices
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QUrl
+from PyQt6.QtCore import QPoint
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QTextEdit
+from PyQt6.QtGui import QDesktopServices
 
 
 class QTextEditWithClickableLinks(QTextEdit):
@@ -72,7 +72,10 @@ class QTextEditWithClickableLinks(QTextEdit):
 
     def mouseReleaseEvent(self, e):
 
-        if (e.pos() - self.click_pos).manhattanLength() <= 3:
+        diff = QPoint(
+            e.pos().x() - self.click_pos.x(), e.pos().y() - self.click_pos.y()
+        )
+        if diff.manhattanLength() <= 3:
             if self.click_link and self.click_link == self.anchorAt(e.pos()):
                 self.linkClicked.emit(self.click_link)
 

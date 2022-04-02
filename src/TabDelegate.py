@@ -19,10 +19,10 @@
 #
 
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QTabWidget
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QTabWidget
 
 
 class TabDelegate(QObject):

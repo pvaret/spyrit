@@ -24,10 +24,10 @@ import time
 
 from glob import glob
 
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QApplication
 
 
 from Logger import create_logger_for_world

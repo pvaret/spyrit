@@ -20,7 +20,7 @@
 
 from textwrap import dedent
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from .BaseCommand import BaseCommand
 from Globals import CMDCHAR

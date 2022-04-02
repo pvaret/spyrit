@@ -23,7 +23,7 @@ import os.path
 
 from collections import OrderedDict
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from Matches import RegexMatch
 from Matches import load_match_by_type

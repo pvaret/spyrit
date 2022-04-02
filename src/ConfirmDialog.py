@@ -18,18 +18,18 @@
 #
 
 
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 
 
 def confirmDialog(title, msg, okbutton, widget=None):
 
     messagebox = QMessageBox(widget)
 
-    messagebox.setIcon(QMessageBox.Question)
+    messagebox.setIcon(QMessageBox.Icon.Question)
     messagebox.setWindowTitle(title)
     messagebox.setText(msg)
 
-    messagebox.addButton(okbutton, QMessageBox.AcceptRole)
-    messagebox.addButton(QMessageBox.Cancel)
+    messagebox.addButton(okbutton, QMessageBox.ButtonRole.AcceptRole)
+    messagebox.addButton(QMessageBox.StandardButton.Cancel)
 
-    return messagebox.exec_() != QMessageBox.Cancel
+    return messagebox.exec() != QMessageBox.StandardButton.Cancel

@@ -19,8 +19,8 @@
 
 from typing import Callable, Optional
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtCore import QObject
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import QObject
 
 # TODO: Settings need drastic overhauling to make them typesafe.
 from settings.Settings import Settings, Node

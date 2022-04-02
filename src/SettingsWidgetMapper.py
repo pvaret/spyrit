@@ -21,13 +21,13 @@
 
 from typing import Any
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QSpinBox
-from PyQt5.QtWidgets import QLineEdit
-from PyQt5.QtWidgets import QCheckBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QObject
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QSpinBox
+from PyQt6.QtWidgets import QLineEdit
+from PyQt6.QtWidgets import QCheckBox
 
 
 def qlineedit_not_empty(qlineedit: QLineEdit):
@@ -58,7 +58,6 @@ class BaseWidgetMapper(QObject):
     @pyqtSlot(str)
     def emitValueChanged(self, widget_value):
 
-        assert isinstance(widget_value, self.widget_value_class)
         settings_value = self.widgetToSettingsValue(widget_value)
         assert isinstance(settings_value, self.settings_value_class)
 
@@ -134,16 +133,16 @@ class QCheckBoxMapper(BaseWidgetMapper):
     widget_class = QCheckBox
     widget_value_setter = QCheckBox.setCheckState
     widget_signal_name = "stateChanged"
-    widget_value_class = int
+    widget_value_class = Qt.CheckState
     settings_value_class = bool
 
     @staticmethod
-    def widgetToSettingsValue(value):
+    def widgetToSettingsValue(value: Qt.CheckState) -> bool:
 
         return value == Qt.CheckState.Checked
 
     @staticmethod
-    def settingsToWidgetValue(value):
+    def settingsToWidgetValue(value: bool) -> Qt.CheckState:
 
         return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
 

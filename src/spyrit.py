@@ -31,12 +31,12 @@ from Messages import messages
 def main(args):
 
     from CheckVersions import check_python_version
-    from CheckVersions import check_pyqt5_installed
+    from CheckVersions import check_pyqt6_installed
     from CheckVersions import check_qt_version
 
     for check in (
         check_python_version,
-        check_pyqt5_installed,
+        check_pyqt6_installed,
         check_qt_version,
     ):
 

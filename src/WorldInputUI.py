@@ -19,11 +19,11 @@
 #
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QFontMetrics
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QTextEdit
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtGui import QKeySequence
+from PyQt6.QtWidgets import QTextEdit
 
 
 from ActionSet import ActionSet
@@ -109,12 +109,15 @@ class WorldInputUI(QTextEdit):
         # shortcuts. Note: This still doesn't work for Tab & Shift+Tab, which
         # are handled straight in QWidget.event() by Qt.
 
-        key = QKeySequence(int(e.modifiers()) + e.key())
+        key = e.keyCombination()
 
         for a in self.actions() + self.parentWidget().actions():
             for shortcut in a.shortcuts():
 
-                if key.matches(shortcut) == QKeySequence.ExactMatch:
+                if (
+                    shortcut.matches(key.toCombined())
+                    == QKeySequence.SequenceMatch.ExactMatch
+                ):
 
                     a.trigger()
                     e.accept()

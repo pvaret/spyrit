@@ -19,8 +19,8 @@
 #
 
 
-from PyQt5.QtGui import QTextCursor
-from PyQt5.QtGui import QTextDocument
+from PyQt6.QtGui import QTextCursor
+from PyQt6.QtGui import QTextDocument
 
 
 class SearchManager:
@@ -59,7 +59,7 @@ class SearchManager:
 
         if not cursor:
             cursor = QTextCursor(document)
-            cursor.movePosition(QTextCursor.End)
+            cursor.movePosition(QTextCursor.MoveOperation.End)
 
         cursor = document.find(
             string, cursor, QTextDocument.FindFlag.FindBackward

@@ -20,28 +20,31 @@
 #
 
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QRect
-from PyQt5.QtCore import QSize
-from PyQt5.QtCore import QPoint
-from PyQt5.QtCore import QRectF
-from PyQt5.QtCore import pyqtSlot
+from typing import cast
 
-from PyQt5.QtGui import QFont
-from PyQt5.QtGui import QCursor
-from PyQt5.QtGui import QPainter
-from PyQt5.QtGui import QPalette
-from PyQt5.QtGui import QTextLayout
-from PyQt5.QtGui import QMouseEvent
-from PyQt5.QtGui import QPaintEvent
-from PyQt5.QtGui import QTextOption
-from PyQt5.QtGui import QFontMetrics
-from PyQt5.QtGui import QAbstractTextDocumentLayout
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QEvent
+from PyQt6.QtCore import QRect
+from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QPointF
+from PyQt6.QtCore import QRectF
+from PyQt6.QtCore import pyqtSlot
 
-from PyQt5.QtWidgets import QLabel
-from PyQt5.QtWidgets import QTextEdit
-from PyQt5.QtWidgets import QScrollBar
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QCursor
+from PyQt6.QtGui import QPainter
+from PyQt6.QtGui import QPalette
+from PyQt6.QtGui import QTextLayout
+from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtGui import QPaintEvent
+from PyQt6.QtGui import QTextOption
+from PyQt6.QtGui import QFontMetrics
+from PyQt6.QtGui import QAbstractTextDocumentLayout
+
+from PyQt6.QtWidgets import QLabel
+from PyQt6.QtWidgets import QTextEdit
+from PyQt6.QtWidgets import QScrollBar
+from PyQt6.QtWidgets import QApplication
 
 
 from SingleShotTimer import SingleShotTimer
@@ -122,7 +125,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         self.setReadOnly(True)
         self.setUndoRedoEnabled(False)
-        self.setAutoFormatting(QTextEdit.AutoNone)
+        self.setAutoFormatting(QTextEdit.AutoFormattingFlag.AutoNone)
         self.viewport().setCursor(Qt.CursorShape.ArrowCursor)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
@@ -157,15 +160,17 @@ class SplittableTextView(QTextEditWithClickableLinks):
         # Bummer.
 
         if column > 0:
-            self.setLineWrapMode(self.FixedColumnWidth)
-            self.setWordWrapMode(QTextOption.WordWrap)
+            self.setLineWrapMode(self.LineWrapMode.FixedColumnWidth)
+            self.setWordWrapMode(QTextOption.WrapMode.WordWrap)
             self.setHorizontalScrollBarPolicy(
                 Qt.ScrollBarPolicy.ScrollBarAsNeeded
             )
 
         else:
-            self.setLineWrapMode(self.WidgetWidth)
-            self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+            self.setLineWrapMode(self.LineWrapMode.WidgetWidth)
+            self.setWordWrapMode(
+                QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere
+            )
             self.setHorizontalScrollBarPolicy(
                 Qt.ScrollBarPolicy.ScrollBarAlwaysOff
             )
@@ -235,7 +240,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         start, end = cur.selectionStart(), cur.selectionEnd()
         cur.setPosition(start)
-        cur.setPosition(end, cur.KeepAnchor)
+        cur.setPosition(end, cur.MoveMode.KeepAnchor)
         cur.setKeepPositionOnInsert(True)
 
         self.setTextCursor(cur)
@@ -254,9 +259,12 @@ class SplittableTextView(QTextEditWithClickableLinks):
         # Encourage possible character substitutions to favor vectorial
         # fixed-pitch fonts:
         font.setFixedPitch(True)
-        font.setStyleHint(font.TypeWriter)
+        font.setStyleHint(font.StyleHint.TypeWriter)
         font.setStyleStrategy(
-            QFont.StyleStrategy(font.PreferOutline | font.PreferMatch)
+            QFont.StyleStrategy(
+                font.StyleStrategy.PreferOutline
+                | font.StyleStrategy.PreferMatch
+            )
         )
 
         self.setFont(font)
@@ -343,7 +351,9 @@ class SplittableTextView(QTextEditWithClickableLinks):
         else:
             height = pos + self.viewport().height()
 
-        _, t, _, b = self.getContentsMargins()
+        margins = self.contentsMargins()
+        t = margins.top()
+        b = margins.bottom()
 
         return height - self.scrollbar.singleStep() - t - b - 1
 
@@ -354,28 +364,27 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         return (max - val + step - 1) // step
 
-    def remapMouseEvent(self, e):
+    def remapMouseEvent(self, e: QMouseEvent):
 
         if self.atbottom or not self.split_scrollback:
             return e
 
-        if e.y() <= self.splitY():
+        if e.pos().y() <= self.splitY():
             return e
 
         height = self.viewport().height()
 
         # Note the call to toSize() to convert the QSizeF to a QSize.
         y = (
-            e.y()
+            e.pos().y()
             + self.document().size().toSize().height()
             - height
             - self.scrollbar.value()
         )
 
         e = QMouseEvent(
-            e.type(),
-            QPoint(e.x(), y),
-            e.globalPos(),
+            QEvent.Type(e.type()),
+            QPointF(e.pos().x(), y),
             e.button(),
             e.buttons(),
             e.modifiers(),
@@ -480,8 +489,8 @@ class SplittableTextView(QTextEditWithClickableLinks):
 
         if e.rect().contains(e.rect().left(), split_y):
 
-            app = QApplication.instance()
-            p.setPen(app.palette().color(QPalette.Window))  # type: ignore
+            app = cast(QApplication, QApplication.instance())
+            p.setPen(app.palette().color(QPalette.ColorRole.Window))
             p.drawLine(0, split_y, width, split_y)
 
         # Clip painter.
@@ -510,15 +519,21 @@ class SplittableTextView(QTextEditWithClickableLinks):
         palette = self.palette()
 
         focus = QApplication.instance().focusWidget() is self  # type: ignore
-        cgroup = QPalette.Active if focus else QPalette.Inactive
+        cgroup = (
+            QPalette.ColorGroup.Active
+            if focus
+            else QPalette.ColorGroup.Inactive
+        )
 
         if cur.hasSelection():
 
             sel = QAbstractTextDocumentLayout.Selection()
             sel.cursor = cur
-            sel.format.setBackground(palette.brush(cgroup, QPalette.Highlight))
+            sel.format.setBackground(
+                palette.brush(cgroup, QPalette.ColorRole.Highlight)
+            )
             sel.format.setForeground(
-                palette.brush(cgroup, QPalette.HighlightedText)
+                palette.brush(cgroup, QPalette.ColorRole.HighlightedText)
             )
 
             ctx.selections = [sel]
@@ -597,26 +612,30 @@ class SplittableTextView(QTextEditWithClickableLinks):
     def contextMenuEvent(self, e):
 
         menu = self.createStandardContextMenu()
-        menu.exec_(e.globalPos())
+        menu.exec(e.globalPos())
         menu.deleteLater()
 
     def stepUp(self):
 
-        self.scrollbar.triggerAction(QScrollBar.SliderSingleStepSub)
+        self.scrollbar.triggerAction(
+            QScrollBar.SliderAction.SliderSingleStepSub
+        )
 
     def stepDown(self):
 
-        self.scrollbar.triggerAction(QScrollBar.SliderSingleStepAdd)
+        self.scrollbar.triggerAction(
+            QScrollBar.SliderAction.SliderSingleStepAdd
+        )
 
     def pageUp(self):
 
         self.computePageStep()
-        self.scrollbar.triggerAction(QScrollBar.SliderPageStepSub)
+        self.scrollbar.triggerAction(QScrollBar.SliderAction.SliderPageStepSub)
 
     def pageDown(self):
 
         self.computePageStep()
-        self.scrollbar.triggerAction(QScrollBar.SliderPageStepAdd)
+        self.scrollbar.triggerAction(QScrollBar.SliderAction.SliderPageStepAdd)
 
     def resizeEvent(self, event):  # type: ignore - PyQt arg naming issue
 

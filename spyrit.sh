@@ -43,7 +43,8 @@ fi
 
 # Build resources if needed.
 
-_RCC=pyrcc5
+# Welp -- PyQt6 deprecated pyrcc. Use the PySide6 equivalent if available.
+_RCC=pyside6-rcc
 _BUILD_RESOURCES=0
 
 if [[ ! -e $_THIS_DIR/src/resources.py ]] ; then

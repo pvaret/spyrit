@@ -32,7 +32,7 @@ import weakref
 from typing import Any, Callable, Generic, Optional, TypeVar, Union, cast
 
 
-_CallableT = TypeVar("_CallableT", types.MethodType, types.FunctionType, type)
+_CallableT = TypeVar("_CallableT", types.MethodType, types.FunctionType)
 
 
 class FunctionRef:
@@ -63,7 +63,7 @@ class MethodRef:
         fn: types.MethodType,
         callback: Callable[[weakref.ReferenceType[Any]], None],
     ):
-        self._objref = weakref.ref(fn.__self__)
+        self._objref = weakref.ref(fn.__self__, callback)
         self._fnref = weakref.ref(fn.__func__, callback)
 
     def ref(self) -> Optional[types.MethodType]:
@@ -111,7 +111,6 @@ class WeakCallableRef(Generic[_CallableT]):
     >>> func_ref        = WeakCallableRef( test1, call_on_expire )
     >>> bound_meth_ref  = WeakCallableRef( test_obj.test2, call_on_expire )
     >>> static_meth_ref = WeakCallableRef( TestClass.test3, call_on_expire )
-    >>> class_ref       = WeakCallableRef( TestClass )
 
     The original callable can be retrieved by calling the weakref:
 
@@ -124,9 +123,6 @@ class WeakCallableRef(Generic[_CallableT]):
     >>> print( static_meth_ref() )  #doctest: +ELLIPSIS
     <function ...test3 ...>
 
-    >>> print( class_ref() )  #doctest: +ELLIPSIS
-    <class '....TestClass'>
-
     When the original callable disappears, the notification function is
     triggered.
 
@@ -136,8 +132,7 @@ class WeakCallableRef(Generic[_CallableT]):
     >>> del test_obj  #doctest: +ELLIPSIS
     Deleted <WeakCallableRef instance at ... (test2); dead>!
 
-    >>> import gc
-    >>> del TestClass ; _ = gc.collect()  #doctest: +ELLIPSIS
+    >>> del TestClass.test3  #doctest: +ELLIPSIS
     Deleted <WeakCallableRef instance at ... (test3); dead>!
 
     And if called, the weakrefs must now return None:
@@ -147,8 +142,6 @@ class WeakCallableRef(Generic[_CallableT]):
     >>> print( bound_meth_ref() )
     None
     >>> print( static_meth_ref() )
-    None
-    >>> print( class_ref() )
     None
 
     """
@@ -167,12 +160,12 @@ class WeakCallableRef(Generic[_CallableT]):
             self._name = fn.__name__
             self._ref = MethodRef(fn, self.markDead)
 
-        elif isinstance(fn, types.FunctionType) or isinstance(fn, type):
+        elif isinstance(fn, types.FunctionType):
             self._name = fn.__name__
             self._ref = FunctionRef(fn, self.markDead)
 
         else:
-            raise TypeError("%r must be a function, class or method" % fn)
+            raise TypeError("%r must be a function or method" % fn)
 
     def markDead(self, _: Any) -> None:
 

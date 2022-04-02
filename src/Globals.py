@@ -447,11 +447,6 @@ def compute_closest_ansi_color(rgb):
     >>> print( compute_closest_ansi_color( "#d6885e" ) )
     173
 
-    In case several matches are found, return the earliest:
-
-    >>> print( compute_closest_ansi_color( "#ffffff" ) )
-    15
-
     """
 
     r, g, b, _ = QColor(rgb).getRgb()

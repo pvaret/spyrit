@@ -26,6 +26,11 @@ from . import tabbed_ui_container
 
 
 class TabbedUiFactory(QtCore.QObject):
+    """
+    The factory class that knows how to plug together tabbed UI containers and
+    tabbed UI elements.
+    """
+
     def __init__(
         self,
         tabbed_ui_element_factory: Callable[
@@ -36,30 +41,36 @@ class TabbedUiFactory(QtCore.QObject):
 
         super().__init__(parent)
 
+        # Remember the factory that knows how to create new UI elements.
+
         self._tabbed_ui_element_factory = tabbed_ui_element_factory
 
         # self.windows is in charge of keeping a reference to the existing
         # top-level windows. Nothing else should, so this structure is
         # essentially the source of truth for which windows currently exist.
 
-        self.windows: set[tabbed_ui_container.TabbedUiContainer] = set()
+        self._windows: set[tabbed_ui_container.TabbedUiContainer] = set()
 
         # Remember the last active window, i.e. the window that last had the
         # focus. It's the window where we'll want to create new tabs when not
         # otherwise specified.
 
-        self.lastActiveWindow: Optional[
+        self._last_active_window: Optional[
             tabbed_ui_container.TabbedUiContainer
         ] = None
 
     def createNewUiInNewTab(
         self, window: Optional[tabbed_ui_container.TabbedUiContainer] = None
     ) -> tabbed_ui_element.TabbedUiElement:
+        """
+        Instantiate a new UI element, and add it under a new tab in the
+        currently active container.
+        """
 
         if window is None:
-            if self.lastActiveWindow is None:
+            if self._last_active_window is None:
                 return self.createNewUiInNewWindow()
-            window = self.lastActiveWindow
+            window = self._last_active_window
 
         new_ui = self._makeNewUi()
         window.pin(new_ui)
@@ -67,6 +78,10 @@ class TabbedUiFactory(QtCore.QObject):
         return new_ui
 
     def createNewUiInNewWindow(self) -> tabbed_ui_element.TabbedUiElement:
+        """
+        Instantiate a new UI element, and add it under a new tab in a
+        new container.
+        """
 
         new_ui = self._makeNewUi()
 
@@ -76,11 +91,14 @@ class TabbedUiFactory(QtCore.QObject):
         return new_ui
 
     def _makeNewWindow(self) -> tabbed_ui_container.TabbedUiContainer:
+        """
+        Instantiate and set up a new container.
+        """
 
         new_window = tabbed_ui_container.TabbedUiContainer()
 
-        self.windows.add(new_window)
-        self.lastActiveWindow = new_window
+        self._windows.add(new_window)
+        self._last_active_window = new_window
 
         new_window.focusIn.connect(self._updateLastActiveWindowFromSignal)
         new_window.closing.connect(self._onWindowClosing)
@@ -91,6 +109,9 @@ class TabbedUiFactory(QtCore.QObject):
         return new_window
 
     def _makeNewUi(self) -> tabbed_ui_element.TabbedUiElement:
+        """
+        Instantiate and set up a new UI element.
+        """
 
         new_ui = self._tabbed_ui_element_factory()
         new_ui.wantToDetachToNewWindow.connect(self._onTabDetachRequested)
@@ -98,13 +119,19 @@ class TabbedUiFactory(QtCore.QObject):
         return new_ui
 
     def _updateLastActiveWindowFromSignal(self) -> None:
+        """
+        Take note of the last active container if that changed.
+        """
 
         window = self.sender()
 
         if isinstance(window, tabbed_ui_container.TabbedUiContainer):
-            self.lastActiveWindow = window
+            self._last_active_window = window
 
     def _onWindowClosing(self) -> None:
+        """
+        Perform cleanup when a window is closing.
+        """
 
         window = self.sender()
 
@@ -112,19 +139,22 @@ class TabbedUiFactory(QtCore.QObject):
 
             # If a window is being closed, drop our reference to it.
 
-            self.windows.discard(window)
+            self._windows.discard(window)
 
             # But also pick a new window to be considered the last active, if
             # any.
 
-            if self.lastActiveWindow is window:
-                if self.windows:
-                    self.lastActiveWindow = self.windows.copy().pop()
+            if self._last_active_window is window:
+                if self._windows:
+                    self._last_active_window = self._windows.copy().pop()
 
                 else:
-                    self.lastActiveWindow = None
+                    self._last_active_window = None
 
     def _onNewTabRequestedByWindow(self) -> None:
+        """
+        Enact request to create a new tab. Instantiates a new UI element.
+        """
 
         window = self.sender()
 
@@ -132,6 +162,10 @@ class TabbedUiFactory(QtCore.QObject):
             self.createNewUiInNewTab(window=window)
 
     def _onTabDetachRequested(self) -> None:
+        """
+        Enact a UI element's request to have its tab detached into a new
+        container.
+        """
 
         widget = self.sender()
 

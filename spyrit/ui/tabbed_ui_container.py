@@ -60,31 +60,30 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         # Create and set up the QTabWidget that's going to contain the
         # individual UIs.
 
-        self.tabWidget = QtWidgets.QTabWidget(self)
-        self.tabWidget.setMovable(True)
-        self.tabWidget.setTabsClosable(True)
-        self.setCentralWidget(self.tabWidget)
+        self._tab_widget = QtWidgets.QTabWidget(self)
+        self._tab_widget.setMovable(True)
+        self._tab_widget.setTabsClosable(True)
+        self.setCentralWidget(self._tab_widget)
 
-        self.propertyRefreshTimer = QtCore.QTimer()
-        self.propertyRefreshTimer.setSingleShot(True)
-        self.propertyRefreshTimer.setInterval(0)
+        # This timer is used to apply tab properties asynchronously, which
+        # avoids some race conditions.
 
-        # WORKAROUND(PySide6 v6.2.4): the QTimer.timeout() signal is not
-        # properly declared in PySide6 but does work fine. Just ignore typing
-        # errors.
+        self._property_refresh_timer = QtCore.QTimer()
+        self._property_refresh_timer.setSingleShot(True)
+        self._property_refresh_timer.setInterval(0)
 
-        self.propertyRefreshTimer.timeout.connect(  # type: ignore
+        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
+
+        self._property_refresh_timer.timeout.connect(  # type: ignore
             self._applyCurrentTabProperties
         )
 
-        # WORKAROUND(PySide6 v6.2.4): the QTabWidget.currentChanged() and
-        # tabCloseRequested() signals are not properly declared in PySide6 but
-        # do work fine. Just ignore typing errors.
+        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
 
-        self.tabWidget.currentChanged.connect(  # type: ignore
+        self._tab_widget.currentChanged.connect(  # type: ignore
             self._onCurrentTabChanged
         )
-        self.tabWidget.tabCloseRequested.connect(  # type: ignore
+        self._tab_widget.tabCloseRequested.connect(  # type: ignore
             self._onTabCloseRequested
         )
 
@@ -92,39 +91,37 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         # layout is not great, so we have to create a container for the button
         # and give it a better layout.
 
-        cornerWidget = QtWidgets.QWidget(self.tabWidget)
+        corner_widget = QtWidgets.QWidget(self._tab_widget)
 
-        newTabButton = QtWidgets.QPushButton("+", parent=cornerWidget)
-        newTabButton.setToolTip("New tab")
-        newTabButton.setFixedWidth(newTabButton.height())
+        new_tab_button = QtWidgets.QPushButton("+", parent=corner_widget)
+        new_tab_button.setToolTip("New tab")
+        new_tab_button.setFixedWidth(new_tab_button.height())
 
         layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(newTabButton)
+        layout.addWidget(new_tab_button)
         layout.setContentsMargins(2, 2, 2, 2)
-        cornerWidget.setLayout(layout)
+        corner_widget.setLayout(layout)
 
-        self.tabWidget.setCornerWidget(
-            cornerWidget, corner=QtCore.Qt.TopLeftCorner
+        self._tab_widget.setCornerWidget(
+            corner_widget, corner=QtCore.Qt.TopLeftCorner
         )
 
-        # WORKAROUND(PySide6 v6.2.4): the QPushButton.clicked() signal is
-        # not properly declared in PySide6 but does work fine. Just ignore
-        # typing errors.
+        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
 
-        newTabButton.clicked.connect(self.newTabRequested)  # type: ignore
+        new_tab_button.clicked.connect(self.newTabRequested)  # type: ignore
 
     def pin(self, widget: tabbed_ui_element.TabbedUiElement) -> None:
         """
         Pin the given UI to this window and give it focus.
         """
 
-        widget.setParent(self.tabWidget)
+        widget.setParent(self._tab_widget)
         widget.tabTitleChanged.connect(self._onTabTitleChanged)
         widget.windowTitleChanged.connect(self._onWindowTitleChanged)
         widget.wantToBeUnpinned.connect(self._onUiRequestedClosing)
 
-        self.tabWidget.addTab(widget, widget.tabTitle())
-        self.tabWidget.setCurrentWidget(widget)
+        self._tab_widget.addTab(widget, widget.tabTitle())
+        self._tab_widget.setCurrentWidget(widget)
         self._applyTabProperties(widget)
 
     def unpin(self, widget: tabbed_ui_element.TabbedUiElement) -> None:
@@ -133,9 +130,9 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         pinned to a different window.
         """
 
-        index = self.tabWidget.indexOf(widget)
+        index = self._tab_widget.indexOf(widget)
         if index != -1:
-            self.tabWidget.removeTab(index)
+            self._tab_widget.removeTab(index)
 
             # WORKAROUND: setParent() type hint mistakenly thinks that the
             # method cannot take a None argument.
@@ -143,7 +140,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
             widget.setParent(cast(QtWidgets.QWidget, None))
             widget.hide()
 
-            if self.tabWidget.count() == 0:
+            if self._tab_widget.count() == 0:
                 self.close()
 
     def event(self, event: QtCore.QEvent) -> bool:
@@ -167,7 +164,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         # current tab's properties on the next iteration of the main loop after
         # the window is shown.
 
-        self.propertyRefreshTimer.start()
+        self._property_refresh_timer.start()
 
         return super().showEvent(event)
 
@@ -187,8 +184,12 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         self.setWindowTitle(widget.windowTitle())
 
     def _applyCurrentTabProperties(self) -> None:
+        """
+        Look up the current tab's UI element, and apply its properties to the
+        window.
+        """
 
-        widget = self.tabWidget.currentWidget()
+        widget = self._tab_widget.currentWidget()
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
             self._applyTabProperties(widget)
@@ -202,9 +203,9 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
 
-            index = self.tabWidget.indexOf(widget)
+            index = self._tab_widget.indexOf(widget)
             if index != -1:
-                self.tabWidget.setTabText(index, title)
+                self._tab_widget.setTabText(index, title)
 
     def _onWindowTitleChanged(self, title: str) -> None:
         """
@@ -214,7 +215,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         widget = self.sender()
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
-            if self.tabWidget.currentWidget() is widget:
+            if self._tab_widget.currentWidget() is widget:
                 self.setWindowTitle(title)
 
     def _onCurrentTabChanged(self) -> None:
@@ -223,7 +224,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         tab.
         """
 
-        widget = self.tabWidget.currentWidget()
+        widget = self._tab_widget.currentWidget()
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
             self._applyTabProperties(widget)
@@ -235,7 +236,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         close is however up to the widget in the tab.
         """
 
-        widget = self.tabWidget.widget(index)
+        widget = self._tab_widget.widget(index)
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
             widget.maybeClose()

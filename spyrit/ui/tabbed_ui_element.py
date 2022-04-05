@@ -49,29 +49,51 @@ class TabbedUiElement(QtWidgets.QWidget):
 
         super().__init__(parent)
 
+        # Set up the layour of the UI element. Basically a horizontal layout,
+        # but in practice we'll just want to add a single widget.
+
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self._tabTitle: str = ""
-        self._windowTitle: str = ""
+        # Keep track of the UI's properties we'll want to propagate.
+
+        self._tab_title: str = ""
+        self._window_title: str = ""
 
     def tabTitle(self) -> str:
+        """
+        Return the currently desired tab title for this UI element.
+        """
 
-        return self._tabTitle
+        return self._tab_title
 
     def setTabTitle(self, title: str) -> None:
+        """
+        Set and propagate the currently desired tab title for this UI element.
+        """
 
-        self._tabTitle = title
+        self._tab_title = title
         self.tabTitleChanged.emit(title)
 
     def windowTitle(self) -> str:
+        """
+        Return the currently desired window title for this UI element.
+        """
 
-        return self._windowTitle
+        return self._window_title
 
-    def setParentWindowTitle(self, title: str) -> None:
+    def setWindowTitle(self, arg__1: str) -> None:
+        """
+        Set and propagate the currently desired window title for this UI
+        element.
 
-        self._windowTitle = title
-        self.windowTitleChanged.emit(title)
+        Note that this is an override of the QWidget method.
+        """
+
+        self._window_title = arg__1
+        self.windowTitleChanged.emit(arg__1)
+
+        super().setWindowTitle(arg__1)
 
     def canCloseNow(self) -> bool:
         """
@@ -82,6 +104,9 @@ class TabbedUiElement(QtWidgets.QWidget):
         return True
 
     def maybeClose(self) -> None:
+        """
+        Ask this UI element to close itself, politely. It is allowed to decline.
+        """
 
         if self.canCloseNow():
 

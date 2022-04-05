@@ -19,8 +19,11 @@ import argparse
 
 from PySide6 import QtWidgets
 
+
 from . import platform
-from .ui import dummy_widget, tabbed_ui_factory
+
+# from .ui import dummy_widget, tabbed_ui_factory, sliding_pane_container
+from .ui import sliding_pane_container
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
@@ -74,10 +77,25 @@ def bootstrap(args: list[str]) -> int:
 
     # TODO: Replace with actual application widget.
 
-    mw_factory = tabbed_ui_factory.TabbedUiFactory(
-        tabbed_ui_element_factory=dummy_widget.dummy_widget_factory
-    )
-    mw_factory.createNewUiInNewWindow()
+    # mw_factory = tabbed_ui_factory.TabbedUiFactory(
+    #     tabbed_ui_element_factory=dummy_widget.dummy_widget_factory
+    # )
+    # mw_factory.createNewUiInNewWindow()
+
+    pane = sliding_pane_container.SlidingPaneContainer()
+    b1 = QtWidgets.QPushButton(text="Pane 1")
+    b2 = QtWidgets.QPushButton(text="Pane 2")
+    b3 = QtWidgets.QPushButton(text="Pane 3")
+    b4 = QtWidgets.QPushButton(text="Pane 4")
+    b1.clicked.connect(pane.tick)  # type: ignore
+    b2.clicked.connect(pane.tick)  # type: ignore
+    b3.clicked.connect(pane.tick)  # type: ignore
+    b4.clicked.connect(pane.tick)  # type: ignore
+    pane.append(b1)
+    pane.append(b2)
+    pane.append(b3)
+    pane.append(b4)
+    pane.show()
 
     # And start the show.
 

@@ -17,7 +17,7 @@ class DummyWidget(tabbed_ui_element.TabbedUiElement):
 
         name = "".join(random.choice(string.ascii_uppercase) for _ in range(6))
 
-        self.setParentWindowTitle(f"window: {name}")
+        self.setWindowTitle(f"window: {name}")
         self.setTabTitle(f"tab: {name}")
 
         button = QtWidgets.QPushButton("Click!")
@@ -26,6 +26,8 @@ class DummyWidget(tabbed_ui_element.TabbedUiElement):
                 QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
             )
         )
+
+        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
 
         button.clicked.connect(self.wantToDetachToNewWindow)  # type: ignore
 

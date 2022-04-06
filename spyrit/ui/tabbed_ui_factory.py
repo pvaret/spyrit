@@ -36,13 +36,18 @@ class TabbedUiFactory(QtCore.QObject):
         tabbed_ui_element_factory: Callable[
             [], tabbed_ui_element.TabbedUiElement
         ],
+        tabbed_ui_container_factory: Callable[
+            [], tabbed_ui_container.TabbedUiContainer
+        ] = tabbed_ui_container.TabbedUiContainer,
         parent: Optional[QtCore.QObject] = None,
     ) -> None:
 
         super().__init__(parent)
 
-        # Remember the factory that knows how to create new UI elements.
+        # Remember the factories that knows how to create new UI elements and
+        # containers.
 
+        self._tabbed_ui_container_factory = tabbed_ui_container_factory
         self._tabbed_ui_element_factory = tabbed_ui_element_factory
 
         # self.windows is in charge of keeping a reference to the existing
@@ -95,7 +100,7 @@ class TabbedUiFactory(QtCore.QObject):
         Instantiate and set up a new container.
         """
 
-        new_window = tabbed_ui_container.TabbedUiContainer()
+        new_window = self._tabbed_ui_container_factory()
 
         self._windows.add(new_window)
         self._last_active_window = new_window

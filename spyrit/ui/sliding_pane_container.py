@@ -20,6 +20,7 @@ from typing import Optional
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from spyrit import constants
+from spyrit.safe_signal import safe_signal
 
 
 class SlidingPaneContainer(QtWidgets.QScrollArea):
@@ -65,15 +66,11 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         self._x_scroll_enforced_value = 0
         self._y_scroll_enforced_value = 0
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        self.horizontalScrollBar().valueChanged.connect(  # type: ignore
+        safe_signal(self.horizontalScrollBar(), "valueChanged").connect(
             self._enforceXScrollValue
         )
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        self.verticalScrollBar().valueChanged.connect(  # type: ignore
+        safe_signal(self.verticalScrollBar(), "valueChanged").connect(
             self._enforceYScrollValue
         )
 
@@ -83,9 +80,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         self._pane_switch_animation.setEasingCurve(self._EASING_CURVE)
         self._pane_switch_animation.setDuration(self._ANIMATION_DURATION)
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        self._pane_switch_animation.valueChanged.connect(  # type: ignore
+        safe_signal(self._pane_switch_animation, "valueChanged").connect(
             self._updateXScrollValueFromAnimation
         )
 

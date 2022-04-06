@@ -20,6 +20,7 @@ from typing import Optional, cast
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from spyrit.constants import MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH
+from spyrit.safe_signal import safe_signal
 
 from . import tabbed_ui_element
 
@@ -72,18 +73,14 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         self._property_refresh_timer.setSingleShot(True)
         self._property_refresh_timer.setInterval(0)
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        self._property_refresh_timer.timeout.connect(  # type: ignore
+        safe_signal(self._property_refresh_timer, "timeout").connect(
             self._applyCurrentTabProperties
         )
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        self._tab_widget.currentChanged.connect(  # type: ignore
+        safe_signal(self._tab_widget, "currentChanged").connect(
             self._onCurrentTabChanged
         )
-        self._tab_widget.tabCloseRequested.connect(  # type: ignore
+        safe_signal(self._tab_widget, "tabCloseRequested").connect(
             self._onTabCloseRequested
         )
 
@@ -106,9 +103,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
             corner_widget, corner=QtCore.Qt.TopLeftCorner
         )
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        new_tab_button.clicked.connect(self.newTabRequested)  # type: ignore
+        safe_signal(new_tab_button, "clicked").connect(self.newTabRequested)
 
     def pin(self, widget: tabbed_ui_element.TabbedUiElement) -> None:
         """
@@ -142,6 +137,104 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
             if self._tab_widget.count() == 0:
                 self.close()
+
+    @QtCore.Slot()
+    def maybeCloseCurrentTab(self) -> None:
+        """
+        Ask the currently active UI element to close itself. It is allowed to
+        decline.
+        """
+
+        widget = self._tab_widget.currentWidget()
+
+        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+            widget.maybeClose()
+
+    @QtCore.Slot()
+    def switchToNextTab(self) -> None:
+        """
+        Make the tab immediately to the right of the currently active one
+        active, if any.
+        """
+
+        index = self._tab_widget.currentIndex()
+
+        if index < 0 or index >= self._tab_widget.count() - 1:
+            return
+
+        self._tab_widget.setCurrentIndex(index + 1)
+
+    @QtCore.Slot()
+    def switchToPreviousTab(self) -> None:
+        """
+        Make the tab immediately to the left of the currently active one
+        active, if any.
+        """
+
+        index = self._tab_widget.currentIndex()
+
+        if index < 1 or index >= self._tab_widget.count():
+            return
+
+        self._tab_widget.setCurrentIndex(index - 1)
+
+    @QtCore.Slot()
+    def moveCurrentTabRight(self) -> None:
+        """
+        Swap the currently active tab and the one immediately to the right, if
+        any.
+        """
+
+        index = self._tab_widget.currentIndex()
+
+        if index < 0 or index >= self._tab_widget.count() - 1:
+            return
+
+        widget_left = self._tab_widget.widget(index)
+        widget_right = self._tab_widget.widget(index + 1)
+
+        if isinstance(
+            widget_left, tabbed_ui_element.TabbedUiElement
+        ) and isinstance(widget_right, tabbed_ui_element.TabbedUiElement):
+
+            self._tab_widget.removeTab(index)
+            self._tab_widget.removeTab(index)
+            self._tab_widget.insertTab(
+                index, widget_left, widget_left.tabTitle()
+            )
+            self._tab_widget.insertTab(
+                index, widget_right, widget_right.tabTitle()
+            )
+            self._tab_widget.setCurrentIndex(index + 1)
+
+    @QtCore.Slot()
+    def moveCurrentTabLeft(self) -> None:
+        """
+        Swap the currently active tab and the one immediately to the left, if
+        any.
+        """
+
+        index = self._tab_widget.currentIndex()
+
+        if index < 1 or index >= self._tab_widget.count():
+            return
+
+        widget_left = self._tab_widget.widget(index - 1)
+        widget_right = self._tab_widget.widget(index)
+
+        if isinstance(
+            widget_left, tabbed_ui_element.TabbedUiElement
+        ) and isinstance(widget_right, tabbed_ui_element.TabbedUiElement):
+
+            self._tab_widget.removeTab(index - 1)
+            self._tab_widget.removeTab(index - 1)
+            self._tab_widget.insertTab(
+                index - 1, widget_left, widget_left.tabTitle()
+            )
+            self._tab_widget.insertTab(
+                index - 1, widget_right, widget_right.tabTitle()
+            )
+            self._tab_widget.setCurrentIndex(index - 1)
 
     def event(self, event: QtCore.QEvent) -> bool:
         """

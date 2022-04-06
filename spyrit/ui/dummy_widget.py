@@ -9,6 +9,7 @@ from typing import Optional
 from PySide6 import QtWidgets
 
 from . import tabbed_ui_element
+from spyrit.safe_signal import safe_signal
 
 
 class DummyWidget(tabbed_ui_element.TabbedUiElement):
@@ -27,9 +28,7 @@ class DummyWidget(tabbed_ui_element.TabbedUiElement):
             )
         )
 
-        # WORKAROUND(PySide6 v6.2.4): Missing signal type info.
-
-        button.clicked.connect(self.wantToDetachToNewWindow)  # type: ignore
+        safe_signal(button, "clicked").connect(self.wantToDetachToNewWindow)
 
         self.layout().addWidget(button)
 

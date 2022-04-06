@@ -20,9 +20,7 @@ from typing import Callable, Optional
 
 from PySide6 import QtCore
 
-from spyrit.ui import tabbed_ui_element
-
-from . import tabbed_ui_container
+from spyrit.ui import tabbed_ui_container, tabbed_ui_element
 
 
 class TabbedUiFactory(QtCore.QObject):

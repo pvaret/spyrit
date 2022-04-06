@@ -18,9 +18,7 @@ Provide a workaround to signal type unsafety in PySide6.
 from PySide6 import QtCore
 
 
-def safe_signal(
-    obj: QtCore.QObject, signal_name: str
-) -> QtCore.SignalInstance:
+def safe_signal(obj: QtCore.QObject, signal_name: str) -> QtCore.SignalInstance:
     """
     Workaround: PySide6 does not declare the signals exported by Qt's classes.
     This wrapper lets us keep the type unsafety contained in a single place. How

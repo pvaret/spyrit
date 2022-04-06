@@ -48,7 +48,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
         # Set up the view port: no margins, no scrollbars.
 
-        self.setViewportMargins(0, 0, 0, 0)
+        self.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
@@ -83,11 +83,6 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         safe_signal(self._pane_switch_animation, "valueChanged").connect(
             self._updateXScrollValueFromAnimation
         )
-
-    def tick(self):
-
-        if self._panes:
-            self.switchToPane((self._active_pane + 1) % len(self._panes))
 
     def append(self, pane: QtWidgets.QWidget) -> None:
         """

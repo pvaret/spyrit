@@ -21,7 +21,7 @@ Check dependencies, bootstrap the program.
 
 import sys
 
-import spyrit.dependency_checker as dependency_checker
+from spyrit import dependency_checker
 
 
 def show_deps_and_exit(checker: dependency_checker.DependencyChecker) -> None:

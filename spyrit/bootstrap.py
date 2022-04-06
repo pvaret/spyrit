@@ -20,10 +20,9 @@ import argparse
 from PySide6 import QtWidgets
 
 
-from . import platform
-
-from .ui import dummy_widget, tabbed_ui_factory, main_window
-from .settings import settings
+from spyrit import platform
+from spyrit.settings import spyrit_settings
+from spyrit.ui import spyrit_main_ui, spyrit_main_window, tabbed_ui_factory
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
@@ -75,15 +74,20 @@ def bootstrap(args: list[str]) -> int:
 
     app = QtWidgets.QApplication(program + remaining_args)
 
-    # TODO: Replace with actual application widget.
+    # TODO: actually load settings from file.
 
-    main_settings = settings.Settings()
+    settings = spyrit_settings.SpyritSettings()
 
-    main_window_factory = main_window.MainWindowFactory(main_settings)
+    # Build the UI.
+
+    spyrit_main_window_factory = spyrit_main_window.SpyritMainWindowFactory(
+        settings
+    )
+    spyrit_main_ui_factory = spyrit_main_ui.SpyritMainUiFactory(settings)
 
     ui_factory = tabbed_ui_factory.TabbedUiFactory(
-        tabbed_ui_element_factory=dummy_widget.dummy_widget_factory,
-        tabbed_ui_container_factory=main_window_factory,
+        tabbed_ui_element_factory=spyrit_main_ui_factory,
+        tabbed_ui_container_factory=spyrit_main_window_factory,
     )
     ui_factory.createNewUiInNewWindow()
 

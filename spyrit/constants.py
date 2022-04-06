@@ -21,6 +21,10 @@ purposes.
 REQUIRED_PYTHON_VERSION = (3, 9)
 REQUIRED_QT_VERSION = (6, 2)
 
+# Name
+
+APPLICATION_NAME = "Spyrit"
+
 # Filesystem
 
 CONFIG_FILE_NAME_LINUX = "spyrit.conf"

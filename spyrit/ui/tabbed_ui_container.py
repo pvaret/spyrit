@@ -19,10 +19,9 @@ from typing import Optional, cast
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from spyrit.constants import MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH
+from spyrit import constants
 from spyrit.safe_signal import safe_signal
-
-from . import tabbed_ui_element
+from spyrit.ui import tabbed_ui_element
 
 
 class TabbedUiContainer(QtWidgets.QMainWindow):
@@ -55,7 +54,9 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
         super().__init__(parent)
 
-        self.setMinimumSize(MINIMUM_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT)
+        self.setMinimumSize(
+            constants.MINIMUM_WINDOW_WIDTH, constants.MINIMUM_WINDOW_HEIGHT
+        )
         self.setWindowTitle("")
 
         # Create and set up the QTabWidget that's going to contain the

@@ -17,10 +17,12 @@ Looks up and return platform-specific parameters.
 
 import sys
 
-from . import default_paths_base
-from . import platform_darwin
-from . import platform_linux
-from . import platform_win32
+from spyrit import (
+    default_paths_base,
+    platform_darwin,
+    platform_linux,
+    platform_win32,
+)
 
 
 def get_default_paths() -> default_paths_base.DefaultPathsBase:

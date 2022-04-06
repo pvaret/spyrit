@@ -17,8 +17,7 @@ Implement platform-specific parameters for Linux.
 
 import os
 
-from . import constants
-from . import default_paths_base
+from spyrit import constants, default_paths_base
 
 
 class DefaultPaths(default_paths_base.DefaultPathsBase):

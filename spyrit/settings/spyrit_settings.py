@@ -17,10 +17,10 @@ Declaration of the Spyrit settings.
 
 import sunset
 
-from . import key_shortcut
+from spyrit.settings import key_shortcut
 
 
-class Settings(sunset.Settings):
+class SpyritSettings(sunset.Settings):
     class KeyShortcuts(sunset.Section):
 
         new_tab: sunset.Setting[key_shortcut.KeyShortcut] = sunset.NewSetting(

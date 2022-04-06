@@ -15,7 +15,7 @@
 Implement platform-specific parameters for Darwin (Mac OS X).
 """
 
-from . import platform_linux
+from spyrit import platform_linux
 
 
 # The Linux paths actually work for Mac OS X too for now.

@@ -20,11 +20,11 @@ from typing import Optional
 
 from PySide6 import QtWidgets
 
-from . import tabbed_ui_container, shortcut_with_key_setting
-from spyrit.settings import settings
+from spyrit.settings import spyrit_settings
+from spyrit.ui import tabbed_ui_container, shortcut_with_key_setting
 
 
-class MainWindow(tabbed_ui_container.TabbedUiContainer):
+class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
     """
     An implementation of the top-level tabbed UI container that's aware of
     things like Spyrit settings.
@@ -32,13 +32,13 @@ class MainWindow(tabbed_ui_container.TabbedUiContainer):
 
     def __init__(
         self,
-        main_settings: settings.Settings,
+        main_settings: spyrit_settings.SpyritSettings,
         parent: Optional[QtWidgets.QWidget] = None,
     ) -> None:
 
         super().__init__(parent)
 
-        self._settings: settings.Settings = main_settings
+        self._settings: spyrit_settings.SpyritSettings = main_settings
 
         # Set up keyboard shortcuts.
 
@@ -72,16 +72,16 @@ class MainWindow(tabbed_ui_container.TabbedUiContainer):
         )
 
 
-class MainWindowFactory:
+class SpyritMainWindowFactory:
     """
     Provides a factory for our main application window that can be used by the
     generic tabbed UI factory.
     """
 
-    def __init__(self, settings: settings.Settings) -> None:
+    def __init__(self, settings: spyrit_settings.SpyritSettings) -> None:
 
         self._settings = settings
 
-    def __call__(self) -> MainWindow:
+    def __call__(self) -> SpyritMainWindow:
 
-        return MainWindow(self._settings)
+        return SpyritMainWindow(self._settings)

@@ -58,7 +58,7 @@ def bootstrap(args: list[str]) -> int:
     # Parse Python arguments.
 
     parser = make_arg_parser(
-        default_config_path=default_paths.getConfigFolderPath()
+        default_config_path=str(default_paths.getConfigFolderPath())
     )
 
     # Remove the program name from the arguments, else ArgParse gets

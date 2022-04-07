@@ -16,6 +16,7 @@ Implement platform-specific parameters for Win32 (Windows).
 """
 
 import os
+import pathlib
 
 from spyrit import constants, default_paths_base
 
@@ -29,10 +30,10 @@ class DefaultPaths(default_paths_base.DefaultPathsBase):
 
         return self.CONFIG_FILE_NAME
 
-    def getDefaultConfigFolder(self) -> str:
+    def getDefaultConfigFolder(self) -> pathlib.Path:
 
-        return os.path.join(self.getAppDataFolder(), self.CONFIG_FOLDER_NAME)
+        return self.getAppDataFolder() / self.CONFIG_FOLDER_NAME
 
-    def getAppDataFolder(self) -> str:
+    def getAppDataFolder(self) -> pathlib.Path:
 
-        return os.environ["LOCALAPPDATA"]
+        return pathlib.Path(os.environ["APPDATA"])

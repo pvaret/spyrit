@@ -16,7 +16,6 @@ Provides a base class for platform-specific path lookup object. To be overriden
 platform by platform.
 """
 
-import os
 import pathlib
 
 from abc import ABC, abstractmethod
@@ -27,36 +26,34 @@ class DefaultPathsBase(ABC):
 
         super().__init__()
 
-        self.config_folder_path = ""
+        self._config_folder_path: pathlib.Path = pathlib.Path()
 
     @abstractmethod
     def getConfigFileName(self) -> str:
         ...
 
     @abstractmethod
-    def getDefaultConfigFolder(self) -> str:
+    def getDefaultConfigFolder(self) -> pathlib.Path:
         ...
 
-    def getUserHomeFolder(self) -> str:
+    def getUserHomeFolder(self) -> pathlib.Path:
 
-        return str(pathlib.Path.home())
+        return pathlib.Path.home()
 
     def setConfigFolderPath(self, path: str) -> None:
 
-        self.config_folder_path = path
+        self._config_folder_path = pathlib.Path(path)
 
-    def getConfigFolderPath(self) -> str:
+    def getConfigFolderPath(self) -> pathlib.Path:
 
-        if self.config_folder_path:
-            config_folder_path = self.config_folder_path
+        if self._config_folder_path:
+            config_folder_path = self._config_folder_path
 
         else:
             config_folder_path = self.getDefaultConfigFolder()
 
-        return os.path.abspath(config_folder_path)
+        return config_folder_path.absolute().resolve()
 
-    def getConfigFilePath(self) -> str:
+    def getConfigFilePath(self) -> pathlib.Path:
 
-        return os.path.join(
-            self.getConfigFolderPath(), self.getConfigFileName()
-        )
+        return self.getConfigFolderPath() / self.getConfigFileName()

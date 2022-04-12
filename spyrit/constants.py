@@ -25,13 +25,15 @@ REQUIRED_QT_VERSION = (6, 2)
 
 APPLICATION_NAME = "Spyrit"
 
-# Filesystem
+# Settings
 
 CONFIG_FILE_NAME_LINUX = "spyrit.conf"
 CONFIG_FOLDER_NAME_LINUX = ".config/spyritng"
 
 CONFIG_FILE_NAME_WINDOWS = "Spyrit.ini"
 CONFIG_FOLDER_NAME_WINDOWS = "SpyritNG"
+
+SETTINGS_SAVE_DELAY_MS = 5_000  # milliseconds
 
 # UI
 

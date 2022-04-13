@@ -39,7 +39,7 @@ class ShortcutWithKeySetting(QtCore.QObject):
 
         self._shortcut = QtGui.QShortcut(parent)
         self._setting = setting
-        self._setting.onChangeCall(self.updateShortcut)
+        self._setting.onValueChangeCall(self.updateShortcut)
         self.updateShortcut(self._setting.get())
 
         safe_signal(self._shortcut, "activated").connect(slot)

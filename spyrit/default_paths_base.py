@@ -19,14 +19,15 @@ platform by platform.
 import pathlib
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
 
 class DefaultPathsBase(ABC):
     def __init__(self) -> None:
 
-        super().__init__()
+        self._config_folder_path: Optional[pathlib.Path] = None
 
-        self._config_folder_path: pathlib.Path = pathlib.Path()
+        super().__init__()
 
     @abstractmethod
     def getConfigFileName(self) -> str:

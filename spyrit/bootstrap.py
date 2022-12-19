@@ -21,6 +21,7 @@ from PySide6 import QtWidgets
 
 
 from spyrit import platform
+from spyrit import resources
 from spyrit.settings import exporter, spyrit_settings
 from spyrit.ui import spyrit_main_ui, spyrit_main_window, tabbed_ui_factory
 
@@ -73,6 +74,11 @@ def bootstrap(args: list[str]) -> int:
     # QApplication, since Qt expects it.
 
     app = QtWidgets.QApplication(program + remaining_args)
+
+    # Load resources, else bail.
+
+    if not resources.load():
+        return -1
 
     # Instantiate and load the settings.
 

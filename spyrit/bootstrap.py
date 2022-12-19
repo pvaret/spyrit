@@ -17,7 +17,7 @@ Function to initialize the program and launch it.
 
 import argparse
 
-from PySide6 import QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 
 from spyrit import platform
@@ -79,6 +79,8 @@ def bootstrap(args: list[str]) -> int:
 
     if not resources.load():
         return -1
+
+    assert QtGui.QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") != -1
 
     # Instantiate and load the settings.
 

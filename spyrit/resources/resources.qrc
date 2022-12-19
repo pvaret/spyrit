@@ -1,2 +1,5 @@
 <RCC>
+    <qresource prefix="/fonts/">
+        <file>monof55.ttf</file>
+    </qresource>
 </RCC>

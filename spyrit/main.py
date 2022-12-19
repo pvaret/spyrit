@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
@@ -49,6 +47,6 @@ def main(args: list[str]) -> int:
     return bootstrap(args)
 
 
-if __name__ == "__main__":
+def run() -> None:
 
     sys.exit(main(sys.argv))

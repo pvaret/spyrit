@@ -18,11 +18,11 @@ Function to initialize the program and launch it.
 import argparse
 
 from PySide6 import QtGui, QtWidgets
-
+from sunset import AutoSaver
 
 from spyrit import platform
 from spyrit import resources
-from spyrit.settings import exporter, spyrit_settings
+from spyrit.settings import spyrit_settings
 from spyrit.ui import spyrit_main_ui, spyrit_main_window, tabbed_ui_factory
 
 
@@ -80,26 +80,28 @@ def bootstrap(args: list[str]) -> int:
     if not resources.load():
         return -1
 
-    assert QtGui.QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") != -1
+    if QtGui.QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
+        return -1
 
-    # Instantiate and load the settings.
+    # Instantiate the settings and autoload/save them.
 
     settings = spyrit_settings.SpyritSettings()
-    exporter.Exporter(app, settings, default_paths.getConfigFilePath()).load()
 
-    # Build the UI.
+    with AutoSaver(settings, default_paths.getConfigFilePath()):
 
-    spyrit_main_window_factory = spyrit_main_window.SpyritMainWindowFactory(
-        settings
-    )
-    spyrit_main_ui_factory = spyrit_main_ui.SpyritMainUiFactory(settings)
+        # Build the UI.
 
-    ui_factory = tabbed_ui_factory.TabbedUiFactory(
-        tabbed_ui_element_factory=spyrit_main_ui_factory,
-        tabbed_ui_container_factory=spyrit_main_window_factory,
-    )
-    ui_factory.createNewUiInNewWindow()
+        spyrit_main_window_factory = spyrit_main_window.SpyritMainWindowFactory(
+            settings
+        )
+        spyrit_main_ui_factory = spyrit_main_ui.SpyritMainUiFactory(settings)
 
-    # And start the show.
+        ui_factory = tabbed_ui_factory.TabbedUiFactory(
+            tabbed_ui_element_factory=spyrit_main_ui_factory,
+            tabbed_ui_container_factory=spyrit_main_window_factory,
+        )
+        ui_factory.createNewUiInNewWindow()
 
-    return app.exec()
+        # And start the show.
+
+        return app.exec()

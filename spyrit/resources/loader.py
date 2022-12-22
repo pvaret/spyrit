@@ -44,6 +44,7 @@ def load() -> bool:
             logging.error(
                 f"Resources not compiled. In order to compile them, run:\n"
                 f" pyside6-rcc --generator python"
+                f" --compress 9 --threshold 0.95"
                 f" --output {this_dir}/___compiled.py"
                 f" {this_dir}/resources.qrc"
             )

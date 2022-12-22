@@ -2,4 +2,7 @@
     <qresource prefix="/fonts/">
         <file>monof55.ttf</file>
     </qresource>
+    <qresource prefix="/logos/">
+        <file>spyrit-logo.svg</file>
+    </qresource>
 </RCC>

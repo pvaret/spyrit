@@ -31,11 +31,17 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
     # How long should the switch animation last, in milliseconds.
 
-    _ANIMATION_DURATION = constants.ANIMATION_DURATION_MS
+    _ANIMATION_DURATION: int = constants.ANIMATION_DURATION_MS
 
     # Which animation should be used for the switch.
 
-    _EASING_CURVE = QtCore.QEasingCurve.OutCubic
+    _EASING_CURVE: QtCore.QEasingCurve.Type = QtCore.QEasingCurve.Type.OutCubic
+
+    _panes: list[QtWidgets.QWidget]
+    _active_pane: int
+    _x_scroll_enforced_value: int
+    _y_scroll_enforced_value: int
+    _pane_switch_animation: QtCore.QVariantAnimation
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
 
@@ -43,14 +49,18 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
         # Structures to keep track of currently added panes.
 
-        self._panes: list[QtWidgets.QWidget] = []
+        self._panes = []
         self._active_pane = 0
 
         # Set up the view port: no margins, no scrollbars.
 
-        self.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
+        self.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
 
         # Set up the widget that's going to serve as the parent of our panes.
 
@@ -97,7 +107,8 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
         pane.setSizePolicy(
             QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+                QtWidgets.QSizePolicy.Policy.Fixed,
+                QtWidgets.QSizePolicy.Policy.Fixed,
             )
         )
 
@@ -118,8 +129,8 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         # If the animation is currently running already, then use its current
         # position as the starting position for a new animation.
 
-        initial_value = (
-            float(self._active_pane)
+        initial_value = float(
+            self._active_pane
             if (
                 self._pane_switch_animation.state()
                 == QtCore.QVariantAnimation.State.Stopped

@@ -36,16 +36,19 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
     # This signal is emitted when this window newly received the focus.
 
-    focusIn = QtCore.Signal()
+    focusIn: QtCore.Signal = QtCore.Signal()
 
     # This signal is emitted when this window is in the process of closing.
 
-    closing = QtCore.Signal()
+    closing: QtCore.Signal = QtCore.Signal()
 
     # This signal is emitted when a user interaction with this window should
     # result in a new tab being opened.
 
-    newTabRequested = QtCore.Signal()
+    newTabRequested: QtCore.Signal = QtCore.Signal()
+
+    _tab_widget: QtWidgets.QTabWidget
+    _property_refresh_timer: QtCore.QTimer
 
     def __init__(
         self,
@@ -98,10 +101,11 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(new_tab_button)
         layout.setContentsMargins(2, 2, 2, 2)
+
         corner_widget.setLayout(layout)
 
         self._tab_widget.setCornerWidget(
-            corner_widget, corner=QtCore.Qt.TopLeftCorner
+            corner_widget, corner=QtCore.Qt.Corner.TopLeftCorner
         )
 
         safe_signal(new_tab_button, "clicked").connect(self.newTabRequested)
@@ -242,11 +246,11 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         Emit relevant signals when the corresponding events are received.
         """
 
-        if event.type() == QtCore.QEvent.WindowActivate:
+        if event.type() == QtCore.QEvent.Type.WindowActivate:
             if self.isActiveWindow():
                 self.focusIn.emit()
 
-        if event.type() == QtCore.QEvent.Close:
+        if event.type() == QtCore.QEvent.Type.Close:
             self.closing.emit()
 
         return super().event(event)

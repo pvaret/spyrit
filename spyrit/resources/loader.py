@@ -35,16 +35,16 @@ def load() -> bool:
     if not _resources_loaded:
 
         try:
-            from . import compiled  # type: ignore
+            from . import ___compiled  # type: ignore
 
             _resources_loaded = True
 
         except ImportError:
-            this_dir = os.path.dirname(__file__)
+            this_dir: str = os.path.dirname(__file__)
             logging.error(
                 f"Resources not compiled. In order to compile them, run:\n"
                 f" pyside6-rcc --generator python"
-                f" --output {this_dir}/resources/compiled.py"
+                f" --output {this_dir}/resources/___compiled.py"
                 f" {this_dir}/resources/resources.qrc"
             )
 

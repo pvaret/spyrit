@@ -16,10 +16,10 @@ Provides utilities to make Spyrit resources available to Qt.
 """
 
 import logging
-import os
+import pathlib
 
 
-_resources_loaded = False
+_resources_loaded: bool = False
 
 # flake8: noqa: F401; ignore possible import error below.
 def load() -> bool:
@@ -40,12 +40,12 @@ def load() -> bool:
             _resources_loaded = True
 
         except ImportError:
-            this_dir: str = os.path.dirname(__file__)
+            this_dir: str = str(pathlib.Path(__file__).parent.absolute())
             logging.error(
                 f"Resources not compiled. In order to compile them, run:\n"
                 f" pyside6-rcc --generator python"
-                f" --output {this_dir}/resources/___compiled.py"
-                f" {this_dir}/resources/resources.qrc"
+                f" --output {this_dir}/___compiled.py"
+                f" {this_dir}/resources.qrc"
             )
 
     return _resources_loaded

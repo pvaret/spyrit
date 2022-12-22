@@ -16,6 +16,7 @@ Implements a key shortcut type that's serializable by SunsetSettings.
 """
 
 from typing import Optional
+
 from PySide6 import QtGui
 
 
@@ -46,15 +47,15 @@ class KeyShortcut(QtGui.QKeySequence):
             format=QtGui.QKeySequence.SequenceFormat.NativeText
         )
 
-    @classmethod
-    def default(cls, value: str) -> "KeyShortcut":
-        """
-        Build a KeyShortcut from *portable* text. Portable means that we can
-        specify the same shortcut on all platforms and Qt adapts it to the
-        native modifiers for the platform.
-        """
 
-        key = KeyShortcut(
-            value, format=QtGui.QKeySequence.SequenceFormat.PortableText
-        )
-        return key
+def from_default(value: str) -> KeyShortcut:
+    """
+    Build a KeyShortcut from *portable* text. Portable means that we can
+    specify the same shortcut on all platforms and Qt adapts it to the
+    native modifiers for the platform.
+    """
+
+    key = KeyShortcut(
+        value, format=QtGui.QKeySequence.SequenceFormat.PortableText
+    )
+    return key

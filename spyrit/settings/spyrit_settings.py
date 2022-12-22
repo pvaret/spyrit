@@ -15,40 +15,24 @@
 Declaration of the Spyrit settings.
 """
 
-import sunset
+from sunset import Key, Bundle, Settings
 
 from spyrit.settings import key_shortcut
 
 
-class SpyritSettings(sunset.Settings):
-    class KeyShortcuts(sunset.Section):
+def default_key(combination: str) -> Key[key_shortcut.KeyShortcut]:
 
-        new_tab: sunset.Setting[key_shortcut.KeyShortcut] = sunset.NewSetting(
-            key_shortcut.KeyShortcut.default("Ctrl+T")
-        )
+    return Key(default=key_shortcut.from_default(combination))
 
-        close_current_tab: sunset.Setting[
-            key_shortcut.KeyShortcut
-        ] = sunset.NewSetting(key_shortcut.KeyShortcut.default("Ctrl+W"))
 
-        switch_to_previous_tab: sunset.Setting[
-            key_shortcut.KeyShortcut
-        ] = sunset.NewSetting(key_shortcut.KeyShortcut.default("Ctrl+PgUp"))
+class SpyritSettings(Settings):
+    class KeyShortcuts(Bundle):
 
-        switch_to_next_tab: sunset.Setting[
-            key_shortcut.KeyShortcut
-        ] = sunset.NewSetting(key_shortcut.KeyShortcut.default("Ctrl+PgDown"))
+        new_tab = default_key("Ctrl+T")
+        close_current_tab = default_key("Ctrl+W")
+        switch_to_previous_tab = default_key("Ctrl+PgUp")
+        switch_to_next_tab = default_key("Ctrl+PgDown")
+        move_current_tab_left = default_key("Ctrl+Shift+PgUp")
+        move_current_tab_right = default_key("Ctrl+Shift+PgDown")
 
-        move_current_tab_left: sunset.Setting[
-            key_shortcut.KeyShortcut
-        ] = sunset.NewSetting(
-            key_shortcut.KeyShortcut.default("Ctrl+Shift+PgUp")
-        )
-
-        move_current_tab_right: sunset.Setting[
-            key_shortcut.KeyShortcut
-        ] = sunset.NewSetting(
-            key_shortcut.KeyShortcut.default("Ctrl+Shift+PgDown")
-        )
-
-    shortcuts: KeyShortcuts = sunset.NewSection(KeyShortcuts)
+    shortcuts = KeyShortcuts()

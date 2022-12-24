@@ -28,22 +28,25 @@ class TabbedUiElement(QtWidgets.QWidget):
 
     # This signal is emitted when the UI wants its tab title to be updated.
 
-    tabTitleChanged = QtCore.Signal(str)
+    tabTitleChanged = QtCore.Signal(str)  # noqa: N815
 
     # This signal is emitted when the UI wants its containing window's title to
     # be updated.
 
-    windowTitleChanged = QtCore.Signal(str)
+    windowTitleChanged = QtCore.Signal(str)  # noqa: N815
 
     # This signal is emitted when this UI wants to no longer be pinned to its
     # containing window.
 
-    wantToBeUnpinned = QtCore.Signal()
+    wantToBeUnpinned = QtCore.Signal()  # noqa: N815
 
     # This signal is emitted when this UI wants to be detached from its current
     # containing window and into a new window.
 
-    wantToDetachToNewWindow = QtCore.Signal()
+    wantToDetachToNewWindow = QtCore.Signal()  # noqa: N815
+
+    _tab_title: str
+    _window_title: str
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
 
@@ -57,8 +60,8 @@ class TabbedUiElement(QtWidgets.QWidget):
 
         # Keep track of the UI's properties we'll want to propagate.
 
-        self._tab_title: str = ""
-        self._window_title: str = ""
+        self._tab_title = ""
+        self._window_title = ""
 
     def tabTitle(self) -> str:
         """

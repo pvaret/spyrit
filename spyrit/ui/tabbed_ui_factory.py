@@ -29,6 +29,13 @@ class TabbedUiFactory(QtCore.QObject):
     tabbed UI elements.
     """
 
+    _tabbed_ui_container_factory: Callable[
+        [], tabbed_ui_container.TabbedUiContainer
+    ]
+    _tabbed_ui_element_factory: Callable[[], tabbed_ui_element.TabbedUiElement]
+    _last_active_window: Optional[tabbed_ui_container.TabbedUiContainer]
+    _windows: set[tabbed_ui_container.TabbedUiContainer]
+
     def __init__(
         self,
         tabbed_ui_element_factory: Callable[
@@ -52,15 +59,13 @@ class TabbedUiFactory(QtCore.QObject):
         # top-level windows. Nothing else should, so this structure is
         # essentially the source of truth for which windows currently exist.
 
-        self._windows: set[tabbed_ui_container.TabbedUiContainer] = set()
+        self._windows = set()
 
         # Remember the last active window, i.e. the window that last had the
         # focus. It's the window where we'll want to create new tabs when not
         # otherwise specified.
 
-        self._last_active_window: Optional[
-            tabbed_ui_container.TabbedUiContainer
-        ] = None
+        self._last_active_window = None
 
     def createNewUiInNewTab(
         self, window: Optional[tabbed_ui_container.TabbedUiContainer] = None
@@ -108,6 +113,7 @@ class TabbedUiFactory(QtCore.QObject):
         new_window.show()
 
         new_window.newTabRequested.connect(self._onNewTabRequestedByWindow)
+        new_window.newWindowRequested.connect(self.createNewUiInNewWindow)
 
         return new_window
 

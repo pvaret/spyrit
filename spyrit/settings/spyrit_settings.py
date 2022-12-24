@@ -29,6 +29,7 @@ class SpyritSettings(Settings):
     class KeyShortcuts(Bundle):
 
         new_tab = default_key("Ctrl+T")
+        new_window = default_key("Ctrl+Shift+N")
         close_current_tab = default_key("Ctrl+W")
         switch_to_previous_tab = default_key("Ctrl+PgUp")
         switch_to_next_tab = default_key("Ctrl+PgDown")

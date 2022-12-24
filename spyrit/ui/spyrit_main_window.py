@@ -30,6 +30,8 @@ class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
     things like Spyrit settings.
     """
 
+    _settings: spyrit_settings.SpyritSettings
+
     def __init__(
         self,
         main_settings: spyrit_settings.SpyritSettings,
@@ -38,12 +40,15 @@ class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
 
         super().__init__(parent)
 
-        self._settings: spyrit_settings.SpyritSettings = main_settings
+        self._settings = main_settings
 
         # Set up keyboard shortcuts.
 
         shortcut_with_key_setting.ShortcutWithKeySetting(
             self, self._settings.shortcuts.new_tab, self.newTabRequested
+        )
+        shortcut_with_key_setting.ShortcutWithKeySetting(
+            self, self._settings.shortcuts.new_window, self.newWindowRequested
         )
         shortcut_with_key_setting.ShortcutWithKeySetting(
             self,
@@ -77,6 +82,8 @@ class SpyritMainWindowFactory:
     Provides a factory for our main application window that can be used by the
     generic tabbed UI factory.
     """
+
+    _settings: spyrit_settings.SpyritSettings
 
     def __init__(self, settings: spyrit_settings.SpyritSettings) -> None:
 

@@ -36,7 +36,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
     # This signal is emitted when this window newly received the focus.
 
-    focusIn: QtCore.Signal = QtCore.Signal()
+    focusIn: QtCore.Signal = QtCore.Signal()  # noqa: N815
 
     # This signal is emitted when this window is in the process of closing.
 
@@ -45,7 +45,12 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
     # This signal is emitted when a user interaction with this window should
     # result in a new tab being opened.
 
-    newTabRequested: QtCore.Signal = QtCore.Signal()
+    newTabRequested: QtCore.Signal = QtCore.Signal()  # noqa: N815
+
+    # This signal is emitted when a user interaction with this window should
+    # result in a new window being opened.
+
+    newWindowRequested: QtCore.Signal = QtCore.Signal()  # noqa: N815
 
     _tab_widget: QtWidgets.QTabWidget
     _property_refresh_timer: QtCore.QTimer
@@ -57,8 +62,8 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
         super().__init__(parent)
 
-        self.setMinimumSize(
-            constants.MINIMUM_WINDOW_WIDTH, constants.MINIMUM_WINDOW_HEIGHT
+        self.resize(
+            constants.DEFAULT_WINDOW_WIDTH, constants.DEFAULT_WINDOW_HEIGHT
         )
         self.setWindowTitle("")
 

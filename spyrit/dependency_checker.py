@@ -54,7 +54,7 @@ class DependencyChecker:
 
     def messages(self) -> Iterator[str]:
 
-        yield from (
+        return (
             msg
             for msg in (
                 self.python_check_msg,

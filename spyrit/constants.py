@@ -18,26 +18,26 @@ purposes.
 
 # Dependencies
 
-REQUIRED_PYTHON_VERSION = (3, 9)
-REQUIRED_QT_VERSION = (6, 2)
+REQUIRED_PYTHON_VERSION: tuple[int, int] = (3, 11)
+REQUIRED_QT_VERSION: tuple[int, int] = (6, 2)
 
 # Name
 
-APPLICATION_NAME = "Spyrit"
+APPLICATION_NAME: str = "Spyrit"
 
 # Settings
 
-CONFIG_FILE_NAME_LINUX = "spyrit.conf"
-CONFIG_FOLDER_NAME_LINUX = ".config/spyritng"
+CONFIG_FILE_NAME_LINUX: str = "spyrit.conf"
+CONFIG_FOLDER_NAME_LINUX: str = ".config/spyritng"
 
-CONFIG_FILE_NAME_WINDOWS = "Spyrit.ini"
-CONFIG_FOLDER_NAME_WINDOWS = "SpyritNG"
+CONFIG_FILE_NAME_WINDOWS: str = "Spyrit.ini"
+CONFIG_FOLDER_NAME_WINDOWS: str = "SpyritNG"
 
-SETTINGS_SAVE_DELAY_MS = 5_000  # milliseconds
+SETTINGS_SAVE_DELAY_MS: int = 5_000  # milliseconds
 
 # UI
 
-DEFAULT_WINDOW_WIDTH = 1000
-DEFAULT_WINDOW_HEIGHT = 800
+DEFAULT_WINDOW_WIDTH: int = 1000
+DEFAULT_WINDOW_HEIGHT: int = 800
 
-ANIMATION_DURATION_MS = 700  # milliseconds
+ANIMATION_DURATION_MS: int = 700  # milliseconds

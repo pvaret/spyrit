@@ -27,7 +27,6 @@ from PyQt6.QtGui import QFont
 
 class QTextFormatFormatter:
     def __init__(self, qtextformat):
-
         self.qtextformat = qtextformat
         self.color_cache = {}
 
@@ -43,7 +42,6 @@ class QTextFormatFormatter:
         )
 
     def _getCachedColor(self, value):
-
         value = value.lower()
         color = self.color_cache.get(value)
 
@@ -53,35 +51,27 @@ class QTextFormatFormatter:
         return color
 
     def _setForegroundProperty(self, value):
-
         self.qtextformat.setForeground(self._getCachedColor(value))
 
     def _setBackgroundProperty(self, value):
-
         self.qtextformat.setBackground(self._getCachedColor(value))
 
     def _setUnderlineProperty(self, value):
-
         self.qtextformat.setFontUnderline(True)
 
     def _setItalicProperty(self, value):
-
         self.qtextformat.setFontItalic(True)
 
     def _setFontWeightProperty(self, value):
-
         self.qtextformat.setFontWeight(QFont.Weight.Black)
 
     def _setHrefProperty(self, value):
-
         self.qtextformat.setAnchorHref(value)
 
     def clearProperty(self, property_id):
-
         self.qtextformat.clearProperty(property_id)
 
     def setProperty(self, property_id, value):
-
         setter = self.property_setter_mapping.get(property_id)
 
         if setter is not None:

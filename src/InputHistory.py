@@ -24,7 +24,6 @@ from PyQt6.QtGui import QTextCursor
 
 class InputHistory:
     def __init__(self, inputwidget, shouldsave=True):
-
         self.inputwidget = inputwidget
         self.cursor = -1
         self.currenttext = ""
@@ -34,7 +33,6 @@ class InputHistory:
         state = inputwidget.world.state
 
         if self.shouldsave and settings._ui._input._save_history:
-
             try:
                 count = int(settings._ui._input._save_history)
 
@@ -47,7 +45,6 @@ class InputHistory:
             self.history = []
 
     def historyUp(self):
-
         if len(self.history) == 0 or self.cursor >= len(self.history) - 1:
             return
 
@@ -60,7 +57,6 @@ class InputHistory:
         self.inputwidget.moveCursor(QTextCursor.MoveOperation.End)
 
     def historyDown(self):
-
         if self.cursor < 0:
             return
 
@@ -75,7 +71,6 @@ class InputHistory:
         self.inputwidget.moveCursor(QTextCursor.MoveOperation.End)
 
     def update(self, text):
-
         self.currenttext = ""
         self.cursor = -1
 

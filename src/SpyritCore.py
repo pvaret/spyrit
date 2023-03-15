@@ -42,7 +42,6 @@ class SpyritCore(QObject):
     def __init__(
         self, settings, state, worlds, commands, triggers, tmprc, sound
     ):
-
         super().__init__()
 
         self.settings = settings
@@ -68,14 +67,12 @@ class SpyritCore(QObject):
         self.motd = iter(MOTD)
 
     def atExit(self) -> None:
-
         self.tmprc.cleanup()
         self.triggers.save(self.settings)
         save_settings(self.settings)
         save_state(self.state)
 
     def constructMainWindow(self):
-
         if self.mw:
             return
 
@@ -83,7 +80,6 @@ class SpyritCore(QObject):
         self.mw.show()
 
     def openWorldByName(self, worldname):
-
         world = self.worlds.lookupWorldByName(worldname)
 
         if world:
@@ -93,7 +89,6 @@ class SpyritCore(QObject):
             messages.warn("No such world: %s" % worldname)
 
     def openWorldByHostPort(self, host, port, ssl=False):
-
         world = self.worlds.lookupWorldByHostPort(host, port)
 
         if world:
@@ -103,7 +98,6 @@ class SpyritCore(QObject):
             self.openWorld(self.worlds.newAnonymousWorld(host, port, ssl))
 
     def openWorld(self, world):
-
         if self.mw is None:
             return
 
@@ -113,7 +107,6 @@ class SpyritCore(QObject):
 
 
 def construct_spyrit_core(application):
-
     settings = load_settings()
     state = load_state()
     worlds = WorldsManager(settings, state)

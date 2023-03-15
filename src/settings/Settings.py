@@ -74,7 +74,6 @@ class MatchingDict(dict[str, Any], MutableMapping[str, Any]):
     """
 
     def __contains__(self, key: Any) -> bool:
-
         try:
             self[key]
             return True
@@ -83,7 +82,6 @@ class MatchingDict(dict[str, Any], MutableMapping[str, Any]):
             return False
 
     def __getitem__(self, key: str) -> Any:
-
         try:
             return super().__getitem__(key)
         except KeyError:
@@ -105,7 +103,6 @@ def validateAttr(attr: str) -> Optional[str]:
     """
 
     if len(attr) >= 2 and attr.startswith("_") and not attr.startswith("__"):
-
         return attr[1:]
 
     return None
@@ -163,7 +160,6 @@ class AttrProxyDictMixin(TextDictProtocol):
     """
 
     def __getattr__(self, attr: str) -> Any:
-
         vattr = validateAttr(attr)
 
         if vattr is None:
@@ -179,7 +175,6 @@ class AttrProxyDictMixin(TextDictProtocol):
             raise AttributeError(attr) from e
 
     def __setattr__(self, attr: str, value: Any):
-
         vattr = validateAttr(attr)
 
         if vattr:
@@ -190,7 +185,6 @@ class AttrProxyDictMixin(TextDictProtocol):
             super().__setattr__(attr, value)
 
     def __delattr__(self, attr: str):
-
         vattr = validateAttr(attr)
 
         if vattr is None:
@@ -210,7 +204,6 @@ class AttrProxyDictMixin(TextDictProtocol):
 # TODO: Finish. Use a Protocol instead! See
 # https://mypy.readthedocs.io/en/stable/protocols.html.
 class BaseNode(abc.ABC):
-
     proto: "NodeProto"
     fallback_value: Any
 
@@ -233,7 +226,6 @@ class BaseNode(abc.ABC):
 
 class Leaf(BaseNode):
     def __init__(self, key: str, container: "Node"):
-
         self.key: str = key
         self.inherit: Optional[Leaf] = None
         self.notifier = CallbackRegistry()
@@ -242,23 +234,19 @@ class Leaf(BaseNode):
         self.fallback_value: Any = None
 
     def isLeaf(self) -> bool:
-
         return True
 
     def __repr__(self) -> str:
-
         key_path = ".".join(self.getFullPath())
         return "<Leaf %s>: %r" % (key_path, self.own_value)
 
     def getFullPath(self) -> List[str]:
-
         if self.container is None:
             return []
 
         return self.container.getFullPath() + [self.key]
 
     def setInherit(self, inherit: "Leaf"):
-
         self.inherit = inherit
 
         if inherit is not None:
@@ -266,7 +254,6 @@ class Leaf(BaseNode):
             self.fallback_value = inherit.value()
 
     def value(self) -> Any:
-
         return (
             self.own_value
             if self.own_value is not NO_VALUE
@@ -274,7 +261,6 @@ class Leaf(BaseNode):
         )
 
     def setValue(self, value: Any):
-
         prev_value = self.value()
 
         if value == self.fallback_value:
@@ -287,11 +273,9 @@ class Leaf(BaseNode):
             self.notifier.triggerAll(new_value)
 
     def delValue(self):
-
         self.setValue(NO_VALUE)
 
     def propagate(self, new_value: Any):
-
         prev_value = self.value()
         self.fallback_value = new_value
 
@@ -299,13 +283,11 @@ class Leaf(BaseNode):
             self.notifier.triggerAll(new_value)
 
     def isEmpty(self) -> bool:
-
         return self.own_value is NO_VALUE
 
 
 class Node(BaseNode, AttrProxyDictMixin):
     def __init__(self, key, container):
-
         self.key: str = key
         self.proto: Optional[NodeProto] = None  # type: ignore
         self.nodes: Dict[str, BaseNode] = {}
@@ -313,26 +295,21 @@ class Node(BaseNode, AttrProxyDictMixin):
         self.container: Node = container
 
     def isLeaf(self) -> bool:
-
         return False
 
     def __repr__(self) -> str:
-
         return "<Node %s>" % (".".join(self.getFullPath()) or ".")
 
     def getFullPath(self) -> List[str]:
-
         if self.container is None:
             return []
 
         return self.container.getFullPath() + [self.key]
 
     def setInherit(self, inherit: "Node"):
-
         self.inherit = inherit
 
     def get(self, key: str):
-
         if "." in key:
             head, tail = key.split(".", 1)
             return self.get(head).get(tail)  # type: ignore
@@ -350,26 +327,21 @@ class Node(BaseNode, AttrProxyDictMixin):
         return node
 
     def __iter__(self) -> Iterable[str]:
-
         return iter(self.nodes)
 
     def __getitem__(self, key: str) -> BaseNode:
-
         node = self.get(key)
         return node.value()  # type: ignore
 
     def __setitem__(self, key: str, value: Any):
-
         node = self.get(key)
         node.setValue(value)  # type: ignore
 
     def __delitem__(self, key: str):
-
         node = self.get(key)
         node.delValue()  # type: ignore
 
     def asDict(self) -> Dict[str, Any]:
-
         ret = {}
         for k, v in self.nodes.items():
             if v.isLeaf():
@@ -381,15 +353,12 @@ class Node(BaseNode, AttrProxyDictMixin):
         return ret
 
     def value(self) -> "Node":
-
         return self
 
     def isEmpty(self) -> bool:
-
         return all(node.isEmpty() for node in self.nodes.values())
 
     def setValue(self, value: Any):
-
         if not isinstance(value, dict):
             raise ValueError(
                 "Expected a dictionary-type value for key %s; "
@@ -410,7 +379,6 @@ class Node(BaseNode, AttrProxyDictMixin):
     # Or use a Protocol instead! See
     # https://mypy.readthedocs.io/en/stable/protocols.html.
     def dump(self):
-
         stack = [(self, "")]
         result = ({}, {})
 
@@ -418,11 +386,9 @@ class Node(BaseNode, AttrProxyDictMixin):
         SECTIONS = 1
 
         while stack:
-
             node, key = stack.pop(0)
 
             if node.isLeaf():
-
                 serializer = node.proto.metadata.get(  # type: ignore
                     "serializer"
                 )
@@ -433,16 +399,13 @@ class Node(BaseNode, AttrProxyDictMixin):
                 result[KEYS][key] = serializer.serialize(node.value())
 
             else:
-
                 for node_key, node in sorted(node.nodes.items()):
-
                     if node.isEmpty():
                         continue
 
                     subkey = ".".join((key, node_key)) if key else node_key
 
                     if node.proto.metadata.get("is_section"):
-
                         dump = node.dump()  # type: ignore
 
                         if len(dump[KEYS]) + len(dump[SECTIONS]) > 0:
@@ -454,14 +417,12 @@ class Node(BaseNode, AttrProxyDictMixin):
         return result
 
     def onChange(self, key: str, callback: Callable):  # type: ignore
-
         leaf = self.get(key)
         leaf.notifier.add(callback)  # type: ignore
 
 
 class NodeProto(object):
     def __init__(self, key: str, klass: Type[BaseNode]):
-
         self.key: str = key
         self.nodes: Dict[str, NodeProto] = MatchingDict()  # type: ignore
         self.klass: Type[BaseNode] = klass
@@ -470,7 +431,6 @@ class NodeProto(object):
         self.default_value: Any = None
 
     def get(self, key: str) -> "NodeProto":
-
         if "." in key:
             key, subkey = key.split(".")
             return self.get(key).get(subkey)
@@ -478,20 +438,17 @@ class NodeProto(object):
         return self.nodes[key]
 
     def new(self, key: str, klass: Type[BaseNode]) -> "NodeProto":
-
         if "." in key:
             key, subkey = key.split(".", 1)
             return self.new(key, klass=Node).new(subkey, klass=klass)
 
         if key not in self.nodes:
-
             new_node = NodeProto(key, klass)
             self.nodes[key] = new_node
 
         return self.nodes[key]
 
     def build(self, key: str, container: Node) -> Union[Node, Leaf]:
-
         node: Union[Node, Leaf]
         inherit_container: Optional[Node] = None
 
@@ -499,21 +456,18 @@ class NodeProto(object):
         # tree then searching this prototype for inheritance information.
 
         if key in self.nodes:
-
             proto = self.get(key)
 
             if container.inherit is not None:
                 inherit_container = container.inherit
 
         elif self.inherit:
-
             inherit_pattern = self.inherit
             inherit_container = container
 
             while inherit_container is not None and inherit_pattern.startswith(
                 "."
             ):
-
                 inherit_pattern = inherit_pattern[1:]
                 inherit_container = inherit_container.container
                 # TODO: inherit from subcontainers?
@@ -538,7 +492,6 @@ class NodeProto(object):
         # 2/ Set up inheritance given the provided information.
 
         if inherit_container is not None:
-
             inherit_node = inherit_container.get(key)
 
             # Sanity test:
@@ -554,17 +507,14 @@ class NodeProto(object):
 # TODO: Annotate with types once mypy supports recursive types.
 class Settings(Node):
     def __init__(self):
-
         super().__init__(ROOT, None)
 
         self.proto = NodeProto(ROOT, self.__class__)
 
     def loadSchema(self, schema_def):
-
         pending_schema_defs = [(self.proto, schema_def)]
 
         while pending_schema_defs:
-
             current_proto, current_schema_def = pending_schema_defs.pop(0)
 
             current_proto.inherit = current_schema_def.get(  # type: ignore
@@ -576,7 +526,6 @@ class Settings(Node):
             section_metadata = current_schema_def.get("default_metadata") or {}
 
             for key, metadata in current_schema_def.get("keys", ()):
-
                 new_proto = current_proto.new(key, klass=Leaf)  # type: ignore
 
                 new_proto.metadata.update(section_metadata)
@@ -595,7 +544,6 @@ class Settings(Node):
 
             sections = current_schema_def.get("sections", ())
             for section_key, sub_schema_def in sections:
-
                 new_proto = current_proto
 
                 for key in section_key.split("."):
@@ -605,16 +553,13 @@ class Settings(Node):
                 pending_schema_defs.append((new_proto, sub_schema_def))
 
     def restore(self, settings_struct):
-
         stack = [(self, settings_struct)]
 
         while stack:
-
             current_settings, struct = stack.pop(0)
             keys, sections = struct
 
             for key, value in keys.items():
-
                 try:
                     node = current_settings.get(key)
 
@@ -631,7 +576,6 @@ class Settings(Node):
                 node.setValue(value)  # type: ignore
 
             for section, struct in sections.items():
-
                 try:
                     node = current_settings.get(section)
 

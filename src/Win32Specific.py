@@ -26,7 +26,6 @@ import winpaths
 
 
 class Win32Specific:
-
     CONFIG_DIR = "Spyrit"
     OLD_CONFIG_DIRS = []
     CONFIG_FILE = "Spyrit.ini"

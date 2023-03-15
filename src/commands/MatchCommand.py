@@ -27,7 +27,6 @@ class MatchCommand(BaseCommand):
     """Create, list, delete match patterns."""
 
     def cmd_add(self, world, pattern, group=None, type="smart"):
-
         r"""
         Add a new match pattern.
 
@@ -80,7 +79,6 @@ class MatchCommand(BaseCommand):
         world.info("Match added.")
 
     def cmd_del(self, world, group, number=None):
-
         """
         Delete a match pattern or group of match patterns.
 
@@ -105,19 +103,15 @@ class MatchCommand(BaseCommand):
         mgr = world.socketpipeline.triggersmanager
 
         if not mgr.hasGroup(group):
-
             world.info("No such match pattern group as '%s'!" % group)
             return
 
         if number is None:
-
             mgr.delGroup(group)
             world.info("Match pattern group '%s' deleted." % group)
 
         else:
-
             if not number.isdigit():
-
                 world.info("Match pattern number argument must be a number!")
                 return
 
@@ -126,7 +120,6 @@ class MatchCommand(BaseCommand):
             size = mgr.sizeOfGroup(group)
 
             if number > size:
-
                 world.info(
                     "Match pattern group '%s' only has %d pattern(s)!"
                     % (group, size)
@@ -137,7 +130,6 @@ class MatchCommand(BaseCommand):
                 number -= 1  # Match is given as 1-index but used as 0-index.
 
             if size > 1:
-
                 mgr.delMatch(group, number)
                 world.info(
                     "Match pattern #%d deleted from group '%s'."
@@ -145,7 +137,6 @@ class MatchCommand(BaseCommand):
                 )
 
             else:
-
                 mgr.delGroup(group)
                 world.info(
                     "Match pattern group '%s' is now empty and was deleted."
@@ -153,7 +144,6 @@ class MatchCommand(BaseCommand):
                 )
 
     def cmd_action(self, world, group, action, *args, **kwargs):
-
         """
         Add a match action to the provided group.
 
@@ -208,7 +198,6 @@ class MatchCommand(BaseCommand):
         mgr = world.socketpipeline.triggersmanager
 
         if not mgr.hasGroup(group):
-
             world.info("No such match pattern group as '%s'!" % group)
             return
 
@@ -225,7 +214,6 @@ class MatchCommand(BaseCommand):
         )
 
     def cmd_delaction(self, world, group, number):
-
         """
         Delete an action from the given match pattern group.
 
@@ -242,12 +230,10 @@ class MatchCommand(BaseCommand):
         mgr = world.socketpipeline.triggersmanager
 
         if not mgr.hasGroup(group):
-
             world.info("No such match pattern group as '%s'!" % group)
             return
 
         if not number.isdigit():
-
             world.info("Match pattern number argument must be a number!")
             return
 
@@ -256,7 +242,6 @@ class MatchCommand(BaseCommand):
         size = len(mgr.findOrCreateTrigger(group).actions)
 
         if number > size:
-
             world.info(
                 "Match pattern group '%s' only has %d action(s)!"
                 % (group, size)
@@ -272,7 +257,6 @@ class MatchCommand(BaseCommand):
         )
 
     def cmd_test(self, world, line):
-
         """
         Test an input line against every match pattern group.
 
@@ -307,7 +291,6 @@ class MatchCommand(BaseCommand):
         msg.append("Matches found:")
 
         for matchgroup, matchresult in matches:
-
             group = matchgroup.name
             tokens = sorted(
                 (tok, value)
@@ -316,7 +299,6 @@ class MatchCommand(BaseCommand):
             )
 
             if tokens:
-
                 msg.append("Group '%s' matches with tokens:" % group)
                 for token, value in tokens:
                     msg.append("  %s: %s" % (token, value))
@@ -327,7 +309,6 @@ class MatchCommand(BaseCommand):
         world.info("\n".join(msg))
 
     def cmd_list(self, world):
-
         """
         List all match groups with their match patterns and related actions.
 
@@ -344,20 +325,17 @@ class MatchCommand(BaseCommand):
             msg.append("  None.")
 
         for _, matchgroup in sorted(mgr.groups.items()):
-
             group = matchgroup.name
 
             msg.append("[%s]" % group)
 
             for i, m in enumerate(matchgroup.matches):
-
                 if i == 0:
                     msg.append("  Patterns:")
 
                 msg.append("    #%d: " % (i + 1) + m.toString())
 
             for i, a in enumerate(matchgroup.actions.values()):
-
                 if i == 0:
                     msg.append("  Actions:")
 

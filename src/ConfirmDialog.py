@@ -22,7 +22,6 @@ from PyQt6.QtWidgets import QMessageBox
 
 
 def confirmDialog(title, msg, okbutton, widget=None):
-
     messagebox = QMessageBox(widget)
 
     messagebox.setIcon(QMessageBox.Icon.Question)

@@ -25,7 +25,6 @@ from PyQt6.QtCore import QTimer
 
 class SingleShotTimer(QTimer):
     def __init__(self, slot):
-
         super().__init__()
         self.setSingleShot(True)
         self.timeout.connect(slot)  # type:ignore

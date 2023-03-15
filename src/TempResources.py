@@ -27,12 +27,10 @@ from PyQt6.QtCore import QTemporaryFile
 
 class TempResources:
     def __init__(self):
-
         self.map = {}
         self.tmpfiles = set()
 
     def get(self, fname):
-
         if fname in self.map:
             return self.map[fname]
 
@@ -41,7 +39,6 @@ class TempResources:
         return self.map.setdefault(fname, tmpfname)
 
     def new_temp_resource(self, fname):
-
         # This creates the temp file if fname is a resource, but not if that
         # resource is unknown, or turns out to be a real file.
 
@@ -65,9 +62,7 @@ class TempResources:
         return tmpfname
 
     def cleanup(self):
-
         while self.tmpfiles:
-
             try:
                 os.unlink(self.tmpfiles.pop())
             except OSError:
@@ -76,5 +71,4 @@ class TempResources:
         self.map.clear()
 
     def __del__(self):
-
         self.cleanup()

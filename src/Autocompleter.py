@@ -39,7 +39,6 @@ MAX_WORD_LIST_LENGTH = 1000
 
 class CompletionList:
     def __init__(self, words=[]):
-
         self.words = []
 
         # Keep track of words, so we can remove the oldest ones from the list.
@@ -53,7 +52,6 @@ class CompletionList:
             self.addWord(word)
 
     def addWord(self, word):
-
         key = normalize_text(word)
 
         self.wordpipe.appendleft(word)
@@ -63,19 +61,16 @@ class CompletionList:
         i = bisect.bisect_left(self.words, (key, word))
 
         if not (i < n and self.words[i] == (key, word)):
-
             # Only add this word to the list if it's not already there.
             bisect.insort(self.words, (key, word), i, i)
 
         # And now, cull the word list if it's grown too big.
 
         while len(self.words) > MAX_WORD_LIST_LENGTH:
-
             oldword = self.wordpipe.pop()
             self.wordcount[oldword] -= 1
 
             if self.wordcount[oldword] == 0:
-
                 i = bisect.bisect_left(
                     self.words, (normalize_text(oldword), oldword)
                 )
@@ -83,7 +78,6 @@ class CompletionList:
                 del self.wordcount[oldword]
 
     def lookup(self, prefix):
-
         key = normalize_text(prefix)
 
         i = bisect.bisect_left(self.words, (key, prefix))
@@ -101,7 +95,6 @@ class CompletionList:
 
 
 class Autocompleter:
-
     # This matches all alphanumeric characters (including Unicode ones, such as
     # 'é') plus a few punctuation signs so long as they are inside the matched
     # word.
@@ -111,14 +104,12 @@ class Autocompleter:
     endwordmatch = re.compile(r"^[\w:`'.-]*", re.U)
 
     def __init__(self):
-
         self.completionlist = CompletionList()
         self.textedit = None
         self.buffer = []
         self.matchstate: Optional[Tuple[QTextCursor, List[str]]] = None
 
     def selectCurrentWord(self, tc):
-
         # Alright. Our problem here is that we'd like to select the current
         # word, but Qt's idea of what makes up a word is, it seems, inconsistent
         # across Qt versions, and also incompatible with what Spyrit itself
@@ -168,7 +159,6 @@ class Autocompleter:
         tc.setPosition(pos - len(word_before))
 
         if len(word) > 0:
-
             tc.movePosition(
                 QTextCursor.MoveOperation.Right,
                 QTextCursor.MoveMode.KeepAnchor,
@@ -176,7 +166,6 @@ class Autocompleter:
             )
 
     def finalize(self):
-
         if not self.textedit:
             return
 
@@ -198,7 +187,6 @@ class Autocompleter:
         self.textedit = None
 
     def complete(self, textedit: QTextEdit):
-
         self.textedit = textedit
 
         tc = textedit.textCursor()
@@ -207,7 +195,6 @@ class Autocompleter:
         prefix = tc.selectedText()
 
         if not prefix:
-
             self.textedit = None
             self.matchstate = None
 
@@ -226,13 +213,11 @@ class Autocompleter:
         if (
             self.matchstate is not None
         ):  # If a previous ongoing completion exists...
-
             lastcursor, lastresult = self.matchstate
 
             if lastcursor.isCopyOf(
                 textedit.textCursor()
             ):  # Is it still relevant?
-
                 currently_cycling = True
                 result = lastresult
 
@@ -245,7 +230,6 @@ class Autocompleter:
         # Case one: no match. Do nothing.
 
         if len(result) == 0:
-
             self.textedit = None
             self.matchstate = None
 
@@ -257,11 +241,9 @@ class Autocompleter:
         textedit.setTextCursor(tc)
 
         if not currently_cycling:
-
             # Case two: one match. Insert it!
 
             if len(result) == 1:
-
                 self.insertResult(result[0])
                 self.finalize()
 
@@ -273,7 +255,6 @@ class Autocompleter:
             suffixes = [match[len(prefix) :] for match in result]
 
             if len(set(suffixes)) == 1:  # All matches have the same suffix.
-
                 self.insertResult(prefix + suffixes.pop())
                 self.finalize()
 
@@ -292,7 +273,6 @@ class Autocompleter:
         # And done!
 
     def insertResult(self, result):
-
         if not self.textedit:
             return
 
@@ -301,14 +281,12 @@ class Autocompleter:
         self.textedit.setTextCursor(tc)
 
     def sink(self, chunk):
-
         chunk_type, payload = chunk
 
         if chunk_type == ChunkType.TEXT:
             self.buffer.append(payload)
 
         elif chunk == (ChunkType.FLOWCONTROL, FlowControl.LINEFEED):
-
             data = "".join(self.buffer)
             self.buffer = []
 
@@ -316,5 +294,4 @@ class Autocompleter:
                 self.completionlist.addWord(word)
 
     def split(self, line):
-
         return self.wordmatch.findall(line)

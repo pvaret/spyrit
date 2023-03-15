@@ -23,7 +23,6 @@ import os
 import sys
 
 if os.name == "posix":
-
     if sys.platform == "darwin":
         from MacosSpecific import MacosSpecific as PlatformSpecific
 

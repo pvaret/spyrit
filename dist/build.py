@@ -75,15 +75,13 @@ importlib.import_module( "@BOOTSTRAP@" )
 
 
 def make_source_archive(filename: str) -> bytes:
-
     return base64.encodebytes(bz2.compress(open(filename, "rb").read()))
 
 
 def compile_module_dict(modules: List[Tuple[str, str]]) -> str:
-
     mods: list[str] = []
 
-    for (modulename, filename) in sorted(modules):
+    for modulename, filename in sorted(modules):
         if not filename:
             continue
 
@@ -97,12 +95,10 @@ def compile_module_dict(modules: List[Tuple[str, str]]) -> str:
 
 
 def make_launcher(modules: List[Tuple[str, str]]):
-
     return LAUNCHER_STUB % {"modules": compile_module_dict(modules)}
 
 
 def build(inputname: str, outputname: str = "", verbose: bool = True):
-
     dirname, scriptname = os.path.split(inputname)
     previous_dir = os.path.abspath(os.getcwd())
 
@@ -134,7 +130,6 @@ def build(inputname: str, outputname: str = "", verbose: bool = True):
 
 
 def main():
-
     parser = argparse.ArgumentParser(
         description="Builds all of a Python script's Python dependencies "
         "into a single Python file."

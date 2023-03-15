@@ -67,7 +67,6 @@ class MethodRef:
         self._fnref = weakref.ref(fn.__func__, callback)
 
     def ref(self) -> Optional[types.MethodType]:
-
         # Bind the method on the fly, and return it.
         fn = self._fnref()
         obj = self._objref()
@@ -168,9 +167,7 @@ class WeakCallableRef(Generic[_CallableT]):
             raise TypeError("%r must be a function or method" % fn)
 
     def markDead(self, _: Any) -> None:
-
         if self._ref is not None:
-
             callback = self._callback
 
             self._ref = None
@@ -180,14 +177,12 @@ class WeakCallableRef(Generic[_CallableT]):
                 callback(self)
 
     def __call__(self) -> Optional[_CallableT]:
-
         if self._ref is not None:
             return cast(_CallableT, self._ref.ref())
 
         return None
 
     def __repr__(self) -> str:
-
         return "<%s instance at %s (%s)%s>" % (
             self.__class__.__name__,
             hex(id(self)),

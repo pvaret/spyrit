@@ -30,7 +30,6 @@ class PrettyOptionDialog(QDialog):
     def __init__(
         self, mapper, panel, header=None, oklabel=None, title=None, parent=None
     ):
-
         super().__init__(parent)
 
         self.header = header
@@ -61,7 +60,6 @@ class PrettyOptionDialog(QDialog):
         self.relayout()
 
     def relayout(self):
-
         if self.layout():
             return
 

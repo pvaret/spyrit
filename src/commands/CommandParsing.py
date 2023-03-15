@@ -58,11 +58,9 @@ def tokenize(line):
     tokens = []
 
     while True:
-
         m = QUOTED.search(line)
 
         if m:
-
             for token in line[0 : m.start()].split():
                 tokens.append(token.strip())
 
@@ -75,7 +73,6 @@ def tokenize(line):
             line = line[m.end() :]
 
         else:
-
             for token in line.split():
                 tokens.append(token.strip())
 
@@ -85,7 +82,6 @@ def tokenize(line):
 
 
 def parse_command(cmdline):
-
     # For now, a simple split will do.
 
     cmdline = cmdline.strip()
@@ -98,16 +94,13 @@ def parse_command(cmdline):
 
 
 def parse_arguments(cmdline):
-
     args = []
     kwargs = {}
 
     tokens = tokenize(cmdline)
 
     for token in tokens:
-
         if KWARG_SEP in token:
-
             key, val = token.split(KWARG_SEP, 1)
             kwargs[key] = val
 

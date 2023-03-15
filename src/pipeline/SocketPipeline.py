@@ -42,7 +42,6 @@ from SingleShotTimer import SingleShotTimer
 
 class SocketPipeline(QObject):
     def __init__(self, settings):
-
         super().__init__()
 
         self.net_settings = settings._net
@@ -71,16 +70,13 @@ class SocketPipeline(QObject):
         self.net_settings.onChange("encoding", self.setStreamEncoding)
 
     def setStreamEncoding(self):
-
         if self.pipeline:
             self.pipeline.notify(
                 "encoding_changed", self.net_settings._encoding
             )
 
     def setupSocket(self):
-
         if self.net_settings._ssl and check_ssl_is_available():
-
             self.using_ssl = True
             self.socket = QSslSocket()
 
@@ -103,7 +99,6 @@ class SocketPipeline(QObject):
         self.socket.readyRead.connect(self.readSocket)  # type: ignore
 
     def connectToHost(self):
-
         if not self.socket:
             self.setupSocket()
         assert self.socket is not None
@@ -119,19 +114,16 @@ class SocketPipeline(QObject):
             self.socket.connectToHost(*params)
 
     def disconnectFromHost(self):
-
         if self.socket:
             self.socket.disconnectFromHost()
 
     def abort(self):
-
         if self.socket:
             self.socket.abort()
             self.socket.close()
 
     @pyqtSlot("QAbstractSocket::SocketState")
     def reportStateChange(self, state):
-
         self.flushBuffer()
 
         if state == QAbstractSocket.SocketState.HostLookupState:
@@ -152,13 +144,11 @@ class SocketPipeline(QObject):
 
     @pyqtSlot()
     def reportEncrypted(self):
-
         self.flushBuffer()
         self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.ENCRYPTED))
 
     @pyqtSlot("QAbstractSocket::SocketError")
     def reportError(self, error):
-
         self.flushBuffer()
 
         if error == QAbstractSocket.SocketError.ConnectionRefusedError:
@@ -184,7 +174,6 @@ class SocketPipeline(QObject):
 
     @pyqtSlot("const QList<QSslError> &")
     def handleSslErrors(self, errors):
-
         # We take note of the errors... and then discard them.
         # SSL validation errors are very common because many legitimate servers
         # are just not going to fork money over certificates, and nobody's
@@ -198,7 +187,6 @@ class SocketPipeline(QObject):
 
     @pyqtSlot()
     def readSocket(self):
-
         if self.socket is None:
             return
 
@@ -209,13 +197,11 @@ class SocketPipeline(QObject):
         self.flush_timer.start()
 
     def flushBuffer(self):
-
         data = b"".join(self.buffer)
         del self.buffer[:]
         self.pipeline.feedBytes(data)
 
     def send(self, data: str):
-
         if self.socket is None:
             return
 
@@ -223,7 +209,6 @@ class SocketPipeline(QObject):
             not self.socket.state()
             == QAbstractSocket.SocketState.ConnectedState
         ):
-
             # Don't write anything if the socket is not connected.
             return
 
@@ -236,5 +221,4 @@ class SocketPipeline(QObject):
         self.socket.flush()
 
     def addSink(self, sink, types: int = ChunkType.all()) -> None:
-
         self.pipeline.addSink(sink, types)

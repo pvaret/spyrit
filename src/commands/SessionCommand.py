@@ -24,14 +24,12 @@ from .BaseCommand import BaseCommand
 
 
 class SessionCommand(BaseCommand):
-
     # TODO: Maybe split this out into several commands. Those don't feel like
     # they belong together. So for now we hide the docstring so the commands
     # will remain hidden in the help.
     """Connect, disconnect, close, quit."""
 
     def cmd_reconnect(self, world):
-
         """
         Reconnect to the current world if it is currently disconnected.
 
@@ -42,7 +40,6 @@ class SessionCommand(BaseCommand):
         world.connectToWorld()
 
     def cmd_disconnect(self, world):
-
         """
         Disconnect from the current world.
 
@@ -53,7 +50,6 @@ class SessionCommand(BaseCommand):
         world.disconnectFromWorld()
 
     def cmd_quit(self, world):
-
         """
         Quit the application.
 
@@ -65,7 +61,6 @@ class SessionCommand(BaseCommand):
         QApplication.instance().closeAllWindows()  # type: ignore
 
     def cmd_close(self, world):
-
         """
         Closes the current tab.
 

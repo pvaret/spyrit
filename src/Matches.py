@@ -38,11 +38,9 @@ class BaseMatch(abc.ABC):
 
 
 class RegexMatch(BaseMatch):
-
     matchtype = "regex"
 
     def __init__(self, pattern=""):
-
         self.pattern = pattern
         self.regex = None
         self.error = None
@@ -52,7 +50,6 @@ class RegexMatch(BaseMatch):
             self.setPattern(pattern)
 
     def compileRegex(self, regex):
-
         self.error = None
 
         try:
@@ -63,26 +60,22 @@ class RegexMatch(BaseMatch):
             self.error = "%s" % e
 
     def setPattern(self, pattern):
-
         self.pattern = pattern
         regex_pattern = self.patternToRegex(pattern)
 
         self.compileRegex(regex_pattern)
 
     def patternToRegex(self, pattern):
-
         # This is a regex match, so the regex IS the pattern.
         return pattern
 
     def matches(self, string):
-
         if not self.regex:
             return None
 
         return list(self.regex.finditer(string))
 
     def matchtokens(self):
-
         if not self.regex:
             return None
 
@@ -91,15 +84,12 @@ class RegexMatch(BaseMatch):
         return [tok[1] for tok in tokens]
 
     def __repr__(self):
-
         return self.matchtype + ":" + self.pattern
 
     def toString(self):
-
         return "'" + self.pattern + "' (regex)"
 
     def __unicode__(self):
-
         raise NotImplementedError("This method doesn't exist anymore!")
 
 
@@ -141,20 +131,16 @@ PARSER = re.compile(
 
 
 class SmartMatch(RegexMatch):
-
     matchtype = "smart"
 
     def patternToRegex(self, pattern):
-
         regex = []
         tokens = set()
 
         while pattern:
-
             m = PARSER.search(pattern)
 
             if not m:
-
                 regex.append(self.unescape_then_escape(pattern))
                 break
 
@@ -184,7 +170,6 @@ class SmartMatch(RegexMatch):
         return "".join(regex)
 
     def unescape_then_escape(self, string):
-
         # Unescape string according to the SmartMatch parser's rules, then
         # re-escape according to the rules of Python's re module.
 
@@ -201,16 +186,13 @@ class SmartMatch(RegexMatch):
         return re.escape(string)
 
     def toString(self):
-
         return "'" + self.pattern + "'"
 
     def __unicode__(self):
-
         raise NotImplementedError("This method doesn't exist anymore!")
 
 
 def load_match_by_type(pattern, type="smart"):
-
     type = type.lower().strip()
 
     TYPES = {

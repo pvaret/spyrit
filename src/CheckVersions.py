@@ -23,7 +23,6 @@ REQUIRED_QT_VERSION = (6, 2)
 
 
 def check_python_version():
-
     import sys
 
     v = sys.version_info[0:2]
@@ -35,7 +34,6 @@ def check_python_version():
 
 
 def check_pyqt6_installed():
-
     try:
         import PyQt6
         import PyQt6.QtCore
@@ -47,7 +45,6 @@ def check_pyqt6_installed():
 
 
 def qt_version():
-
     from PyQt6.QtCore import qVersion
 
     # Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
@@ -55,7 +52,6 @@ def qt_version():
 
 
 def check_qt_version():
-
     v = qt_version()
 
     if v >= REQUIRED_QT_VERSION:

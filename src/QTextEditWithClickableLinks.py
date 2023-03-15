@@ -28,11 +28,9 @@ from PyQt6.QtGui import QDesktopServices
 
 
 class QTextEditWithClickableLinks(QTextEdit):
-
     linkClicked = pyqtSignal(str)
 
     def __init__(self, parent=None):
-
         super().__init__(parent)
 
         self.previous_anchor = ""
@@ -48,11 +46,9 @@ class QTextEditWithClickableLinks(QTextEdit):
         self.linkClicked.connect(self.onLinkClicked)
 
     def mouseMoveEvent(self, e):
-
         maybe_anchor = self.anchorAt(e.pos())
 
         if maybe_anchor != self.previous_anchor:
-
             if maybe_anchor:
                 self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
 
@@ -64,14 +60,12 @@ class QTextEditWithClickableLinks(QTextEdit):
         return super().mouseMoveEvent(e)
 
     def mousePressEvent(self, e):
-
         self.click_pos = e.pos()
         self.click_link = self.anchorAt(e.pos())
 
         return super().mousePressEvent(e)
 
     def mouseReleaseEvent(self, e):
-
         diff = QPoint(
             e.pos().x() - self.click_pos.x(), e.pos().y() - self.click_pos.y()
         )
@@ -82,5 +76,4 @@ class QTextEditWithClickableLinks(QTextEdit):
         return super().mouseReleaseEvent(e)
 
     def onLinkClicked(self, href):
-
         QDesktopServices.openUrl(QUrl(href))

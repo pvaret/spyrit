@@ -66,7 +66,6 @@ PACKDIR = os.path.join(MOUNTROOT, "%s" % APPNAME, "%s.app" % APPNAME)
 
 
 def cleanup():
-
     # Removes build and dist folders as well as old images before running setup.
 
     os.system(" ".join([RM, "-rf", BUILDDIR]))
@@ -75,7 +74,6 @@ def cleanup():
 
 
 def build():
-
     # Uses py2app to create Mac application from source.
 
     sys.argv.append("py2app")
@@ -89,19 +87,16 @@ def build():
 
 
 def prune():
-
     # Manually remove Frameworks or libraries we know will NOT be used. This
     # is a dangerous solution at best but can lead up to a final image 50 to 60%
     # smaller than the full set.
 
     for path in PRUNE:
-
         fullPath = os.path.join(APPDIR, *path)
         os.system(" ".join([RM, "-rf", fullPath]))
 
 
 def package():
-
     # Packages the built .app into a shiny DMG template we'll resize
     # on the spot to fit the genrated application's size as closely as
     # possible (to within a couple MB).
@@ -128,7 +123,6 @@ def package():
 
 
 if __name__ == "__main__":
-
     cleanup()
     build()
     prune()

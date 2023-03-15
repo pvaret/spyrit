@@ -36,25 +36,20 @@ class WorldsSettings:
     """
 
     def __init__(self, settings: Settings, state: Settings):
-
         self.settings = settings[WORLDS]
         self.state = state[WORLDS]
 
     def getAllWorldSettings(self) -> dict[str, Node]:
-
         return self.settings.nodes.values()  # type: ignore
 
     def newWorldSettings(self):
-
         # TODO: Add createSection() to nodes that would do the right thing?
         return self.settings.proto.build("*", self.settings)  # type: ignore
 
     def newWorldState(self):
-
         return self.state.proto.build("*", self.state)  # type: ignore
 
     def lookupStateForSettings(self, settings):
-
         if settings._name:
             key = normalize_text(settings._name)
             if key in self.state:  # type: ignore
@@ -63,18 +58,15 @@ class WorldsSettings:
         return self.newWorldState()
 
     def saveWorldSettings(self, key, settings, state):
-
         # TODO: Guarantee unicity?
         self.settings.nodes[key] = settings  # type: ignore
         self.state.nodes[key] = state  # type: ignore
 
 
 class WorldsManager(QObject):
-
     worldListChanged = pyqtSignal()
 
     def __init__(self, settings, state):
-
         super().__init__()
 
         self.ws = WorldsSettings(settings, state)
@@ -83,7 +75,6 @@ class WorldsManager(QObject):
         n = 0
 
         for settings in self.ws.getAllWorldSettings():
-
             if not settings._name:  # type: ignore
                 n += 1
                 settings._name = "(Unnamed %d)" % n  # type: ignore
@@ -91,7 +82,6 @@ class WorldsManager(QObject):
         self.generateMappings()
 
     def generateMappings(self):
-
         # Provide mappings to lookup worlds based on their name and based on
         # their (host, port) connection pair.
 
@@ -108,11 +98,9 @@ class WorldsManager(QObject):
             ).append(settings)
 
     def normalize(self, name):
-
         return normalize_text(name.strip())
 
     def worldList(self):
-
         # Return world names, sorted by normalized value.
         worlds = (
             world._name  # type: ignore
@@ -122,7 +110,6 @@ class WorldsManager(QObject):
         return sorted(worlds, key=key)
 
     def newWorldSettings(self, host="", port=0, ssl=False, name=""):
-
         wsettings = self.ws.newWorldSettings()
 
         if name:
@@ -137,11 +124,9 @@ class WorldsManager(QObject):
         return wsettings
 
     def newWorldState(self):
-
         return self.ws.newWorldState()
 
     def saveWorld(self, world: World):
-
         settings = world.settings
         state = world.state
         key = self.normalize(settings._name)  # TODO: Ensure unicity!
@@ -152,19 +137,16 @@ class WorldsManager(QObject):
         self.worldListChanged.emit()
 
     def newWorld(self, settings) -> World:
-
         state = self.ws.lookupStateForSettings(settings)
 
         return World(settings, state)
 
     def newAnonymousWorld(self, host="", port=0, ssl=False) -> World:
-
         settings = self.newWorldSettings(host, port, ssl)
 
         return self.newWorld(settings)
 
     def lookupWorldByName(self, name) -> Optional[World]:
-
         settings = self.name_mapping.get(self.normalize(name))
 
         if settings:
@@ -173,11 +155,9 @@ class WorldsManager(QObject):
         return None
 
     def lookupWorldByHostPort(self, host: str, port: int) -> Optional[World]:
-
         settings = self.hostport_mapping.get((host, port))
 
         if settings and len(settings) == 1:
-
             # One matching configuration found, and only one.
             return self.newWorld(settings[0])
 

@@ -31,12 +31,10 @@ from InputHistory import InputHistory
 
 
 class WorldInputUI(QTextEdit):
-
     returnPressed = pyqtSignal()
     focusChanged = pyqtSignal("QWidget")
 
     def __init__(self, parent, world, shouldsavehistory=True):
-
         super().__init__(parent)
 
         self.setTabChangesFocus(True)
@@ -64,7 +62,6 @@ class WorldInputUI(QTextEdit):
         self.returnPressed.connect(self.clearAndSend)
 
     def refresh(self):
-
         # Unlike the output UI, which is very specific to the problem domain --
         # i.e. MU*s, the input box should be whatever's convenient to the
         # user, and already configured in their system. This is why we use
@@ -74,23 +71,19 @@ class WorldInputUI(QTextEdit):
 
         input_settings = self.settings._ui._input
         if input_settings._font._color:
-
             style_elements.append("color: %s" % input_settings._font._color)
 
         if input_settings._font._name:
-
             style_elements.append(
                 "font-family: %s" % input_settings._font._name
             )
 
         if input_settings._font._size:
-
             style_elements.append(
                 "font-size: %dpt" % input_settings._font._size
             )
 
         if input_settings._background._color:
-
             style_elements.append(
                 "background-color: %s" % input_settings._background._color
             )
@@ -102,7 +95,6 @@ class WorldInputUI(QTextEdit):
         self.setMinimumHeight(font_height * 3)
 
     def keyPressEvent(self, e):
-
         # Custom key sequence handler: since all our shortcuts are configurable,
         # and are allowed to override the default QTextEdit shortcuts, we have
         # to override the key event handler to preempt the use of those
@@ -113,12 +105,10 @@ class WorldInputUI(QTextEdit):
 
         for a in self.actions() + self.parentWidget().actions():
             for shortcut in a.shortcuts():
-
                 if (
                     shortcut.matches(key.toCombined())
                     == QKeySequence.SequenceMatch.ExactMatch
                 ):
-
                     a.trigger()
                     e.accept()
                     return
@@ -135,7 +125,6 @@ class WorldInputUI(QTextEdit):
             e.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
             and alt_ctrl_shift == Qt.KeyboardModifier.NoModifier
         ):
-
             self.returnPressed.emit()
             e.accept()
 
@@ -143,7 +132,6 @@ class WorldInputUI(QTextEdit):
             super().keyPressEvent(e)
 
     def clearAndSend(self):
-
         text = str(self.toPlainText())
 
         self.clear()
@@ -154,19 +142,15 @@ class WorldInputUI(QTextEdit):
         self.world.processInput(text)
 
     def historyUp(self):
-
         self.history.historyUp()
 
     def historyDown(self):
-
         self.history.historyDown()
 
     def autocomplete(self):
-
         self.world.worldui.autocompleter.complete(self)
 
     def focusInEvent(self, e):
-
         super().focusInEvent(e)
 
         # Notify other possible interested parties that this widget now has the

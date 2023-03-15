@@ -34,14 +34,12 @@ from CallbackRegistry import CallbackRegistry
 
 
 class Pipeline(QObject):
-
     PROMPT_TIMEOUT = 700  # ms
 
     flushBegin = pyqtSignal()
     flushEnd = pyqtSignal()
 
     def __init__(self):
-
         super().__init__()
 
         self.filters = []
@@ -54,12 +52,10 @@ class Pipeline(QObject):
         self.prompt_timer.setInterval(self.PROMPT_TIMEOUT)
 
     def feedBytes(self, packet: bytes, blocksize: int = 2048) -> None:
-
         # 'packet' is a block of raw, unprocessed bytes. We make a chunk out of
         # it and feed that to the real chunk sink.
 
         while packet:
-
             # Splitting the packet into chunks of limited size makes for
             # slightly slower processing overall, but better responsiveness,
             # when processing large packets.
@@ -72,11 +68,9 @@ class Pipeline(QObject):
         self.prompt_timer.start()
 
     def sweepPrompt(self) -> None:
-
         self.feedChunk(thePromptSweepChunk)
 
     def feedChunk(self, chunk, autoflush=True):
-
         if not self.filters:
             return
 
@@ -90,15 +84,12 @@ class Pipeline(QObject):
             self.flushOutputBuffer()
 
     def appendToOutputBuffer(self, chunk) -> None:
-
         self.outputBuffer.append(chunk)
 
     def flushOutputBuffer(self) -> None:
-
         self.flushBegin.emit()
 
         for chunk in self.outputBuffer:
-
             chunk_type, _ = chunk
             self.sinks[chunk_type].triggerAll(chunk)
 
@@ -107,7 +98,6 @@ class Pipeline(QObject):
         self.outputBuffer = []
 
     def addFilter(self, filterclass, **kwargs) -> None:
-
         kwargs.setdefault("context", self)  # Set up context if needed.
 
         filter = filterclass(**kwargs)
@@ -124,28 +114,23 @@ class Pipeline(QObject):
         callback: Callable[[ChunkType], None],
         types: int = ChunkType.all(),
     ) -> None:
-
         # 'callback' should be a callable that accepts and handles a chunk.
 
         for type in ChunkType:
-
             if type & types:
                 self.sinks[type].add(callback)
 
     def formatForSending(self, data: bytes) -> bytes:
-
         for filter in reversed(self.filters):
             data = filter.formatForSending(data)
 
         return data
 
     def resetInternalState(self) -> None:
-
         for f in self.filters:
             f.resetInternalState()
 
     def notify(self, notification: str, *args: str) -> None:
-
         callbacks = self.notification_registry.get(notification)
 
         if callbacks:
@@ -154,7 +139,6 @@ class Pipeline(QObject):
     def bindNotificationListener(
         self, notification: str, callback: Callable[..., None]
     ) -> None:
-
         if notification not in self.notification_registry:
             self.notification_registry[notification] = CallbackRegistry()
 

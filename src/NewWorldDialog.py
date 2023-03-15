@@ -29,7 +29,6 @@ from SettingsWidgetMapper import SettingsWidgetMapper, qlineedit_not_empty
 
 
 def NewWorldDialog(settings, parent=None):
-
     header = PrettyPanelHeader("New world", QPixmap(":/icon/new_world"))
 
     mapper = SettingsWidgetMapper(settings)

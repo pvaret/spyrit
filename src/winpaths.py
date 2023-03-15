@@ -42,7 +42,6 @@ except ImportError:
     pass
 
 else:
-
     SHELL_FOLDERS = (
         r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
     )
@@ -73,7 +72,6 @@ else:
             return s
 
         if _env_rx is None:
-
             import re
 
             _env_rx = re.compile(r"%([^|<>=^%]+)%")
@@ -96,7 +94,6 @@ else:
             return ""
 
         else:
-
             key.Close()
 
             if ret[1] == winreg.REG_EXPAND_SZ:  # type: ignore
@@ -155,9 +152,7 @@ else:
         i = 0
 
         while True:
-
             try:
-
                 ret = winreg.EnumValue(key, i)  # type: ignore
 
                 if ret[2] == winreg.REG_EXPAND_SZ:  # type: ignore

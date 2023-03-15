@@ -26,14 +26,12 @@ from PyQt6.QtCore import QTimeLine
 
 class LED:
     def __init__(self):
-
         self.ON_UNLIT = QIcon(":/icon/unlit_green_led")
         self.ON_LIT = QIcon(":/icon/lit_green_led")
         self.OFF_UNLIT = QIcon(":/icon/unlit_red_led")
         self.OFF_LIT = QIcon(":/icon/lit_red_led")
 
     def select(self, on, lit):
-
         if on:
             return self.ON_LIT if lit else self.ON_UNLIT
 
@@ -43,7 +41,6 @@ class LED:
 
 class TabIconBlinker(QObject):
     def __init__(self, tab):
-
         super().__init__(parent=tab)
 
         self.led = LED()
@@ -60,18 +57,15 @@ class TabIconBlinker(QObject):
         self.blinker.finished.connect(self.steadyIcon)  # type: ignore
 
     def startIconBlink(self):
-
         if self.blinker.state() == QTimeLine.State.NotRunning:
             self.blinker.start()
 
     @pyqtSlot(int)
     def iconBlink(self, frame):
-
         led = self.led.select(on=self.is_on, lit=(frame % 2 == 0))
         self.tab.setTabIcon(led)
 
     def steadyIcon(self):
-
         if self.blinker.state() == QTimeLine.State.Running:
             return
 
@@ -79,20 +73,17 @@ class TabIconBlinker(QObject):
         self.tab.setTabIcon(led)
 
     def onTabChanged(self, is_now_visible: bool):
-
         self.visible = is_now_visible
 
         if is_now_visible:
             self.steadyIcon()
 
     def setLedOn(self, is_on: bool = True):
-
         if is_on and not self.is_on:
             self.is_on = True
             self.startIconBlink()
 
     def setLedOff(self, is_off: bool = True):
-
         if is_off and self.is_on:
             self.is_on = False
             self.startIconBlink()

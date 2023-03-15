@@ -46,7 +46,6 @@ from WorldUI import WorldUI
 
 class MainWindow(QMainWindow):
     def __init__(self, settings, state):
-
         super().__init__()
 
         # Set up main window according to its configuration.
@@ -181,7 +180,6 @@ class MainWindow(QMainWindow):
         # And with this, our Main Window is created, whee!
 
     def refreshStyle(self):
-
         style = QApplication.instance().core.settings._ui._style  # type: ignore
 
         if not style:
@@ -193,7 +191,6 @@ class MainWindow(QMainWindow):
         self.setUpdatesEnabled(True)
 
     def refreshIcons(self):
-
         core = QApplication.instance().core  # type: ignore
         size = core.settings._ui._toolbar._icon_size
 
@@ -205,7 +202,6 @@ class MainWindow(QMainWindow):
         self.toolbar_main.setIconSize(QSize(size, size))
 
     def refreshMenuWorlds(self):
-
         self.setUpdatesEnabled(False)
 
         self.menu_worlds.clear()
@@ -221,14 +217,12 @@ class MainWindow(QMainWindow):
         worlds = worldsmanager.worldList()
 
         if not worlds:
-
             self.menu_connect.setEnabled(False)
             self.menu_worlds.addAction(
                 self.disabledMenuText("(No world created)")
             )
 
         else:
-
             self.menu_connect.setEnabled(True)
 
             for world in worlds:
@@ -241,7 +235,6 @@ class MainWindow(QMainWindow):
         self.setUpdatesEnabled(True)
 
     def setCurrentWorldToolbar(self, i: int):
-
         self.setUpdatesEnabled(False)
 
         if self.toolbar_world:
@@ -262,14 +255,12 @@ class MainWindow(QMainWindow):
         self.setUpdatesEnabled(True)
 
     def disabledMenuText(self, text):
-
         dummy = QAction(text, self)
         dummy.setEnabled(False)
 
         return dummy
 
     def newWorldUI(self, world: World) -> int:
-
         self.setUpdatesEnabled(False)
 
         worldui = WorldUI(world, self.tabwidget)
@@ -293,7 +284,6 @@ class MainWindow(QMainWindow):
         return pos
 
     def closeEvent(self, event):  # type: ignore - weird arg naming issue.
-
         # Confirm close if some worlds are still connected.
 
         connectedworlds = [
@@ -303,7 +293,6 @@ class MainWindow(QMainWindow):
         ]
 
         if len(connectedworlds) > 0:
-
             if not confirmDialog(
                 "Confirm quit",
                 "You are still connected to <b>%s</b> world(s). "
@@ -319,7 +308,6 @@ class MainWindow(QMainWindow):
         # iteration.
 
         for w in list(QApplication.instance().core.openworlds):  # type: ignore
-
             w.disconnectFromWorld()
             w.worldui.doClose()
 
@@ -344,7 +332,6 @@ class MainWindow(QMainWindow):
         event.accept()
 
     def actionNewWorld(self):
-
         from NewWorldDialog import NewWorldDialog
 
         worldsmanager = QApplication.instance().core.worlds  # type: ignore
@@ -352,12 +339,10 @@ class MainWindow(QMainWindow):
         dialog = NewWorldDialog(world.settings, self)
 
         if dialog.exec():
-
             world.save()
             QApplication.instance().core.openWorld(world)  # type: ignore
 
     def actionQuickConnect(self):
-
         from QuickConnectDialog import QuickConnectDialog
 
         worldsmanager = QApplication.instance().core.worlds  # type: ignore
@@ -368,7 +353,6 @@ class MainWindow(QMainWindow):
             QApplication.instance().core.openWorld(world)  # type: ignore
 
     def makeConnectToWorldAction(self, worldname):
-
         action = QAction(worldname.replace("&", "&&"), self)
         action.setData(worldname)
         action.triggered.connect(self.actionConnectToWorld)  # type: ignore
@@ -377,7 +361,6 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def actionConnectToWorld(self):
-
         action = self.sender()
 
         if not action:
@@ -387,7 +370,6 @@ class MainWindow(QMainWindow):
         QApplication.instance().core.openWorldByName(worldname)  # type: ignore
 
     def actionAbout(self):
-
         from AboutDialog import AboutDialog
 
         settings = QApplication.instance().core.settings  # type: ignore

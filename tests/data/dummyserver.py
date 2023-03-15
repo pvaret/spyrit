@@ -9,7 +9,6 @@ DEFAULT_FILE = "ansi-telnet-sample.txt"
 DEFAULT_PORT = 8000
 
 if __name__ == "__main__":
-
     try:
         fname = sys.argv[1]
     except IndexError:
@@ -34,7 +33,6 @@ if __name__ == "__main__":
     )
 
     while True:
-
         current = data[:]
 
         clientsocket, address = s.accept()

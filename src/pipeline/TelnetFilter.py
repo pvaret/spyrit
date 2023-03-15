@@ -32,7 +32,6 @@ def bytechr(i):
 
 
 class TelnetFilter(BaseFilter):
-
     relevant_types = ChunkType.BYTES
 
     SE = bytechr(240)  # End option subnegotiation
@@ -103,15 +102,12 @@ class TelnetFilter(BaseFilter):
     )
 
     def processChunk(self, chunk):
-
         _, text = chunk
 
         while len(text) > 0:
-
             telnet = self.match.search(text)
 
             if telnet:
-
                 head = text[: telnet.start()]
                 text = text[telnet.end() :]
 
@@ -146,6 +142,5 @@ class TelnetFilter(BaseFilter):
                 yield (ChunkType.BYTES, text)
 
     def formatForSending(self, data: bytes) -> bytes:
-
         # Escape the character 0xff in accordance with the telnet specification.
         return data.replace(self.IAC, self.IAC * 2)

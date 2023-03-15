@@ -273,7 +273,6 @@ def find_and_read(file_candidates, encoding=FILE_ENCODING):
 
 
 def _load(schema, candidates: Sequence[str]):
-
     settings = Settings()
     settings.loadSchema(schema)
 
@@ -286,17 +285,14 @@ def _load(schema, candidates: Sequence[str]):
 
 
 def load_settings():
-
     return _load(SETTINGS_SCHEMA, SETTINGS_FILE_CANDIDATES)
 
 
 def load_state():
-
     return _load(STATE_SCHEMA, STATE_FILE_CANDIDATES)
 
 
 def _save(settings, filename: str):
-
     settings_text = "# version: %d\n" % (VERSION) + struct_to_ini(
         settings.dump()
     )
@@ -311,10 +307,8 @@ def _save(settings, filename: str):
 
 
 def save_settings(settings):
-
     _save(settings, SETTINGS_FILE)
 
 
 def save_state(state):
-
     _save(state, STATE_FILE)

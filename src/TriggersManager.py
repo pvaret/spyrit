@@ -42,7 +42,6 @@ _LINE = "__line__"
 
 
 class HighlightAction:
-
     name = "highlights"
     multiple_matches_per_line = True
 
@@ -59,17 +58,14 @@ class HighlightAction:
         return cls(format), None
 
     def __init__(self, format):
-
         self.highlights = format
 
     def __call__(self, match, chunkbuffer):
-
         for token, hl in self.highlights.items():
             if token == _LINE:
                 start, end = match.span()
 
             else:
-
                 if token not in match.groupdict():
                     continue
 
@@ -86,11 +82,9 @@ class HighlightAction:
             insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks)
 
     def params(self):
-
         return self.highlights
 
     def toString(self):
-
         hls = []
         format = Serializers.Format()
 
@@ -105,12 +99,10 @@ class HighlightAction:
         return self.name + ": " + " ; ".join(hls)
 
     def __unicode__(self):
-
         raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class PlayAction:
-
     name = "play"
 
     # Don't try to play several sounds at once even if several matches are
@@ -119,7 +111,6 @@ class PlayAction:
 
     @classmethod
     def factory(cls, soundfile=None):
-
         if soundfile:
             soundfile = os.path.expanduser(soundfile)
 
@@ -129,29 +120,23 @@ class PlayAction:
         return cls(soundfile), None
 
     def __init__(self, soundfile=None):
-
         self.soundfile = soundfile
 
     def __call__(self, match, chunkbuffer):
-
         core = QApplication.instance().core  # type: ignore
         core.sound.play(self.soundfile or ":/sound/pop")
 
     def params(self):
-
         return self.soundfile or ""
 
     def toString(self):
-
         return self.name + ": " + (self.soundfile or "pop")
 
     def __unicode__(self):
-
         raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class GagAction:
-
     name = "gag"
 
     # If a line is gagged, all processing stops right away.
@@ -159,19 +144,16 @@ class GagAction:
 
     @classmethod
     def factory(cls, enabled):
-
         if enabled:
             return cls(), None
 
         return None, None
 
     def __call__(self, match, chunkbuffer):
-
         # TODO: (here and everywhere else): process buffer in order by adding
         # updated chunks to a new buffer and then substituting buffer contents
         # in-place.
         for i in reversed(range(len(chunkbuffer))):
-
             chunk = chunkbuffer[i]
             chunk_type, _ = chunk
 
@@ -183,34 +165,27 @@ class GagAction:
                 del chunkbuffer[i]
 
     def params(self):
-
         return True
 
     def toString(self):
-
         return self.name
 
     def __unicode__(self):
-
         raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class LinkAction:
-
     name = "link"
     multiple_matches_per_line = True
 
     @classmethod
     def factory(cls, url=None):
-
         return cls(url), None
 
     def __init__(self, url=None):
-
         self.url = url
 
     def __call__(self, match, chunkbuffer):
-
         start, end = match.span()
 
         if start == end:
@@ -237,37 +212,30 @@ class LinkAction:
         insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks)
 
     def params(self):
-
         return "" if self.url is None else self.url
 
     def toString(self):
-
         return (self.name + ": " + self.url) if self.url else self.name
 
     def __unicode__(self):
-
         raise NotImplementedError("This method doesn't exist anymore!")
 
 
 class MatchGroup:
     def __init__(self, name):
-
         self.name = name.strip()
         self.matches = []
         self.actions = OrderedDict()
 
     def addMatch(self, match):
-
         self.matches.append(match)
         return self
 
     def addAction(self, action):
-
         self.actions[action.name] = action
         return self
 
     def __len__(self):
-
         return len(self.matches)
 
 
@@ -283,12 +251,10 @@ DEFAULT_MATCHES = [
 
 class TriggersManager:
     def __init__(self):
-
         self.actionregistry = OrderedDict()
         self.groups = OrderedDict()
 
     def registerActionClass(self, actionname, action):
-
         assert actionname not in self.actionregistry
         self.actionregistry[actionname] = action
 
@@ -318,13 +284,10 @@ class TriggersManager:
                     group.addAction(action)
 
     def createMatch(self, pattern, type="smart"):
-
         return load_match_by_type(pattern, type)
 
     def findOrCreateTrigger(self, group=None):
-
         if group is None:
-
             # If no group name is given: use the smallest available number as
             # the group name.
 
@@ -345,7 +308,6 @@ class TriggersManager:
     # TODO: Consider renaming this to loadFromArgs (for instance) and factory()
     # to loadFromSettingsNode.
     def loadAction(self, actionname, args, kwargs):
-
         from commands.CommandExecutor import match_args_to_function
 
         action = self.actionregistry.get(actionname)
@@ -361,17 +323,14 @@ class TriggersManager:
         return factory(*args, **kwargs)
 
     def hasGroup(self, group):
-
         return normalize_text(group.strip()) in self.groups
 
     def sizeOfGroup(self, group):
-
         key = normalize_text(group.strip())
 
         return len(self.groups.get(key, []))
 
     def delGroup(self, group):
-
         try:
             del self.groups[normalize_text(group.strip())]
 
@@ -379,7 +338,6 @@ class TriggersManager:
             pass
 
     def delMatch(self, group, index):
-
         try:
             self.groups[normalize_text(group.strip())].matches.pop(index)
 
@@ -387,7 +345,6 @@ class TriggersManager:
             pass
 
     def delAction(self, group, index):
-
         try:
             actions = self.groups[normalize_text(group.strip())].actions
 
@@ -398,19 +355,16 @@ class TriggersManager:
             pass
 
     def findMatches(self, line):
-
         for matchgroup in DEFAULT_MATCHES + list(self.groups.values()):
             for match in matchgroup.matches:
                 for result in match.matches(line):
                     yield matchgroup, result
 
     def performMatchingActions(self, line, chunkbuffer):
-
         already_performed_on_this_line = set()
 
         for matchgroup, matchresult in self.findMatches(line):
             for action in matchgroup.actions.values():
-
                 # TODO: make this cleaner. Using the class is not nice. Ideally
                 # we'd overhaul the action serialization system and reserve the
                 # 'name' attribute for this.
@@ -425,11 +379,9 @@ class TriggersManager:
                 action(matchresult, chunkbuffer)
 
     def isEmpty(self):
-
         return not self.groups
 
     def save(self, settings):
-
         # Configuration is about to be saved. Serialize our current setup into
         # the configuration.
 
@@ -441,7 +393,6 @@ class TriggersManager:
             pass
 
         for groupname, matchgroup in self.groups.items():
-
             node = settings[TRIGGERS].get(groupname)
             for i, match in enumerate(matchgroup.matches):
                 node[MATCHES][str(i + 1)] = match

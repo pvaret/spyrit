@@ -24,7 +24,6 @@ from PyQt6.QtWidgets import QFrame
 
 class Separator(QFrame):
     def __init__(self, parent=None):
-
         super().__init__(parent)
 
         self.setLineWidth(1)

@@ -37,7 +37,6 @@ class ExecuteError(RuntimeError):
 
 
 def match_args_to_function(callable, provided_args, provided_kwargs):
-
     """
     Check that the given arguments fit the given callable's spec.
 
@@ -172,20 +171,17 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
     # STEP 1: Apply unnammed args.
 
     for value in provided_args:
-
         try:
             # Populate next argument with next value.
             arg = args.pop(0)
             actual_args[arg] = value
 
         except IndexError:
-
             # If there is no next argument, can we overflow into *args?
             if star_args:
                 actual_star_args.append(value)
 
             else:
-
                 # If not: too many arguments were passed to the callable. Abort.
                 if len(provided_args) > 2:
                     msg = (
@@ -201,9 +197,7 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
     # STEP 2: Apply named args.
 
     for kwarg, kwvalue in provided_kwargs.items():
-
         if kwarg in actual_args:
-
             # Argument has already been populated! Abort.
             if not isinstance(kwarg, type("")):
                 kwarg = kwarg.decode("utf-8")
@@ -211,7 +205,6 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
             return False, "Parameter '%s' passed several times!" % kwarg
 
         if kwarg not in expected_args:
-
             # Unknown argument. Can we put it into **kwargs?
             if star_kwargs:
                 actual_star_kwargs[kwarg] = kwvalue
@@ -228,14 +221,12 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
     # STEP 3: Apply default values.
 
     for default_arg, default_value in defaults.items():
-
         if default_arg not in actual_args:
             actual_args[default_arg] = default_value
 
     # STEP 4: Are there still missing arguments?
 
     if len(expected_args) > len(actual_args):
-
         missing_args = [arg for arg in expected_args if arg not in actual_args]
         return False, (
             "Too few parameters! (Missing parameter '%s')" % missing_args[0]
@@ -247,7 +238,6 @@ def match_args_to_function(callable, provided_args, provided_kwargs):
 
 
 def execute(func, args, kwargs):
-
     ok, errmsg = match_args_to_function(func, args, kwargs)
 
     # TODO: Use match_args_to_function to compute an exact argument -> value

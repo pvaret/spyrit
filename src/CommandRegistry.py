@@ -30,21 +30,17 @@ from textwrap import dedent
 
 class CommandRegistry:
     def __init__(self):
-
         self.commands = {}
 
     def registerCommand(self, cmdname: str, command_class):
-
         cmdname = cmdname.strip().lower()
         self.commands[cmdname] = command_class()
 
     # TODO: rename this to lookup(), implement it on BaseCommand too.
     def lookupCommand(self, command):
-
         return self.commands.get(command.strip().lower())
 
     def parseCommand(self, cmdline):
-
         cmdname, remainder = parse_command(cmdline)
 
         if cmdname in self.commands:
@@ -53,14 +49,12 @@ class CommandRegistry:
         return None, cmdname, cmdline
 
     def runCmdLine(self, world, cmdline):
-
         cmdname, possible_cmdname, remainder = self.parseCommand(cmdline)
 
         if not possible_cmdname:  # Empty command line. Do nothing.
             return
 
         if not cmdname:  # Command not found.
-
             help_txt = """
                  %(possible_cmdname)s: no such command.
                  Type %(CMDCHAR)s%(HELP)s for a list of available commands."""
@@ -85,7 +79,6 @@ class CommandRegistry:
         cmd_callable = command.getCallableForName(cmdname, subcmdname)
 
         if cmd_callable is None:  # Command not found!
-
             complete_cmdname = cmdname
 
             if possible_subcmdname:
@@ -115,7 +108,6 @@ class CommandRegistry:
 
 
 def construct_command_registry() -> CommandRegistry:
-
     from commands.HelpCommand import HelpCommand
     from commands.SettingsCommand import SettingsCommand
     from commands.DebugCommand import DebugCommand

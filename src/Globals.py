@@ -31,7 +31,6 @@ from PyQt6.QtGui import QTextFormat
 
 
 class FORMAT_PROPERTIES:
-
     # Format property identifiers are defined on the basis of Qt properties.
     # This saves us time when we apply them during the rendering process.
 
@@ -79,7 +78,6 @@ class SOLARIZED:
 
 # TODO: Make configurable.
 class ANSI_COLORS:
-
     # Dark colors:
 
     # black = "#000000"
@@ -396,17 +394,14 @@ ANSI_COLORS_EXTENDED = {
 
 
 def re_group(regex):
-
     return r"(?:%s)" % regex
 
 
 def re_optional(regex):
-
     return re_group(regex) + "?"
 
 
 def re_either(*regexes):
-
     return re_group(r"|".join(regexes))
 
 
@@ -432,7 +427,6 @@ URL_RE = (
 
 
 def compute_closest_ansi_color(rgb):
-
     """
     Computes and returns the ANSI extended color number matching the given #rgb
     color most closely.
@@ -455,7 +449,6 @@ def compute_closest_ansi_color(rgb):
     curr_dist = 3 * 256 ^ 2 + 1
 
     for i in range(256):
-
         r2, g2, b2, _ = QColor(ANSI_COLORS_EXTENDED[i]).getRgb()
         dist = (r - r2) ** 2 + (g - g2) ** 2 + (b - b2) ** 2
 

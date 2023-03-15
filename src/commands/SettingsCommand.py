@@ -28,11 +28,9 @@ from SpyritSettings import DESCRIPTIONS
 
 
 class SettingsCommand(BaseCommand):
-
     "View and modify the application settings."
 
     def _getSerializer(self, settings, setting):
-
         try:
             return settings.get(setting).proto.metadata.get("serializer")
 
@@ -40,7 +38,6 @@ class SettingsCommand(BaseCommand):
             return None
 
     def _getValue(self, settings, setting):
-
         s = self._getSerializer(settings, setting)
         assert s is not None
         value = s.serialize(settings[setting])
@@ -54,7 +51,6 @@ class SettingsCommand(BaseCommand):
         return value
 
     def _setValue(self, settings, setting, args):
-
         args = " ".join(args)
 
         s = self._getSerializer(settings, setting)
@@ -68,7 +64,6 @@ class SettingsCommand(BaseCommand):
         return (True, None)
 
     def _resetValue(self, settings, setting):
-
         s = self._getSerializer(settings, setting)
 
         if not s:
@@ -83,7 +78,6 @@ class SettingsCommand(BaseCommand):
         return (True, None)
 
     def cmd_set(self, world, setting, *args):
-
         """
         Sets the given setting to the given value.
 
@@ -106,7 +100,6 @@ class SettingsCommand(BaseCommand):
             world.info(msg)
 
     def cmd_worldset(self, world, setting, *args):
-
         """
         Sets the given setting to the given value, for this world only.
 
@@ -130,7 +123,6 @@ class SettingsCommand(BaseCommand):
             world.info(msg)
 
     def cmd_reset(self, world, setting):
-
         """
         Resets the given setting to its default value.
 
@@ -153,7 +145,6 @@ class SettingsCommand(BaseCommand):
             world.info(msg)
 
     def cmd_worldreset(self, world, setting):
-
         """
         Resets the given setting for this world to its global value.
 
@@ -177,7 +168,6 @@ class SettingsCommand(BaseCommand):
             world.info(msg)
 
     def cmd_settings(self, world):
-
         """
         Lists all the available settings.
 
@@ -197,7 +187,6 @@ class SettingsCommand(BaseCommand):
         world.info(output)
 
     def cmd_show(self, world, setting=None):
-
         """
         Show the current settings.
 
@@ -229,13 +218,10 @@ class SettingsCommand(BaseCommand):
         if (
             setting is None
         ):  # No argument given. Show only non-default settings.
-
             list_settings = []
 
             for k in sorted(DESCRIPTIONS):
-
                 for context in (settings, worldsettings):
-
                     try:
                         if not context.get(k).isEmpty():
                             list_settings.append(k)
@@ -252,7 +238,6 @@ class SettingsCommand(BaseCommand):
             list_settings = sorted(DESCRIPTIONS)
 
         else:
-
             if self._getSerializer(settings, setting) is None:
                 world.info("No such setting.")
                 return
@@ -270,11 +255,9 @@ class SettingsCommand(BaseCommand):
         DEFAULT: Any = object()  # marker for the case of default values.
 
         for node in (DEFAULT, settings, worldsettings):
-
             column = []
 
             for k in list_settings:
-
                 s = self._getSerializer(
                     node if node is not DEFAULT else worldsettings, k
                 )

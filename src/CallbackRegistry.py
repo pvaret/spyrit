@@ -33,7 +33,6 @@ from WeakRef import WeakCallableRef
 
 
 def safe_call(fn, args):
-
     # This function works like a Qt-like slot, in the sense that it calls the
     # given function with the right number of parameters if more than required
     # are passed.
@@ -106,16 +105,13 @@ class CallbackRegistry:
     """
 
     def __init__(self):
-
         self.__registry = {}
 
     def add(self, callback):
-
         fnref = WeakCallableRef(callback, self.purgeDeadCallback)
         self.__registry[id(fnref)] = fnref
 
     def purgeDeadCallback(self, fnref):
-
         try:
             del self.__registry[id(fnref)]
 
@@ -123,13 +119,10 @@ class CallbackRegistry:
             pass
 
     def __len__(self):
-
         return len(self.__registry)
 
     def triggerAll(self, *args):
-
         for fnref in self.__registry.values():
-
             fn = fnref()
             if fn is not None:
                 safe_call(fn, args)

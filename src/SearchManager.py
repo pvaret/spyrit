@@ -25,7 +25,6 @@ from PyQt6.QtGui import QTextDocument
 
 class SearchManager:
     def __init__(self, textedit, settings):
-
         self.textedit = textedit
         self.settings = settings
 
@@ -33,7 +32,6 @@ class SearchManager:
         self.previous_search: str = ""
 
     def find(self, string: str = ""):
-
         # An empty search string means repeating the last search.
 
         if not string:
@@ -66,7 +64,6 @@ class SearchManager:
         )
 
         if cursor.isNull():  # String was not found!
-
             # Clear selection by setting an empty cursor, and scroll back to
             # bottom of window.
 
@@ -79,7 +76,6 @@ class SearchManager:
             return False
 
         else:
-
             textedit.setTextCursor(cursor)
             textedit.ensureCursorVisible()
 

@@ -40,7 +40,6 @@ BS = "\\"
 
 
 def check_ssl_is_available() -> bool:
-
     from PyQt6 import QtNetwork
 
     return QtNetwork.QSslSocket.supportsSsl()
@@ -87,7 +86,6 @@ def unquote(string: str, esc: str = BS) -> str:
     escapes = dict((v, k) for (k, v) in DEFAULT_ESCAPES.items())
 
     for c in string:
-
         if in_escape:
             result.append(escapes.get(c, c))
             in_escape = False
@@ -103,17 +101,14 @@ def unquote(string: str, esc: str = BS) -> str:
 
 
 def make_unicode_translation_table() -> dict[int, str]:
-
     from unicodedata import normalize, category
 
     d: dict[int, str] = {}
 
     def is_latin_letter(letter: str) -> bool:
-
         return category(letter)[0] == "L"
 
     for i in range(0x1FFF):
-
         try:
             c = chr(i)
 
@@ -151,12 +146,10 @@ def remove_accents(
 
 
 def normalize_text(string: str) -> str:
-
     return remove_accents(string).lower()
 
 
 def ensure_valid_filename(filename: str) -> str:
-
     """
     Make the given string safe(r) to use as a filename.
 
@@ -202,7 +195,6 @@ def handle_exception(
     exc_value: BaseException,
     exc_traceback: TracebackType,
 ):
-
     import sys
     import os.path
     import traceback
@@ -216,7 +208,6 @@ def handle_exception(
     # KeyboardInterrupt is a special case.
     # We don't raise the error dialog when it occurs.
     if issubclass(exc_type, KeyboardInterrupt):
-
         if app:
             app.quit()
 
@@ -273,7 +264,6 @@ def format_as_table(
         headers = list(headers) + [""] * (len(columns) - len(headers))
 
     for column, header in zip(newcolumns, headers):
-
         column.insert(0, header)
         column.insert(1, "-" * len(header))
 

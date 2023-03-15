@@ -40,7 +40,6 @@ FILE_ENCODING = "UTF-8"
 
 
 if not os.path.exists(SETTINGS_DIR):
-
     try:
         os.makedirs(SETTINGS_DIR)
 

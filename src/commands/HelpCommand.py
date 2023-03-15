@@ -33,14 +33,12 @@ class HelpCommand(BaseCommand):
     def cmd(  # type: ignore
         self, world: World, cmdname: str = "", subcmdname: str = ""
     ) -> None:
-
         app = QApplication.instance()
         assert app is not None
         # TODO: Find a way to pass the core object cleanly.
         commands = app.core.commands  # type: ignore
 
         if cmdname:
-
             cmd = commands.lookupCommand(cmdname)
 
             if not cmd:
@@ -59,7 +57,6 @@ class HelpCommand(BaseCommand):
         return self.helpAll(world)
 
     def helpNoSuchCommand(self, world, cmdname, subcmdname=None):
-
         if subcmdname:
             cmdname += " " + subcmdname
 
@@ -72,7 +69,6 @@ class HelpCommand(BaseCommand):
         world.info(dedent(help_txt).strip() % ctx)
 
     def helpCommand(self, world, cmd, cmdname, subcmdname=None):
-
         if subcmdname:
             cmdname += " " + subcmdname
 
@@ -90,14 +86,12 @@ class HelpCommand(BaseCommand):
         world.info(help_txt % ctx)
 
     def get_short_help(self, cmd):
-
         if cmd.__doc__:
             return cmd.__doc__.split("\n")[0].strip()
 
         return None
 
     def get_help(self, cmd):
-
         if not cmd.__doc__:
             return None
 
@@ -113,7 +107,6 @@ class HelpCommand(BaseCommand):
         ljust = max(len(c) for c in cmd.subcmds.keys()) + 2
 
         for subcmdname, subcmd in sorted(cmd.subcmds.items()):
-
             doc = subcmd.__doc__
 
             if doc:
@@ -132,7 +125,6 @@ class HelpCommand(BaseCommand):
         return "\n".join(helptxt)
 
     def helpAll(self, world):
-
         helptxt = ["Available commands:\n"]
 
         # TODO: Find a way to pass the core object cleanly.
@@ -141,7 +133,6 @@ class HelpCommand(BaseCommand):
         ljust = max(len(c) for c in cmd_registry.commands.keys()) + 2
 
         for cmdname in sorted(cmd_registry.commands.keys()):
-
             cmd = cmd_registry.lookupCommand(cmdname)
             help = self.get_short_help(cmd)
 

@@ -35,7 +35,6 @@ def qlineedit_not_empty(qlineedit: QLineEdit):
 
 
 class BaseWidgetMapper(QObject):
-
     widget_class: Any = None
     widget_value_setter = None
     widget_signal_name: str = "--UNSET--"
@@ -45,7 +44,6 @@ class BaseWidgetMapper(QObject):
     valueChanged = pyqtSignal(object)
 
     def __init__(self, widget):
-
         super().__init__()
 
         self.widget = widget
@@ -57,14 +55,12 @@ class BaseWidgetMapper(QObject):
     @pyqtSlot(bool)
     @pyqtSlot(str)
     def emitValueChanged(self, widget_value):
-
         settings_value = self.widgetToSettingsValue(widget_value)
         assert isinstance(settings_value, self.settings_value_class)
 
         self.valueChanged.emit(settings_value)
 
     def setValue(self, settings_value):
-
         if settings_value is None or self.widget_value_setter is None:
             return
 
@@ -76,32 +72,26 @@ class BaseWidgetMapper(QObject):
 
     @staticmethod
     def widgetToSettingsValue(value):
-
         return value
 
     @staticmethod
     def settingsToWidgetValue(value):
-
         return value
 
     def setValidator(self, validator):
-
         self.validator = validator
 
     def validate(self):
-
         if not self.validator:
             return True  # Default: no validator means everything validates.
 
         return self.validator(self.widget)
 
     def __hash__(self):
-
         return id(self)
 
 
 class QLineEditMapper(BaseWidgetMapper):
-
     widget_class = QLineEdit
     widget_value_setter = QLineEdit.setText
     widget_signal_name = "textEdited"
@@ -110,17 +100,14 @@ class QLineEditMapper(BaseWidgetMapper):
 
     @staticmethod
     def widgetToSettingsValue(value):
-
         return str(value)
 
     @staticmethod
     def settingsToWidgetValue(value):
-
         return str(value)
 
 
 class QSpinBoxMapper(BaseWidgetMapper):
-
     widget_class = QSpinBox
     widget_value_setter = QSpinBox.setValue
     widget_signal_name = "valueChanged"
@@ -129,7 +116,6 @@ class QSpinBoxMapper(BaseWidgetMapper):
 
 
 class QCheckBoxMapper(BaseWidgetMapper):
-
     widget_class = QCheckBox
     widget_value_setter = QCheckBox.setCheckState
     widget_signal_name = "stateChanged"
@@ -138,17 +124,14 @@ class QCheckBoxMapper(BaseWidgetMapper):
 
     @staticmethod
     def widgetToSettingsValue(value: Qt.CheckState) -> bool:
-
         return value == Qt.CheckState.Checked
 
     @staticmethod
     def settingsToWidgetValue(value: bool) -> Qt.CheckState:
-
         return Qt.CheckState.Checked if value else Qt.CheckState.Unchecked
 
 
 def get_mapper(widget):
-
     if isinstance(widget, BaseWidgetMapper):
         return widget
 
@@ -164,19 +147,16 @@ def get_mapper(widget):
 
 
 class SettingsWidgetMapper(QObject):
-
     settingsValid = pyqtSignal(bool)
     settingsEmpty = pyqtSignal(bool)
 
     def __init__(self, settings):
-
         super().__init__()
 
         self.settings = settings
         self.option_path_for_widget = {}
 
     def bind(self, option_path, widget):
-
         widget_mapper = get_mapper(widget)
         self.option_path_for_widget[widget_mapper] = option_path
 
@@ -186,19 +166,16 @@ class SettingsWidgetMapper(QObject):
         return widget_mapper
 
     def updateSettingsValue(self, value):
-
         widget_mapper = self.sender()
 
         if isinstance(widget_mapper, BaseWidgetMapper):
             if widget_mapper.validate():
-
                 option_path = self.option_path_for_widget[widget_mapper]
                 self.settings[option_path] = value
 
             self.emitSignals()
 
     def emitSignals(self):
-
         empty = self.settings.isEmpty()
         valid = all(mapper.validate() for mapper in self.option_path_for_widget)
 

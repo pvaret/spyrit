@@ -23,17 +23,14 @@ from .BaseCommand import BaseCommand
 
 
 class DebugCommand(BaseCommand):
-
     # No docstring. This is not a user-visible command.
 
     def cmd_raise(self, _, *args: str) -> None:
-
         # No docstring. This is not a user-visible subcommand.
 
         e = None
 
         if args:
-
             exc = getattr(builtins, args[0], Exception)
 
             try:
@@ -51,7 +48,6 @@ class DebugCommand(BaseCommand):
         raise e
 
     def cmd_execute(self, world, filename):
-
         # No docstring. This is not a user-visible subcommand.
 
         f = world.openFileOrErr(filename)
@@ -62,7 +58,6 @@ class DebugCommand(BaseCommand):
         exec(f.read())  # nosec - tell bandit we know this is unsafe.
 
     def cmd_load(self, world, filename=None, blocksize=None):
-
         # No docstring. This is not a user-visible subcommand.
 
         if blocksize is not None and not blocksize.isdigit():

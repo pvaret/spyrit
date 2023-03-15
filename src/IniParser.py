@@ -39,9 +39,7 @@ VERSION = 3
 
 
 def replace_value(dict_, key_before, key_after):
-
     if key_before in dict_:
-
         if key_after is not None:
             dict_[key_after] = dict_[key_before]
 
@@ -49,7 +47,6 @@ def replace_value(dict_, key_before, key_after):
 
 
 def update_settings_1_to_2(struct):
-
     REPLACE = [
         ("shortcut_about", "shortcuts.about"),
         ("shortcut_aboutqt", "shortcuts.aboutqt"),
@@ -224,7 +221,6 @@ SETTINGS_UPDATERS = {
 
 
 def parse_settings_version(text):
-
     # If not found, version is assumed to be the latest. This is not ideal, but
     # if we're not sure what version a given configuration file is, best not to
     # touch it.
@@ -234,7 +230,6 @@ def parse_settings_version(text):
 
     # Look for version tag in first few lines:
     for i, line in enumerate(text.split("\n")):
-
         m = v.match(line)
 
         if m:
@@ -248,13 +243,11 @@ def parse_settings_version(text):
 
 
 def parse_settings(text):
-
     version = parse_settings_version(text)
     struct = ini_to_struct(text)
     count = 0
 
     while version < VERSION and count <= len(SETTINGS_UPDATERS):
-
         count += 1
 
         if version in SETTINGS_UPDATERS:
@@ -269,7 +262,6 @@ def parse_settings(text):
 
 
 def parse_ini_line(line):
-
     result = dict(key="", value="", section="", sectiondepth=0)
 
     line = line.strip()
@@ -337,7 +329,6 @@ def ini_to_struct(ini_text):
     skipsection = False
 
     for line in ini_text.split("\n"):
-
         result = parse_ini_line(line)
 
         if not result:
@@ -347,11 +338,9 @@ def ini_to_struct(ini_text):
         section = result["section"]
 
         if key and not skipsection:  # This is a key/value line.
-
             current_struct[KEYS][key] = result["value"]
 
         elif section:  # This is a section line.
-
             skipsection = False
 
             depth = cast(int, result["sectiondepth"])
@@ -376,7 +365,6 @@ def ini_to_struct(ini_text):
 
 
 def struct_to_ini(struct, depth=0):
-
     """Takes a programmatic structure and generates an INI representation for it.
 
     The structure is a tuple of the form ( keys, sections ), where 'keys' and

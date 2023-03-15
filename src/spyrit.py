@@ -29,7 +29,6 @@ from Messages import messages
 
 
 def main(args):
-
     from CheckVersions import check_python_version
     from CheckVersions import check_pyqt6_installed
     from CheckVersions import check_qt_version
@@ -39,11 +38,9 @@ def main(args):
         check_pyqt6_installed,
         check_qt_version,
     ):
-
         ok, msg = check()
 
         if not ok:
-
             messages.error(msg)
             sys.exit(1)  # Fail!
 

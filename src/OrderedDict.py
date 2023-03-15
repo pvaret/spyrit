@@ -43,7 +43,6 @@ class OrderedDict:
     """
 
     def __init__(self, init: Iterable[tuple[Any, Any]] = ()):
-
         self.__dict = {}
         self.__ordered_keys = []
 

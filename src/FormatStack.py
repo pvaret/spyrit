@@ -36,44 +36,36 @@ ANSI = 1
 
 class FormatStack:
     def __init__(self, formatter):
-
         self.formatter = formatter
         self.stacks = defaultdict(OrderedDict)
 
     def processChunk(self, chunk):
-
         chunk_type, payload = chunk
 
         if chunk_type == ChunkType.ANSI:
             self._applyFormat(ANSI, payload)
 
         elif chunk_type == ChunkType.HIGHLIGHT:
-
             id, format = payload
             self._applyFormat(id, format)
 
     def setBaseFormat(self, format):
-
         actual_format = dict((k, None) for k in self.stacks)
         actual_format.update(format)
 
         self._applyFormat(BASE, actual_format)
 
     def _applyFormat(self, id, format):
-
         if not format:
-
             self._clearFormat(id)
             return
 
         for property, value in format.items():
-
             stack = self.stacks[property]
 
             old_end_value = stack.lastvalue()
 
             if value:
-
                 if id not in stack and id in (BASE, ANSI):
                     stack.insert(id, id, value)
 
@@ -81,7 +73,6 @@ class FormatStack:
                     stack[id] = value
 
             else:
-
                 if id in stack:
                     del stack[id]
 
@@ -100,11 +91,8 @@ class FormatStack:
                 self.formatter.clearProperty(property)
 
     def _clearFormat(self, id):
-
         for property, stack in self.stacks.items():
-
             if id in stack:
-
                 old_end_value = stack.lastvalue()
                 del stack[id]
                 new_end_value = stack.lastvalue()

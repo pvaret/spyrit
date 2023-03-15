@@ -29,7 +29,6 @@ from PrettyOptionDialog import PrettyOptionDialog
 
 
 def QuickConnectDialog(settings, parent=None):
-
     header = PrettyPanelHeader("Quick connect", QPixmap(":/icon/connect"))
 
     mapper = SettingsWidgetMapper(settings)

@@ -34,7 +34,6 @@ from .ChunkData import ANSI_TO_FORMAT
 
 
 class AnsiFilter(BaseFilter):
-
     relevant_types = ChunkType.BYTES
 
     # For the time being, we only catch the SGR (Set Graphics Rendition) part
@@ -51,7 +50,6 @@ class AnsiFilter(BaseFilter):
     )
 
     def resetInternalState(self):
-
         # Note: this method is called by the base class's __init__, so we're
         # sure that self.highlighted and self.current_colors are defined.
 
@@ -59,7 +57,6 @@ class AnsiFilter(BaseFilter):
         super().resetInternalState()
 
     def defaultColors(self) -> tuple[bool, tuple[str, str]]:
-
         return (
             False,  # highlight
             # default colors
@@ -67,18 +64,15 @@ class AnsiFilter(BaseFilter):
         )
 
     def processChunk(self, chunk):
-
         current_colors = self.current_colors
         highlighted = self.highlighted
 
         _, text = chunk
 
         while text:
-
             ansi = self.match.search(text)
 
             if not ansi:
-
                 # Done with the ANSI parsing in this chunk! Bail out.
                 break
 
@@ -90,7 +84,6 @@ class AnsiFilter(BaseFilter):
             parameters = bytes(ansi.groups()[0])
 
             if not parameters:  # ESC [ m, like ESC [ 0 m, resets the format.
-
                 yield (ChunkType.ANSI, {})
 
                 highlighted, current_colors = self.defaultColors()
@@ -101,19 +94,16 @@ class AnsiFilter(BaseFilter):
             list_params = parameters.split(b";")
 
             while list_params:
-
                 param = list_params.pop(0)
 
                 # Special case: extended 256 color codes require special
                 # treatment.
 
                 if len(list_params) >= 2 and param in [b"38", b"48"]:
-
                     prop = ANSI_TO_FORMAT.get(param)[0]  # type: ignore
                     param = list_params.pop(0)
 
                     if param == b"5":
-
                         color = ANSI_COLORS_EXTENDED.get(
                             int(list_params.pop(0))
                         )
@@ -124,7 +114,6 @@ class AnsiFilter(BaseFilter):
                 # Carry on with the standard cases.
 
                 if param == b"0":  # ESC [ 0 m -- reset the format!
-
                     yield (ChunkType.ANSI, {})
 
                     highlighted, current_colors = self.defaultColors()
@@ -139,7 +128,6 @@ class AnsiFilter(BaseFilter):
                 prop, value = ANSI_TO_FORMAT[param]  # type: ignore
 
                 if prop == FORMAT_PROPERTIES.COLOR:
-
                     # TODO: refactor to add proper type safety.
                     current_colors = cast(
                         Tuple[Optional[str], Optional[str]], value
@@ -155,7 +143,6 @@ class AnsiFilter(BaseFilter):
                     continue
 
                 if prop == FORMAT_PROPERTIES.BOLD:
-
                     # According to spec, this actually means highlighted colors.
 
                     highlighted = value
@@ -189,11 +176,9 @@ class AnsiFilter(BaseFilter):
         self.highlighted = highlighted
 
         if text:
-
             possible_unfinished = self.unfinished.search(text)
 
             if possible_unfinished:
-
                 # Remaining text ends with an unfinished ANSI sequence!
                 # So we feed what remains of the raw text, if any, down the
                 # pipe, and then postpone the unfinished ANSI sequence.

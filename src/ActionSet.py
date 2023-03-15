@@ -29,7 +29,6 @@ from PyQt6.QtWidgets import QWidget
 
 class ActionSet:
     def __init__(self, parent: QWidget):
-
         self.parent = parent
 
         # TODO: pass settings directly.
@@ -81,7 +80,6 @@ class ActionSet:
         }
 
     def bindAction(self, action, slot):
-
         text, icon = self.actions[action]
 
         a = QAction(text, self.parent)
@@ -92,7 +90,6 @@ class ActionSet:
         shortcuts = self.settings._shortcuts
 
         def set_action_shortcut():
-
             # Note how this closure uses 'settings', 'a' and 'action' as bound
             # variables.
 

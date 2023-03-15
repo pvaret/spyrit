@@ -30,25 +30,21 @@ class TabBar(QTabBar):
     "A QTabBar with a few added features."
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
 
         self.last_middle_click_index = None
 
     def mousePressEvent(self, event):  # type: ignore
-
         if (
             event.button() == Qt.MouseButton.MiddleButton
             and self.tabsClosable()
         ):
-
             i = self.tabAt(event.pos())
             self.last_middle_click_index = i
 
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):  # type: ignore
-
         i = self.tabAt(event.pos())
 
         if (
@@ -56,7 +52,6 @@ class TabBar(QTabBar):
             and self.tabsClosable()
             and i == self.last_middle_click_index
         ):
-
             self.tabCloseRequested.emit(i)  # type: ignore
             event.accept()
 
@@ -72,13 +67,11 @@ class TabWidget(QTabWidget):
     numberOfTabChanged = pyqtSignal(int)
 
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
 
         self.setTabBar(TabBar(self))
 
     def tabInserted(self, index):
-
         # Ensures that the 'currentChanged( int )' signal is sent when the tab
         # bar is modified, even if Qt doesn't think it should.
 
@@ -86,7 +79,6 @@ class TabWidget(QTabWidget):
         self.numberOfTabChanged.emit(self.count())
 
     def tabRemoved(self, index):
-
         # Ensures that the 'currentChanged( int )' signal is sent when the tab
         # bar is modified, even if Qt doesn't think it should.
 
@@ -94,19 +86,16 @@ class TabWidget(QTabWidget):
         self.numberOfTabChanged.emit(self.count())
 
     def previousTab(self):
-
         i = self.currentIndex()
         if i > 0:
             self.setCurrentIndex(i - 1)
 
     def nextTab(self):
-
         i = self.currentIndex()
         if i < self.count() - 1:
             self.setCurrentIndex(i + 1)
 
     def closeTab(self):
-
         i = self.currentIndex()
         if i >= 0:
             self.tabCloseRequested.emit(i)  # type: ignore
@@ -117,7 +106,6 @@ class FallbackTabWidget(QStackedWidget):
     latter when the former has no tab."""
 
     def __init__(self, parent=None, tabwidget=None, fallback=None):
-
         super().__init__(parent)
 
         if fallback is None:
@@ -139,6 +127,5 @@ class FallbackTabWidget(QStackedWidget):
         self.tabwidget.numberOfTabChanged.connect(self.switchView)
 
     def switchView(self, tabcount: int):
-
         current = self.tabwidget if tabcount > 0 else self.fallback
         self.setCurrentWidget(current)

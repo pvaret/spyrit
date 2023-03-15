@@ -31,7 +31,6 @@ class SoundCommand(BaseCommand):
     """Sound-related operations."""
 
     def cmd_play(self, world, filename=":/sound/pop"):
-
         """
         Play a sound.
 
@@ -52,7 +51,6 @@ class SoundCommand(BaseCommand):
             world.info(msg)
 
     def cmd_engines(self, world, all=None):
-
         """
         List supported sound engines and their status.
 
@@ -79,7 +77,6 @@ class SoundCommand(BaseCommand):
         statuses = []
 
         for backend in registry.listBackends(list_all):
-
             if backend is current_backend:
                 status = "in use"
 

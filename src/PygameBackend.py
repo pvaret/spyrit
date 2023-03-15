@@ -39,15 +39,12 @@ BUFFER = 1024  # bytes
 
 
 class PygameBackend:
-
     name = "SDL"
 
     def __init__(self):
-
         self.mixer = None
 
     def isAvailable(self) -> bool:
-
         if not _pygame_is_available:
             return False
 
@@ -62,12 +59,10 @@ class PygameBackend:
         return True
 
     def play(self, soundfile: str) -> None:
-
         if self.mixer:
             sound = self.mixer.Sound(soundfile)
             sound.play()
 
     def __del__(self) -> None:
-
         if self.mixer:
             self.mixer.quit()

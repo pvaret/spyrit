@@ -40,7 +40,6 @@ pyqtRemoveInputHook()
 
 class Application(QApplication):
     def __init__(self, args):
-
         super().__init__(args)
 
         self.args = args
@@ -55,7 +54,6 @@ class Application(QApplication):
         self.core = construct_spyrit_core(self)
 
     def bootstrap(self):
-
         # Check that we aren't already bootstrapped.
         if self.bootstrapped:
             return
@@ -78,7 +76,6 @@ class Application(QApplication):
         self.setWindowIcon(QIcon(":/app/icon"))
 
     def doExec(self):
-
         if not self.bootstrapped:
             self.bootstrap()
 
@@ -87,7 +84,6 @@ class Application(QApplication):
         return QApplication.exec()
 
     def afterStart(self):
-
         # This method is called once, right after the start of the event loop.
         # It is used to set up things that we only want done after the event
         # loop has begun running.
@@ -100,9 +96,7 @@ class Application(QApplication):
         # by Qt itself.
 
         for arg in self.args[1:]:
-
             if ":" in arg:  # This is probably a 'server:port' argument.
-
                 server, port = arg.split(":", 1)
 
                 try:
@@ -119,10 +113,8 @@ class Application(QApplication):
                     self.core.openWorldByHostPort(server, port)
 
             else:
-
                 self.core.openWorldByName(arg)
 
     @pyqtSlot()
     def beforeStop(self):
-
         sys.excepthook = sys.__excepthook__

@@ -28,24 +28,20 @@ from World import World
 
 
 class BaseCommand:
-
     # Abstract base class for commands.
 
     CMD = "cmd"
 
     def __init__(self):
-
         self.subcmds: dict[str, str] = {}
 
         for name in dir(self):
-
             attr = getattr(self, name)
 
             if callable(attr) and name.startswith(self.CMD + "_"):
                 self.subcmds[name[len(self.CMD + "_") :].lower()] = attr
 
     def cmd(self, world: World, *args: str, **kwargs: str):
-
         # Default implementation that only displays help. Overload this in
         # subclasses.
 
@@ -69,7 +65,6 @@ class BaseCommand:
         )
 
     def parseSubCommand(self, cmdline):
-
         subcmdname, remainder = parse_command(cmdline)
 
         if subcmdname in self.subcmds:
@@ -78,13 +73,11 @@ class BaseCommand:
         return None, subcmdname, cmdline
 
     def parseArgs(self, cmdline):
-
         args, kwargs = parse_arguments(cmdline)
 
         return args, kwargs
 
     def getCallableForName(self, cmdname, subcmdname):
-
         if subcmdname is None:
             return getattr(self, self.CMD, None)
 

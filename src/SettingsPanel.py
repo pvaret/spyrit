@@ -25,11 +25,9 @@ from PyQt6.QtWidgets import QWidget, QFormLayout
 
 
 class SettingsPanel(QWidget):
-
     MARGINS = (20, 20, 20, 20)  # right, top, left, bottom
 
     def __init__(self, mapper):
-
         super().__init__()
 
         self.setLayout(QFormLayout())
@@ -38,7 +36,6 @@ class SettingsPanel(QWidget):
         self.mapper = mapper
 
     def addBoundRow(self, node_path, widget, label=None):
-
         # WORKAROUND: Qt truncates the widget if it's a QCheckBox with its own
         # text unless we do this:
         if label is None:

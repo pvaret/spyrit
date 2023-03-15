@@ -41,7 +41,6 @@ NL = "\n"
 
 class OutputManager:
     def __init__(self, world: World, textview: SplittableTextView):
-
         self.world = world
         self.view_settings = world.settings._ui._view
 
@@ -95,7 +94,6 @@ class OutputManager:
         self.view_settings.onChange("paging", self.textview.setPaging)
 
     def refresh(self):
-
         self.textview.setConfiguration(
             self.view_settings._font._name,
             self.view_settings._font._size,
@@ -103,15 +101,12 @@ class OutputManager:
         )
 
     def setWordWrapping(self):
-
         self.textview.setWordWrapColumn(self.view_settings._wrap_column)
 
     def findInHistory(self, string):
-
         return self.searchmanager.find(string)
 
     def processChunk(self, chunk):
-
         chunk_type, payload = chunk
 
         if chunk_type == ChunkType.TEXT:
@@ -124,17 +119,14 @@ class OutputManager:
             self.processNetworkChunk(payload)
 
     def processFlowControlChunk(self, event):
-
         if event == FlowControl.LINEFEED:
             self.insertNewLine()
 
     def processNetworkChunk(self, event):
-
         if event == NetworkState.CONNECTING:
             self.insertInfoText("Connecting...")
 
         elif event == NetworkState.CONNECTED:
-
             if not self.was_connected:
                 self.insertInfoText("Connected!")
                 self.was_connected = True
@@ -143,7 +135,6 @@ class OutputManager:
             self.insertInfoText("SSL encryption started.")
 
         elif event == NetworkState.DISCONNECTED:
-
             if self.was_connected:
                 self.insertInfoText("Connection closed.")
                 self.was_connected = False
@@ -164,23 +155,19 @@ class OutputManager:
             self.insertInfoText("Network error.")
 
     def insertNewLine(self):
-
         if self.pending_newline:
             self.textcursor.insertText(NL, self.textformat)
 
         self.pending_newline = True
 
     def insertText(self, text):
-
         if self.pending_newline:
-
             self.textcursor.insertText(NL, self.textformat)
             self.pending_newline = False
 
         self.textcursor.insertText(text, self.textformat)
 
     def insertInfoText(self, text):
-
         if self.textcursor.columnNumber() > 0:
             self.textcursor.insertText(NL, self.infoformat)
 

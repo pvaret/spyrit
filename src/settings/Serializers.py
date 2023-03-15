@@ -77,7 +77,6 @@ def split(
     current_quote = None
 
     for pos, c in enumerate(string):
-
         if in_escape:
             # Current character is escaped. Move on.
             in_escape = False
@@ -127,7 +126,6 @@ class BaseSerializer(abc.ABC, Generic[Value]):
     # TODO: Not very clean. Find a way to make it cleaner? Or maybe remove it
     # entirely?
     def deserializeDefault(self, default):
-
         if isinstance(default, str):
             return self.deserialize(default)
 
@@ -136,7 +134,6 @@ class BaseSerializer(abc.ABC, Generic[Value]):
 
 class Int(BaseSerializer[int]):
     def deserialize(self, string: str) -> int:
-
         try:
             return int(string)
 
@@ -144,14 +141,12 @@ class Int(BaseSerializer[int]):
             return 0
 
     def serialize(self, value: int) -> str:
-
         assert isinstance(value, int)
         return "%d" % value
 
 
 class Str(BaseSerializer[str]):
     def deserialize(self, string: str) -> Optional[str]:
-
         # The empty string deserializes to None.
         if not string:
             return None
@@ -159,7 +154,6 @@ class Str(BaseSerializer[str]):
         return unquote(string)
 
     def serialize(self, value: str) -> str:
-
         # None serializes to the empty string.
         if value is None:
             return ""
@@ -169,30 +163,24 @@ class Str(BaseSerializer[str]):
 
 class Bool(BaseSerializer[bool]):
     def deserialize(self, string: str) -> bool:
-
         return string.strip().lower() in ("1", "y", "yes", "on", "true")
 
     def serialize(self, value: bool) -> str:
-
         return "True" if value else "False"
 
 
 class List(BaseSerializer[ListType[Value]]):
-
     SEP = ","
     QUOTE = '"'
 
     def __init__(self, sub_serializer: BaseSerializer[Value]):
-
         self.sub_serializer = sub_serializer
         super().__init__()
 
     def serialize(self, value: ListType[Value]) -> str:
-
         result = []
 
         for item in value:
-
             s = self.sub_serializer.serialize(item)
 
             result.append(
@@ -202,11 +190,9 @@ class List(BaseSerializer[ListType[Value]]):
         return self.SEP.join(result)
 
     def deserialize(self, string: str) -> ListType[Value]:
-
         result = []
 
         for item in split(string, sep=self.SEP, quotes=self.QUOTE):
-
             # Because the string serializer uses quote(), which escapes the "
             # character, the following is guaranteed to only be true when we've
             # added the quotes ourselves in serialize().
@@ -224,7 +210,6 @@ FormatType = Dict[Any, Any]
 
 
 class Format(BaseSerializer[FormatType]):
-
     # FORMAT describes the formatting for a given piece of text: color,
     # italic, underlined...
     # Its string serialization is a semicolon-separated list of tokens and
@@ -233,11 +218,9 @@ class Format(BaseSerializer[FormatType]):
     # We also store format-related constants on it.
 
     def serialize(self, value: FormatType) -> str:
-
         props: ListType[str] = []
 
         for k, v in value.items():
-
             if k == FORMAT_PROPERTIES.COLOR:
                 props.insert(0, "color: %s" % v)
 
@@ -253,15 +236,12 @@ class Format(BaseSerializer[FormatType]):
         return " ; ".join(props)
 
     def deserialize(self, string: str) -> FormatType:
-
         d: FormatType = {}
 
         for item in string.split(";"):
-
             item = item.strip().lower()
 
             if ":" in item and item.startswith("c"):
-
                 item, string = item.split(":", 1)
                 item = item.strip()
                 string = string.strip()
@@ -281,39 +261,32 @@ class Format(BaseSerializer[FormatType]):
 
 class KeySequence(BaseSerializer[QKeySequence]):
     def deserializeDefault(self, default: str) -> Optional[QKeySequence]:
-
         # QKeySequence.fromString uses PortableText by default, and so do our
         # defaults:
         return QKeySequence.fromString(default) if default is not None else None
 
     def serialize(self, value: Optional[QKeySequence]) -> str:
-
         if value is not None:
             return value.toString(QKeySequence.SequenceFormat.NativeText)
 
         return ""
 
     def deserialize(self, string: str) -> QKeySequence:
-
         return QKeySequence.fromString(
             string, QKeySequence.SequenceFormat.NativeText
         )
 
 
 class Size(BaseSerializer[QSize]):
-
     SEP = r"[x,]"
 
     def serialize(self, value: QSize) -> str:
-
         return "%dx%d" % (value.width(), value.height())
 
     def deserialize(self, string: str) -> QSize:
-
         string = string.lower().strip()
 
         if re.search(self.SEP, string):
-
             w, h = re.split(self.SEP, string, 1)
 
             try:
@@ -327,15 +300,12 @@ class Size(BaseSerializer[QSize]):
 
 class Point(BaseSerializer[QPoint]):
     def serialize(self, value: QPoint) -> str:
-
         return "%dx%d" % (value.x(), value.y())
 
     def deserialize(self, string: str) -> QPoint:
-
         string = string.lower().strip()
 
         if "x" in string:
-
             x, y = string.split("x", 1)
 
             try:
@@ -349,25 +319,21 @@ class Point(BaseSerializer[QPoint]):
 
 class Pattern(BaseSerializer[BaseMatch]):
     def serialize(self, value: BaseMatch) -> str:
-
         # TODO: Not great. Replace the repr() with a proper serialization
         # function.
         return quote(repr(value))
 
     def deserialize(self, string: str) -> Optional[BaseMatch]:
-
         string = unquote(string)
 
         if not string:
             return None
 
         if ":" in string:
-
             prefix, suffix = string.split(":", 1)
             prefix = prefix.lower()
 
             for class_ in (RegexMatch, SmartMatch):
-
                 if prefix == class_.matchtype:
                     string = suffix
                     break

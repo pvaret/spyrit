@@ -22,15 +22,12 @@ from .ChunkData import ChunkType
 
 
 def insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks):
-
     pos = 0
     target_pos = 0
     new_chunk = None
 
     for i, chunk in enumerate(chunkbuffer):
-
         if not new_chunk:  # Pop the next chunk to insert...
-
             if not new_chunks:  # ... Assuming there is one, of course.
                 return
 
@@ -42,13 +39,11 @@ def insert_chunks_in_chunk_buffer(chunkbuffer, new_chunks):
             continue
 
         if pos == target_pos:
-
             chunkbuffer.insert(i, new_chunk)
             new_chunk = None
             continue
 
         elif target_pos - pos < len(payload):
-
             split_pos = target_pos - pos
 
             chunkbuffer.pop(i)

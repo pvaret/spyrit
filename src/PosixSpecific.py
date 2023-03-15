@@ -22,7 +22,6 @@ import os.path
 
 
 class PosixSpecific:
-
     CONFIG_DIR = ".config/spyrit"
     OLD_CONFIG_DIRS = [
         ".spyrit",

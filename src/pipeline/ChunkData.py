@@ -39,7 +39,6 @@ class ChunkTypeMismatch(Exception):
 
 
 class ChunkType(IntEnum):
-
     NETWORK = 1 << 0
     PACKETBOUND = 1 << 1
     PROMPTSWEEP = 1 << 2
@@ -52,7 +51,6 @@ class ChunkType(IntEnum):
 
     @classmethod
     def all(cls):
-
         return sum(ct.value for ct in cls)
 
 
@@ -63,7 +61,6 @@ ChunkT = tuple[ChunkType, Any]
 
 
 def concat_chunks(chunk1: ChunkT, chunk2: ChunkT) -> ChunkT:
-
     chunk1_type, chunk1_payload = chunk1
     chunk2_type, chunk2_payload = chunk2
 
@@ -74,7 +71,6 @@ def concat_chunks(chunk1: ChunkT, chunk2: ChunkT) -> ChunkT:
         str,
         bytearray,
     ):
-
         raise ChunkTypeMismatch(
             "Trying to concat %d chunk with %d chunk!"
             % (chunk1_type, chunk2_type)
@@ -91,7 +87,6 @@ def concat_chunks(chunk1: ChunkT, chunk2: ChunkT) -> ChunkT:
 
 
 def chunk_repr(chunk: ChunkT) -> str:
-
     chunk_type, payload = chunk
     type_str = chunk_type.name
 

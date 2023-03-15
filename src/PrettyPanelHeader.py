@@ -27,7 +27,6 @@ from PyQt6.QtWidgets import QSizePolicy
 
 
 class PrettyPanelHeader(QFrame):
-
     # A few spacing constants used during the layout:
 
     SPACING = 20
@@ -44,7 +43,6 @@ class PrettyPanelHeader(QFrame):
     """
 
     def __init__(self, title, icon=None, desc=None, parent=None):
-
         super().__init__(parent)
 
         # The object gets a name so that we can apply the stylesheet to it

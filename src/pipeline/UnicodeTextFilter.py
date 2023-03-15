@@ -28,11 +28,9 @@ from .ChunkData import ChunkType
 
 
 class UnicodeTextFilter(BaseFilter):
-
     relevant_types = ChunkType.BYTES
 
     def __init__(self, context, encoding):
-
         self.encoding = "ascii"
         self.decoder = codecs.getincrementaldecoder(self.encoding)("replace")
 
@@ -42,12 +40,10 @@ class UnicodeTextFilter(BaseFilter):
         self.bindNotificationListener("encoding_changed", self.setEncoding)
 
     def setEncoding(self, encoding: str):
-
         try:
             codecs.lookup(encoding)
 
         except LookupError:
-
             messages.warn(
                 "Unknown encoding '%s'; reverting to Latin1." % encoding
             )
@@ -57,14 +53,12 @@ class UnicodeTextFilter(BaseFilter):
         self.decoder = codecs.getincrementaldecoder(self.encoding)("replace")
 
     def resetInternalState(self):
-
         super().resetInternalState()
 
         if self.decoder:
             self.decoder.reset()
 
     def processChunk(self, chunk):
-
         _, payload = chunk
 
         text = self.decoder.decode(payload)

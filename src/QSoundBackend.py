@@ -30,14 +30,11 @@ except ImportError:
 
 
 class QSoundBackend:
-
     name = "Native (Qt)"
 
     def isAvailable(self) -> bool:
-
         return QSound is not None
 
     def play(self, soundfile: str) -> None:
-
         if QSound is not None:
             QSound.play(soundfile)

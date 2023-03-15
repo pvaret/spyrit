@@ -20,7 +20,6 @@ OPTIONS = (
 
 
 def is_rst_doctest(fname: str) -> bool:
-
     if not fname.lower().endswith(".rst"):
         return False
 
@@ -35,7 +34,6 @@ def is_rst_doctest(fname: str) -> bool:
 
 
 def is_python_module_doctest(fname: str) -> bool:
-
     if not fname.lower().endswith(".py"):
         return False
 
@@ -50,13 +48,9 @@ def is_python_module_doctest(fname: str) -> bool:
 
 
 def find_all_tests():
-
     for DIR in (SPYRIT_DIR, THIS_DIR):
-
         for current, _, files in os.walk(DIR):
-
             for f in files:
-
                 fname = os.path.join(current, f)
 
                 if is_rst_doctest(fname):
@@ -67,11 +61,9 @@ def find_all_tests():
 
 
 if __name__ == "__main__":
-
     include_list = sys.argv[1:]
 
     for f in find_all_tests():
-
         if include_list and not any(pattern in f for pattern in include_list):
             continue
 

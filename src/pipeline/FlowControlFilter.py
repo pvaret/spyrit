@@ -30,7 +30,6 @@ from .BaseFilter import BaseFilter
 
 
 class FlowControlFilter(BaseFilter):
-
     relevant_types = ChunkType.TEXT
 
     match = re.compile(r"(\r|\n)")
@@ -42,14 +41,12 @@ class FlowControlFilter(BaseFilter):
     }
 
     def processChunk(self, chunk):
-
         _, text = chunk
 
         # Expand tabs to spaces:
         text = text.replace("\t", " " * 8)
 
         while len(text) > 0:
-
             fc = self.match.search(text)
 
             if fc:
@@ -72,6 +69,5 @@ class FlowControlFilter(BaseFilter):
             yield (ChunkType.TEXT, text)
 
     def formatForSending(self, data: bytes) -> bytes:
-
         # Transform UNIX-like CR into telnet-like CRLF.
         return self.unix_like_cr.sub(b"\r\n", data)

@@ -28,14 +28,12 @@ from .Pipeline import Pipeline
 
 
 class BaseFilter:
-
     # This class attribute lists the chunk types that this filter will process.
     # Those unlisted will be passed down the filter chain untouched.
 
     relevant_types: int = ChunkType.all()
 
     def __init__(self, context: Pipeline):
-
         self.sink: Callable[[ChunkT], None] = lambda _: None
         self.context: Pipeline = context
         self.postponedChunk: Optional[ChunkT] = None
@@ -43,11 +41,9 @@ class BaseFilter:
         self.resetInternalState()
 
     def setSink(self, sink: Callable[[ChunkT], None]) -> None:
-
         self.sink = sink
 
     def postpone(self, chunk: ChunkT) -> None:
-
         if self.postponedChunk:
             raise Exception("Duplicate postponed chunk!")
 
@@ -55,7 +51,6 @@ class BaseFilter:
             self.postponedChunk = chunk
 
     def processChunk(self, chunk: ChunkT) -> Iterable[ChunkT]:
-
         # This is the default implementation, which does nothing.
         # Override this to implement your filter.
         # Note that this must be a generator or return a list.
@@ -63,7 +58,6 @@ class BaseFilter:
         yield chunk
 
     def resetInternalState(self) -> None:
-
         # Initialize the filter at the beginning of a connection (or when
         # reconnecting). For instance the Telnet filter would drop all
         # negociated options.
@@ -73,7 +67,6 @@ class BaseFilter:
         self.postponedChunk = None
 
     def concatPostponed(self, chunk: ChunkT):
-
         if not self.postponedChunk:
             return chunk
 
@@ -101,11 +94,9 @@ class BaseFilter:
         return chunk
 
     def feedChunk(self, chunk: ChunkT):
-
         chunk_type, _ = chunk
 
         if chunk_type & self.relevant_types:
-
             if self.postponedChunk:
                 chunk = self.concatPostponed(chunk)
 
@@ -123,7 +114,6 @@ class BaseFilter:
             self.sink(chunk)
 
     def formatForSending(self, data: bytes) -> bytes:
-
         # Reimplement this function if the filter inherently requires the data
         # sent to the world to be modified. I.e., the telnet filter would escape
         # occurences of the IAC in the data.
@@ -132,7 +122,6 @@ class BaseFilter:
 
     # TODO: Check if this is used anywhere. Else, delete.
     def notify(self, notification: str, *args: str) -> None:
-
         if not self.context:
             return
 
@@ -141,7 +130,6 @@ class BaseFilter:
     def bindNotificationListener(
         self, notification: str, callback: Callable[..., None]
     ):
-
         if not self.context:
             return
 

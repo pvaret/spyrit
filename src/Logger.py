@@ -35,12 +35,10 @@ from SingleShotTimer import SingleShotTimer
 
 
 class PlainLogger(object):
-
     log_chunk_types = ChunkType.TEXT | ChunkType.FLOWCONTROL
     encoding = "utf-8"
 
     def __init__(self, world, logfile):
-
         self.world = world
         self.logfile = logfile
 
@@ -51,7 +49,6 @@ class PlainLogger(object):
         self.flush_timer.setInterval(100)  # ms
 
     def logChunk(self, chunk):
-
         if not self.is_logging:
             return
 
@@ -69,31 +66,25 @@ class PlainLogger(object):
         self.flush_timer.start()
 
     def doLogText(self, text: str) -> None:
-
         self.buffer.append(text.encode(self.encoding, "replace"))
 
     def doLogStart(self):
-
         now = time.strftime("%c", time.localtime())
         self.doLogText(
             "%% Log start for %s on %s.\n" % (self.world.title(), now)
         )
 
     def doLogStop(self):
-
         now = time.strftime("%c", time.localtime())
         self.doLogText("%% Log end on %s.\n" % now)
 
     def flushBuffer(self):
-
         if self.is_logging and self.buffer:
-
             self.logfile.write(b"".join(self.buffer))
             self.logfile.flush()
             self.buffer[:] = []
 
     def start(self):
-
         if self.is_logging:
             return
 
@@ -105,7 +96,6 @@ class PlainLogger(object):
         self.flushBuffer()
 
     def stop(self):
-
         if not self.is_logging:
             return
 
@@ -117,17 +107,14 @@ class PlainLogger(object):
         self.is_logging = False
 
     def __del__(self):
-
         self.stop()
 
 
 class AnsiFormatter:
     def __init__(self, buffer):
-
         self.buffer = buffer
 
     def setProperty(self, property, value):
-
         if property == FORMAT_PROPERTIES.BOLD:
             self.buffer.append(ESC + b"[1m")
 
@@ -138,17 +125,14 @@ class AnsiFormatter:
             self.buffer.append(ESC + b"[4m")
 
         elif property == FORMAT_PROPERTIES.COLOR:
-
             ansi_color = compute_closest_ansi_color(value)
             self.buffer.append(ESC + b"[38;5;%dm" % ansi_color)
 
         elif property == FORMAT_PROPERTIES.BACKGROUND:
-
             ansi_color = compute_closest_ansi_color(value)
             self.buffer.append(ESC + b"[48;5;%dm" % ansi_color)
 
     def clearProperty(self, property):
-
         if property == FORMAT_PROPERTIES.BOLD:
             self.buffer.append(ESC + b"[22m")
 
@@ -166,19 +150,16 @@ class AnsiFormatter:
 
 
 class AnsiLogger(PlainLogger):
-
     log_chunk_types = (
         PlainLogger.log_chunk_types | ChunkType.HIGHLIGHT | ChunkType.ANSI
     )
 
     def __init__(self, *args):
-
         super().__init__(*args)
 
         self.format_stack = FormatStack(AnsiFormatter(self.buffer))
 
     def logChunk(self, chunk):
-
         chunk_type, _ = chunk
 
         if chunk_type & (ChunkType.HIGHLIGHT | ChunkType.ANSI):
@@ -188,7 +169,6 @@ class AnsiLogger(PlainLogger):
             super().logChunk(chunk)
 
     def doLogStop(self):
-
         # TODO: decide if we want to also store the current format somewhere, in
         # case we want to re-apply it if the user re-starts the log.
         self.buffer.append(ESC + b"[m")
@@ -196,11 +176,9 @@ class AnsiLogger(PlainLogger):
 
 
 def create_logger_for_world(world, logfilename):
-
     dir = dirname(logfilename)
 
     if not isdir(dir):
-
         try:
             os.makedirs(dir)
 

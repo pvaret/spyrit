@@ -43,7 +43,6 @@ from pipeline.SocketPipeline import SocketPipeline
 
 
 class Status:
-
     DISCONNECTED = 0
     CONNECTING = 1
     CONNECTED = 2
@@ -51,13 +50,11 @@ class Status:
 
 
 class World(QObject):
-
     connected = pyqtSignal(bool)
     disconnected = pyqtSignal(bool)
     nowLogging = pyqtSignal(bool)
 
     def __init__(self, settings=None, state=None):
-
         super().__init__()
 
         app = QApplication.instance()
@@ -87,7 +84,6 @@ class World(QObject):
         self.socketpipeline.addSink(self.sink, ChunkType.NETWORK)
 
     def title(self):
-
         settings = self.settings
         return settings._name or "(%s:%d)" % (
             settings._net._host,
@@ -95,17 +91,14 @@ class World(QObject):
         )
 
     def host(self):
-
         return self.settings._net._host
 
     def save(self):
-
         app = QApplication.instance()
         assert app is not None
         app.core.worlds.saveWorld(self)  # type: ignore
 
     def setUI(self, worldui):
-
         self.worldui = worldui
         self.worldui.updateToolBarIcons(self.settings._ui._toolbar._icon_size)
         self.settings._ui._toolbar.onChange(
@@ -113,17 +106,14 @@ class World(QObject):
         )
 
     def info(self, text):
-
         if self.worldui:
             self.worldui.output_manager.insertInfoText(text)
 
     def connectToWorld(self):
-
         if not self.isConnected():
             self.socketpipeline.connectToHost()
 
     def confirmDisconnectFromWorld(self):
-
         if self.isConnected():
             if not confirmDialog(
                 "Confirm disconnect",
@@ -136,13 +126,10 @@ class World(QObject):
         self.disconnectFromWorld()
 
     def disconnectFromWorld(self):
-
         self.socketpipeline.abort()
 
     def connectionStatusChanged(self):
-
         if self.status == Status.CONNECTED:
-
             if self.settings._log._autostart or self.was_logging:
                 self.startLogging()
 
@@ -152,12 +139,10 @@ class World(QObject):
                 )
 
         elif self.status == Status.DISCONNECTED:
-
             self.was_logging = self.logger is not None
             self.stopLogging()
 
     def computeLogFileName(self):
-
         logfile = self.settings._log._file
         logdir = self.settings._log._dir
 
@@ -193,13 +178,11 @@ class World(QObject):
         return logfile
 
     def startLogging(self):
-
         # TODO: Prompt for a logfile name if none is recorded in settings
 
         logfile = self.computeLogFileName()
 
         if self.logger:
-
             if logfile == self.last_log_filename:
                 # We're already logging to the correct file! Good.
                 return
@@ -215,7 +198,6 @@ class World(QObject):
             self.logger.start()
 
     def stopLogging(self):
-
         if not self.logger:
             return
 
@@ -224,7 +206,6 @@ class World(QObject):
         self.logger = None
 
     def sink(self, chunk):
-
         previous_status = self.status
 
         _, payload = chunk
@@ -245,7 +226,6 @@ class World(QObject):
             NetworkState.TIMEOUT,
             NetworkState.OTHERERROR,
         ):
-
             self.status = Status.DISCONNECTED
 
         if self.status != previous_status:
@@ -253,15 +233,12 @@ class World(QObject):
             self.disconnected.emit(self.isDisconnected())
 
     def isConnected(self):
-
         return self.status == Status.CONNECTED
 
     def isDisconnected(self):
-
         return self.status == Status.DISCONNECTED
 
     def selectFile(self, caption="Select file", dir="", filter=""):
-
         if not dir:
             dir = platformSpecific.get_homedir()
 
@@ -272,7 +249,6 @@ class World(QObject):
         return filename
 
     def openFileOrErr(self, filename, mode="rb"):
-
         filename = os.path.expanduser(filename)
         basename = os.path.basename(filename)
 
@@ -282,15 +258,12 @@ class World(QObject):
             )  # NB: filename can be unicode. That's OK!
 
         except (IOError, OSError) as e:
-
             errormsg = "%s" % e
             self.info("Error: %s: %s" % (basename, errormsg))
             return None
 
     def loadFile(self, filename: str = "", blocksize: int = 2048):
-
         if not filename:
-
             filename = self.selectFile(
                 caption="Select the file to load",
                 filter="Text files (*.log *.txt)" ";;All files (*)",
@@ -309,7 +282,6 @@ class World(QObject):
         t1 = time.time()
 
         while True:
-
             data = f.read(blocksize)
 
             if not data:
@@ -324,16 +296,13 @@ class World(QObject):
         self.info("File loaded in %.2fs." % (t2 - t1))
 
     def flushPendingInput(self):
-
         app = QApplication.instance()
         assert app is not None
 
         while self.input:
-
             text = self.input.pop(0)
 
             if text.startswith(CMDCHAR):
-
                 app.core.commands.runCmdLine(  # type: ignore
                     self, text[len(CMDCHAR) :]
                 )
@@ -342,7 +311,6 @@ class World(QObject):
                 self.socketpipeline.send(text + "\r\n")
 
     def processInput(self, input):
-
         for line in input.split("\n"):
             self.input.append(line)
 

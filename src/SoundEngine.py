@@ -27,21 +27,17 @@ from PlatformSpecific import platformSpecific
 
 
 class SoundBackendRegistry:
-
     SOUNDBACKENDS = {
         "qsound": QSoundBackend,
         "pygame": PygameBackend,
     }
 
     def __init__(self):
-
         self.preferred_backends = platformSpecific.get_sound_backends()
         self.backend_cache = {}
 
     def pollForBackend(self):
-
         for backend_name in self.preferred_backends:
-
             backend = self.lookupBackend(backend_name)
 
             if backend.isAvailable():
@@ -50,7 +46,6 @@ class SoundBackendRegistry:
         return None
 
     def lookupBackend(self, backend_name):
-
         if backend_name not in self.backend_cache:
             self.backend_cache[backend_name] = self.SOUNDBACKENDS[
                 backend_name
@@ -59,7 +54,6 @@ class SoundBackendRegistry:
         return self.backend_cache[backend_name]
 
     def listBackends(self, also_list_unsupported=False):
-
         if also_list_unsupported:
             backend_list = self.SOUNDBACKENDS.keys()
         else:
@@ -72,13 +66,11 @@ class SoundBackendRegistry:
 
 class SoundEngine:
     def __init__(self, tmprc):
-
         self.tmprc = tmprc
         self.registry = SoundBackendRegistry()
         self.backend = self.registry.pollForBackend()
 
     def play(self, soundfile):
-
         if not self.backend:
             return False, "No sound engine available."
 

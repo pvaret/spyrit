@@ -26,7 +26,6 @@ from PyQt6.QtWidgets import QTabWidget
 
 
 class TabDelegate(QObject):
-
     DELEGATES = set(
         [
             "removeTab",
@@ -47,7 +46,6 @@ class TabDelegate(QObject):
     tabCloseRequested = pyqtSignal()
 
     def __init__(self, tabwidget, widget):
-
         super().__init__(parent=widget)
 
         self.widget = widget
@@ -64,24 +62,20 @@ class TabDelegate(QObject):
 
     @pyqtSlot(int)
     def onTabChanged(self, i):
-
         tabindex = self.tabwidget.indexOf(self.widget)
 
         is_now_current_tab = tabindex == i
 
         if is_now_current_tab != self.is_current_tab:
-
             self.tabChanged.emit(is_now_current_tab)
             self.is_current_tab = is_now_current_tab
 
     @pyqtSlot(int)
     def onTabCloseRequested(self, i):
-
         if i == self.tabwidget.indexOf(self.widget):
             self.tabCloseRequested.emit()
 
     def __getattr__(self, attr):
-
         if attr not in self.DELEGATES:
             raise AttributeError(attr)
 

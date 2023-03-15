@@ -393,34 +393,39 @@ ANSI_COLORS_EXTENDED = {
 # A regex to match URLs:
 
 
-def re_group(regex):
+def re_group(regex: str) -> str:
     return r"(?:%s)" % regex
 
 
-def re_optional(regex):
+def re_optional(regex: str) -> str:
     return re_group(regex) + "?"
 
 
-def re_either(*regexes):
+def re_either(*regexes: str) -> str:
     return re_group(r"|".join(regexes))
 
+
+_FINAL_URL_CHARS = r"-a-zA-Z0-9~#/&_=:)}"
+_INNER_URL_CHARS = _FINAL_URL_CHARS + r"{(.!?"
 
 URL_RE = (
     r"\b"
     + re_either(
-        re_either(  # Recognizable prefix
-            r"https?://",
-            r"www\.",
-        )
-        + re_group(r"[\d\w_-]+\.")
-        + r"*\w+",  # Host
+        (  # Host
+            re_either(  # Recognizable prefix
+                r"https?://",
+                r"www\.",
+            )
+            + re_group(r"[\d\w_-]+\.")
+            + r"*\w+"
+        ),
         re_group(r"\d{1,3}\.") + r"{3}" + r"\d{1,3}",  # IP
     )
     + re_optional(r":\d+")  # Port
     + re_optional(
         r"/"
         + re_optional(
-            re_optional(r"[a-zA-Z0-9~.#/!?&=-]+") + r"[a-zA-Z0-9~#/&_=-]"
+            r"[" + _INNER_URL_CHARS + r"]*" + r"[" + _FINAL_URL_CHARS + r"]"
         )
     )
 )

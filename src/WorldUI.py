@@ -19,7 +19,7 @@
 #
 
 
-from typing import Optional
+from typing import Optional, cast
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QSize
@@ -43,11 +43,9 @@ from WorldInputUI import WorldInputUI
 
 
 class WorldUI(QSplitter):
-
     requestAttention = pyqtSignal()
 
     def __init__(self, world: World, parent: Optional[QWidget] = None):
-
         super().__init__(Qt.Orientation.Vertical, parent)
 
         self.world: World = world
@@ -187,7 +185,6 @@ class WorldUI(QSplitter):
             self.world.info(line)
 
     def updateToolBarIcons(self, size):
-
         if not size:
             size = QApplication.style().pixelMetric(
                 QStyle.PixelMetric.PM_ToolBarIconSize
@@ -197,7 +194,6 @@ class WorldUI(QSplitter):
         self.toolbar.setIconSize(new_size)
 
     def toggleSecondaryInput(self):
-
         if self.secondaryinputui.isHidden():
             self.secondaryinputui.show()
             self.secondaryinputui.setFocus()
@@ -207,17 +203,17 @@ class WorldUI(QSplitter):
             self.inputui.setFocus()
 
     def onTabChanged(self, is_now_visible):
-
         if is_now_visible:
-
             # Ensure the currently visible world has focus.
             self.setFocus()
 
     def windowAlert(self):
-
         # TODO: Pass app instance cleanly somehow.
         app = QApplication.instance()
-        if not self.world or app is None:
+        # WORKAROUND: The type annotation of QApplication.instance() is
+        # incorrect and claims the return value is never None, so we need to
+        # cast here to satisfy the type checker.
+        if not self.world or cast(Optional[QApplication], app) is None:
             return
 
         if self.world.settings._ui._window._alert:
@@ -226,13 +222,10 @@ class WorldUI(QSplitter):
         self.requestAttention.emit()
 
     def saveSplitterPosition(self):
-
         self.world.state._ui._splitter._sizes = self.sizes()
 
     def close(self) -> bool:
-
         if self.world.isConnected():
-
             if not confirmDialog(
                 "Confirm close",
                 "You are still connected to this world. "
@@ -253,10 +246,9 @@ class WorldUI(QSplitter):
         return True
 
     def doClose(self):
-
         self.world.stopLogging()
 
-        self.setParent(None)  # type: ignore - actually a valid call.
+        self.setParent(None)  # type: ignore # actually a valid call
 
         # Manual cleanup. We want to avoid leaking references all over the
         # place.
@@ -285,7 +277,6 @@ class WorldUI(QSplitter):
         self.deleteLater()
 
     def setFocusProxy(self, *args):
-
         # WORKAROUND: PyQt doesn't seem to properly declare the slot for this
         # method, so we must override it. :/
         # TODO: Reevalute this workaround in the present (2022).

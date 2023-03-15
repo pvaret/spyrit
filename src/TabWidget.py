@@ -54,7 +54,6 @@ class TabBar(QTabBar):
         if (
             event.button() == Qt.MouseButton.MiddleButton
             and self.tabsClosable()
-            and i is not None
             and i == self.last_middle_click_index
         ):
 

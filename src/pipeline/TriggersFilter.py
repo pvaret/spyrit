@@ -21,39 +21,41 @@
 #
 
 
+from typing import Iterable
+
 from .BaseFilter import BaseFilter
 
+from .ChunkData import ChunkT
 from .ChunkData import ChunkType
 from .ChunkData import FlowControl
 
+from .Pipeline import Pipeline
+
 
 class TriggersFilter(BaseFilter):
-    def __init__(self, context=None, manager=None):
-
-        self.buffer = []
+    def __init__(self, context: Pipeline, manager=None):
+        self.buffer: list[ChunkT] = []
         self.setManager(manager)
 
         super().__init__(context)
 
     def setManager(self, manager):
-
         self.manager = manager
 
-        self.processChunk = (
-            self.noOp if manager is None else self.doProcessChunk
-        )
-
     def resetInternalState(self):
-
-        self.buffer = []
+        self.buffer.clear()
         super().resetInternalState()
 
-    def noOp(self, chunk):
+    def processChunk(self, chunk: ChunkT) -> Iterable[ChunkT]:
+        if self.manager:
+            yield from self.doProcessChunk(chunk)
+        else:
+            yield from self.noOp(chunk)
 
+    def noOp(self, chunk):
         yield chunk
 
     def doProcessChunk(self, chunk):
-
         self.buffer.append(chunk)
 
         chunk_type, _ = chunk
@@ -65,7 +67,6 @@ class TriggersFilter(BaseFilter):
             ChunkType.FLOWCONTROL,
             FlowControl.LINEFEED,
         ):
-
             line = "".join(
                 chunk[1] for chunk in self.buffer if chunk[0] == ChunkType.TEXT
             )

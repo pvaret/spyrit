@@ -403,19 +403,19 @@ class Node(BaseNode, AttrProxyDictMixin):
 
             else:
                 for node_key, child_node in sorted(node.nodes.items()):
-                    if node.isEmpty():
+                    if child_node.isEmpty():
                         continue
 
                     subkey = ".".join((key, node_key)) if key else node_key
 
                     if child_node.proto.metadata.get("is_section"):
-                        dump = node.dump()  # type: ignore
+                        dump = child_node.dump()  # type: ignore
 
                         if len(dump[KEYS]) + len(dump[SECTIONS]) > 0:
                             result[SECTIONS][subkey] = dump
 
                     else:
-                        stack.append((node, subkey))  # type: ignore
+                        stack.append((child_node, subkey))  # type: ignore
 
         return result
 

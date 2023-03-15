@@ -190,12 +190,9 @@ def create_logger_for_world(world, logfilename):
     if not file:
         return None
 
-    if world.settings._log._ansi:
-        LoggerClass = AnsiLogger
-    else:
-        LoggerClass = PlainLogger
+    loggerClass = AnsiLogger if world.settings._log._ansi else PlainLogger
 
-    logger = LoggerClass(world, file)
+    logger = loggerClass(world, file)
 
     world.socketpipeline.addSink(logger.logChunk, logger.log_chunk_types)
 

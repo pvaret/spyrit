@@ -153,7 +153,7 @@ class Str(BaseSerializer[str]):
 
         return unquote(string)
 
-    def serialize(self, value: str) -> str:
+    def serialize(self, value: Optional[str]) -> str:
         # None serializes to the empty string.
         if value is None:
             return ""
@@ -200,7 +200,8 @@ class List(BaseSerializer[ListType[Value]]):
             if item[0] == self.QUOTE and item[-1] == self.QUOTE:
                 item = item[1:-1]
 
-            result.append(self.sub_serializer.deserialize(item))
+            if (value := self.sub_serializer.deserialize(item)) is not None:
+                result.append(value)
 
         return result
 
@@ -263,7 +264,7 @@ class KeySequence(BaseSerializer[QKeySequence]):
     def deserializeDefault(self, default: str) -> Optional[QKeySequence]:
         # QKeySequence.fromString uses PortableText by default, and so do our
         # defaults:
-        return QKeySequence.fromString(default) if default is not None else None
+        return QKeySequence.fromString(default) if default else None
 
     def serialize(self, value: Optional[QKeySequence]) -> str:
         if value is not None:
@@ -342,7 +343,7 @@ class Pattern(BaseSerializer[BaseMatch]):
             class_ = SmartMatch
 
         try:
-            return class_(string)  # type: ignore - class_ is in fact set.
+            return class_(string)  # type: ignore  # class_ is in fact set.
 
         except MatchCreationError:
             return None

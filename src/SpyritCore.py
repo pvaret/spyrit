@@ -25,6 +25,7 @@ from PyQt6.QtCore import QObject
 
 from MainWindow import MainWindow
 from SoundEngine import SoundEngine
+from World import World
 from WorldsManager import WorldsManager
 from TempResources import TempResources
 
@@ -53,7 +54,7 @@ class SpyritCore(QObject):
         self.sound = sound
         self.mw = None
 
-        self.openworlds = WeakSet()
+        self.openworlds: WeakSet[World] = WeakSet()
 
         # Set up a MOTD to properly welcome our user:
 

@@ -153,7 +153,9 @@ class WeakCallableRef(Generic[_CallableT]):
         ] = None,
     ):
         self._ref: Optional[Union[FunctionRef, MethodRef]]
-        self._callback = callback
+        self._callback: Optional[
+            Callable[["WeakCallableRef[_CallableT]"], None]
+        ] = callback
 
         if isinstance(fn, types.MethodType):
             self._name = fn.__name__

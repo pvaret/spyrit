@@ -591,7 +591,7 @@ class SplittableTextView(QTextEditWithClickableLinks):
         self.computePageStep()
         self.scrollbar.triggerAction(QScrollBar.SliderAction.SliderPageStepAdd)
 
-    def resizeEvent(self, event):  # type: ignore - PyQt arg naming issue
+    def resizeEvent(self, event):  # type: ignore  # PyQt arg naming issue
         res = super().resizeEvent(event)
 
         self.onRangeChanged(self.scrollbar.minimum(), self.scrollbar.maximum())

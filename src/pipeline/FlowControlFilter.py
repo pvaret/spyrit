@@ -61,8 +61,8 @@ class FlowControlFilter(BaseFilter):
                 yield self.chunkmapping[fc.group()]
 
             else:
-                # The remaining text doesn't contain any flow control character that
-                # we care about. So we quit the loop.
+                # The remaining text doesn't contain any flow control character
+                # that we care about. So we quit the loop.
                 break
 
         if text:

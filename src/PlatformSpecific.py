@@ -30,7 +30,7 @@ if os.name == "posix":
         from PosixSpecific import PosixSpecific as PlatformSpecific
 
 elif os.name == "nt":
-    from Win32Specific import Win32Specific as PlatformSpecific
+    from Win32Specific import Win32Specific as PlatformSpecific  # type: ignore
 
 else:
     raise NotImplementedError(

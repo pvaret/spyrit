@@ -129,8 +129,8 @@ class TelnetFilter(BaseFilter):
                     pass  # TODO: Implement option negociation.
 
             else:
-                # The remaining text doesn't contain any complete Telnet sequence.
-                # So we quit the loop.
+                # The remaining text doesn't contain any complete Telnet
+                # sequence. So we quit the loop.
                 break
 
         if text:

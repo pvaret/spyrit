@@ -283,7 +283,7 @@ class MainWindow(QMainWindow):
 
         return pos
 
-    def closeEvent(self, event):  # type: ignore - weird arg naming issue.
+    def closeEvent(self, event):  # type: ignore  # weird arg naming issue.
         # Confirm close if some worlds are still connected.
 
         connectedworlds = [
@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
 
         self.hide()
         mb = self.menuBar()
-        mb.setParent(None)  # type: ignore - this is actually legal PyQt.
+        mb.setParent(None)  # type: ignore  # this is actually legal PyQt.
         mb.deleteLater()
 
         # And we're done, and can quit.

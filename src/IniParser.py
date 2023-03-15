@@ -27,7 +27,7 @@
 
 import re
 
-from typing import cast
+from typing import Any, cast
 
 
 RE_SECTION = re.compile(r"^(\[+)(.+?)(\]+)(.*)", re.UNICODE)
@@ -163,9 +163,9 @@ def update_settings_2_to_3(struct):
     def update_matches(schema):
         from settings.Serializers import List, Str
 
-        matches_keys = {}
-        actions_keys = {}
-        highlights_keys = {}
+        matches_keys: dict[str, str] = {}
+        actions_keys: dict[str, str] = {}
+        highlights_keys: dict[str, str] = {}
         new_schema = {
             "matches": (matches_keys, {}),
             "actions": (
@@ -255,7 +255,8 @@ def parse_settings(text):
             struct = updater(struct)
 
         else:
-            # Well, bummer, can't update struct. Return as is and hope for the best.
+            # Well, bummer, can't update struct. Return as is and hope for the
+            # best.
             break
 
     return struct
@@ -322,10 +323,14 @@ def ini_to_struct(ini_text):
 
     KEYS, SECTIONS = 0, 1
 
-    struct = ({}, {})  # keys, subsections
+    struct_type = tuple[dict[str, Any], dict[str, Any]]
+    struct: struct_type = (
+        {},  # keys
+        {},  # subsections
+    )
     current_struct = struct
 
-    struct_stack = []
+    struct_stack: list[struct_type] = []
     skipsection = False
 
     for line in ini_text.split("\n"):
@@ -334,8 +339,8 @@ def ini_to_struct(ini_text):
         if not result:
             continue
 
-        key = result["key"]
-        section = result["section"]
+        key = cast(str, result["key"])
+        section = cast(str, result["section"])
 
         if key and not skipsection:  # This is a key/value line.
             current_struct[KEYS][key] = result["value"]
@@ -346,7 +351,8 @@ def ini_to_struct(ini_text):
             depth = cast(int, result["sectiondepth"])
 
             if depth > len(struct_stack) + 1:
-                # Okay, this subsection is too deep, i.e. it looks something like:
+                # Okay, this subsection is too deep, i.e. it looks something
+                # like:
                 #   [[ some section ]]
                 #   ...
                 #    [[[[ some subsection ]]]]
@@ -365,7 +371,7 @@ def ini_to_struct(ini_text):
 
 
 def struct_to_ini(struct, depth=0):
-    """Takes a programmatic structure and generates an INI representation for it.
+    """Takes a programmatic structure and generates its INI representation.
 
     The structure is a tuple of the form ( keys, sections ), where 'keys' and
     'sections' are both dictionaries. 'keys' associates setting names to values,

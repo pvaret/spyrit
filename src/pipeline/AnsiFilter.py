@@ -49,6 +49,9 @@ class AnsiFilter(BaseFilter):
         b"|".join([b"(" + code + b"$)" for code in (ESC, CSI + rb"[\d;]*")])
     )
 
+    highlighted: bool
+    current_colors: tuple[Optional[str], Optional[str]]
+
     def resetInternalState(self):
         # Note: this method is called by the base class's __init__, so we're
         # sure that self.highlighted and self.current_colors are defined.
@@ -130,7 +133,7 @@ class AnsiFilter(BaseFilter):
                 if prop == FORMAT_PROPERTIES.COLOR:
                     # TODO: refactor to add proper type safety.
                     current_colors = cast(
-                        Tuple[Optional[str], Optional[str]], value
+                        tuple[Optional[str], Optional[str]], value
                     )
                     (c_unhighlighted, c_highlighted) = current_colors
 
@@ -145,7 +148,7 @@ class AnsiFilter(BaseFilter):
                 if prop == FORMAT_PROPERTIES.BOLD:
                     # According to spec, this actually means highlighted colors.
 
-                    highlighted = value
+                    highlighted = cast(bool, value)
 
                     # TODO: Clean up the property system to be type safe.
                     current_colors = cast(Tuple[str, str], current_colors)
@@ -165,7 +168,7 @@ class AnsiFilter(BaseFilter):
                 # along.
 
                 if prop is not None:
-                    format[prop] = value
+                    format[prop] = cast(str, value)
 
             if format:
                 yield (ChunkType.ANSI, format)

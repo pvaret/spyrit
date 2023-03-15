@@ -90,7 +90,7 @@ else:
         try:
             ret = winreg.QueryValueEx(key, name)  # type: ignore
 
-        except WindowsError:  # type: ignore - actually valid on Windows.
+        except WindowsError:  # type: ignore  # actually valid on Windows.
             return ""
 
         else:
@@ -161,7 +161,7 @@ else:
                 else:
                     folders[ret[0]] = ret[1]
 
-            except WindowsError:  # type: ignore - actually valid on Windows.
+            except WindowsError:  # type: ignore  # actually valid on Windows.
                 break
 
             i += 1

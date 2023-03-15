@@ -19,7 +19,7 @@
 #
 
 
-from typing import Any
+from typing import Any, Callable, Optional
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtCore import QObject
@@ -36,7 +36,7 @@ def qlineedit_not_empty(qlineedit: QLineEdit):
 
 class BaseWidgetMapper(QObject):
     widget_class: Any = None
-    widget_value_setter = None
+    widget_value_setter: Optional[Callable[[Any, Any], None]] = None
     widget_signal_name: str = "--UNSET--"
     widget_value_class: Any = None
     settings_value_class: Any = None

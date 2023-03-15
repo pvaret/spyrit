@@ -17,7 +17,7 @@
 #
 
 
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtCore import QObject
@@ -90,7 +90,7 @@ class WorldsManager(QObject):
             for settings in self.ws.getAllWorldSettings()
         )
 
-        self.hostport_mapping = {}
+        self.hostport_mapping: dict[Tuple[str, int], Node] = {}
 
         for settings in self.ws.getAllWorldSettings():
             self.hostport_mapping.setdefault(

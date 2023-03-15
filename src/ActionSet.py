@@ -19,6 +19,8 @@
 #
 
 
+from typing import Any
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtGui import QKeySequence
@@ -33,7 +35,7 @@ class ActionSet:
 
         # TODO: pass settings directly.
         self.settings = QApplication.instance().core.settings  # type: ignore
-        self.closures = []
+        self.closures: list[Any] = []
 
         self.actions = {
             # Global actions

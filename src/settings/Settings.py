@@ -230,7 +230,7 @@ class Leaf(BaseNode):
         self.inherit: Optional[Leaf] = None
         self.notifier = CallbackRegistry()
         self.own_value: Any = NO_VALUE
-        self.container: "Node" = container
+        self.container: "Optional[Node]" = container
         self.fallback_value: Any = None
 
     def isLeaf(self) -> bool:
@@ -246,7 +246,7 @@ class Leaf(BaseNode):
 
         return self.container.getFullPath() + [self.key]
 
-    def setInherit(self, inherit: "Leaf"):
+    def setInherit(self, inherit: "Optional[Leaf]"):
         self.inherit = inherit
 
         if inherit is not None:
@@ -287,12 +287,12 @@ class Leaf(BaseNode):
 
 
 class Node(BaseNode, AttrProxyDictMixin):
-    def __init__(self, key, container):
+    def __init__(self, key: str, container: "Optional[Node]") -> None:
         self.key: str = key
         self.proto: Optional[NodeProto] = None  # type: ignore
         self.nodes: Dict[str, BaseNode] = {}
         self.inherit: Optional[Node] = None
-        self.container: Node = container
+        self.container: Optional[Node] = container
 
     def isLeaf(self) -> bool:
         return False
@@ -306,7 +306,7 @@ class Node(BaseNode, AttrProxyDictMixin):
 
         return self.container.getFullPath() + [self.key]
 
-    def setInherit(self, inherit: "Node"):
+    def setInherit(self, inherit: "Node") -> None:
         self.inherit = inherit
 
     def get(self, key: str):
@@ -329,15 +329,18 @@ class Node(BaseNode, AttrProxyDictMixin):
     def __iter__(self) -> Iterable[str]:
         return iter(self.nodes)
 
-    def __getitem__(self, key: str) -> BaseNode:
+    def __len__(self) -> int:
+        return len(self.nodes)
+
+    def __getitem__(self, key: Any) -> BaseNode:
         node = self.get(key)
         return node.value()  # type: ignore
 
-    def __setitem__(self, key: str, value: Any):
+    def __setitem__(self, key: str, value: Any) -> None:
         node = self.get(key)
         node.setValue(value)  # type: ignore
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         node = self.get(key)
         node.delValue()  # type: ignore
 
@@ -378,9 +381,9 @@ class Node(BaseNode, AttrProxyDictMixin):
     # https://github.com/python/mypy/issues/731.
     # Or use a Protocol instead! See
     # https://mypy.readthedocs.io/en/stable/protocols.html.
-    def dump(self):
+    def dump(self) -> tuple[dict[str, Any], dict[str, Any]]:
         stack = [(self, "")]
-        result = ({}, {})
+        result: tuple[dict[str, Any], dict[str, Any]] = ({}, {})
 
         KEYS = 0
         SECTIONS = 1
@@ -399,13 +402,13 @@ class Node(BaseNode, AttrProxyDictMixin):
                 result[KEYS][key] = serializer.serialize(node.value())
 
             else:
-                for node_key, node in sorted(node.nodes.items()):
+                for node_key, child_node in sorted(node.nodes.items()):
                     if node.isEmpty():
                         continue
 
                     subkey = ".".join((key, node_key)) if key else node_key
 
-                    if node.proto.metadata.get("is_section"):
+                    if child_node.proto.metadata.get("is_section"):
                         dump = node.dump()  # type: ignore
 
                         if len(dump[KEYS]) + len(dump[SECTIONS]) > 0:
@@ -583,4 +586,4 @@ class Settings(Node):
                     continue
 
                 if not node.isLeaf():
-                    stack.append((node, struct))
+                    stack.append((node, struct))  # type: ignore

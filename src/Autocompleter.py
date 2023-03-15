@@ -46,7 +46,7 @@ class CompletionList:
         # 20 screens back that you no longer care about.
 
         self.wordcount = {}
-        self.wordpipe = deque()
+        self.wordpipe: deque[str] = deque()
 
         for word in words:
             self.addWord(word)

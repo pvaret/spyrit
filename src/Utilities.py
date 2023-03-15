@@ -25,7 +25,7 @@
 """
 
 from types import TracebackType
-from typing import Sequence, cast
+from typing import Optional, Sequence, cast
 
 
 DEFAULT_ESCAPES = {
@@ -193,8 +193,8 @@ Spyrit will now close.</qt>
 def handle_exception(
     exc_type: type[BaseException],
     exc_value: BaseException,
-    exc_traceback: TracebackType,
-):
+    exc_traceback: Optional[TracebackType],
+) -> None:
     import sys
     import os.path
     import traceback

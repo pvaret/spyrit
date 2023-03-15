@@ -23,7 +23,7 @@
 _pygame_is_available = False
 
 try:
-    import pygame  # type: ignore - it's okay if this is missing.
+    import pygame  # type: ignore  # it's okay if this is missing.
 
     _pygame_is_available = True
 

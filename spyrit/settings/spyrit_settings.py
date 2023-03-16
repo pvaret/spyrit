@@ -15,25 +15,24 @@
 Declaration of the Spyrit settings.
 """
 
+
 from sunset import Key, Bundle, Settings
 
 from spyrit.settings import key_shortcut
 
 
-def default_key(combination: str) -> Key[key_shortcut.KeyShortcut]:
-
+def _new_shortcut(combination: str) -> Key[key_shortcut.KeyShortcut]:
     return Key(default=key_shortcut.from_default(combination))
 
 
 class SpyritSettings(Settings):
     class KeyShortcuts(Bundle):
-
-        new_tab = default_key("Ctrl+T")
-        new_window = default_key("Ctrl+Shift+N")
-        close_current_tab = default_key("Ctrl+W")
-        switch_to_previous_tab = default_key("Ctrl+PgUp")
-        switch_to_next_tab = default_key("Ctrl+PgDown")
-        move_current_tab_left = default_key("Ctrl+Shift+PgUp")
-        move_current_tab_right = default_key("Ctrl+Shift+PgDown")
+        new_tab = _new_shortcut("Ctrl+T")
+        new_window = _new_shortcut("Ctrl+Shift+N")
+        close_current_tab = _new_shortcut("Ctrl+W")
+        switch_to_previous_tab = _new_shortcut("Ctrl+PgUp")
+        switch_to_next_tab = _new_shortcut("Ctrl+PgDown")
+        move_current_tab_left = _new_shortcut("Ctrl+Shift+PgUp")
+        move_current_tab_right = _new_shortcut("Ctrl+Shift+PgDown")
 
     shortcuts = KeyShortcuts()

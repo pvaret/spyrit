@@ -26,6 +26,10 @@ from spyrit.settings import key_shortcut
 
 
 class ShortcutWithKeySetting(QtCore.QObject):
+
+    _shortcut: QtGui.QShortcut
+    _key: Key[key_shortcut.KeyShortcut]
+
     def __init__(
         self,
         parent: QtCore.QObject,

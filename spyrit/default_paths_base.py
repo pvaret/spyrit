@@ -23,9 +23,12 @@ from typing import Optional
 
 
 class DefaultPathsBase(ABC):
+
+    _config_folder_path: Optional[pathlib.Path]
+
     def __init__(self) -> None:
 
-        self._config_folder_path: Optional[pathlib.Path] = None
+        self._config_folder_path = None
 
         super().__init__()
 

@@ -214,7 +214,7 @@ class SocketPipeline(QObject):
 
         encoding = self.net_settings._encoding
         databytes = self.pipeline.formatForSending(
-            data.encode(encoding, errors="replace")
+            data.encode(encoding, errors="ignore")
         )
 
         self.socket.write(databytes)

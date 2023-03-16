@@ -23,7 +23,8 @@ REQUIRED_QT_VERSION: tuple[int, int] = (6, 2)
 
 # Name
 
-APPLICATION_NAME: str = "Spyrit"
+APPLICATION_NAME: str = "SpyritNG"
+SPYRIT_VERSION: str = "0.0-dev"
 
 # Settings
 

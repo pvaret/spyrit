@@ -20,6 +20,7 @@ import argparse
 from PySide6 import QtGui, QtWidgets
 from sunset import AutoSaver
 
+from spyrit import dependency_checker
 from spyrit import platform
 from spyrit import resources
 from spyrit.settings import spyrit_settings
@@ -27,7 +28,6 @@ from spyrit.ui import spyrit_main_ui, spyrit_main_window, tabbed_ui_factory
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c",
@@ -42,6 +42,12 @@ def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
         default=False,
         action="store_true",
         help="Enable debugging features",
+    )
+    # Add this pre-boostrap argument too so that it appears in the help text.
+    parser.add_argument(
+        dependency_checker.CHECK_DEPENDENCIES_ARG,
+        action="store_true",
+        help="Check for the requisite dependencies and quit",
     )
 
     return parser
@@ -88,7 +94,6 @@ def bootstrap(args: list[str]) -> int:
     settings = spyrit_settings.SpyritSettings()
 
     with AutoSaver(settings, default_paths.getConfigFilePath()):
-
         # Build the UI.
 
         spyrit_main_window_factory = spyrit_main_window.SpyritMainWindowFactory(

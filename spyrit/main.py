@@ -19,11 +19,14 @@ Check dependencies, bootstrap the program.
 
 import sys
 
+from typing import NoReturn
+
 from spyrit import dependency_checker
 
 
-def show_deps_and_exit(checker: dependency_checker.DependencyChecker) -> None:
-
+def show_deps_and_exit(
+    checker: dependency_checker.DependencyChecker,
+) -> NoReturn:
     for msg in checker.messages():
         print(msg)
 
@@ -31,13 +34,12 @@ def show_deps_and_exit(checker: dependency_checker.DependencyChecker) -> None:
 
 
 def main(args: list[str]) -> int:
-
     checker = dependency_checker.DependencyChecker()
 
     if not checker.dependenciesMet():
         show_deps_and_exit(checker)
 
-    if "--check-dependencies-only" in args:
+    if dependency_checker.CHECK_DEPENDENCIES_ARG in args:
         show_deps_and_exit(checker)
 
     # Note that we don't pull in any dependencies until now.
@@ -47,6 +49,5 @@ def main(args: list[str]) -> int:
     return bootstrap(args)
 
 
-def run() -> None:
-
+def run() -> NoReturn:
     sys.exit(main(sys.argv))

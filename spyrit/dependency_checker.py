@@ -32,20 +32,22 @@ except (ModuleNotFoundError, ImportError):
 from . import constants
 
 
-class DependencyChecker:
+# A command-line argument to be used when the program's dependencies should be
+# checked but the program itself should not be run.
+CHECK_DEPENDENCIES_ARG = "--check-dependencies-only"
 
+
+class DependencyChecker:
     REQUIRED_PYTHON_VERSION = constants.REQUIRED_PYTHON_VERSION
     REQUIRED_QT_VERSION = constants.REQUIRED_QT_VERSION
 
     def __init__(self):
-
         self.dependencies_met: bool = True
         self.python_check_msg: str = ""
         self.pyside_check_msg: str = ""
         self.qt_check_msg: str = ""
 
     def dependenciesMet(self) -> bool:
-
         self.checkPythonVersion()
         self.checkPySide6Installed()
         self.checkQtVersion()
@@ -53,7 +55,6 @@ class DependencyChecker:
         return self.dependencies_met
 
     def messages(self) -> Iterator[str]:
-
         return (
             msg
             for msg in (
@@ -65,11 +66,9 @@ class DependencyChecker:
         )
 
     def checkPythonVersion(self) -> None:
-
         v = sys.version_info[0:2]
 
         if v >= self.REQUIRED_PYTHON_VERSION:
-
             self.python_check_msg = "🗸 Found Python v%s.%s." % v
 
         else:
@@ -79,9 +78,7 @@ class DependencyChecker:
             )
 
     def checkPySide6Installed(self) -> None:
-
         if PySide6 is None:
-
             self.dependencies_met = False
             self.pyside_check_msg = (
                 "❌ PySide6 required!"
@@ -93,7 +90,6 @@ class DependencyChecker:
 
     @staticmethod
     def qtVersion() -> tuple[bool, tuple[int, int]]:
-
         if QtCore is None:
             return False, (0, 0)
 
@@ -105,7 +101,6 @@ class DependencyChecker:
         return True, version
 
     def checkQtVersion(self) -> None:
-
         found, version = self.qtVersion()
 
         if found and version >= self.REQUIRED_QT_VERSION:

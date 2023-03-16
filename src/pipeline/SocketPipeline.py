@@ -19,6 +19,7 @@
 #
 
 from PyQt6.QtCore import QObject
+from PyQt6.QtCore import QTimer
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtNetwork import QSslSocket
@@ -66,6 +67,8 @@ class SocketPipeline(QObject):
         self.buffer: list[bytes] = []
 
         self.flush_timer = SingleShotTimer(self.flushBuffer)
+        self.keepalive_timer = QTimer(self)
+        self.keepalive_timer.timeout.connect(self.keepaliveTimeout)
 
         self.net_settings.onChange("encoding", self.setStreamEncoding)
 
@@ -136,11 +139,13 @@ class SocketPipeline(QObject):
 
         elif state == QAbstractSocket.SocketState.ConnectedState:
             self.pipeline.feedChunk((ChunkType.NETWORK, NetworkState.CONNECTED))
+            self.startKeepaliveTimer()
 
         elif state == QAbstractSocket.SocketState.UnconnectedState:
             self.pipeline.feedChunk(
                 (ChunkType.NETWORK, NetworkState.DISCONNECTED)
             )
+            self.keepalive_timer.stop()
 
     @pyqtSlot()
     def reportEncrypted(self):
@@ -195,6 +200,16 @@ class SocketPipeline(QObject):
         self.buffer.append(data)
 
         self.flush_timer.start()
+        self.startKeepaliveTimer()
+
+    @pyqtSlot()
+    def keepaliveTimeout(self) -> None:
+        if packet := self.net_settings._keepalive_packet:
+            self.send(packet)
+
+    def startKeepaliveTimer(self) -> None:
+        if (keepalive := self.net_settings._keepalive_seconds) > 0:
+            self.keepalive_timer.start(keepalive * 1000)
 
     def flushBuffer(self):
         data = b"".join(self.buffer)
@@ -219,6 +234,7 @@ class SocketPipeline(QObject):
 
         self.socket.write(databytes)
         self.socket.flush()
+        self.startKeepaliveTimer()
 
     def addSink(self, sink, types: int = ChunkType.all()) -> None:
         self.pipeline.addSink(sink, types)

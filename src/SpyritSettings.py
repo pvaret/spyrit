@@ -127,6 +127,8 @@ WORLDS_SCHEMA = {
         ("net.login_script", {"serializer": Str(), "default": None}),
         ("net.port", {"serializer": Int(), "default": 4201}),
         ("net.ssl", {"serializer": Bool(), "default": False}),
+        ("net.keepalive_seconds", {"serializer": Int(), "default": 0}),
+        ("net.keepalive_packet", {"serializer": Str(), "default": "\x00"}),
     ),
     "inherit": "..",
 }

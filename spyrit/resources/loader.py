@@ -15,38 +15,48 @@
 Provides utilities to make Spyrit resources available to Qt.
 """
 
+import sys
 import logging
 import pathlib
 
 
+logger = logging.getLogger(__name__)
+
 _resources_loaded: bool = False
 
-# flake8: noqa: F401; ignore possible import error below.
+
 def load() -> bool:
     """
     Attempt to load the compiled Qt resources.
 
     Returns:
-        True if the attempt succeeded, else false.
+        True if the attempt succeeded, else False.
     """
 
     global _resources_loaded
 
     if not _resources_loaded:
+        this_file = pathlib.Path(__file__)
+        this_dir: str = str(this_file.parent.absolute())
+        sys.path.insert(0, this_dir)
 
         try:
-            from . import ___compiled  # type: ignore
+            import ___compiled  # type: ignore  # for when it's missing.
+
+            if ___compiled:
+                del ___compiled  # So it's not considered unused.
 
             _resources_loaded = True
 
         except ImportError:
-            this_dir: str = str(pathlib.Path(__file__).parent.absolute())
-            logging.error(
+            logger.error(
                 f"Resources not compiled. In order to compile them, run:\n"
                 f" pyside6-rcc --generator python"
                 f" --compress 9 --threshold 0.95"
                 f" --output {this_dir}/___compiled.py"
                 f" {this_dir}/resources.qrc"
             )
+        finally:
+            sys.path.remove(this_dir)
 
     return _resources_loaded

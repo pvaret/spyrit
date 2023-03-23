@@ -16,9 +16,9 @@ Function to initialize the program and launch it.
 """
 
 import argparse
+import logging
 
 from PySide6 import QtGui, QtWidgets
-from sunset import AutoSaver
 
 from spyrit import dependency_checker
 from spyrit import platform
@@ -43,7 +43,9 @@ def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
         action="store_true",
         help="Enable debugging features",
     )
+
     # Add this pre-boostrap argument too so that it appears in the help text.
+
     parser.add_argument(
         dependency_checker.CHECK_DEPENDENCIES_ARG,
         action="store_true",
@@ -81,19 +83,29 @@ def bootstrap(args: list[str]) -> int:
 
     app = QtWidgets.QApplication(program + remaining_args)
 
+    # Set up logging based on args.
+
+    logging.basicConfig(
+        level=logging.DEBUG if flags.debug else logging.WARNING,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+    logging.debug("Debug logging on")
+
     # Load resources, else bail.
 
     if not resources.load():
+        logging.debug("Resources failed to load")
         return -1
 
     if QtGui.QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
+        logging.debug("Default game font not found in resources")
         return -1
 
     # Instantiate the settings and autoload/save them.
 
     settings = spyrit_settings.SpyritSettings()
 
-    with AutoSaver(settings, default_paths.getConfigFilePath()):
+    with settings.autosave(default_paths.getConfigFilePath()):
         # Build the UI.
 
         spyrit_main_window_factory = spyrit_main_window.SpyritMainWindowFactory(

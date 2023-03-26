@@ -41,4 +41,4 @@ SETTINGS_SAVE_DELAY_MS: int = 5_000  # milliseconds
 DEFAULT_WINDOW_WIDTH: int = 1000
 DEFAULT_WINDOW_HEIGHT: int = 800
 
-ANIMATION_DURATION_MS: int = 700  # milliseconds
+ANIMATION_DURATION_MS: int = 500  # milliseconds

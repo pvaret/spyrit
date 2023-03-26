@@ -20,7 +20,6 @@ from typing import Optional
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from spyrit import constants
-from spyrit.safe_signal import safe_signal
 
 
 class SlidingPaneContainer(QtWidgets.QScrollArea):
@@ -75,13 +74,11 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         self._x_scroll_enforced_value = 0
         self._y_scroll_enforced_value = 0
 
-        safe_signal(self.horizontalScrollBar(), "valueChanged").connect(
+        self.horizontalScrollBar().valueChanged.connect(
             self._enforceXScrollValue
         )
 
-        safe_signal(self.verticalScrollBar(), "valueChanged").connect(
-            self._enforceYScrollValue
-        )
+        self.verticalScrollBar().valueChanged.connect(self._enforceYScrollValue)
 
         # Pane animation setup goes here.
 
@@ -89,10 +86,10 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         self._pane_switch_animation.setEasingCurve(self._EASING_CURVE)
         self._pane_switch_animation.setDuration(self._ANIMATION_DURATION)
 
-        safe_signal(self._pane_switch_animation, "valueChanged").connect(
+        self._pane_switch_animation.valueChanged.connect(
             self._updateXScrollValueFromAnimation
         )
-        safe_signal(self._pane_switch_animation, "valueChanged").connect(
+        self._pane_switch_animation.valueChanged.connect(
             self._onMotionMaybeComplete
         )
 

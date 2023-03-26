@@ -20,7 +20,6 @@ from typing import Optional, cast
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from spyrit import constants
-from spyrit.safe_signal import safe_signal
 from spyrit.ui import tabbed_ui_element
 
 
@@ -81,16 +80,12 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         self._property_refresh_timer.setSingleShot(True)
         self._property_refresh_timer.setInterval(0)
 
-        safe_signal(self._property_refresh_timer, "timeout").connect(
+        self._property_refresh_timer.timeout.connect(
             self._applyCurrentTabProperties
         )
 
-        safe_signal(self._tab_widget, "currentChanged").connect(
-            self._onCurrentTabChanged
-        )
-        safe_signal(self._tab_widget, "tabCloseRequested").connect(
-            self._onTabCloseRequested
-        )
+        self._tab_widget.currentChanged.connect(self._onCurrentTabChanged)
+        self._tab_widget.tabCloseRequested.connect(self._onTabCloseRequested)
 
         # Set up the button that requests creation of new tabs. The default
         # layout is not great, so we have to create a container for the button
@@ -112,7 +107,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
             corner_widget, corner=QtCore.Qt.Corner.TopLeftCorner
         )
 
-        safe_signal(new_tab_button, "clicked").connect(self.newTabRequested)
+        new_tab_button.clicked.connect(self.newTabRequested)
 
     def pin(self, widget: tabbed_ui_element.TabbedUiElement) -> None:
         """

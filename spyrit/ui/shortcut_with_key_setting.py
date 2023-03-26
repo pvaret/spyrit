@@ -21,7 +21,6 @@ from PySide6 import QtCore, QtGui
 
 from sunset import Key
 
-from spyrit.safe_signal import safe_signal
 from spyrit.settings import key_shortcut
 
 
@@ -42,7 +41,7 @@ class ShortcutWithKeySetting(QtCore.QObject):
         self._key.onValueChangeCall(self.updateShortcut)
         self.updateShortcut(self._key.get())
 
-        safe_signal(self._shortcut, "activated").connect(slot)
+        self._shortcut.activated.connect(slot)
 
     def updateShortcut(self, key: key_shortcut.KeyShortcut) -> None:
         self._shortcut.setKey(key)

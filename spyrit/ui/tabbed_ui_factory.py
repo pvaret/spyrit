@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -46,7 +46,6 @@ class TabbedUiFactory(QtCore.QObject):
         ] = tabbed_ui_container.TabbedUiContainer,
         parent: Optional[QtCore.QObject] = None,
     ) -> None:
-
         super().__init__(parent)
 
         # Remember the factories that knows how to create new UI elements and
@@ -145,7 +144,6 @@ class TabbedUiFactory(QtCore.QObject):
         window = self.sender()
 
         if isinstance(window, tabbed_ui_container.TabbedUiContainer):
-
             # If a window is being closed, drop our reference to it.
 
             self._windows.discard(window)
@@ -179,7 +177,6 @@ class TabbedUiFactory(QtCore.QObject):
         widget = self.sender()
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
-
             widget.wantToBeUnpinned.emit()
 
             new_window = self._makeNewWindow()

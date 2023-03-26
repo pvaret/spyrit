@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -49,7 +49,6 @@ class TabbedUiElement(QtWidgets.QWidget):
     _window_title: str
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
-
         super().__init__(parent)
 
         # Set up the layour of the UI element. Basically a horizontal layout,
@@ -112,7 +111,6 @@ class TabbedUiElement(QtWidgets.QWidget):
         """
 
         if self.canCloseNow():
-
             # Unpinning the UI element without reattaching it causes it to
             # close.
 

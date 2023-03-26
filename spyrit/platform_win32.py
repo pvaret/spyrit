@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -22,18 +22,14 @@ from spyrit import constants, default_paths_base
 
 
 class DefaultPaths(default_paths_base.DefaultPathsBase):
-
     CONFIG_FILE_NAME = constants.CONFIG_FILE_NAME_WINDOWS
     CONFIG_FOLDER_NAME = constants.CONFIG_FOLDER_NAME_WINDOWS
 
     def getConfigFileName(self) -> str:
-
         return self.CONFIG_FILE_NAME
 
     def getDefaultConfigFolder(self) -> pathlib.Path:
-
         return self.getAppDataFolder() / self.CONFIG_FOLDER_NAME
 
     def getAppDataFolder(self) -> pathlib.Path:
-
         return pathlib.Path(os.environ["APPDATA"])

@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -37,7 +37,6 @@ class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
         main_settings: spyrit_settings.SpyritSettings,
         parent: Optional[QtWidgets.QWidget] = None,
     ) -> None:
-
         super().__init__(parent)
 
         self._settings = main_settings
@@ -86,9 +85,7 @@ class SpyritMainWindowFactory:
     _settings: spyrit_settings.SpyritSettings
 
     def __init__(self, settings: spyrit_settings.SpyritSettings) -> None:
-
         self._settings = settings
 
     def __call__(self) -> SpyritMainWindow:
-
         return SpyritMainWindow(self._settings)

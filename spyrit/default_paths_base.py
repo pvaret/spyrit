@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -23,11 +23,9 @@ from typing import Optional
 
 
 class DefaultPathsBase(ABC):
-
     _config_folder_path: Optional[pathlib.Path]
 
     def __init__(self) -> None:
-
         self._config_folder_path = None
 
         super().__init__()
@@ -41,15 +39,12 @@ class DefaultPathsBase(ABC):
         ...
 
     def getUserHomeFolder(self) -> pathlib.Path:
-
         return pathlib.Path.home()
 
     def setConfigFolderPath(self, path: str) -> None:
-
         self._config_folder_path = pathlib.Path(path)
 
     def getConfigFolderPath(self) -> pathlib.Path:
-
         if self._config_folder_path:
             config_folder_path = self._config_folder_path
 
@@ -59,5 +54,4 @@ class DefaultPathsBase(ABC):
         return config_folder_path.absolute().resolve()
 
     def getConfigFilePath(self) -> pathlib.Path:
-
         return self.getConfigFolderPath() / self.getConfigFileName()

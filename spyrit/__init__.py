@@ -5,4 +5,4 @@ from . import constants
 __project__ = constants.APPLICATION_NAME
 __version__ = constants.SPYRIT_VERSION
 __author__ = "P. Varet"
-__copyright__ = "2022, P. Varet"
+__copyright__ = "2023, P. Varet"

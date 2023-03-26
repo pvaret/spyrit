@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -59,7 +59,6 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         self,
         parent: Optional[QtWidgets.QWidget] = None,
     ) -> None:
-
         super().__init__(parent)
 
         self.resize(
@@ -206,7 +205,6 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         if isinstance(
             widget_left, tabbed_ui_element.TabbedUiElement
         ) and isinstance(widget_right, tabbed_ui_element.TabbedUiElement):
-
             self._tab_widget.removeTab(index)
             self._tab_widget.removeTab(index)
             self._tab_widget.insertTab(
@@ -235,7 +233,6 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         if isinstance(
             widget_left, tabbed_ui_element.TabbedUiElement
         ) and isinstance(widget_right, tabbed_ui_element.TabbedUiElement):
-
             self._tab_widget.removeTab(index - 1)
             self._tab_widget.removeTab(index - 1)
             self._tab_widget.insertTab(
@@ -261,7 +258,6 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         return super().event(event)
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
-
         # WORKAROUND: There is a race condition wherein Qt fails to set the
         # window title before the window is shown. So we explicitly re-apply the
         # current tab's properties on the next iteration of the main loop after
@@ -305,7 +301,6 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         widget = self.sender()
 
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
-
             index = self._tab_widget.indexOf(widget)
             if index != -1:
                 self._tab_widget.setTabText(index, title)

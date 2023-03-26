@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -26,17 +26,13 @@ from spyrit import (
 
 
 def get_default_paths() -> default_paths_base.DefaultPathsBase:
-
     if sys.platform == "linux":
-
         return platform_linux.DefaultPaths()
 
     if sys.platform == "win32":
-
         return platform_win32.DefaultPaths()
 
     if sys.platform == "darwin":
-
         return platform_darwin.DefaultPaths()
 
     raise NotImplementedError("This program doesn't support your OS. Sorry!")

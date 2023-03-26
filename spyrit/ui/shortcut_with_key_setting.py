@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2022 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -26,7 +26,6 @@ from spyrit.settings import key_shortcut
 
 
 class ShortcutWithKeySetting(QtCore.QObject):
-
     _shortcut: QtGui.QShortcut
     _key: Key[key_shortcut.KeyShortcut]
 
@@ -36,7 +35,6 @@ class ShortcutWithKeySetting(QtCore.QObject):
         key: Key[key_shortcut.KeyShortcut],
         slot: QtCore.Slot | QtCore.SignalInstance,
     ) -> None:
-
         super().__init__(parent=parent)
 
         self._shortcut = QtGui.QShortcut(parent)
@@ -47,5 +45,4 @@ class ShortcutWithKeySetting(QtCore.QObject):
         safe_signal(self._shortcut, "activated").connect(slot)
 
     def updateShortcut(self, key: key_shortcut.KeyShortcut) -> None:
-
         self._shortcut.setKey(key)

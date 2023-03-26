@@ -21,11 +21,12 @@ import logging
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 
-from spyrit import dependency_checker
-from spyrit import platform
-from spyrit import resources
-from spyrit.settings import spyrit_settings
-from spyrit.ui import spyrit_main_ui, spyrit_main_window, tabbed_ui_factory
+from spyrit import platform, resources
+from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
+from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.ui.spyrit_main_ui import SpyritMainUiFactory
+from spyrit.ui.spyrit_main_window import SpyritMainWindowFactory
+from spyrit.ui.tabbed_ui_factory import TabbedUiFactory
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
@@ -48,7 +49,7 @@ def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
     # Add this pre-boostrap argument too so that it appears in the help text.
 
     parser.add_argument(
-        dependency_checker.CHECK_DEPENDENCIES_ARG,
+        CHECK_DEPENDENCIES_ARG,
         action="store_true",
         help="Check for the requisite dependencies and quit",
     )
@@ -104,17 +105,15 @@ def bootstrap(args: list[str]) -> int:
 
     # Instantiate the settings and autoload/save them.
 
-    settings = spyrit_settings.SpyritSettings()
+    settings = SpyritSettings()
 
     with settings.autosave(default_paths.getConfigFilePath()):
         # Build the UI.
 
-        spyrit_main_window_factory = spyrit_main_window.SpyritMainWindowFactory(
-            settings
-        )
-        spyrit_main_ui_factory = spyrit_main_ui.SpyritMainUiFactory(settings)
+        spyrit_main_window_factory = SpyritMainWindowFactory(settings)
+        spyrit_main_ui_factory = SpyritMainUiFactory(settings)
 
-        ui_factory = tabbed_ui_factory.TabbedUiFactory(
+        ui_factory = TabbedUiFactory(
             tabbed_ui_element_factory=spyrit_main_ui_factory,
             tabbed_ui_container_factory=spyrit_main_window_factory,
         )

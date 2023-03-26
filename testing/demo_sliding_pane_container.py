@@ -19,7 +19,7 @@ this_dir = this_file.parent.absolute()
 
 sys.path.insert(0, str(this_dir.parent))
 
-from spyrit.ui import sliding_pane_container  # noqa: E402
+from spyrit.ui.sliding_pane_container import SlidingPaneContainer  # noqa: E402
 
 
 class Pane(QWidget):
@@ -59,7 +59,7 @@ class Pane(QWidget):
         self.layout().addWidget(self._pop)
 
 
-class Container(sliding_pane_container.SlidingPaneContainer):
+class Container(SlidingPaneContainer):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 

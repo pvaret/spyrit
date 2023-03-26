@@ -28,7 +28,7 @@ from PySide6.QtWidgets import (
 )
 
 from spyrit import constants
-from spyrit.ui import tabbed_ui_element
+from spyrit.ui.tabbed_ui_element import TabbedUiElement
 
 
 class TabbedUiContainer(QMainWindow):
@@ -117,7 +117,7 @@ class TabbedUiContainer(QMainWindow):
 
         new_tab_button.clicked.connect(self.newTabRequested)
 
-    def pin(self, widget: tabbed_ui_element.TabbedUiElement) -> None:
+    def pin(self, widget: TabbedUiElement) -> None:
         """
         Pin the given UI to this window and give it focus.
         """
@@ -131,7 +131,7 @@ class TabbedUiContainer(QMainWindow):
         self._tab_widget.setCurrentWidget(widget)
         self._applyTabProperties(widget)
 
-    def unpin(self, widget: tabbed_ui_element.TabbedUiElement) -> None:
+    def unpin(self, widget: TabbedUiElement) -> None:
         """
         Unpin the given UI element from this window. It can then be dropped or
         pinned to a different window.
@@ -159,7 +159,7 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self._tab_widget.currentWidget()
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             widget.maybeClose()
 
     @Slot()
@@ -205,9 +205,9 @@ class TabbedUiContainer(QMainWindow):
         widget_left = self._tab_widget.widget(index)
         widget_right = self._tab_widget.widget(index + 1)
 
-        if isinstance(
-            widget_left, tabbed_ui_element.TabbedUiElement
-        ) and isinstance(widget_right, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget_left, TabbedUiElement) and isinstance(
+            widget_right, TabbedUiElement
+        ):
             self._tab_widget.removeTab(index)
             self._tab_widget.removeTab(index)
             self._tab_widget.insertTab(
@@ -233,9 +233,9 @@ class TabbedUiContainer(QMainWindow):
         widget_left = self._tab_widget.widget(index - 1)
         widget_right = self._tab_widget.widget(index)
 
-        if isinstance(
-            widget_left, tabbed_ui_element.TabbedUiElement
-        ) and isinstance(widget_right, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget_left, TabbedUiElement) and isinstance(
+            widget_right, TabbedUiElement
+        ):
             self._tab_widget.removeTab(index - 1)
             self._tab_widget.removeTab(index - 1)
             self._tab_widget.insertTab(
@@ -270,9 +270,7 @@ class TabbedUiContainer(QMainWindow):
 
         return super().showEvent(event)
 
-    def _applyTabProperties(
-        self, widget: tabbed_ui_element.TabbedUiElement
-    ) -> None:
+    def _applyTabProperties(self, widget: TabbedUiElement) -> None:
         """
         Apply the given tab's properties to the containing window.
         """
@@ -293,7 +291,7 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self._tab_widget.currentWidget()
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             self._applyTabProperties(widget)
 
     def _onTabTitleChanged(self, title: str) -> None:
@@ -303,7 +301,7 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self.sender()
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             index = self._tab_widget.indexOf(widget)
             if index != -1:
                 self._tab_widget.setTabText(index, title)
@@ -315,7 +313,7 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self.sender()
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             if self._tab_widget.currentWidget() is widget:
                 self.setWindowTitle(title)
 
@@ -327,7 +325,7 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self._tab_widget.currentWidget()
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             self._applyTabProperties(widget)
 
     def _onTabCloseRequested(self, index: int) -> None:
@@ -339,7 +337,7 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self._tab_widget.widget(index)
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             widget.maybeClose()
 
     def _onUiRequestedClosing(self) -> None:
@@ -350,5 +348,5 @@ class TabbedUiContainer(QMainWindow):
 
         widget = self.sender()
 
-        if isinstance(widget, tabbed_ui_element.TabbedUiElement):
+        if isinstance(widget, TabbedUiElement):
             self.unpin(widget)

@@ -17,10 +17,11 @@ Implement platform-specific parameters for Linux.
 
 import pathlib
 
-from spyrit import constants, default_paths_base
+from spyrit import constants
+from spyrit.default_paths_base import DefaultPathsBase
 
 
-class DefaultPaths(default_paths_base.DefaultPathsBase):
+class DefaultPaths(DefaultPathsBase):
     CONFIG_FILE_NAME = constants.CONFIG_FILE_NAME_LINUX
     CONFIG_FOLDER_NAME = constants.CONFIG_FOLDER_NAME_LINUX
 

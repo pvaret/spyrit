@@ -18,14 +18,14 @@ Looks up and return platform-specific parameters.
 import sys
 
 from spyrit import (
-    default_paths_base,
     platform_darwin,
     platform_linux,
     platform_win32,
 )
+from spyrit.default_paths_base import DefaultPathsBase
 
 
-def get_default_paths() -> default_paths_base.DefaultPathsBase:
+def get_default_paths() -> DefaultPathsBase:
     if sys.platform == "linux":
         return platform_linux.DefaultPaths()
 

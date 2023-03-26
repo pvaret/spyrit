@@ -20,16 +20,17 @@ from typing import Optional
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 from spyrit import constants
-from spyrit.settings import spyrit_settings
-from spyrit.ui import sliding_pane_container, tabbed_ui_element
+from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.ui.sliding_pane_container import SlidingPaneContainer
+from spyrit.ui.tabbed_ui_element import TabbedUiElement
 
 
-class SpyritMainUi(tabbed_ui_element.TabbedUiElement):
+class SpyritMainUi(TabbedUiElement):
     def __init__(
         self,
-        settings: spyrit_settings.SpyritSettings,
+        settings: SpyritSettings,
         parent: Optional[QWidget] = None,
-    ):
+    ) -> None:
         super().__init__(parent)
 
         # Retain a reference to the main application settings.
@@ -39,7 +40,7 @@ class SpyritMainUi(tabbed_ui_element.TabbedUiElement):
         # Set up the main widget for this UI.
 
         self.setLayout(QHBoxLayout())
-        self._ui = sliding_pane_container.SlidingPaneContainer(self)
+        self._ui = SlidingPaneContainer(self)
         self.layout().addWidget(self._ui)
 
         # Set up the title texts for this UI.
@@ -49,7 +50,7 @@ class SpyritMainUi(tabbed_ui_element.TabbedUiElement):
 
 
 class SpyritMainUiFactory:
-    def __init__(self, settings: spyrit_settings.SpyritSettings) -> None:
+    def __init__(self, settings: SpyritSettings) -> None:
         self._settings = settings
 
     def __call__(self) -> SpyritMainUi:

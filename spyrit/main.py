@@ -21,11 +21,11 @@ import sys
 
 from typing import NoReturn
 
-from spyrit import dependency_checker
+from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG, DependencyChecker
 
 
 def show_deps_and_exit(
-    checker: dependency_checker.DependencyChecker,
+    checker: DependencyChecker,
 ) -> NoReturn:
     for msg in checker.messages():
         print(msg)
@@ -34,12 +34,12 @@ def show_deps_and_exit(
 
 
 def main(args: list[str]) -> int:
-    checker = dependency_checker.DependencyChecker()
+    checker = DependencyChecker()
 
     if not checker.dependenciesMet():
         show_deps_and_exit(checker)
 
-    if dependency_checker.CHECK_DEPENDENCIES_ARG in args:
+    if CHECK_DEPENDENCIES_ARG in args:
         show_deps_and_exit(checker)
 
     # Note that we don't pull in any dependencies until now.

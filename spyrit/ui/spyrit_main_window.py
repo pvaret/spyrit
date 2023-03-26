@@ -20,21 +20,22 @@ from typing import Optional
 
 from PySide6.QtWidgets import QWidget
 
-from spyrit.settings import spyrit_settings
-from spyrit.ui import tabbed_ui_container, shortcut_with_key_setting
+from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.ui.tabbed_ui_container import TabbedUiContainer
+from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
-class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
+class SpyritMainWindow(TabbedUiContainer):
     """
     An implementation of the top-level tabbed UI container that's aware of
     things like Spyrit settings.
     """
 
-    _settings: spyrit_settings.SpyritSettings
+    _settings: SpyritSettings
 
     def __init__(
         self,
-        main_settings: spyrit_settings.SpyritSettings,
+        main_settings: SpyritSettings,
         parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
@@ -43,33 +44,33 @@ class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
 
         # Set up keyboard shortcuts.
 
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self, self._settings.shortcuts.new_tab, self.newTabRequested
         )
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self, self._settings.shortcuts.new_window, self.newWindowRequested
         )
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self,
             self._settings.shortcuts.close_current_tab,
             self.maybeCloseCurrentTab,
         )
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self,
             self._settings.shortcuts.switch_to_next_tab,
             self.switchToNextTab,
         )
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self,
             self._settings.shortcuts.switch_to_previous_tab,
             self.switchToPreviousTab,
         )
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self,
             self._settings.shortcuts.move_current_tab_right,
             self.moveCurrentTabRight,
         )
-        shortcut_with_key_setting.ShortcutWithKeySetting(
+        ShortcutWithKeySetting(
             self,
             self._settings.shortcuts.move_current_tab_left,
             self.moveCurrentTabLeft,
@@ -82,9 +83,9 @@ class SpyritMainWindowFactory:
     generic tabbed UI factory.
     """
 
-    _settings: spyrit_settings.SpyritSettings
+    _settings: SpyritSettings
 
-    def __init__(self, settings: spyrit_settings.SpyritSettings) -> None:
+    def __init__(self, settings: SpyritSettings) -> None:
         self._settings = settings
 
     def __call__(self) -> SpyritMainWindow:

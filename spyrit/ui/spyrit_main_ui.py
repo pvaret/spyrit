@@ -17,7 +17,7 @@ Provide the main UI of Spyrit, to be embedded in a tabbed container.
 
 from typing import Optional
 
-from PySide6 import QtWidgets
+from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 from spyrit import constants
 from spyrit.settings import spyrit_settings
@@ -28,7 +28,7 @@ class SpyritMainUi(tabbed_ui_element.TabbedUiElement):
     def __init__(
         self,
         settings: spyrit_settings.SpyritSettings,
-        parent: Optional[QtWidgets.QWidget] = None,
+        parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
 
@@ -38,7 +38,7 @@ class SpyritMainUi(tabbed_ui_element.TabbedUiElement):
 
         # Set up the main widget for this UI.
 
-        self.setLayout(QtWidgets.QHBoxLayout())
+        self.setLayout(QHBoxLayout())
         self._ui = sliding_pane_container.SlidingPaneContainer(self)
         self.layout().addWidget(self._ui)
 

@@ -16,27 +16,27 @@ A class that binds a QShortcut to a SunsetSettings key containing a
 QKeySequence.
 """
 
-
-from PySide6 import QtCore, QtGui
+from PySide6.QtCore import QObject, SignalInstance, Slot
+from PySide6.QtGui import QShortcut
 
 from sunset import Key
 
 from spyrit.settings import key_shortcut
 
 
-class ShortcutWithKeySetting(QtCore.QObject):
-    _shortcut: QtGui.QShortcut
+class ShortcutWithKeySetting(QObject):
+    _shortcut: QShortcut
     _key: Key[key_shortcut.KeyShortcut]
 
     def __init__(
         self,
-        parent: QtCore.QObject,
+        parent: QObject,
         key: Key[key_shortcut.KeyShortcut],
-        slot: QtCore.Slot | QtCore.SignalInstance,
+        slot: Slot | SignalInstance,
     ) -> None:
         super().__init__(parent=parent)
 
-        self._shortcut = QtGui.QShortcut(parent)
+        self._shortcut = QShortcut(parent)
         self._key = key
         self._key.onValueChangeCall(self.updateShortcut)
         self.updateShortcut(self._key.get())

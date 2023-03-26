@@ -18,12 +18,12 @@ Class that creates and sets up toplevel elements of the UI.
 
 from typing import Callable, Optional
 
-from PySide6 import QtCore
+from PySide6.QtCore import QObject
 
 from spyrit.ui import tabbed_ui_container, tabbed_ui_element
 
 
-class TabbedUiFactory(QtCore.QObject):
+class TabbedUiFactory(QObject):
     """
     The factory class that knows how to plug together tabbed UI containers and
     tabbed UI elements.
@@ -44,7 +44,7 @@ class TabbedUiFactory(QtCore.QObject):
         tabbed_ui_container_factory: Callable[
             [], tabbed_ui_container.TabbedUiContainer
         ] = tabbed_ui_container.TabbedUiContainer,
-        parent: Optional[QtCore.QObject] = None,
+        parent: Optional[QObject] = None,
     ) -> None:
         super().__init__(parent)
 

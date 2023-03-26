@@ -18,43 +18,44 @@ tabbed container main window.
 
 from typing import Optional
 
-from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 
-class TabbedUiElement(QtWidgets.QWidget):
+class TabbedUiElement(QWidget):
     """
     The base class for widgets meant to be contained in a tabbed main window.
     """
 
     # This signal is emitted when the UI wants its tab title to be updated.
 
-    tabTitleChanged = QtCore.Signal(str)  # noqa: N815
+    tabTitleChanged = Signal(str)  # noqa: N815
 
     # This signal is emitted when the UI wants its containing window's title to
     # be updated.
 
-    windowTitleChanged = QtCore.Signal(str)  # noqa: N815
+    windowTitleChanged = Signal(str)  # noqa: N815
 
     # This signal is emitted when this UI wants to no longer be pinned to its
     # containing window.
 
-    wantToBeUnpinned = QtCore.Signal()  # noqa: N815
+    wantToBeUnpinned = Signal()  # noqa: N815
 
     # This signal is emitted when this UI wants to be detached from its current
     # containing window and into a new window.
 
-    wantToDetachToNewWindow = QtCore.Signal()  # noqa: N815
+    wantToDetachToNewWindow = Signal()  # noqa: N815
 
     _tab_title: str
     _window_title: str
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         # Set up the layour of the UI element. Basically a horizontal layout,
         # but in practice we'll just want to add a single widget.
 
-        self.setLayout(QtWidgets.QHBoxLayout())
+        self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         # Keep track of the UI's properties we'll want to propagate.

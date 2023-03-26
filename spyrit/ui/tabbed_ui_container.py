@@ -17,13 +17,21 @@ Class that provides a tabbed main window container.
 
 from typing import Optional, cast
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import QEvent, Qt, QTimer, Signal, Slot
+from PySide6.QtGui import QShowEvent
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QMainWindow,
+    QPushButton,
+    QTabWidget,
+    QWidget,
+)
 
 from spyrit import constants
 from spyrit.ui import tabbed_ui_element
 
 
-class TabbedUiContainer(QtWidgets.QMainWindow):
+class TabbedUiContainer(QMainWindow):
     """
     A top-level window class intended to just serve as a container for
     individual UIs.
@@ -35,28 +43,28 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
     # This signal is emitted when this window newly received the focus.
 
-    focusIn: QtCore.Signal = QtCore.Signal()  # noqa: N815
+    focusIn: Signal = Signal()  # noqa: N815
 
     # This signal is emitted when this window is in the process of closing.
 
-    closing: QtCore.Signal = QtCore.Signal()
+    closing: Signal = Signal()
 
     # This signal is emitted when a user interaction with this window should
     # result in a new tab being opened.
 
-    newTabRequested: QtCore.Signal = QtCore.Signal()  # noqa: N815
+    newTabRequested: Signal = Signal()  # noqa: N815
 
     # This signal is emitted when a user interaction with this window should
     # result in a new window being opened.
 
-    newWindowRequested: QtCore.Signal = QtCore.Signal()  # noqa: N815
+    newWindowRequested: Signal = Signal()  # noqa: N815
 
-    _tab_widget: QtWidgets.QTabWidget
-    _property_refresh_timer: QtCore.QTimer
+    _tab_widget: QTabWidget
+    _property_refresh_timer: QTimer
 
     def __init__(
         self,
-        parent: Optional[QtWidgets.QWidget] = None,
+        parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
 
@@ -68,7 +76,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         # Create and set up the QTabWidget that's going to contain the
         # individual UIs.
 
-        self._tab_widget = QtWidgets.QTabWidget(self)
+        self._tab_widget = QTabWidget(self)
         self._tab_widget.setMovable(True)
         self._tab_widget.setTabsClosable(True)
         self.setCentralWidget(self._tab_widget)
@@ -76,7 +84,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         # This timer is used to apply tab properties asynchronously, which
         # avoids some race conditions.
 
-        self._property_refresh_timer = QtCore.QTimer()
+        self._property_refresh_timer = QTimer()
         self._property_refresh_timer.setSingleShot(True)
         self._property_refresh_timer.setInterval(0)
 
@@ -91,20 +99,20 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         # layout is not great, so we have to create a container for the button
         # and give it a better layout.
 
-        corner_widget = QtWidgets.QWidget(self._tab_widget)
+        corner_widget = QWidget(self._tab_widget)
 
-        new_tab_button = QtWidgets.QPushButton("+", parent=corner_widget)
+        new_tab_button = QPushButton("+", parent=corner_widget)
         new_tab_button.setToolTip("New tab")
         new_tab_button.setFixedWidth(new_tab_button.height())
 
-        layout = QtWidgets.QHBoxLayout()
+        layout = QHBoxLayout()
         layout.addWidget(new_tab_button)
         layout.setContentsMargins(2, 2, 2, 2)
 
         corner_widget.setLayout(layout)
 
         self._tab_widget.setCornerWidget(
-            corner_widget, corner=QtCore.Qt.Corner.TopLeftCorner
+            corner_widget, corner=Qt.Corner.TopLeftCorner
         )
 
         new_tab_button.clicked.connect(self.newTabRequested)
@@ -136,13 +144,13 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
             # WORKAROUND: setParent() type hint mistakenly thinks that the
             # method cannot take a None argument.
 
-            widget.setParent(cast(QtWidgets.QWidget, None))
+            widget.setParent(cast(QWidget, None))
             widget.hide()
 
             if self._tab_widget.count() == 0:
                 self.close()
 
-    @QtCore.Slot()
+    @Slot()
     def maybeCloseCurrentTab(self) -> None:
         """
         Ask the currently active UI element to close itself. It is allowed to
@@ -154,7 +162,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
         if isinstance(widget, tabbed_ui_element.TabbedUiElement):
             widget.maybeClose()
 
-    @QtCore.Slot()
+    @Slot()
     def switchToNextTab(self) -> None:
         """
         Make the tab immediately to the right of the currently active one
@@ -168,7 +176,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
         self._tab_widget.setCurrentIndex(index + 1)
 
-    @QtCore.Slot()
+    @Slot()
     def switchToPreviousTab(self) -> None:
         """
         Make the tab immediately to the left of the currently active one
@@ -182,7 +190,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
 
         self._tab_widget.setCurrentIndex(index - 1)
 
-    @QtCore.Slot()
+    @Slot()
     def moveCurrentTabRight(self) -> None:
         """
         Swap the currently active tab and the one immediately to the right, if
@@ -210,7 +218,7 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
             )
             self._tab_widget.setCurrentIndex(index + 1)
 
-    @QtCore.Slot()
+    @Slot()
     def moveCurrentTabLeft(self) -> None:
         """
         Swap the currently active tab and the one immediately to the left, if
@@ -238,21 +246,21 @@ class TabbedUiContainer(QtWidgets.QMainWindow):
             )
             self._tab_widget.setCurrentIndex(index - 1)
 
-    def event(self, event: QtCore.QEvent) -> bool:
+    def event(self, event: QEvent) -> bool:
         """
         Emit relevant signals when the corresponding events are received.
         """
 
-        if event.type() == QtCore.QEvent.Type.WindowActivate:
+        if event.type() == QEvent.Type.WindowActivate:
             if self.isActiveWindow():
                 self.focusIn.emit()
 
-        if event.type() == QtCore.QEvent.Type.Close:
+        if event.type() == QEvent.Type.Close:
             self.closing.emit()
 
         return super().event(event)
 
-    def showEvent(self, event: QtGui.QShowEvent) -> None:
+    def showEvent(self, event: QShowEvent) -> None:
         # WORKAROUND: There is a race condition wherein Qt fails to set the
         # window title before the window is shown. So we explicitly re-apply the
         # current tab's properties on the next iteration of the main loop after

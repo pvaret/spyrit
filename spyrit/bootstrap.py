@@ -18,7 +18,8 @@ Function to initialize the program and launch it.
 import argparse
 import logging
 
-from PySide6 import QtGui, QtWidgets
+from PySide6.QtGui import QFontDatabase
+from PySide6.QtWidgets import QApplication
 
 from spyrit import dependency_checker
 from spyrit import platform
@@ -81,7 +82,7 @@ def bootstrap(args: list[str]) -> int:
     # Put the program name back in with the arguments when creating the
     # QApplication, since Qt expects it.
 
-    app = QtWidgets.QApplication(program + remaining_args)
+    app = QApplication(program + remaining_args)
 
     # Set up logging based on args.
 
@@ -97,7 +98,7 @@ def bootstrap(args: list[str]) -> int:
         logging.debug("Resources failed to load")
         return -1
 
-    if QtGui.QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
+    if QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
         logging.debug("Default game font not found in resources")
         return -1
 

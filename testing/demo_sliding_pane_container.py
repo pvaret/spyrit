@@ -1,11 +1,18 @@
 #!python
 
-import sys
 import pathlib
+import sys
 
 from typing import Optional
 
-from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QPushButton,
+    QSizePolicy,
+    QWidget,
+)
 
 this_file = pathlib.Path(__file__)
 this_dir = this_file.parent.absolute()
@@ -15,47 +22,45 @@ sys.path.insert(0, str(this_dir.parent))
 from spyrit.ui import sliding_pane_container  # noqa: E402
 
 
-class Pane(QtWidgets.QWidget):
-    wantAppend = QtCore.Signal()  # noqa: N815
-    wantAppendNoSwitch = QtCore.Signal()  # noqa: N815
-    wantPop = QtCore.Signal()  # noqa: N815
+class Pane(QWidget):
+    wantAppend = Signal()  # noqa: N815
+    wantAppendNoSwitch = Signal()  # noqa: N815
+    wantPop = Signal()  # noqa: N815
 
-    def __init__(
-        self, i: int, parent: Optional[QtWidgets.QWidget] = None
-    ) -> None:
+    def __init__(self, i: int, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
-        self.setLayout(QtWidgets.QHBoxLayout())
+        self.setLayout(QHBoxLayout())
 
-        self._append = QtWidgets.QPushButton(f"Button {i}: Append!")
+        self._append = QPushButton(f"Button {i}: Append!")
         self._append.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
         )
         self._append.clicked.connect(self.wantAppend)
         self.layout().addWidget(self._append)
 
-        self._append_no_switch = QtWidgets.QPushButton(
+        self._append_no_switch = QPushButton(
             f"Button {i}: Append!\n(No switch)"
         )
         self._append_no_switch.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
         )
         self._append_no_switch.clicked.connect(self.wantAppendNoSwitch)
         self.layout().addWidget(self._append_no_switch)
 
-        self._pop = QtWidgets.QPushButton(f"Button {i}: Pop!")
+        self._pop = QPushButton(f"Button {i}: Pop!")
         self._pop.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding,
-            QtWidgets.QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
         )
         self._pop.clicked.connect(self.wantPop)
         self.layout().addWidget(self._pop)
 
 
 class Container(sliding_pane_container.SlidingPaneContainer):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         self.appendPane(silent=True)
@@ -79,7 +84,7 @@ class Container(sliding_pane_container.SlidingPaneContainer):
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication()
+    app = QApplication()
     container = Container()
     container.show()
     app.exec()

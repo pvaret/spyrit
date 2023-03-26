@@ -17,12 +17,14 @@ Class that provides a container for sliding panes.
 
 from typing import Optional
 
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import QEasingCurve, QEvent, QObject, Qt, QVariantAnimation
+from PySide6.QtGui import QResizeEvent, QWheelEvent
+from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
 
 from spyrit import constants
 
 
-class SlidingPaneContainer(QtWidgets.QScrollArea):
+class SlidingPaneContainer(QScrollArea):
     """
     A horizontal container for widgets that will take up the full view port and
     can be switched between with a smooth animation.
@@ -34,16 +36,16 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
     # Which animation should be used for the switch.
 
-    _EASING_CURVE: QtCore.QEasingCurve.Type = QtCore.QEasingCurve.Type.OutCubic
+    _EASING_CURVE: QEasingCurve.Type = QEasingCurve.Type.OutCubic
 
-    _panes: list[QtWidgets.QWidget]
-    _pending_cleanup: list[QtWidgets.QWidget]
+    _panes: list[QWidget]
+    _pending_cleanup: list[QWidget]
     _active_pane: int
     _x_scroll_enforced_value: int
     _y_scroll_enforced_value: int
-    _pane_switch_animation: QtCore.QVariantAnimation
+    _pane_switch_animation: QVariantAnimation
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
 
         # Structures to keep track of currently added panes.
@@ -54,17 +56,13 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
         # Set up the view port: no margins, no scrollbars.
 
-        self.setFrameShape(QtWidgets.QFrame.Shape.NoFrame)
-        self.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
-        self.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # Set up the widget that's going to serve as the parent of our panes.
 
-        self.setWidget(QtWidgets.QWidget())
+        self.setWidget(QWidget())
         self._resizeContainer()
 
         # Set up scrollbar position enforcement. The only reason this widget
@@ -82,7 +80,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
         # Pane animation setup goes here.
 
-        self._pane_switch_animation = QtCore.QVariantAnimation()
+        self._pane_switch_animation = QVariantAnimation()
         self._pane_switch_animation.setEasingCurve(self._EASING_CURVE)
         self._pane_switch_animation.setDuration(self._ANIMATION_DURATION)
 
@@ -93,7 +91,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
             self._onMotionMaybeComplete
         )
 
-    def append(self, pane: QtWidgets.QWidget, switch: bool = True) -> None:
+    def append(self, pane: QWidget, switch: bool = True) -> None:
         """
         Add a new pane at the end of the existing set of panes, and update
         geometry accordingly.
@@ -117,9 +115,9 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         )
 
         pane.setSizePolicy(
-            QtWidgets.QSizePolicy(
-                QtWidgets.QSizePolicy.Policy.Fixed,
-                QtWidgets.QSizePolicy.Policy.Fixed,
+            QSizePolicy(
+                QSizePolicy.Policy.Fixed,
+                QSizePolicy.Policy.Fixed,
             )
         )
         pane.resize(width, height)
@@ -188,7 +186,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
 
         return (
             not self._pane_switch_animation.state()
-            == QtCore.QVariantAnimation.State.Stopped
+            == QVariantAnimation.State.Stopped
         )
 
     def _indexOfLastPane(self) -> int:
@@ -251,7 +249,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         self._x_scroll_enforced_value = int(value * width)
         self._enforceXScrollValue()
 
-    def resizeEvent(self, arg__1: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, arg__1: QResizeEvent) -> None:
         """
         Propagate resize events to the child panes and update the scrollbar
         position to stay fixed relative to the panes.
@@ -297,7 +295,7 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
                 height,
             )
 
-    def wheelEvent(self, arg__1: QtGui.QWheelEvent) -> None:
+    def wheelEvent(self, arg__1: QWheelEvent) -> None:
         """
         Override QScrollArea's mouse wheel handling. We never want to scroll
         this widget from mouse events. Instead, pass down the mouse event to the
@@ -307,26 +305,24 @@ class SlidingPaneContainer(QtWidgets.QScrollArea):
         if self._panes:
             self._panes[self._active_pane].wheelEvent(arg__1)
 
-    def _installEventFilterRecursively(self, widget: QtWidgets.QWidget) -> None:
+    def _installEventFilterRecursively(self, widget: QWidget) -> None:
         """
         Set up our mouse-filtering event filter in all subchildren of the given
         widget.
         """
         widget.installEventFilter(self)
         for child in widget.children():
-            if isinstance(child, QtWidgets.QWidget):
+            if isinstance(child, QWidget):
                 self._installEventFilterRecursively(child)
 
-    def eventFilter(
-        self, arg__1: QtCore.QObject, arg__2: QtCore.QEvent
-    ) -> bool:
+    def eventFilter(self, arg__1: QObject, arg__2: QEvent) -> bool:
         """
         Only pass down clicks if we are not currently scrolling.
         """
         if arg__2.type() in (
-            QtCore.QEvent.Type.MouseButtonPress,
-            QtCore.QEvent.Type.MouseButtonRelease,
-            QtCore.QEvent.Type.MouseButtonDblClick,
+            QEvent.Type.MouseButtonPress,
+            QEvent.Type.MouseButtonRelease,
+            QEvent.Type.MouseButtonDblClick,
         ):
             if self._isInMotion():
                 return True  # Eat the event.

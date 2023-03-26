@@ -17,10 +17,10 @@ Implements a key shortcut type that's serializable by SunsetSettings.
 
 from typing import Optional
 
-from PySide6 import QtGui
+from PySide6.QtGui import QKeySequence
 
 
-class KeyShortcut(QtGui.QKeySequence):
+class KeyShortcut(QKeySequence):
     """
     A subclass of QKeySequence that can be serialized into SunsetSettings.
     """
@@ -32,9 +32,7 @@ class KeyShortcut(QtGui.QKeySequence):
         typically takes the role of Ctrl on Linux/Windows.
         """
 
-        key = KeyShortcut(
-            value, format=QtGui.QKeySequence.SequenceFormat.NativeText
-        )
+        key = KeyShortcut(value, format=QKeySequence.SequenceFormat.NativeText)
         return None if key.isEmpty() else key
 
     def toStr(self) -> str:
@@ -43,9 +41,7 @@ class KeyShortcut(QtGui.QKeySequence):
         X typically takes the role of Ctrl on Linux/Windows.
         """
 
-        return self.toString(
-            format=QtGui.QKeySequence.SequenceFormat.NativeText
-        )
+        return self.toString(format=QKeySequence.SequenceFormat.NativeText)
 
 
 def from_default(value: str) -> KeyShortcut:
@@ -55,7 +51,5 @@ def from_default(value: str) -> KeyShortcut:
     native modifiers for the platform.
     """
 
-    key = KeyShortcut(
-        value, format=QtGui.QKeySequence.SequenceFormat.PortableText
-    )
+    key = KeyShortcut(value, format=QKeySequence.SequenceFormat.PortableText)
     return key

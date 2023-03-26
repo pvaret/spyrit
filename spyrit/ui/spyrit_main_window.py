@@ -18,7 +18,7 @@ window.
 
 from typing import Optional
 
-from PySide6 import QtWidgets
+from PySide6.QtWidgets import QWidget
 
 from spyrit.settings import spyrit_settings
 from spyrit.ui import tabbed_ui_container, shortcut_with_key_setting
@@ -35,7 +35,7 @@ class SpyritMainWindow(tabbed_ui_container.TabbedUiContainer):
     def __init__(
         self,
         main_settings: spyrit_settings.SpyritSettings,
-        parent: Optional[QtWidgets.QWidget] = None,
+        parent: Optional[QWidget] = None,
     ) -> None:
         super().__init__(parent)
 

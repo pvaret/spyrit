@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 this_file = pathlib.Path(__file__)
 this_dir = this_file.parent.absolute()
 
-sys.path.insert(0, str(this_dir.parent))
+sys.path.insert(0, this_dir.parent.as_posix())
 
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer  # noqa: E402
 

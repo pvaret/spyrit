@@ -30,14 +30,16 @@ from spyrit.ui.tabbed_ui_factory import TabbedUiFactory
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     parser.add_argument(
         "-c",
         "--config",
         metavar="FOLDER",
         type=str,
-        help="Path to the folder where configuration is stored",
         default=default_config_path,
+        help="Path to the folder where configuration is stored",
     )
     parser.add_argument(
         "--debug",
@@ -69,7 +71,7 @@ def bootstrap(args: list[str]) -> int:
     # Parse Python arguments.
 
     parser = make_arg_parser(
-        default_config_path=str(default_paths.getConfigFolderPath())
+        default_config_path=default_paths.getConfigFolderPath().as_posix()
     )
 
     # Remove the program name from the arguments, else ArgParse gets

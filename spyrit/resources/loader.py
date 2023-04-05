@@ -37,7 +37,7 @@ def load() -> bool:
 
     if not _resources_loaded:
         this_file = pathlib.Path(__file__)
-        this_dir: str = str(this_file.parent.absolute())
+        this_dir: str = this_file.parent.absolute().as_posix()
         sys.path.insert(0, this_dir)
 
         try:

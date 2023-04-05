@@ -94,6 +94,11 @@ class DependencyChecker:
             return False, (0, 0)
 
         # Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
+
+        # WORKAROUND: qVersion() returns a string in recent PySide versions, but
+        # is incorrectly typed as still returning bytes. Casting to str solves
+        # the type variance and the typing issue both.
+
         version_str = str(QtCore.qVersion())
         version_numbers = [int(c) for c in version_str.split(".")]
         version = version_numbers[0], version_numbers[1]

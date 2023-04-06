@@ -18,12 +18,15 @@ Function to initialize the program and launch it.
 import argparse
 import logging
 
+from signal import Signals
+
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 
 from spyrit import platform, resources
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.ui.spyrit_main_ui import SpyritMainUiFactory
 from spyrit.ui.spyrit_main_window import SpyritMainWindowFactory
 from spyrit.ui.tabbed_ui_factory import TabbedUiFactory
@@ -98,18 +101,25 @@ def bootstrap(args: list[str]) -> int:
     # Load resources, else bail.
 
     if not resources.load():
-        logging.debug("Resources failed to load")
+        logging.warning("Resources failed to load")
         return -1
 
     if QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
-        logging.debug("Default game font not found in resources")
+        logging.warning("Default game font not found in resources")
         return -1
 
     # Instantiate the settings and autoload/save them.
 
     settings = SpyritSettings()
 
-    with settings.autosave(default_paths.getConfigFilePath()):
+    with settings.autosave(default_paths.getConfigFilePath()) as saver:
+        # Hook the SIGHUP signal to a helper forcing a save of current settings.
+        # Don't assume the signal exists in the enum as it's not true on all
+        # OSes.
+
+        if (sighup := getattr(Signals, "SIGHUP", None)) is not None:
+            save_settings_on_signal(sighup, saver)
+
         # Build the UI.
 
         spyrit_main_window_factory = SpyritMainWindowFactory(settings)

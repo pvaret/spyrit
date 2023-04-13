@@ -16,7 +16,6 @@ The class providing the structure for tabbed UI component, to be used in a
 tabbed container main window.
 """
 
-from typing import Optional
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHBoxLayout, QWidget
@@ -49,7 +48,7 @@ class TabbedUiElement(QWidget):
     _tab_title: str
     _window_title: str
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         # Set up the layour of the UI element. Basically a horizontal layout,

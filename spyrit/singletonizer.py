@@ -23,7 +23,7 @@ import threading
 
 from pathlib import Path
 from types import TracebackType
-from typing import IO, Callable, Optional
+from typing import IO, Callable
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
@@ -45,7 +45,7 @@ class PIDFile:
 
     _path: Path
     _pid: int
-    _fd: Optional[IO[str]]
+    _fd: IO[str] | None
     _lock: threading.Lock
     _flock_func: Callable[[IO[str], int], None]
 
@@ -172,8 +172,8 @@ class Singletonizer(QObject):
     newInstanceStarted = Signal()  # noqa: N815
 
     _path: Path
-    _pidfile: Optional[PIDFile]
-    _server: Optional[QLocalServer]
+    _pidfile: PIDFile | None
+    _server: QLocalServer | None
     _socket_name: str
     _socket_factory: Callable[[], QLocalSocket]
 
@@ -235,9 +235,9 @@ class Singletonizer(QObject):
 
     def __exit__(
         self,
-        __exc_type: Optional[type[BaseException]],
-        __exc_value: Optional[BaseException],
-        __traceback: Optional[TracebackType],
+        __exc_type: type[BaseException] | None,
+        __exc_value: BaseException | None,
+        __traceback: TracebackType | None,
     ) -> None:
         self.shutdown()
 

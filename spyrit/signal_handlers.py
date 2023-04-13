@@ -19,7 +19,6 @@ import logging
 import signal
 
 from types import FrameType
-from typing import Optional
 
 from sunset import AutoSaver
 
@@ -39,9 +38,7 @@ def save_settings_on_signal(
 
     default_handler = signal.getsignal(sig)
 
-    def _on_signal(
-        sig: int | signal.Signals, frame: Optional[FrameType]
-    ) -> None:
+    def _on_signal(sig: int | signal.Signals, frame: FrameType | None) -> None:
         logging.info("Signal received -- saving settings.")
 
         for saver in savers:

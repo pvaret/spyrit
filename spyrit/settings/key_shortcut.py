@@ -15,7 +15,6 @@
 Implements a key shortcut type that's serializable by SunsetSettings.
 """
 
-from typing import Optional
 
 from PySide6.QtGui import QKeySequence
 
@@ -26,7 +25,7 @@ class KeyShortcut(QKeySequence):
     """
 
     @classmethod
-    def fromStr(cls, value: str) -> Optional["KeyShortcut"]:
+    def fromStr(cls, value: str) -> "KeyShortcut | None":
         """
         Build a KeyShortcut from native text. Native means that Cmd on Mac OS X
         typically takes the role of Ctrl on Linux/Windows.

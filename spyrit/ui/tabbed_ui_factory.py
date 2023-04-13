@@ -16,7 +16,7 @@ Class that creates and sets up toplevel elements of the UI.
 """
 
 
-from typing import Callable, Optional
+from typing import Callable
 
 from PySide6.QtCore import QObject
 
@@ -32,7 +32,7 @@ class TabbedUiFactory(QObject):
 
     _tabbed_ui_container_factory: Callable[[], TabbedUiContainer]
     _tabbed_ui_element_factory: Callable[[], TabbedUiElement]
-    _last_active_window: Optional[TabbedUiContainer]
+    _last_active_window: TabbedUiContainer | None
     _windows: set[TabbedUiContainer]
 
     def __init__(
@@ -41,7 +41,7 @@ class TabbedUiFactory(QObject):
         tabbed_ui_container_factory: Callable[
             [], TabbedUiContainer
         ] = TabbedUiContainer,
-        parent: Optional[QObject] = None,
+        parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
 
@@ -64,7 +64,7 @@ class TabbedUiFactory(QObject):
         self._last_active_window = None
 
     def createNewUiInNewTab(
-        self, window: Optional[TabbedUiContainer] = None
+        self, window: TabbedUiContainer | None = None
     ) -> TabbedUiElement:
         """
         Instantiate a new UI element, and add it under a new tab in the

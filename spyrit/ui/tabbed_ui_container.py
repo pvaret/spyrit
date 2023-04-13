@@ -15,7 +15,8 @@
 Class that provides a tabbed main window container.
 """
 
-from typing import Optional, cast
+
+from typing import cast
 
 from PySide6.QtCore import QEvent, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QShowEvent
@@ -64,7 +65,7 @@ class TabbedUiContainer(QMainWindow):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 

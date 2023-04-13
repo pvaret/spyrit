@@ -15,13 +15,13 @@
 Provide the main UI of Spyrit, to be embedded in a tabbed container.
 """
 
-from typing import Optional
 
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
+from spyrit.ui.spyrit_welcome_pane import SpyritWelcomePane
 from spyrit.ui.tabbed_ui_element import TabbedUiElement
 
 
@@ -29,7 +29,7 @@ class SpyritMainUi(TabbedUiElement):
     def __init__(
         self,
         settings: SpyritSettings,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 

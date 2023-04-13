@@ -15,7 +15,6 @@
 Class that provides a container for sliding panes.
 """
 
-from typing import Optional
 
 from PySide6.QtCore import QEasingCurve, QEvent, QObject, Qt, QVariantAnimation
 from PySide6.QtGui import QResizeEvent, QWheelEvent
@@ -45,7 +44,7 @@ class SlidingPaneContainer(QScrollArea):
     _y_scroll_enforced_value: int
     _pane_switch_animation: QVariantAnimation
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         # Structures to keep track of currently added panes.

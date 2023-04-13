@@ -3,7 +3,6 @@
 import pathlib
 import sys
 
-from typing import Optional
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
@@ -27,7 +26,7 @@ class Pane(QWidget):
     wantAppendNoSwitch = Signal()  # noqa: N815
     wantPop = Signal()  # noqa: N815
 
-    def __init__(self, i: int, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, i: int, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         self.setLayout(QHBoxLayout())
@@ -60,7 +59,7 @@ class Pane(QWidget):
 
 
 class Container(SlidingPaneContainer):
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         self.appendPane(silent=True)

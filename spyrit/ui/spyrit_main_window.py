@@ -16,7 +16,6 @@ Class that specializes a generic tabbed UI container into the actual application
 window.
 """
 
-from typing import Optional
 
 from PySide6.QtWidgets import QWidget
 
@@ -36,7 +35,7 @@ class SpyritMainWindow(TabbedUiContainer):
     def __init__(
         self,
         main_settings: SpyritSettings,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 

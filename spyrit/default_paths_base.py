@@ -19,7 +19,6 @@ platform by platform.
 import pathlib
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from spyrit import constants
 
@@ -27,7 +26,7 @@ from spyrit import constants
 class DefaultPathsBase(ABC):
     PID_FILE_NAME = constants.PID_FILE_NAME
 
-    _config_folder_path: Optional[pathlib.Path]
+    _config_folder_path: pathlib.Path | None
 
     def __init__(self) -> None:
         self._config_folder_path = None

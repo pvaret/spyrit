@@ -21,8 +21,12 @@ import pathlib
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from spyrit import constants
+
 
 class DefaultPathsBase(ABC):
+    PID_FILE_NAME = constants.PID_FILE_NAME
+
     _config_folder_path: Optional[pathlib.Path]
 
     def __init__(self) -> None:
@@ -55,3 +59,6 @@ class DefaultPathsBase(ABC):
 
     def getConfigFilePath(self) -> pathlib.Path:
         return self.getConfigFolderPath() / self.getConfigFileName()
+
+    def getPidFilePath(self) -> pathlib.Path:
+        return self.getConfigFolderPath() / self.PID_FILE_NAME

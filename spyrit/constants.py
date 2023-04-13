@@ -26,6 +26,10 @@ REQUIRED_QT_VERSION: tuple[int, int] = (6, 2)
 APPLICATION_NAME: str = "SpyritNG"
 SPYRIT_VERSION: str = "0.0-dev"
 
+# PID file
+
+PID_FILE_NAME = "spyrit.pid"
+
 # Settings
 
 CONFIG_FILE_NAME_LINUX: str = "spyrit.conf"

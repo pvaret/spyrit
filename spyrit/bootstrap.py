@@ -27,6 +27,7 @@ from spyrit import platform, resources
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.signal_handlers import save_settings_on_signal
+from spyrit.singletonizer import Singletonizer
 from spyrit.ui.spyrit_main_ui import SpyritMainUiFactory
 from spyrit.ui.spyrit_main_window import SpyritMainWindowFactory
 from spyrit.ui.tabbed_ui_factory import TabbedUiFactory
@@ -93,26 +94,38 @@ def bootstrap(args: list[str]) -> int:
     # Set up logging based on args.
 
     logging.basicConfig(
-        level=logging.DEBUG if flags.debug else logging.WARNING,
+        level=logging.DEBUG if flags.debug else logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
     )
-    logging.debug("Debug logging on")
-
-    # Load resources, else bail.
-
-    if not resources.load():
-        logging.warning("Resources failed to load")
-        return -1
-
-    if QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
-        logging.warning("Default game font not found in resources")
-        return -1
+    logging.debug("Debug logging on.")
 
     # Instantiate the settings and autoload/save them.
 
     settings = SpyritSettings()
 
-    with settings.autosave(default_paths.getConfigFilePath()) as saver:
+    with (
+        Singletonizer(default_paths.getPidFilePath()) as singletonizer,
+        settings.autosave(default_paths.getConfigFilePath()) as saver,
+    ):
+        # Ensure there is no other instance of the program running.
+
+        if not singletonizer.isMainInstance():
+            logging.info(
+                "Another instance of the program is already running. Quitting."
+            )
+            singletonizer.notifyNewInstanceStarted()
+            return 0
+
+        # Load resources, else bail.
+
+        if not resources.load():
+            logging.error("Resources failed to load.")
+            return -1
+
+        if QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
+            logging.error("Default game font not found in resources.")
+            return -1
+
         # Hook the SIGHUP signal to a helper forcing a save of current settings.
         # Don't assume the signal exists in the enum as it's not true on all
         # OSes.
@@ -130,6 +143,12 @@ def bootstrap(args: list[str]) -> int:
             tabbed_ui_container_factory=spyrit_main_window_factory,
         )
         ui_factory.createNewUiInNewWindow()
+
+        # Open a new window when another instance of the program was launched.
+
+        singletonizer.newInstanceStarted.connect(
+            ui_factory.createNewUiInNewWindow
+        )
 
         # And start the show.
 

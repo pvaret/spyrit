@@ -25,6 +25,13 @@ dependencies = [
     "SunsetSettings",
 ]
 
+[project.optional-dependencies]
+test = [
+    "bandit[toml]",
+    "pytest",
+    "pytest-mock",
+]
+
 [project.gui-scripts]
 spyrit = "spyrit.main:run"
 

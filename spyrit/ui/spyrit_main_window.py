@@ -43,37 +43,17 @@ class SpyritMainWindow(TabbedUiContainer):
 
         # Set up keyboard shortcuts.
 
-        ShortcutWithKeySetting(
-            self, self._settings.shortcuts.new_tab, self.newTabRequested
-        )
-        ShortcutWithKeySetting(
-            self, self._settings.shortcuts.new_window, self.newWindowRequested
-        )
-        ShortcutWithKeySetting(
-            self,
-            self._settings.shortcuts.close_current_tab,
-            self.maybeCloseCurrentTab,
-        )
-        ShortcutWithKeySetting(
-            self,
-            self._settings.shortcuts.switch_to_next_tab,
-            self.switchToNextTab,
-        )
-        ShortcutWithKeySetting(
-            self,
-            self._settings.shortcuts.switch_to_previous_tab,
-            self.switchToPreviousTab,
-        )
-        ShortcutWithKeySetting(
-            self,
-            self._settings.shortcuts.move_current_tab_right,
-            self.moveCurrentTabRight,
-        )
-        ShortcutWithKeySetting(
-            self,
-            self._settings.shortcuts.move_current_tab_left,
-            self.moveCurrentTabLeft,
-        )
+        key_settings = main_settings.shortcuts
+        for shortcut, slot in (
+            (key_settings.new_tab, self.newTabRequested),
+            (key_settings.new_window, self.newWindowRequested),
+            (key_settings.close_current_tab, self.maybeCloseCurrentTab),
+            (key_settings.switch_to_next_tab, self.switchToNextTab),
+            (key_settings.switch_to_previous_tab, self.switchToPreviousTab),
+            (key_settings.move_current_tab_right, self.moveCurrentTabRight),
+            (key_settings.move_current_tab_left, self.moveCurrentTabLeft),
+        ):
+            ShortcutWithKeySetting(parent=self, key=shortcut, slot=slot)
 
 
 class SpyritMainWindowFactory:

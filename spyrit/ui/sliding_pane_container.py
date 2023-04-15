@@ -98,12 +98,17 @@ class SlidingPaneContainer(QScrollArea):
         geometry accordingly.
         """
 
+        # Propagate the pane's minimum size to the container.
+
+        min_size = pane.minimumSizeHint()
+        current_min_size = self.minimumSize()
+        current_min_size = current_min_size.expandedTo(min_size)
+        self.setMinimumSize(current_min_size)
+
         # Add the pane to this container.
 
         self._active_panes.append(pane)
         pane.setParent(self.widget())
-
-        # TODO: propagate pane minimum size to the container?
 
         # Set up the geometry of the pane.
 

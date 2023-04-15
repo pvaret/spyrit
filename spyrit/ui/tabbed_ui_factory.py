@@ -20,27 +20,27 @@ from typing import Callable
 
 from PySide6.QtCore import QObject
 
-from spyrit.ui.tabbed_ui_container import TabbedUiContainer
-from spyrit.ui.tabbed_ui_element import TabbedUiElement
+from spyrit.ui.tabbed_ui_container import TabbedUIContainer
+from spyrit.ui.tabbed_ui_element import TabbedUIElement
 
 
-class TabbedUiFactory(QObject):
+class TabbedUIFactory(QObject):
     """
     The factory class that knows how to plug together tabbed UI containers and
     tabbed UI elements.
     """
 
-    _tabbed_ui_container_factory: Callable[[], TabbedUiContainer]
-    _tabbed_ui_element_factory: Callable[[], TabbedUiElement]
-    _last_active_window: TabbedUiContainer | None
-    _windows: set[TabbedUiContainer]
+    _tabbed_ui_container_factory: Callable[[], TabbedUIContainer]
+    _tabbed_ui_element_factory: Callable[[], TabbedUIElement]
+    _last_active_window: TabbedUIContainer | None
+    _windows: set[TabbedUIContainer]
 
     def __init__(
         self,
-        tabbed_ui_element_factory: Callable[[], TabbedUiElement],
+        tabbed_ui_element_factory: Callable[[], TabbedUIElement],
         tabbed_ui_container_factory: Callable[
-            [], TabbedUiContainer
-        ] = TabbedUiContainer,
+            [], TabbedUIContainer
+        ] = TabbedUIContainer,
         parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
@@ -63,9 +63,9 @@ class TabbedUiFactory(QObject):
 
         self._last_active_window = None
 
-    def createNewUiInNewTab(
-        self, window: TabbedUiContainer | None = None
-    ) -> TabbedUiElement:
+    def createNewUIInNewTab(
+        self, window: TabbedUIContainer | None = None
+    ) -> TabbedUIElement:
         """
         Instantiate a new UI element, and add it under a new tab in the
         currently active container.
@@ -73,28 +73,28 @@ class TabbedUiFactory(QObject):
 
         if window is None:
             if self._last_active_window is None:
-                return self.createNewUiInNewWindow()
+                return self.createNewUIInNewWindow()
             window = self._last_active_window
 
-        new_ui = self._makeNewUi()
+        new_ui = self._makeNewUI()
         window.pin(new_ui)
 
         return new_ui
 
-    def createNewUiInNewWindow(self) -> TabbedUiElement:
+    def createNewUIInNewWindow(self) -> TabbedUIElement:
         """
         Instantiate a new UI element, and add it under a new tab in a
         new container.
         """
 
-        new_ui = self._makeNewUi()
+        new_ui = self._makeNewUI()
 
         new_window = self._makeNewWindow()
         new_window.pin(new_ui)
 
         return new_ui
 
-    def _makeNewWindow(self) -> TabbedUiContainer:
+    def _makeNewWindow(self) -> TabbedUIContainer:
         """
         Instantiate and set up a new container.
         """
@@ -109,11 +109,11 @@ class TabbedUiFactory(QObject):
         new_window.show()
 
         new_window.newTabRequested.connect(self._onNewTabRequestedByWindow)
-        new_window.newWindowRequested.connect(self.createNewUiInNewWindow)
+        new_window.newWindowRequested.connect(self.createNewUIInNewWindow)
 
         return new_window
 
-    def _makeNewUi(self) -> TabbedUiElement:
+    def _makeNewUI(self) -> TabbedUIElement:
         """
         Instantiate and set up a new UI element.
         """
@@ -130,7 +130,7 @@ class TabbedUiFactory(QObject):
 
         window = self.sender()
 
-        if isinstance(window, TabbedUiContainer):
+        if isinstance(window, TabbedUIContainer):
             self._last_active_window = window
 
     def _onWindowClosing(self) -> None:
@@ -140,7 +140,7 @@ class TabbedUiFactory(QObject):
 
         window = self.sender()
 
-        if isinstance(window, TabbedUiContainer):
+        if isinstance(window, TabbedUIContainer):
             # If a window is being closed, drop our reference to it.
 
             self._windows.discard(window)
@@ -162,8 +162,8 @@ class TabbedUiFactory(QObject):
 
         window = self.sender()
 
-        if isinstance(window, TabbedUiContainer):
-            self.createNewUiInNewTab(window=window)
+        if isinstance(window, TabbedUIContainer):
+            self.createNewUIInNewTab(window=window)
 
     def _onTabDetachRequested(self) -> None:
         """
@@ -173,7 +173,7 @@ class TabbedUiFactory(QObject):
 
         widget = self.sender()
 
-        if isinstance(widget, TabbedUiElement):
+        if isinstance(widget, TabbedUIElement):
             widget.wantToBeUnpinned.emit()
 
             new_window = self._makeNewWindow()

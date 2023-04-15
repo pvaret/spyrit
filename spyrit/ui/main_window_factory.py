@@ -20,11 +20,11 @@ window.
 from PySide6.QtWidgets import QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
-from spyrit.ui.tabbed_ui_container import TabbedUiContainer
+from spyrit.ui.tabbed_ui_container import TabbedUIContainer
 from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
-class MainWindow(TabbedUiContainer):
+class MainWindow(TabbedUIContainer):
     """
     An implementation of the top-level tabbed UI container that's aware of
     things like Spyrit settings.

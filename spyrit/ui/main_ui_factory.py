@@ -22,10 +22,10 @@ from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.welcome_pane import WelcomePane
-from spyrit.ui.tabbed_ui_element import TabbedUiElement
+from spyrit.ui.tabbed_ui_element import TabbedUIElement
 
 
-class MainUi(TabbedUiElement):
+class MainUI(TabbedUIElement):
     def __init__(
         self,
         settings: SpyritSettings,
@@ -46,9 +46,9 @@ class MainUi(TabbedUiElement):
         self.setWindowTitle(constants.APPLICATION_NAME)
 
 
-class SpyritMainUiFactory:
+class SpyritMainUIFactory:
     def __init__(self, settings: SpyritSettings) -> None:
         self._settings = settings
 
-    def __call__(self) -> MainUi:
-        return MainUi(self._settings)
+    def __call__(self) -> MainUI:
+        return MainUI(self._settings)

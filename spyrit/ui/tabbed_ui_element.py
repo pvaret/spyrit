@@ -21,7 +21,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 
-class TabbedUiElement(QWidget):
+class TabbedUIElement(QWidget):
     """
     The base class for widgets meant to be contained in a tabbed main window.
     """

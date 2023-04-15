@@ -28,9 +28,9 @@ from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
-from spyrit.ui.main_ui_factory import SpyritMainUiFactory
+from spyrit.ui.main_ui_factory import SpyritMainUIFactory
 from spyrit.ui.main_window_factory import SpyritMainWindowFactory
-from spyrit.ui.tabbed_ui_factory import TabbedUiFactory
+from spyrit.ui.tabbed_ui_factory import TabbedUIFactory
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
@@ -135,16 +135,16 @@ def bootstrap(args: list[str]) -> int:
 
         # Build the UI.
 
-        ui_factory = TabbedUiFactory(
-            tabbed_ui_element_factory=SpyritMainUiFactory(settings),
+        ui_factory = TabbedUIFactory(
+            tabbed_ui_element_factory=SpyritMainUIFactory(settings),
             tabbed_ui_container_factory=SpyritMainWindowFactory(settings),
         )
-        ui_factory.createNewUiInNewWindow()
+        ui_factory.createNewUIInNewWindow()
 
         # Open a new window when another instance of the program was launched.
 
         singletonizer.newInstanceStarted.connect(
-            ui_factory.createNewUiInNewWindow
+            ui_factory.createNewUIInNewWindow
         )
 
         # And start the show.

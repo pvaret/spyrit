@@ -21,6 +21,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
+from spyrit.ui.welcome_pane import WelcomePane
 from spyrit.ui.tabbed_ui_element import TabbedUiElement
 
 
@@ -36,6 +37,7 @@ class MainUi(TabbedUiElement):
 
         self.setLayout(QHBoxLayout())
         container = SlidingPaneContainer()
+        container.append(WelcomePane(settings))
         self.layout().addWidget(container)
 
         # Set up the title texts for this UI.

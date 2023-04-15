@@ -16,7 +16,9 @@ Class that provides a container for sliding panes.
 """
 
 
-from PySide6.QtCore import QEasingCurve, QEvent, QObject, Qt, QVariantAnimation
+from typing import Sequence
+
+from PySide6.QtCore import QEasingCurve, Qt, QVariantAnimation
 from PySide6.QtGui import QResizeEvent, QWheelEvent
 from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
 
@@ -37,9 +39,9 @@ class SlidingPaneContainer(QScrollArea):
 
     _EASING_CURVE: QEasingCurve.Type = QEasingCurve.Type.OutCubic
 
-    _panes: list[QWidget]
-    _pending_cleanup: list[QWidget]
-    _active_pane: int
+    _active_panes: list[QWidget]
+    _panes_pending_cleanup: list[QWidget]
+    _active_pane_index: int
     _x_scroll_enforced_value: int
     _y_scroll_enforced_value: int
     _pane_switch_animation: QVariantAnimation
@@ -49,9 +51,9 @@ class SlidingPaneContainer(QScrollArea):
 
         # Structures to keep track of currently added panes.
 
-        self._panes = []
-        self._pending_cleanup = []
-        self._active_pane = 0
+        self._active_panes = []
+        self._panes_pending_cleanup = []
+        self._active_pane_index = 0
 
         # Set up the view port: no margins, no scrollbars.
 
@@ -96,15 +98,12 @@ class SlidingPaneContainer(QScrollArea):
         geometry accordingly.
         """
 
-        # Install on all widgets and sub-widgets in the pane the event filter
-        # that disables clicks while an animation is in progress.
-
-        self._installEventFilterRecursively(pane)
-
         # Add the pane to this container.
 
-        self._panes.append(pane)
+        self._active_panes.append(pane)
         pane.setParent(self.widget())
+
+        # TODO: propagate pane minimum size to the container?
 
         # Set up the geometry of the pane.
 
@@ -113,12 +112,7 @@ class SlidingPaneContainer(QScrollArea):
             self.viewport().size().height(),
         )
 
-        pane.setSizePolicy(
-            QSizePolicy(
-                QSizePolicy.Policy.Fixed,
-                QSizePolicy.Policy.Fixed,
-            )
-        )
+        pane.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         pane.resize(width, height)
         pane.move(width * (self._indexOfLastPane()), 0)
 
@@ -133,19 +127,22 @@ class SlidingPaneContainer(QScrollArea):
         if switch:
             self.switchToPane(self._indexOfLastPane())
 
+        if pane is not self._currentActivePane():
+            pane.setDisabled(True)
+
     def pop(self) -> None:
         """
         Remove the rightmost pane, scrolling to the left as needed.
 
         This will not remove the last remaining pane.
         """
-        if len(self._panes) <= 1:
+        if len(self._active_panes) <= 1:
             return
 
-        self._pending_cleanup.append(self._panes.pop())
+        self._panes_pending_cleanup.append(self._active_panes.pop())
 
-        if self._active_pane > self._indexOfLastPane():
-            self.switchToPane(self._indexOfLastPane())
+        if self._active_pane_index > (last_index := self._indexOfLastPane()):
+            self.switchToPane(last_index)
         else:
             self._cleanupRemovedPanes()
 
@@ -157,14 +154,24 @@ class SlidingPaneContainer(QScrollArea):
         if i < 0 or i > self._indexOfLastPane():
             return
 
-        if i == self._active_pane:
+        if i == self._active_pane_index:
             return
+
+        # Enable the target pane, disable the current pane.
+
+        pane_from = self._currentActivePane()
+        pane_to = self._paneAtIndex(i)
+
+        if pane_from is not None:
+            pane_from.setEnabled(False)
+        if pane_to is not None:
+            pane_to.setEnabled(True)
 
         # If the animation is currently running already, then use its current
         # position as the starting position for a new animation.
 
         initial_value = float(
-            self._active_pane
+            self._active_pane_index
             if not self._isInMotion()
             else self._pane_switch_animation.currentValue()
         )
@@ -176,7 +183,7 @@ class SlidingPaneContainer(QScrollArea):
 
         # Consider the target pane active right away.
 
-        self._active_pane = i
+        self._active_pane_index = i
 
     def _isInMotion(self) -> bool:
         """
@@ -190,12 +197,44 @@ class SlidingPaneContainer(QScrollArea):
 
     def _indexOfLastPane(self) -> int:
         """
-        Computes the index of the rightmost pane held on this container.
+        Computes the index of the rightmost pane held on this container,
+        excluding panes about to be deleted.
 
         If there are no widgets, returns -1.
         """
 
-        return len(self._panes) - 1
+        return len(self._active_panes) - 1
+
+    def _currentActivePane(self) -> QWidget | None:
+        """
+        Returns the widget of the current active pane, if any.
+        """
+        if self._active_panes:
+            try:
+                return self._paneAtIndex(self._active_pane_index)
+            except IndexError:
+                pass
+
+        return None
+
+    def _paneAtIndex(self, i: int) -> QWidget | None:
+        """
+        Returns the widget of the pane at the given index, if any.
+
+        The returned widget may be pending deletion if it was recently popped.
+        """
+
+        try:
+            return self._allPanes()[i]
+        except IndexError:
+            return None
+
+    def _allPanes(self) -> Sequence[QWidget]:
+        """
+        Returns all the panes in index order, including panes pending deletion.
+        """
+
+        return self._active_panes + self._panes_pending_cleanup[::-1]
 
     def _onMotionMaybeComplete(self, value: float) -> None:
         """
@@ -213,8 +252,8 @@ class SlidingPaneContainer(QScrollArea):
         Clean up the panes that were popped from this container.
         """
 
-        while self._pending_cleanup:
-            pane = self._pending_cleanup.pop()
+        while self._panes_pending_cleanup:
+            pane = self._panes_pending_cleanup.pop()
             pane.hide()
             pane.setParent(None)  # type: ignore  # Actually legal.
             pane.deleteLater()
@@ -266,12 +305,12 @@ class SlidingPaneContainer(QScrollArea):
         # Note that we also resize the widgets that are about to be cleaned up.
         # Until they are, in fact, cleaned up, they're still there.
 
-        for i, pane in enumerate(self._panes + self._pending_cleanup[::-1]):
+        for i, pane in enumerate(self._allPanes()):
             pane.resize(width, height)
             pane.move(i * width, 0)
 
         if not self._isInMotion():
-            self._x_scroll_enforced_value = self._active_pane * width
+            self._x_scroll_enforced_value = self._active_pane_index * width
             self._enforceXScrollValue()
 
         super().resizeEvent(arg__1)
@@ -288,11 +327,10 @@ class SlidingPaneContainer(QScrollArea):
             self.viewport().size().height(),
         )
 
-        if self._panes:
-            self.widget().resize(
-                width * max(len(self._panes) + len(self._pending_cleanup), 1),
-                height,
-            )
+        self.widget().resize(
+            width * max(len(self._allPanes()), 1),
+            height,
+        )
 
     def wheelEvent(self, arg__1: QWheelEvent) -> None:
         """
@@ -301,28 +339,5 @@ class SlidingPaneContainer(QScrollArea):
         current pane.
         """
 
-        if self._panes:
-            self._panes[self._active_pane].wheelEvent(arg__1)
-
-    def _installEventFilterRecursively(self, widget: QWidget) -> None:
-        """
-        Set up our mouse-filtering event filter in all subchildren of the given
-        widget.
-        """
-        widget.installEventFilter(self)
-        for child in widget.children():
-            if isinstance(child, QWidget):
-                self._installEventFilterRecursively(child)
-
-    def eventFilter(self, arg__1: QObject, arg__2: QEvent) -> bool:
-        """
-        Only pass down clicks if we are not currently scrolling.
-        """
-        if arg__2.type() in (
-            QEvent.Type.MouseButtonPress,
-            QEvent.Type.MouseButtonRelease,
-            QEvent.Type.MouseButtonDblClick,
-        ):
-            if self._isInMotion():
-                return True  # Eat the event.
-        return super().eventFilter(arg__1, arg__2)
+        if (current_pane := self._currentActivePane()) is not None:
+            current_pane.wheelEvent(arg__1)

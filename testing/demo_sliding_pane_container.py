@@ -59,6 +59,8 @@ class Pane(QWidget):
 
 
 class Container(SlidingPaneContainer):
+    _ANIMATION_DURATION = 2000
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 

@@ -28,8 +28,8 @@ from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
-from spyrit.ui.spyrit_main_ui import SpyritMainUiFactory
-from spyrit.ui.spyrit_main_window import SpyritMainWindowFactory
+from spyrit.ui.main_ui_factory import SpyritMainUiFactory
+from spyrit.ui.main_window_factory import SpyritMainWindowFactory
 from spyrit.ui.tabbed_ui_factory import TabbedUiFactory
 
 
@@ -135,12 +135,9 @@ def bootstrap(args: list[str]) -> int:
 
         # Build the UI.
 
-        spyrit_main_window_factory = SpyritMainWindowFactory(settings)
-        spyrit_main_ui_factory = SpyritMainUiFactory(settings)
-
         ui_factory = TabbedUiFactory(
-            tabbed_ui_element_factory=spyrit_main_ui_factory,
-            tabbed_ui_container_factory=spyrit_main_window_factory,
+            tabbed_ui_element_factory=SpyritMainUiFactory(settings),
+            tabbed_ui_container_factory=SpyritMainWindowFactory(settings),
         )
         ui_factory.createNewUiInNewWindow()
 

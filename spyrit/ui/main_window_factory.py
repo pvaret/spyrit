@@ -24,26 +24,22 @@ from spyrit.ui.tabbed_ui_container import TabbedUiContainer
 from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
-class SpyritMainWindow(TabbedUiContainer):
+class MainWindow(TabbedUiContainer):
     """
     An implementation of the top-level tabbed UI container that's aware of
     things like Spyrit settings.
     """
 
-    _settings: SpyritSettings
-
     def __init__(
         self,
-        main_settings: SpyritSettings,
+        settings: SpyritSettings,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
 
-        self._settings = main_settings
-
         # Set up keyboard shortcuts.
 
-        key_settings = main_settings.shortcuts
+        key_settings = settings.shortcuts
         for shortcut, slot in (
             (key_settings.new_tab, self.newTabRequested),
             (key_settings.new_window, self.newWindowRequested),
@@ -67,5 +63,5 @@ class SpyritMainWindowFactory:
     def __init__(self, settings: SpyritSettings) -> None:
         self._settings = settings
 
-    def __call__(self) -> SpyritMainWindow:
-        return SpyritMainWindow(self._settings)
+    def __call__(self) -> MainWindow:
+        return MainWindow(self._settings)

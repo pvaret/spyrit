@@ -13,15 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 
-this_file = pathlib.Path(__file__)
-this_dir = this_file.parent.absolute()
-
-sys.path.insert(0, this_dir.parent.as_posix())
-
-from spyrit.ui.bars import HBar, VBar  # noqa: E402
-
-
-class Button(QPushButton):
+class TestButton(QPushButton):
     def __init__(self, label: str) -> None:
         super().__init__(label)
 
@@ -32,18 +24,25 @@ class Button(QPushButton):
 
 
 if __name__ == "__main__":
+    this_file = pathlib.Path(__file__)
+    this_dir = this_file.parent.absolute()
+
+    sys.path.insert(0, this_dir.parent.as_posix())
+
+    from spyrit.ui.bars import HBar, VBar
+
     app = QApplication()
 
     w = QWidget()
     hlayout = QHBoxLayout()
     w.setLayout(hlayout)
-    hlayout.addWidget(Button("Button 1"))
+    hlayout.addWidget(TestButton("Button 1"))
     hlayout.addWidget(VBar())
     vlayout = QVBoxLayout()
     hlayout.addLayout(vlayout)
-    vlayout.addWidget(Button("Button 2"))
+    vlayout.addWidget(TestButton("Button 2"))
     vlayout.addWidget(HBar())
-    vlayout.addWidget(Button("Button 3"))
+    vlayout.addWidget(TestButton("Button 3"))
     w.show()
 
     app.exec()

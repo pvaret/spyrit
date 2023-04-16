@@ -23,6 +23,7 @@ from PySide6.QtGui import QResizeEvent, QWheelEvent
 from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
 
 from spyrit import constants
+from spyrit.ui.base_pane import Pane
 
 
 class SlidingPaneContainer(QScrollArea):
@@ -39,8 +40,8 @@ class SlidingPaneContainer(QScrollArea):
 
     _EASING_CURVE: QEasingCurve.Type = QEasingCurve.Type.OutCubic
 
-    _active_panes: list[QWidget]
-    _panes_pending_cleanup: list[QWidget]
+    _active_panes: list[Pane]
+    _panes_pending_cleanup: list[Pane]
     _active_pane_index: int
     _x_scroll_enforced_value: int
     _y_scroll_enforced_value: int
@@ -92,7 +93,7 @@ class SlidingPaneContainer(QScrollArea):
             self._onMotionMaybeComplete
         )
 
-    def append(self, pane: QWidget, switch: bool = True) -> None:
+    def append(self, pane: Pane, switch: bool = True) -> None:
         """
         Add a new pane at the end of the existing set of panes, and update
         geometry accordingly.
@@ -129,11 +130,14 @@ class SlidingPaneContainer(QScrollArea):
 
         pane.show()
 
+        if pane is self._currentActivePane():
+            pane.makeActive()
+
         if switch:
             self.switchToPane(self._indexOfLastPane())
 
         if pane is not self._currentActivePane():
-            pane.setDisabled(True)
+            pane.makeInactive()
 
     def pop(self) -> None:
         """
@@ -162,15 +166,15 @@ class SlidingPaneContainer(QScrollArea):
         if i == self._active_pane_index:
             return
 
-        # Enable the target pane, disable the current pane.
+        # Make the target pane active, and the current pane inactive.
 
         pane_from = self._currentActivePane()
         pane_to = self._paneAtIndex(i)
 
         if pane_from is not None:
-            pane_from.setEnabled(False)
+            pane_from.makeInactive()
         if pane_to is not None:
-            pane_to.setEnabled(True)
+            pane_to.makeActive()
 
         # If the animation is currently running already, then use its current
         # position as the starting position for a new animation.
@@ -210,7 +214,7 @@ class SlidingPaneContainer(QScrollArea):
 
         return len(self._active_panes) - 1
 
-    def _currentActivePane(self) -> QWidget | None:
+    def _currentActivePane(self) -> Pane | None:
         """
         Returns the widget of the current active pane, if any.
         """
@@ -222,7 +226,7 @@ class SlidingPaneContainer(QScrollArea):
 
         return None
 
-    def _paneAtIndex(self, i: int) -> QWidget | None:
+    def _paneAtIndex(self, i: int) -> Pane | None:
         """
         Returns the widget of the pane at the given index, if any.
 
@@ -234,7 +238,7 @@ class SlidingPaneContainer(QScrollArea):
         except IndexError:
             return None
 
-    def _allPanes(self) -> Sequence[QWidget]:
+    def _allPanes(self) -> Sequence[Pane]:
         """
         Returns all the panes in index order, including panes pending deletion.
         """

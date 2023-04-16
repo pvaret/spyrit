@@ -16,8 +16,10 @@ Implements a UI to set up a new world.
 """
 
 
+from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QLabel
 
+from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
@@ -38,9 +40,16 @@ class WorldCreationPane(BaseDialogPane):
 
         self.okClicked.connect(self._openWorld)
         self.cancelClicked.connect(self._remote.pop)
+        self.active.connect(self._setTitles)
 
         # TODO: Implement.
 
+    @Slot()
     def _openWorld(self) -> None:
-        world_pane = WorldPane(self._settings)
+        world_pane = WorldPane(self._settings, self._remote)
         self._remote.append(world_pane)
+
+    @Slot()
+    def _setTitles(self) -> None:
+        self._remote.setTabTitle("New world")
+        self._remote.setWindowTitle(constants.APPLICATION_NAME)

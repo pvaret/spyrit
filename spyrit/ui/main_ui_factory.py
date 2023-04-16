@@ -19,6 +19,7 @@ Provide the main UI of Spyrit, to be embedded in a tabbed container.
 from PySide6.QtWidgets import QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.ui.base_pane import Pane
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.welcome_pane import WelcomePane
 from spyrit.ui.tabbed_ui_element import TabbedUIElement
@@ -34,7 +35,7 @@ class _UIRemote:
     def __init__(self, ui: "MainUI") -> None:
         self._ui = ui
 
-    def append(self, pane: QWidget) -> None:
+    def append(self, pane: Pane) -> None:
         self._ui.append(pane)
 
     def pop(self) -> None:
@@ -67,7 +68,7 @@ class MainUI(TabbedUIElement):
         self._container.append(WelcomePane(settings, _UIRemote(self)))
         self.setWidget(self._container)
 
-    def append(self, widget: QWidget) -> None:
+    def append(self, widget: Pane) -> None:
         return self._container.append(widget)
 
     def pop(self) -> None:

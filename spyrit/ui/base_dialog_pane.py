@@ -20,9 +20,10 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 
 from spyrit.ui.bars import HBar
+from spyrit.ui.base_pane import Pane
 
 
-class BaseDialogPane(QWidget):
+class BaseDialogPane(Pane):
     # Signal emitted when the user clicks the dialog acceptance button.
 
     okClicked = Signal()  # noqa: N815

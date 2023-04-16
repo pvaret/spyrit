@@ -21,11 +21,11 @@ the remote shouldn't.
 
 from typing import Protocol
 
-from PySide6.QtWidgets import QWidget
+from spyrit.ui.base_pane import Pane
 
 
 class UIRemoteProtocol(Protocol):
-    def append(self, pane: QWidget) -> None:
+    def append(self, pane: Pane) -> None:
         ...
 
     def pop(self) -> None:

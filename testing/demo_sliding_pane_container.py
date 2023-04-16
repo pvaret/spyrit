@@ -13,21 +13,25 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+
 this_file = pathlib.Path(__file__)
 this_dir = this_file.parent.absolute()
 
 sys.path.insert(0, this_dir.parent.as_posix())
 
+from spyrit.ui.base_pane import Pane  # noqa: E402
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer  # noqa: E402
 
 
-class Pane(QWidget):
+class TestPane(Pane):
     wantAppend = Signal()  # noqa: N815
     wantAppendNoSwitch = Signal()  # noqa: N815
     wantPop = Signal()  # noqa: N815
 
-    def __init__(self, i: int, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
+    def __init__(self, i: int) -> None:
+        super().__init__()
+
+        self._i = i
 
         self.setLayout(QHBoxLayout())
 
@@ -57,6 +61,15 @@ class Pane(QWidget):
         self._pop.clicked.connect(self.wantPop)
         self.layout().addWidget(self._pop)
 
+        self.active.connect(self.showActive)
+        self.inactive.connect(self.showInactive)
+
+    def showActive(self) -> None:
+        print(f"Pane {self._i} is now active!")
+
+    def showInactive(self) -> None:
+        print(f"Pane {self._i} is now inactive!")
+
 
 class Container(SlidingPaneContainer):
     _ANIMATION_DURATION = 2000
@@ -67,7 +80,7 @@ class Container(SlidingPaneContainer):
         self.appendPane(silent=True)
 
     def appendPane(self, silent: bool = False, switch: bool = True) -> None:
-        pane = Pane(self._indexOfLastPane() + 1)
+        pane = TestPane(self._indexOfLastPane() + 1)
         pane.wantAppend.connect(self.appendPane)
         pane.wantAppendNoSwitch.connect(self.appendPaneNoSwitch)
         pane.wantPop.connect(self.popPane)

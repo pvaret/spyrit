@@ -17,11 +17,12 @@ Implements the UI that is first displayed when opening a new window.
 
 
 from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.bars import HBar, VBar
+from spyrit.ui.base_pane import Pane
 from spyrit.ui.buttons import Button, WorldButton
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.spyrit_logo import SpyritLogo
@@ -32,7 +33,7 @@ from spyrit.ui.world_pane import WorldPane
 _UNIT = 16
 
 
-class WelcomePane(QWidget):
+class WelcomePane(Pane):
     """
     Implements the UI entry point from where the users can start using the
     software.
@@ -119,12 +120,13 @@ class WelcomePane(QWidget):
 
         # Set up the window and tab title.
 
-        self._remote.setTabTitle(f"Welcome to {constants.APPLICATION_NAME}!")
-        self._remote.setWindowTitle(constants.APPLICATION_NAME)
+        self.active.connect(self._setTitles)
 
     @Slot()
     def _openWorldCreationPane(self) -> None:
-        self._remote.append(WorldCreationPane(self._settings, self._remote))
+        pane = WorldCreationPane(self._settings, self._remote)
+        assert isinstance(pane, Pane)  # Work around Pylance type checking bug.
+        self._remote.append(pane)
 
     @Slot()
     def _openWorldPane(self) -> None:
@@ -134,4 +136,8 @@ class WelcomePane(QWidget):
 
         world = button.settings()
 
-        self._remote.append(WorldPane(world))
+        self._remote.append(WorldPane(world, self._remote))
+
+    def _setTitles(self) -> None:
+        self._remote.setTabTitle(f"Welcome to {constants.APPLICATION_NAME}!")
+        self._remote.setWindowTitle(constants.APPLICATION_NAME)

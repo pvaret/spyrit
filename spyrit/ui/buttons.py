@@ -15,12 +15,22 @@
 Implements app-specific buttons.
 """
 
+from textwrap import TextWrapper
+
 from PySide6.QtWidgets import QPushButton
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 
 # TODO: make this a function of the font size.
 _UNIT = 16
+_WORLD_BUTTON_WRAP = 30
+
+
+def linewrap(text: str) -> str:
+    wrapper = TextWrapper()
+    wrapper.width = _WORLD_BUTTON_WRAP
+
+    return "\n".join(wrapper.wrap(text))
 
 
 class Button(QPushButton):
@@ -35,8 +45,10 @@ class WorldButton(Button):
 
     def __init__(self, settings: SpyritSettings) -> None:
         self._settings = settings
+
         label = settings.name.get() or "(Unnamed)"
-        super().__init__(label)
+
+        super().__init__(linewrap(label))
 
     def settings(self) -> SpyritSettings:
         return self._settings

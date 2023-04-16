@@ -16,16 +16,31 @@ Implements a UI to set up a new world.
 """
 
 
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QWidget
+from PySide6.QtWidgets import QLabel
 
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.ui.base_dialog_pane import BaseDialogPane
+from spyrit.ui.sliding_pane_container import ContainerRemote
+from spyrit.ui.world_pane import WorldPane
 
 
-class WorldCreationPane(QWidget):
-    def __init__(self, settings: SpyritSettings) -> None:
-        super().__init__()
+class WorldCreationPane(BaseDialogPane):
+    _settings: SpyritSettings
+    _remote: ContainerRemote
 
-        self.setLayout(QHBoxLayout())
-        self.layout().addWidget(QLabel("Creating a new world!"))
+    def __init__(
+        self, settings: SpyritSettings, remote: ContainerRemote
+    ) -> None:
+        super().__init__(QLabel("Creating a new world!"))
+
+        self._settings = settings
+        self._remote = remote
+
+        self.okClicked.connect(self._openWorld)
+        self.cancelClicked.connect(self._remote.pop)
 
         # TODO: Implement.
+
+    def _openWorld(self) -> None:
+        world_pane = WorldPane(self._settings)
+        self._remote.append(world_pane)

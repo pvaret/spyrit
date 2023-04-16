@@ -119,7 +119,7 @@ class WelcomePane(QWidget):
 
     @Slot()
     def _openWorldCreationPane(self) -> None:
-        self._remote.append(WorldCreationPane(self._settings))
+        self._remote.append(WorldCreationPane(self._settings, self._remote))
 
     @Slot()
     def _openWorldPane(self) -> None:

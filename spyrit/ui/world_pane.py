@@ -26,6 +26,7 @@ class WorldPane(QWidget):
         super().__init__()
 
         self.setLayout(QHBoxLayout())
-        self.layout().addWidget(QLabel(f"Playing world {settings.name.get()}!"))
+        name = settings.name.get() or "unnamed"
+        self.layout().addWidget(QLabel(f"Playing world {name}!"))
 
         # TODO: Implement.

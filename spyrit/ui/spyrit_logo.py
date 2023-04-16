@@ -25,7 +25,7 @@ from spyrit import constants
 
 # TODO: make this a function of the font size.
 _UNIT = 16
-_WIDTH = 16 * _UNIT
+_WIDTH = 20 * _UNIT
 
 
 class SpyritLogo(QWidget):

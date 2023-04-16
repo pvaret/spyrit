@@ -17,8 +17,9 @@ Implements the UI that is first displayed when opening a new window.
 
 
 from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
+from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.buttons import Button, WorldButton
@@ -80,10 +81,33 @@ class WelcomePane(QWidget):
         ]
         worlds.sort(key=lambda w: w.name.get().strip().lower())
 
-        for world in worlds:
-            world_button = WorldButton(world)
-            world_button.clicked.connect(self._openWorldPane)
-            menu_layout.addWidget(world_button)
+        if worlds:
+            menu_layout.addWidget(QLabel("Return to..."))
+
+            for world in worlds:
+                world_button = WorldButton(world)
+                world_button.clicked.connect(self._openWorldPane)
+                menu_layout.addWidget(world_button)
+
+            menu_layout.addSpacing(_UNIT)
+
+        # Important application buttons (settings and about)!
+
+        menu_layout.addWidget(HBar())
+        menu_layout.addSpacing(_UNIT)
+
+        button_layout = QHBoxLayout()
+        menu_layout.addLayout(button_layout)
+
+        settings_button = Button("Settings")
+        button_layout.addWidget(settings_button)
+        settings_button.setEnabled(False)  # TODO: Implement.
+
+        about_button = Button(f"About {constants.APPLICATION_NAME}...")
+        button_layout.addWidget(about_button)
+        about_button.setEnabled(False)  # TODO: Implement.
+
+        # Fill out the remaining space.
 
         menu_layout.addStretch()
 

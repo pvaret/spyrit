@@ -16,12 +16,19 @@ Implements the UI that is first displayed when opening a new window.
 """
 
 
-from PySide6.QtWidgets import QHBoxLayout, QWidget
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
-from spyrit.ui.bars import VBar
-from spyrit.ui.main_menu import MainMenuLayout
+from spyrit.ui.bars import HBar, VBar
+from spyrit.ui.buttons import Button, WorldButton
 from spyrit.ui.sliding_pane_container import ContainerRemote
+from spyrit.ui.spyrit_logo import SpyritLogo
+from spyrit.ui.world_creation_pane import WorldCreationPane
+from spyrit.ui.world_pane import WorldPane
+
+# TODO: make this a function of the font size.
+_UNIT = 16
 
 
 class WelcomePane(QWidget):
@@ -30,15 +37,72 @@ class WelcomePane(QWidget):
     software.
     """
 
+    _settings: SpyritSettings
+    _remote: ContainerRemote
+
     def __init__(
         self, settings: SpyritSettings, remote: ContainerRemote
     ) -> None:
         super().__init__()
 
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self._settings = settings
+        self._remote = remote
 
-        layout.addLayout(MainMenuLayout(settings, remote))
-        layout.addWidget(VBar())
+        # Create the main layout.
 
-        layout.addStretch()
+        pane_layout = QHBoxLayout()
+        self.setLayout(pane_layout)
+
+        # Create and set up the menu layout.
+
+        menu_layout = QVBoxLayout()
+
+        # Logo!
+
+        menu_layout.addWidget(SpyritLogo())
+
+        menu_layout.addWidget(HBar())
+
+        menu_layout.addSpacing(_UNIT)
+
+        # New world button!
+
+        new_world_button = Button("New world...")
+        new_world_button.clicked.connect(self._openWorldCreationPane)
+        menu_layout.addWidget(new_world_button)
+
+        menu_layout.addSpacing(_UNIT)
+
+        # All world buttons!
+
+        worlds = [
+            world for world in settings.sections() if not world.isPrivate()
+        ]
+        worlds.sort(key=lambda w: w.name.get().strip().lower())
+
+        for world in worlds:
+            world_button = WorldButton(world)
+            world_button.clicked.connect(self._openWorldPane)
+            menu_layout.addWidget(world_button)
+
+        menu_layout.addStretch()
+
+        # And finalize the main layout.
+
+        pane_layout.addLayout(menu_layout)
+        pane_layout.addWidget(VBar())
+        pane_layout.addStretch()
+
+    @Slot()
+    def _openWorldCreationPane(self) -> None:
+        self._remote.append(WorldCreationPane(self._settings))
+
+    @Slot()
+    def _openWorldPane(self) -> None:
+        button = self.sender()
+        if not isinstance(button, WorldButton):
+            return
+
+        world = button.settings()
+
+        self._remote.append(WorldPane(world))

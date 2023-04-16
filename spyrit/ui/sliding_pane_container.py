@@ -190,9 +190,6 @@ class SlidingPaneContainer(QScrollArea):
 
         self._active_pane_index = i
 
-    def getRemote(self) -> "ContainerRemote":
-        return ContainerRemote(self)
-
     def _isInMotion(self) -> bool:
         """
         Returns whether a sliding animation is in progress.
@@ -349,16 +346,3 @@ class SlidingPaneContainer(QScrollArea):
 
         if (current_pane := self._currentActivePane()) is not None:
             current_pane.wheelEvent(arg__1)
-
-
-class ContainerRemote:
-    _container: SlidingPaneContainer
-
-    def __init__(self, container: SlidingPaneContainer) -> None:
-        self._container = container
-
-    def append(self, pane: QWidget, switch: bool = True) -> None:
-        self._container.append(pane, switch=switch)
-
-    def pop(self) -> None:
-        self._container.pop()

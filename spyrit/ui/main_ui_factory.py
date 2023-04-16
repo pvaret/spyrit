@@ -16,34 +16,62 @@ Provide the main UI of Spyrit, to be embedded in a tabbed container.
 """
 
 
-from PySide6.QtWidgets import QHBoxLayout, QWidget
+from PySide6.QtWidgets import QWidget
 
-from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.welcome_pane import WelcomePane
 from spyrit.ui.tabbed_ui_element import TabbedUIElement
 
 
+class _UIRemote:
+    """
+    A class that provides controls to update the main UI.
+    """
+
+    _ui: "MainUI"
+
+    def __init__(self, ui: "MainUI") -> None:
+        self._ui = ui
+
+    def append(self, pane: QWidget) -> None:
+        self._ui.append(pane)
+
+    def pop(self) -> None:
+        self._ui.pop()
+
+    def setWindowTitle(self, title: str) -> None:
+        self._ui.setWindowTitle(title)
+
+    def setTabTitle(self, title: str) -> None:
+        self._ui.setTabTitle(title)
+
+
 class MainUI(TabbedUIElement):
+    """
+    Class that puts together the application's UI elements.
+    """
+
+    _container: SlidingPaneContainer
+
     def __init__(
         self,
         settings: SpyritSettings,
         parent: QWidget | None = None,
     ) -> None:
-        super().__init__(parent)
+        super().__init__(parent=parent)
 
         # Set up the main widget for this UI.
 
-        self.setLayout(QHBoxLayout())
-        container = SlidingPaneContainer()
-        container.append(WelcomePane(settings, container.getRemote()))
-        self.layout().addWidget(container)
+        self._container = SlidingPaneContainer()
+        self._container.append(WelcomePane(settings, _UIRemote(self)))
+        self.setWidget(self._container)
 
-        # Set up the title texts for this UI.
+    def append(self, widget: QWidget) -> None:
+        return self._container.append(widget)
 
-        self.setTabTitle(f"Welcome to {constants.APPLICATION_NAME}!")
-        self.setWindowTitle(constants.APPLICATION_NAME)
+    def pop(self) -> None:
+        return self._container.pop()
 
 
 class SpyritMainUIFactory:

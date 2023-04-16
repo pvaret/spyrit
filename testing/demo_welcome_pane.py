@@ -16,7 +16,7 @@ if __name__ == "__main__":
 
     from spyrit import resources
     from spyrit.settings.spyrit_settings import SpyritSettings
-    from spyrit.ui.sliding_pane_container import ContainerRemote
+    from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
     from spyrit.ui.welcome_pane import WelcomePane
 
     settings = SpyritSettings()
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     resources.load()
     app = QApplication(sys.argv)
-    remote = Mock(spec=ContainerRemote)
+    remote = Mock(spec=UIRemoteProtocol)
     pane = WelcomePane(settings, remote)
     pane.show()
 

@@ -48,10 +48,13 @@ class TabbedUIElement(QWidget):
     _tab_title: str
     _window_title: str
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(
+        self,
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
 
-        # Set up the layour of the UI element. Basically a horizontal layout,
+        # Set up the layout of the UI element. Basically a horizontal layout,
         # but in practice we'll just want to add a single widget.
 
         self.setLayout(QHBoxLayout())
@@ -61,6 +64,18 @@ class TabbedUIElement(QWidget):
 
         self._tab_title = ""
         self._window_title = ""
+
+    def setWidget(self, widget: QWidget) -> None:
+        """
+        Sets the UI's main widget.
+
+        Does nothing if there is already a widget set.
+        """
+
+        if self.layout().count() > 0:
+            return
+
+        self.layout().addWidget(widget)
 
     def tabTitle(self) -> str:
         """

@@ -20,16 +20,16 @@ from PySide6.QtWidgets import QLabel
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
-from spyrit.ui.sliding_pane_container import ContainerRemote
+from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.world_pane import WorldPane
 
 
 class WorldCreationPane(BaseDialogPane):
     _settings: SpyritSettings
-    _remote: ContainerRemote
+    _remote: UIRemoteProtocol
 
     def __init__(
-        self, settings: SpyritSettings, remote: ContainerRemote
+        self, settings: SpyritSettings, remote: UIRemoteProtocol
     ) -> None:
         super().__init__(QLabel("Creating a new world!"))
 

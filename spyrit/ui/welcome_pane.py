@@ -21,6 +21,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.bars import VBar
 from spyrit.ui.main_menu import MainMenuLayout
+from spyrit.ui.sliding_pane_container import ContainerRemote
 
 
 class WelcomePane(QWidget):
@@ -29,13 +30,15 @@ class WelcomePane(QWidget):
     software.
     """
 
-    def __init__(self, settings: SpyritSettings) -> None:
+    def __init__(
+        self, settings: SpyritSettings, remote: ContainerRemote
+    ) -> None:
         super().__init__()
 
         layout = QHBoxLayout()
         self.setLayout(layout)
 
-        layout.addLayout(MainMenuLayout(settings))
+        layout.addLayout(MainMenuLayout(settings, remote))
         layout.addWidget(VBar())
 
         layout.addStretch()

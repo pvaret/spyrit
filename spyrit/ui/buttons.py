@@ -17,6 +17,8 @@ Implements app-specific buttons.
 
 from PySide6.QtWidgets import QPushButton
 
+from spyrit.settings.spyrit_settings import SpyritSettings
+
 # TODO: make this a function of the font size.
 _UNIT = 16
 
@@ -26,3 +28,15 @@ class Button(QPushButton):
         super().__init__(label)
 
         self.setStyleSheet(f"padding: {_UNIT}")
+
+
+class WorldButton(Button):
+    _settings: SpyritSettings
+
+    def __init__(self, settings: SpyritSettings) -> None:
+        self._settings = settings
+        label = settings.name.get() or "(Unnamed)"
+        super().__init__(label)
+
+    def settings(self) -> SpyritSettings:
+        return self._settings

@@ -37,7 +37,7 @@ class MainUI(TabbedUIElement):
 
         self.setLayout(QHBoxLayout())
         container = SlidingPaneContainer()
-        container.append(WelcomePane(settings))
+        container.append(WelcomePane(settings, container.getRemote()))
         self.layout().addWidget(container)
 
         # Set up the title texts for this UI.

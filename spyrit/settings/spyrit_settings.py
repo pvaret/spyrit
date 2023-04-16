@@ -16,7 +16,7 @@ Declaration of the Spyrit settings.
 """
 
 
-from sunset import Key, Bundle, Settings
+from sunset import Key, Bunch, Settings
 
 from spyrit.settings import key_shortcut
 
@@ -26,7 +26,7 @@ def _new_shortcut(combination: str) -> Key[key_shortcut.KeyShortcut]:
 
 
 class SpyritSettings(Settings):
-    class KeyShortcuts(Bundle):
+    class KeyShortcuts(Bunch):
         new_tab = _new_shortcut("Ctrl+T")
         new_window = _new_shortcut("Ctrl+Shift+N")
         close_current_tab = _new_shortcut("Ctrl+W")
@@ -36,3 +36,5 @@ class SpyritSettings(Settings):
         move_current_tab_right = _new_shortcut("Ctrl+Shift+PgDown")
 
     shortcuts = KeyShortcuts()
+
+    name = Key(default="")

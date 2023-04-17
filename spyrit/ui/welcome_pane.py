@@ -124,8 +124,7 @@ class WelcomePane(Pane):
 
     @Slot()
     def _openWorldCreationPane(self) -> None:
-        pane = WorldCreationPane(self._settings, self._remote)
-        assert isinstance(pane, Pane)  # Work around Pylance type checking bug.
+        pane = WorldCreationPane(self._settings.newSection(), self._remote)
         self._remote.append(pane)
 
     @Slot()

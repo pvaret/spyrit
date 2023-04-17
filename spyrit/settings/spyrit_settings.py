@@ -35,6 +35,11 @@ class SpyritSettings(Settings):
         move_current_tab_left = _new_shortcut("Ctrl+Shift+PgUp")
         move_current_tab_right = _new_shortcut("Ctrl+Shift+PgDown")
 
+    class Network(Bunch):
+        server = Key(default="")
+        port = Key(default=0)
+
     shortcuts = KeyShortcuts()
+    net = Network()
 
     name = Key(default="")

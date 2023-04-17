@@ -19,12 +19,12 @@ purposes.
 # Dependencies
 
 REQUIRED_PYTHON_VERSION: tuple[int, int] = (3, 11)
-REQUIRED_QT_VERSION: tuple[int, int] = (6, 2)
+REQUIRED_QT_VERSION: tuple[int, int] = (6, 5)
 
 # Name
 
 APPLICATION_NAME: str = "SpyritNG"
-SPYRIT_VERSION: str = "0.0-dev"
+SPYRIT_VERSION: str = "0.5-dev"
 
 # PID file
 

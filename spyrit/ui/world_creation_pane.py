@@ -78,27 +78,25 @@ class WorldCreationForm(QWidget):
 
 class WorldCreationPane(BaseDialogPane):
     _settings: SpyritSettings
-    _remote: UIRemoteProtocol
+    _ui: UIRemoteProtocol
 
-    def __init__(
-        self, settings: SpyritSettings, remote: UIRemoteProtocol
-    ) -> None:
+    def __init__(self, settings: SpyritSettings, ui: UIRemoteProtocol) -> None:
         super().__init__(WorldCreationForm(settings))
 
         self._settings = settings
-        self._remote = remote
+        self._ui = ui
 
         self.okClicked.connect(self._openWorld)
-        self.cancelClicked.connect(self._remote.pop)
+        self.cancelClicked.connect(self._ui.pop)
         self.active.connect(self._setTitles)
 
     @Slot()
     def _openWorld(self) -> None:
         self._settings.setSectionName(self._settings.name.get())
-        world_pane = WorldPane(self._settings, self._remote)
-        self._remote.append(world_pane)
+        world_pane = WorldPane(self._settings, self._ui)
+        self._ui.append(world_pane)
 
     @Slot()
     def _setTitles(self) -> None:
-        self._remote.setTabTitle("New world")
-        self._remote.setWindowTitle(constants.APPLICATION_NAME)
+        self._ui.setTabTitle("New world")
+        self._ui.setWindowTitle(constants.APPLICATION_NAME)

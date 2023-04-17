@@ -29,8 +29,8 @@ if __name__ == "__main__":
 
     resources.load()
     app = QApplication(sys.argv)
-    remote = Mock(spec=UIRemoteProtocol)
-    pane = WelcomePane(settings, remote)
+    ui = Mock(spec=UIRemoteProtocol)
+    pane = WelcomePane(settings, ui)
     pane.show()
 
     app.exec()

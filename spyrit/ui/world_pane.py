@@ -27,15 +27,13 @@ from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 
 class WorldPane(Pane):
     _settings: SpyritSettings
-    _remote: UIRemoteProtocol
+    _ui: UIRemoteProtocol
 
-    def __init__(
-        self, settings: SpyritSettings, remote: UIRemoteProtocol
-    ) -> None:
+    def __init__(self, settings: SpyritSettings, ui: UIRemoteProtocol) -> None:
         super().__init__()
 
         self._settings = settings
-        self._remote = remote
+        self._ui = ui
 
         self.setLayout(QHBoxLayout())
         name = settings.name.get() or "unnamed"
@@ -48,7 +46,5 @@ class WorldPane(Pane):
     @Slot()
     def _setTitles(self) -> None:
         world_name = self._settings.name.get() or "Unnamed"
-        self._remote.setTabTitle(world_name)
-        self._remote.setWindowTitle(
-            f"{constants.APPLICATION_NAME} - {world_name}"
-        )
+        self._ui.setTabTitle(world_name)
+        self._ui.setWindowTitle(f"{constants.APPLICATION_NAME} - {world_name}")

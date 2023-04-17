@@ -40,15 +40,13 @@ class WelcomePane(Pane):
     """
 
     _settings: SpyritSettings
-    _remote: UIRemoteProtocol
+    _ui: UIRemoteProtocol
 
-    def __init__(
-        self, settings: SpyritSettings, remote: UIRemoteProtocol
-    ) -> None:
+    def __init__(self, settings: SpyritSettings, ui: UIRemoteProtocol) -> None:
         super().__init__()
 
         self._settings = settings
-        self._remote = remote
+        self._ui = ui
 
         # Create the main layout.
 
@@ -124,8 +122,8 @@ class WelcomePane(Pane):
 
     @Slot()
     def _openWorldCreationPane(self) -> None:
-        pane = WorldCreationPane(self._settings.newSection(), self._remote)
-        self._remote.append(pane)
+        pane = WorldCreationPane(self._settings.newSection(), self._ui)
+        self._ui.append(pane)
 
     @Slot()
     def _openWorldPane(self) -> None:
@@ -135,8 +133,8 @@ class WelcomePane(Pane):
 
         world = button.settings()
 
-        self._remote.append(WorldPane(world, self._remote))
+        self._ui.append(WorldPane(world, self._ui))
 
     def _setTitles(self) -> None:
-        self._remote.setTabTitle(f"Welcome to {constants.APPLICATION_NAME}!")
-        self._remote.setWindowTitle(constants.APPLICATION_NAME)
+        self._ui.setTabTitle(f"Welcome to {constants.APPLICATION_NAME}!")
+        self._ui.setWindowTitle(constants.APPLICATION_NAME)

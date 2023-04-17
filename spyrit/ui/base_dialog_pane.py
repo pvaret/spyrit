@@ -32,20 +32,21 @@ class BaseDialogPane(Pane):
 
     cancelClicked = Signal()  # noqa: N815
 
+    _widget: QWidget
+
     def __init__(
         self,
-        widget: QWidget,
-        ok_button_text: str = "Ok",
-        cancel_button_text: str = "Cancel",
+        ok_button: QPushButton | None = None,
+        cancel_button: QPushButton | None = None,
     ) -> None:
         super().__init__()
 
-        pane_layout = QVBoxLayout()
-        self.setLayout(pane_layout)
+        self.setLayout(pane_layout := QVBoxLayout())
 
         # Add the dialog's main widget.
 
-        pane_layout.addWidget(widget)
+        self._widget = QWidget()
+        pane_layout.addWidget(self._widget)
 
         # Add a separator.
 
@@ -53,16 +54,23 @@ class BaseDialogPane(Pane):
 
         # Add the dialog buttons.
 
-        button_layout = QHBoxLayout()
-        pane_layout.addLayout(button_layout)
+        pane_layout.addLayout(button_layout := QHBoxLayout())
 
         button_layout.addStretch()
 
-        cancel_button = QPushButton(cancel_button_text)
-        cancel_button.clicked.connect(self.cancelClicked)
-        button_layout.addWidget(cancel_button)
+        if cancel_button is not None:
+            cancel_button.clicked.connect(self.cancelClicked)
+            button_layout.addWidget(cancel_button)
 
-        ok_button = QPushButton(ok_button_text)
+        # We always create an Ok button if one was not provided.
+
+        if ok_button is None:
+            ok_button = QPushButton("Ok")
+
         ok_button.clicked.connect(self.okClicked)
         ok_button.setDefault(True)
         button_layout.addWidget(ok_button)
+
+    def setWidget(self, widget: QWidget) -> None:
+        self.layout().replaceWidget(self._widget, widget)
+        self._widget = widget

@@ -17,7 +17,8 @@ if __name__ == "__main__":
     app = QApplication()
 
     text = QLabel("This is a dialog!")
-    pane = BaseDialogPane(text)
+    pane = BaseDialogPane()
+    pane.setWidget(text)
     pane.okClicked.connect(lambda: print("OK clicked!"))
     pane.cancelClicked.connect(lambda: print("Cancel clicked!"))
     pane.show()

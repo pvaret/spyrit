@@ -16,14 +16,19 @@ Implements custom widgets to be used in configuration forms.
 """
 
 
-from PySide6.QtGui import QIntValidator
-from PySide6.QtWidgets import QLineEdit, QSizePolicy
+from PySide6.QtGui import QIntValidator, QRegularExpressionValidator
+from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy
 from sunset import Key
 
+from spyrit import constants
 from spyrit.settings.widget_connector import Connector
 
 # TODO: make this a function of the font size.
 _UNIT = 16
+_PORT_EDIT_WIDTH = 4 * _UNIT
+
+
+# LineEdits.
 
 
 class LineEdit(QLineEdit):
@@ -43,9 +48,18 @@ class TextLineEdit(LineEdit):
             key,
             widget_value_getter=self.text,
             widget_value_setter=self.setText,
-            widget_value_changed_signal=self.editingFinished,
-            to_value_converter=lambda text: text.strip(),
+            widget_value_changed_signal=self.textEdited,
+            to_value_converter=lambda text: text,
             from_value_converter=lambda text: text,
+        )
+
+
+class ServerLineEdit(TextLineEdit):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.setValidator(
+            QRegularExpressionValidator(r"[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*")
         )
 
 
@@ -55,15 +69,27 @@ class PortLineEdit(LineEdit):
     def __init__(self) -> None:
         super().__init__()
 
-        self.setFixedWidth(_UNIT * 4)
-        self.setValidator(QIntValidator(1, 65535))
+        self.setFixedWidth(_PORT_EDIT_WIDTH)
+        self.setValidator(
+            QIntValidator(constants.MIN_TCP_PORT, constants.MAX_TCP_PORT)
+        )
 
     def setKey(self, key: Key[int]) -> None:
         self._connector = Connector[int](
             key,
             widget_value_getter=self.text,
             widget_value_setter=self.setText,
-            widget_value_changed_signal=self.editingFinished,
-            to_value_converter=lambda text: int(text),
+            widget_value_changed_signal=self.textEdited,
+            to_value_converter=lambda text: int(text) if text.isdigit() else 0,
             from_value_converter=lambda value: str(value),
         )
+
+
+# Labels.
+
+
+class FixedSizeLabel(QLabel):
+    def __init__(self, text: str) -> None:
+        super().__init__(text)
+
+        self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)

@@ -50,12 +50,11 @@ class WelcomePane(Pane):
 
         # Create the main layout.
 
-        pane_layout = QHBoxLayout()
-        self.setLayout(pane_layout)
+        self.setLayout(pane_layout := QHBoxLayout())
 
         # Create and set up the menu layout.
 
-        menu_layout = QVBoxLayout()
+        pane_layout.addLayout(menu_layout := QVBoxLayout())
 
         # Logo!
 
@@ -67,9 +66,8 @@ class WelcomePane(Pane):
 
         # New world button!
 
-        new_world_button = Button("New world...")
+        menu_layout.addWidget(new_world_button := Button("New world..."))
         new_world_button.clicked.connect(self._openWorldCreationPane)
-        menu_layout.addWidget(new_world_button)
 
         menu_layout.addSpacing(_UNIT)
 
@@ -84,9 +82,8 @@ class WelcomePane(Pane):
             menu_layout.addWidget(QLabel("Return to..."))
 
             for world in worlds:
-                world_button = WorldButton(world)
+                menu_layout.addWidget(world_button := WorldButton(world))
                 world_button.clicked.connect(self._openWorldPane)
-                menu_layout.addWidget(world_button)
 
             menu_layout.addSpacing(_UNIT)
 
@@ -95,15 +92,14 @@ class WelcomePane(Pane):
         menu_layout.addWidget(HBar())
         menu_layout.addSpacing(_UNIT)
 
-        button_layout = QHBoxLayout()
-        menu_layout.addLayout(button_layout)
+        menu_layout.addLayout(button_layout := QHBoxLayout())
 
-        settings_button = Button("Settings")
-        button_layout.addWidget(settings_button)
+        button_layout.addWidget(settings_button := Button("Settings"))
         settings_button.setEnabled(False)  # TODO: Implement.
 
-        about_button = Button(f"About {constants.APPLICATION_NAME}...")
-        button_layout.addWidget(about_button)
+        button_layout.addWidget(
+            about_button := Button(f"About {constants.APPLICATION_NAME}...")
+        )
         about_button.setEnabled(False)  # TODO: Implement.
 
         # Fill out the remaining space.
@@ -112,7 +108,6 @@ class WelcomePane(Pane):
 
         # And finalize the main layout.
 
-        pane_layout.addLayout(menu_layout)
         pane_layout.addWidget(VBar())
         pane_layout.addStretch()
 
@@ -122,7 +117,8 @@ class WelcomePane(Pane):
 
     @Slot()
     def _openWorldCreationPane(self) -> None:
-        pane = WorldCreationPane(self._settings.newSection(), self._ui)
+        new_world = self._settings.newSection()
+        pane = WorldCreationPane(new_world, self._ui)
         self._ui.append(pane)
 
     @Slot()

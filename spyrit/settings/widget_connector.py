@@ -71,6 +71,10 @@ class Connector(Generic[_T]):
             self._key.set(value)
 
     def _updateWidgetValueFromKey(self, key: Key[_T]) -> None:
+        if not key.isSet():
+            self._widget_value_setter("")
+            return
+
         text_value = self._from_value_converter(key.get())
 
         if text_value != self._widget_value_getter():

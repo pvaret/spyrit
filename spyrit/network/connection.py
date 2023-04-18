@@ -40,6 +40,7 @@ class Connection(QObject):
 
     _settings: SpyritSettings.Network
     _socket: QTcpSocket
+    _is_connected: bool
 
     # This signal is emited when data is received from the socket.
 
@@ -54,6 +55,7 @@ class Connection(QObject):
     ) -> None:
         super().__init__(parent)
 
+        self._is_connected = False
         self._settings = settings
         self._socket = QTcpSocket(self)
         self._socket.readyRead.connect(self._readFromSocket)
@@ -61,7 +63,7 @@ class Connection(QObject):
         self._socket.errorOccurred.connect(self._reportErrorOccurred)
 
     def start(self) -> None:
-        if self._socket.state() == QTcpSocket.SocketState.ConnectedState:
+        if self._is_connected:
             return
 
         self._socket.abort()
@@ -104,15 +106,31 @@ class Connection(QObject):
     @Slot(QTcpSocket.SocketState)
     def _reportStatusChange(self, status: QTcpSocket.SocketState) -> None:
         if status == QTcpSocket.SocketState.UnconnectedState:
-            self.statusChanged.emit(Status.DISCONNECTED, "")
+            # Only report the disconnection if we were connected in the first
+            # place.
+
+            if self._is_connected:
+                self._is_connected = False
+                self.statusChanged.emit(Status.DISCONNECTED, "")
+
         elif status == QTcpSocket.SocketState.HostLookupState:
             self.statusChanged.emit(Status.RESOLVING, self._socket.peerName())
+
         elif status == QTcpSocket.SocketState.ConnectingState:
             self.statusChanged.emit(Status.CONNECTING, "")
+
         elif status == QTcpSocket.SocketState.ConnectedState:
+            self._is_connected = True
             self.statusChanged.emit(Status.CONNECTED, "")
 
     @Slot()
     def _reportErrorOccurred(self) -> None:
+        error = self._socket.error()
+
+        if error == QTcpSocket.SocketError.RemoteHostClosedError:
+            # Server closed the connection. That's okay.
+
+            return
+
         error_text = self._socket.errorString()
         self.statusChanged.emit(Status.ERROR, error_text)

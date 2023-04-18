@@ -16,9 +16,15 @@ Declaration of the Spyrit settings.
 """
 
 
-from sunset import Key, Bunch, Settings
+from sunset import Key, Bunch, SerializableEnum, Settings
 
 from spyrit.settings import key_shortcut
+
+
+class Encoding(SerializableEnum):
+    ASCII = "ASCII"
+    LATIN1 = "Latin 1"
+    UTF8 = "UTF-8"
 
 
 def _new_shortcut(combination: str) -> Key[key_shortcut.KeyShortcut]:
@@ -38,6 +44,7 @@ class SpyritSettings(Settings):
     class Network(Bunch):
         server = Key(default="")
         port = Key(default=0)
+        encoding = Key(default=Encoding.ASCII)
 
     shortcuts = KeyShortcuts()
     net = Network()

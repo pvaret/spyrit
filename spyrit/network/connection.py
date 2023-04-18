@@ -12,14 +12,25 @@
 #
 
 """
-Implements class that handles the lifecycle of a network connection.
+Implements a class that handles the lifecycle of a network connection.
 """
 
 
-from PySide6.QtCore import QObject, Signal
+import enum
+import logging
+
+from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtNetwork import QTcpSocket
 
 from spyrit.settings.spyrit_settings import SpyritSettings
+
+
+class Status(enum.Enum):
+    DISCONNECTED = enum.auto()
+    RESOLVING = enum.auto()
+    CONNECTING = enum.auto()
+    CONNECTED = enum.auto()
+    ERROR = enum.auto()
 
 
 class Connection(QObject):
@@ -34,6 +45,10 @@ class Connection(QObject):
 
     dataReceived = Signal(bytes)  # noqa: N815
 
+    # This signal is emited when the status of the connection changed.
+
+    statusChanged = Signal(Status, str)  # noqa: N815
+
     def __init__(
         self, settings: SpyritSettings.Network, parent: QObject | None = None
     ) -> None:
@@ -42,6 +57,8 @@ class Connection(QObject):
         self._settings = settings
         self._socket = QTcpSocket(self)
         self._socket.readyRead.connect(self._readFromSocket)
+        self._socket.stateChanged.connect(self._reportStatusChange)
+        self._socket.errorOccurred.connect(self._reportErrorOccurred)
 
     def start(self) -> None:
         if self._socket.state() == QTcpSocket.SocketState.ConnectedState:
@@ -71,6 +88,7 @@ class Connection(QObject):
 
         return True
 
+    @Slot()
     def _readFromSocket(self) -> None:
         if not self._socket.isValid():
             return
@@ -80,4 +98,21 @@ class Connection(QObject):
             return
 
         byte_data = bytes(data)  # type: ignore  # Actually valid!
+        logging.debug(f"Received data packet of length {len(byte_data)} bytes.")
         self.dataReceived.emit(byte_data)
+
+    @Slot(QTcpSocket.SocketState)
+    def _reportStatusChange(self, status: QTcpSocket.SocketState) -> None:
+        if status == QTcpSocket.SocketState.UnconnectedState:
+            self.statusChanged.emit(Status.DISCONNECTED, "")
+        elif status == QTcpSocket.SocketState.HostLookupState:
+            self.statusChanged.emit(Status.RESOLVING, self._socket.peerName())
+        elif status == QTcpSocket.SocketState.ConnectingState:
+            self.statusChanged.emit(Status.CONNECTING, "")
+        elif status == QTcpSocket.SocketState.ConnectedState:
+            self.statusChanged.emit(Status.CONNECTED, "")
+
+    @Slot()
+    def _reportErrorOccurred(self) -> None:
+        error_text = self._socket.errorString()
+        self.statusChanged.emit(Status.ERROR, error_text)

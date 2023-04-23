@@ -18,7 +18,7 @@ Class that provides a container for sliding panes.
 
 from typing import Sequence
 
-from PySide6.QtCore import QEasingCurve, Qt, QVariantAnimation
+from PySide6.QtCore import QEasingCurve, Qt, QTimer, QVariantAnimation
 from PySide6.QtGui import QResizeEvent, QWheelEvent
 from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
 
@@ -321,6 +321,13 @@ class SlidingPaneContainer(QScrollArea):
         if not self._isInMotion():
             self._x_scroll_enforced_value = self._active_pane_index * width
             self._enforceXScrollValue()
+
+            # WORKAROUND: Qt 6.5.0 doesn't update the scrollbar value if the
+            # pane is not currently visible, including if the resize event is
+            # because we're switching to the pane right now. So, schedule a
+            # scrollbar update for immediately after.
+
+            QTimer.singleShot(0, self._enforceXScrollValue)  # type: ignore
 
         super().resizeEvent(arg__1)
 

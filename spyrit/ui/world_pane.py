@@ -21,9 +21,15 @@ from PySide6.QtWidgets import QLineEdit, QTextEdit, QVBoxLayout
 
 from spyrit import constants
 from spyrit.network.connection import Connection
+from spyrit.network.processors import (
+    ChainProcessor,
+    UnicodeProcessor,
+    bind_processor_to_connection,
+)
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
+from spyrit.ui.scribe import Scribe
 
 
 class WorldPane(Pane):
@@ -46,8 +52,19 @@ class WorldPane(Pane):
         self.layout().addWidget(view := QTextEdit())
         self.layout().addWidget(input := QLineEdit())
         view.setReadOnly(True)
+        cursor = view.textCursor()
 
         connection = Connection(settings.net, parent=self)
+
+        processor = ChainProcessor(
+            UnicodeProcessor(settings.net.encoding),
+            parent=self,
+        )
+        bind_processor_to_connection(processor, connection)
+
+        scribe = Scribe(cursor, parent=self)
+        processor.fragmentsReady.connect(scribe.inscribe)
+
         connection.start()
 
         def on_text_entered() -> None:
@@ -56,13 +73,6 @@ class WorldPane(Pane):
                 input.clear()
 
         input.returnPressed.connect(on_text_entered)
-
-        def on_data_received(data: bytes) -> None:
-            view.append(
-                data.decode(self._settings.net.encoding.get().value, "ignore")
-            )
-
-        connection.dataReceived.connect(on_data_received)
 
     @Slot()
     def _setTitles(self) -> None:

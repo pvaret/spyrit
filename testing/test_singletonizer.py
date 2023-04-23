@@ -4,7 +4,7 @@ import fcntl
 from pathlib import Path
 
 from pytest import MonkeyPatch
-from pytest_mock import MockFixture, MockerFixture
+from pytest_mock import MockerFixture
 
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 
@@ -156,7 +156,7 @@ class TestSingletonizer:
             != singletonizer_b._makeSocketName()  # type: ignore
         )
 
-    def test_shutdown(self, tmp_path: Path, mocker: MockFixture) -> None:
+    def test_shutdown(self, tmp_path: Path, mocker: MockerFixture) -> None:
         stub_pidfile = mocker.Mock(spec=PIDFile)
         stub_server = mocker.Mock(spec=QLocalServer)
         stub_socket = mocker.Mock(spec=QLocalSocket)

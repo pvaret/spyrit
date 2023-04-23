@@ -100,7 +100,9 @@ class Connection(QObject):
             return
 
         byte_data = bytes(data)  # type: ignore  # Actually valid!
-        logging.debug(f"Received data packet of length {len(byte_data)} bytes.")
+        logging.debug(
+            "Received data packet of length %d bytes.", len(byte_data)
+        )
         self.dataReceived.emit(byte_data)
 
     @Slot(QTcpSocket.SocketState)

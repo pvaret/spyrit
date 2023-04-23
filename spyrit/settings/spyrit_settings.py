@@ -46,7 +46,11 @@ class SpyritSettings(Settings):
         port = Key(default=0)
         encoding = Key(default=Encoding.ASCII)
 
+    class UI(Bunch):
+        theme = Key(default="")
+
     shortcuts = KeyShortcuts()
     net = Network()
+    ui = UI()
 
     name = Key(default="")

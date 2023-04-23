@@ -15,6 +15,7 @@
 Implements container classes for typed fragments of network data.
 """
 
+import enum
 
 from abc import ABC
 
@@ -49,6 +50,20 @@ class TextFragment(Fragment):
 
     def __init__(self, text: str) -> None:
         self.text = text
+
+
+class FlowControlCode(enum.Enum):
+    CR = enum.auto()
+    LF = enum.auto()
+
+
+class FlowControlFragment(Fragment):
+    __match_args__ = ("code",)
+
+    code: FlowControlCode
+
+    def __init__(self, code: FlowControlCode) -> None:
+        self.code = code
 
 
 class NetworkFragment(Fragment):

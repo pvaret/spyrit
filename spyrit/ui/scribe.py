@@ -26,6 +26,8 @@ from PySide6.QtGui import QTextCursor
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import (
+    FlowControlCode,
+    FlowControlFragment,
     Fragment,
     FragmentList,
     NetworkFragment,
@@ -40,6 +42,7 @@ class Scribe(QObject):
     """
 
     _cursor: QTextCursor
+    _pending_newline: bool
 
     def __init__(
         self, cursor: QTextCursor, parent: QObject | None = None
@@ -47,6 +50,7 @@ class Scribe(QObject):
         super().__init__(parent)
 
         self._cursor = cursor
+        self._pending_newline = False
 
     @Slot(FragmentList)
     def inscribe(self, fragments: Iterable[Fragment]) -> None:
@@ -57,7 +61,11 @@ class Scribe(QObject):
         for fragment in fragments:
             match fragment:
                 case TextFragment(text):
-                    self._cursor.insertText(text)
+                    self._insertText(text)
+
+                case FlowControlFragment(code):
+                    if code == FlowControlCode.LF:
+                        self._insertNewLine()
 
                 case NetworkFragment(event, text):
                     match event:
@@ -79,5 +87,21 @@ class Scribe(QObject):
                         fragment.__class__.__name__,
                     )
 
+    def _insertText(self, text: str) -> None:
+        self._flushPendingNewLine()
+        self._cursor.insertText(text)
+
     def _insertStatusText(self, text: str) -> None:
-        self._cursor.insertText(f"→ {text}\n")
+        self._flushPendingNewLine()
+        # TODO: Pass status text format.
+        self._cursor.insertText(f"→ {text}")
+        self._insertNewLine()
+
+    def _insertNewLine(self) -> None:
+        self._flushPendingNewLine()
+        self._pending_newline = True
+
+    def _flushPendingNewLine(self) -> None:
+        if self._pending_newline:
+            self._cursor.insertText("\n")
+            self._pending_newline = False

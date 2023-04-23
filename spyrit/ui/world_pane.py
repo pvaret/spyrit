@@ -23,6 +23,7 @@ from spyrit import constants
 from spyrit.network.connection import Connection
 from spyrit.network.processors import (
     ChainProcessor,
+    FlowControlProcessor,
     UnicodeProcessor,
     bind_processor_to_connection,
 )
@@ -50,7 +51,7 @@ class WorldPane(Pane):
         self.setLayout(QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().addWidget(view := QTextEdit())
-        self.layout().addWidget(input := QLineEdit())
+        self.layout().addWidget(inputbox := QLineEdit())
         view.setReadOnly(True)
         cursor = view.textCursor()
 
@@ -58,6 +59,7 @@ class WorldPane(Pane):
 
         processor = ChainProcessor(
             UnicodeProcessor(settings.net.encoding),
+            FlowControlProcessor(),
             parent=self,
         )
         bind_processor_to_connection(processor, connection)
@@ -68,11 +70,11 @@ class WorldPane(Pane):
         connection.start()
 
         def on_text_entered() -> None:
-            text = input.text()
+            text = inputbox.text()
             if connection.send(text + "\r\n"):
-                input.clear()
+                inputbox.clear()
 
-        input.returnPressed.connect(on_text_entered)
+        inputbox.returnPressed.connect(on_text_entered)
 
     @Slot()
     def _setTitles(self) -> None:

@@ -28,6 +28,8 @@ from sunset import Key
 from spyrit.network.connection import Connection, Status
 from spyrit.network.fragments import (
     ByteFragment,
+    FlowControlCode,
+    FlowControlFragment,
     Fragment,
     FragmentList,
     NetworkFragment,
@@ -118,9 +120,47 @@ class UnicodeProcessor(BaseProcessor):
             case ByteFragment(data):
                 text = self._decoder.decode(data)
                 if text:
-                    # TODO: filter out non-printable characters?
-
                     yield TextFragment(text)
+
+            case _:
+                yield fragment
+
+
+def _flush(buffer: list[str]) -> Iterator[TextFragment]:
+    if buffer:
+        yield TextFragment("".join(buffer))
+        buffer.clear()
+
+
+class FlowControlProcessor(BaseProcessor):
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+
+        self._cr = FlowControlFragment(code=FlowControlCode.CR)
+        self._lf = FlowControlFragment(code=FlowControlCode.LF)
+
+    def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
+        match fragment:
+            case TextFragment(text):
+                buffer: list[str] = []
+
+                for c in text:
+                    match c:
+                        case "\r":
+                            yield from _flush(buffer)
+                            yield self._cr
+
+                        case "\n":
+                            yield from _flush(buffer)
+                            yield self._lf
+
+                        case _ if c.isprintable():
+                            buffer.append(c)
+
+                        case _:
+                            pass
+
+                yield from _flush(buffer)
 
             case _:
                 yield fragment

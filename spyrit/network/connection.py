@@ -76,7 +76,7 @@ class Connection(QObject):
 
     def send(self, data: str | bytes) -> bool:
         if isinstance(data, str):
-            data = data.encode(self._settings.encoding.get().value, "ignore")
+            data = data.encode(self._settings.encoding.get(), "ignore")
 
         if not self._socket.isValid():
             return False

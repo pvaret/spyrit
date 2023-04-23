@@ -98,12 +98,12 @@ class UnicodeProcessor(BaseProcessor):
 
     def _setUpDecoder(self, encoding: Encoding) -> None:
         try:
-            codec = codecs.lookup(encoding.value)
+            codec = codecs.lookup(encoding)
         except LookupError:
             logging.error(
                 "Couldn't find decoder for encoding '%s'; reverting to default"
                 " encoding 'ASCII'.",
-                encoding.value,
+                encoding,
             )
             codec = codecs.lookup("ascii")
 

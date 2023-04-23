@@ -16,12 +16,14 @@ Declaration of the Spyrit settings.
 """
 
 
-from sunset import Key, Bunch, SerializableEnum, Settings
+from enum import StrEnum
+
+from sunset import Key, Bunch, Settings
 
 from spyrit.settings import key_shortcut
 
 
-class Encoding(SerializableEnum):
+class Encoding(StrEnum):
     ASCII = "ASCII"
     LATIN1 = "Latin 1"
     UTF8 = "UTF-8"

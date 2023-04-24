@@ -47,6 +47,9 @@ DEFAULT_WINDOW_HEIGHT: int = 800
 
 ANIMATION_DURATION_MS: int = 500  # milliseconds
 
+DEFAULT_FONT_FAMILY: list[str] = ["monofur", "monospace"]
+DEFAULT_FONT_POINT_SIZE: int = 11
+
 # Network
 
 MIN_TCP_PORT = 1

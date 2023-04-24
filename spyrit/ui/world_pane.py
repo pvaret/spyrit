@@ -16,8 +16,8 @@ Implements a UI to play in a world.
 """
 
 
-from PySide6.QtCore import Slot
-from PySide6.QtWidgets import QLineEdit, QTextEdit, QVBoxLayout
+from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtWidgets import QSplitter, QHBoxLayout
 
 from spyrit import constants
 from spyrit.network.connection import Connection
@@ -29,7 +29,9 @@ from spyrit.network.processors import (
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_pane import Pane
+from spyrit.ui.input_box import InputBox
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
+from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 
 
@@ -48,11 +50,21 @@ class WorldPane(Pane):
         # WIP test garbage follows.
         # TODO: finish.
 
-        self.setLayout(QVBoxLayout())
+        self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
-        self.layout().addWidget(view := QTextEdit())
-        self.layout().addWidget(inputbox := QLineEdit())
-        view.setReadOnly(True)
+        self.layout().addWidget(splitter := QSplitter())
+
+        splitter.addWidget(view := OutputView(settings))
+        splitter.addWidget(inputbox := InputBox(settings))
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, False)
+        splitter.setOrientation(Qt.Orientation.Vertical)
+        splitter.setSizes([1000, 100])
+
+        view.setFocusProxy(inputbox)
+        self.setFocusProxy(inputbox)
+        QTimer.singleShot(0, self.setFocus)  # type: ignore
+
         cursor = view.textCursor()
 
         connection = Connection(settings.net, parent=self)
@@ -70,7 +82,7 @@ class WorldPane(Pane):
         connection.start()
 
         def on_text_entered() -> None:
-            text = inputbox.text()
+            text = inputbox.toPlainText()
             if connection.send(text + "\r\n"):
                 inputbox.clear()
 

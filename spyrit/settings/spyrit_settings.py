@@ -18,9 +18,12 @@ Declaration of the Spyrit settings.
 
 from enum import StrEnum
 
+from PySide6.QtGui import QFont
 from sunset import Key, Bunch, Settings
 
+from spyrit import constants
 from spyrit.settings import key_shortcut
+from spyrit.settings.serializers import Font
 
 
 class Encoding(StrEnum):
@@ -50,6 +53,12 @@ class SpyritSettings(Settings):
 
     class UI(Bunch):
         theme = Key(default="")
+        font = Key(
+            default=QFont(
+                constants.DEFAULT_FONT_FAMILY, constants.DEFAULT_FONT_POINT_SIZE
+            ),
+            serializer=Font(),
+        )
 
     shortcuts = KeyShortcuts()
     net = Network()

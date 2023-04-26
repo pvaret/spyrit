@@ -22,7 +22,7 @@ import logging
 from typing import Iterable
 
 from PySide6.QtCore import QObject, Slot
-from PySide6.QtGui import QTextCursor
+from PySide6.QtGui import QColor, QFont, QTextCursor, QTextCharFormat
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import (
@@ -33,6 +33,26 @@ from spyrit.network.fragments import (
     NetworkFragment,
     TextFragment,
 )
+from spyrit.settings.spyrit_settings import SpyritSettings
+
+
+class TextFormat(QTextCharFormat):
+    def __init__(self, text_format: SpyritSettings.UI.Output.Format) -> None:
+        super().__init__()
+
+        if text_format.italic.get():
+            self.setFontItalic(True)
+
+        if text_format.bold.get():
+            self.setFontWeight(QFont.Weight.Bold)
+
+        if text_format.underlined.get():
+            self.setFontUnderline(True)
+
+        if href := text_format.href.get():
+            self.setAnchorHref(href)
+
+        self.setForeground(QColor(text_format.text_color.asHex()))
 
 
 class Scribe(QObject):
@@ -42,14 +62,20 @@ class Scribe(QObject):
     """
 
     _cursor: QTextCursor
+    _settings: SpyritSettings.UI.Output
     _pending_newline: bool
 
     def __init__(
-        self, cursor: QTextCursor, parent: QObject | None = None
+        self,
+        cursor: QTextCursor,
+        settings: SpyritSettings.UI.Output,
+        parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
 
+        cursor.setCharFormat(TextFormat(settings.text_format))
         self._cursor = cursor
+        self._settings = settings
         self._pending_newline = False
 
     @Slot(FragmentList)
@@ -93,8 +119,14 @@ class Scribe(QObject):
 
     def _insertStatusText(self, text: str) -> None:
         self._flushPendingNewLine()
-        # TODO: Pass status text format.
+
+        format_ = self._cursor.charFormat()
+        self._cursor.setCharFormat(
+            TextFormat(self._settings.status_text_format)
+        )
         self._cursor.insertText(f"→ {text}")
+        self._cursor.setCharFormat(format_)
+
         self._insertNewLine()
 
     def _insertNewLine(self) -> None:

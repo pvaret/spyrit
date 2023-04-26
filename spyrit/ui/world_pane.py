@@ -54,7 +54,7 @@ class WorldPane(Pane):
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().addWidget(splitter := QSplitter())
 
-        splitter.addWidget(view := OutputView(settings))
+        splitter.addWidget(view := OutputView(settings.ui.output))
         splitter.addWidget(inputbox := InputBox(settings))
         splitter.setCollapsible(0, False)
         splitter.setCollapsible(1, False)
@@ -76,7 +76,7 @@ class WorldPane(Pane):
         )
         bind_processor_to_connection(processor, connection)
 
-        scribe = Scribe(cursor, parent=self)
+        scribe = Scribe(cursor, settings=settings.ui.output, parent=self)
         processor.fragmentsReady.connect(scribe.inscribe)
 
         connection.start()

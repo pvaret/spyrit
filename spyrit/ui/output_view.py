@@ -24,22 +24,24 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 class OutputView(QTextEdit):
-    _settings: SpyritSettings
+    _settings: SpyritSettings.UI.Output
 
-    def __init__(self, settings: SpyritSettings) -> None:
+    def __init__(self, settings: SpyritSettings.UI.Output) -> None:
         super().__init__()
         self.setReadOnly(True)
 
         self._settings = settings
 
-        self._settings.ui.font.onValueChangeCall(self._applyStyleSheet)
+        self._settings.font.onValueChangeCall(self.setFont)
+        self.setFont(self._settings.font.get())
+
+        self._settings.background_color.onValueChangeCall(self._applyStyleSheet)
         self._applyStyleSheet()
 
     def _applyStyleSheet(self, _: Any = None) -> None:
-        font = self._settings.ui.font.get()
+        background_color = self._settings.background_color.asHex()
         self.setStyleSheet(
             f"""
-            font-family: {font.family()} ;
-            font-size: {font.pointSize()}pt ;
+            background-color: {background_color} ;
             """
         )

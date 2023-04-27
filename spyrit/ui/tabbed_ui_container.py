@@ -100,22 +100,18 @@ class TabbedUIContainer(QMainWindow):
         # layout is not great, so we have to create a container for the button
         # and give it a better layout.
 
-        corner_widget = QWidget(self._tab_widget)
-
-        new_tab_button = QPushButton("+", parent=corner_widget)
-        new_tab_button.setToolTip("New tab")
-        new_tab_button.setFixedWidth(new_tab_button.height())
-
-        layout = QHBoxLayout()
-        layout.addWidget(new_tab_button)
-        layout.setContentsMargins(2, 2, 2, 2)
-
-        corner_widget.setLayout(layout)
-
         self._tab_widget.setCornerWidget(
-            corner_widget, corner=Qt.Corner.TopLeftCorner
+            new_tab_corner_widget := QWidget(), corner=Qt.Corner.TopLeftCorner
         )
 
+        new_tab_corner_widget.setLayout(new_tab_corner_layout := QHBoxLayout())
+        new_tab_corner_layout.setContentsMargins(2, 2, 2, 2)
+
+        new_tab_corner_layout.addWidget(new_tab_button := QPushButton("+"))
+        new_tab_button.setToolTip("New tab")
+
+        new_tab_corner_layout.activate()  # Force the height to be computed.
+        new_tab_button.setFixedWidth(new_tab_button.height())
         new_tab_button.clicked.connect(self.newTabRequested)
 
     def pin(self, widget: TabbedUIElement) -> None:

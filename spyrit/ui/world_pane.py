@@ -28,6 +28,7 @@ from spyrit.network.processors import (
     bind_processor_to_connection,
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.input_box import InputBox
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
@@ -37,12 +38,16 @@ from spyrit.ui.scribe import Scribe
 
 class WorldPane(Pane):
     _settings: SpyritSettings
+    _state: SpyritState
     _ui: UIRemoteProtocol
 
-    def __init__(self, settings: SpyritSettings, ui: UIRemoteProtocol) -> None:
+    def __init__(
+        self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
+    ) -> None:
         super().__init__()
 
         self._settings = settings
+        self._state = state
         self._ui = ui
 
         self.active.connect(self._setTitles)

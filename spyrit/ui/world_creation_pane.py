@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import VBar
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.form_widgets import (
@@ -90,36 +91,44 @@ class WorldCreationForm(QWidget):
 
 
 class WorldCreationPane(BaseDialogPane):
-    _settings: SpyritSettings
+    _world_settings: SpyritSettings
+    _state: SpyritState
     _ui: UIRemoteProtocol
     _connect_button: QPushButton
 
-    def __init__(self, settings: SpyritSettings, ui: UIRemoteProtocol) -> None:
+    def __init__(
+        self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
+    ) -> None:
         super().__init__(
             ok_button := QPushButton("Connect!"),
             cancel_button=QPushButton("Cancel"),
         )
 
         self._connect_button = ok_button
-        self._settings = settings
+        self._world_settings = settings.newSection()
+        self._state = state
         self._ui = ui
 
-        self.setWidget(form := WorldCreationForm(settings))
+        self.setWidget(form := WorldCreationForm(self._world_settings))
+
         form.updated.connect(self._maybeEnableConnectButton)
+        self._maybeEnableConnectButton()
 
         self.okClicked.connect(self._openWorld)
         self.cancelClicked.connect(self._ui.pop)
         self.active.connect(self._setTitles)
-
-        self._maybeEnableConnectButton()
 
     @Slot()
     def _openWorld(self) -> None:
         if not self._areSettingsValid():
             return
 
-        self._settings.setSectionName(self._settings.name.get())
-        world_pane = WorldPane(self._settings, self._ui)
+        self._world_settings.setSectionName(self._world_settings.name.get())
+
+        state = self._state.getStateSectionForSettingsSection(
+            self._world_settings
+        )
+        world_pane = WorldPane(self._world_settings, state, self._ui)
         self._ui.append(world_pane)
 
     @Slot()
@@ -133,12 +142,12 @@ class WorldCreationPane(BaseDialogPane):
 
     def _areSettingsValid(self) -> bool:
         return (
-            self._settings.name.isSet()
-            and self._settings.name.get().strip() != ""
-            and self._settings.net.port.isSet()
+            self._world_settings.name.isSet()
+            and self._world_settings.name.get().strip() != ""
+            and self._world_settings.net.port.isSet()
             and constants.MIN_TCP_PORT
-            <= self._settings.net.port.get()
+            <= self._world_settings.net.port.get()
             <= constants.MAX_TCP_PORT
-            and self._settings.net.server.isSet()
-            and self._settings.net.server.get() != ""
+            and self._world_settings.net.server.isSet()
+            and self._world_settings.net.server.get() != ""
         )

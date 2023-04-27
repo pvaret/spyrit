@@ -12,7 +12,7 @@
 #
 
 """
-A class that applies a configured theme to the application.
+A class that applies a configured style to the application.
 """
 
 
@@ -23,30 +23,31 @@ from PySide6.QtWidgets import QApplication, QStyleFactory
 from sunset import Key
 
 
-class ThemeManager(QObject):
+class StyleManager(QObject):
     _app: QApplication
 
-    def __init__(self, app: QApplication, theme_key: Key[str]) -> None:
+    def __init__(self, app: QApplication, style_key: Key[str]) -> None:
         super().__init__(parent=app)
 
         logging.debug(
-            "Installed themes found: %s.", ", ".join(QStyleFactory.keys())
+            "Installed styles found: %s.", ", ".join(QStyleFactory.keys())
         )
+        logging.debug("Currently style: %s", app.style().name())
 
         self._app = app
-        theme_key.onValueChangeCall(self._updateTheme)
-        self._updateTheme(theme_key.get())
+        style_key.onValueChangeCall(self._updateStyle)
+        self._updateStyle(style_key.get())
 
-    def _updateTheme(self, theme: str) -> None:
-        theme = theme.strip().lower()
+    def _updateStyle(self, style: str) -> None:
+        style = style.strip().lower()
 
-        if not theme:
+        if not style:
             return
 
-        logging.debug("Applying theme '%s'...", theme)
+        logging.debug("Applying style '%s'...", style)
 
-        if (style := QStyleFactory.create(theme)) is None:  # type: ignore
-            logging.warning("Failed to load theme '%s'!", theme)
+        if (style := QStyleFactory.create(style)) is None:  # type: ignore
+            logging.warning("Failed to load style '%s'!", style)
             return
 
         self._app.setStyle(style)

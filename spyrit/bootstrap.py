@@ -31,8 +31,8 @@ from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
 from spyrit.ui.main_ui_factory import SpyritMainUIFactory
 from spyrit.ui.main_window_factory import SpyritMainWindowFactory
+from spyrit.ui.styles import StyleManager
 from spyrit.ui.tabbed_ui_factory import TabbedUIFactory
-from spyrit.ui.theming import ThemeManager
 
 
 def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
@@ -143,9 +143,9 @@ def bootstrap(args: list[str]) -> int:
         if (sighup := getattr(Signals, "SIGHUP", None)) is not None:
             save_settings_on_signal(sighup, settings_saver, state_saver)
 
-        # Apply UI theme as needed.
+        # Apply UI style as needed.
 
-        ThemeManager(app, settings.ui.theme)
+        StyleManager(app, settings.ui.style)
 
         # Build the UI.
 

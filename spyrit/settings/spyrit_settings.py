@@ -151,7 +151,7 @@ class SpyritSettings(Settings):
             )
             background_color = Color(AnsiColorCodes.Black)
 
-        theme = Key(default="")
+        style = Key(default="")
         output = Output()
 
     shortcuts = KeyShortcuts()

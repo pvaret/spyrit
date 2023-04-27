@@ -35,3 +35,25 @@ class SpyritState(Settings):
     window_size = Key(
         _default_size, serializer=Size(), validator=_size_validator
     )
+
+    def getStateSectionForSettingsSection(
+        self, settings: Settings
+    ) -> "SpyritState":
+        hierarchy: list[str] = []
+
+        while (parent := settings.parent()) is not None:
+            hierarchy.append(settings.sectionName())
+            settings = parent
+
+        # Go up the state tree to find the root.
+
+        state = self
+        while (parent := state.parent()) is not None:
+            state = parent
+
+        # Return the state section equivalent to the given settings section.
+
+        while hierarchy:
+            state = state.getOrCreateSection(hierarchy.pop())
+
+        return state

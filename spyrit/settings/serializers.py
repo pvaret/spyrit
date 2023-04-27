@@ -20,6 +20,26 @@ from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
 
+class IntList:
+    def fromStr(self, string: str) -> list[int] | None:
+        ret: list[int] = []
+
+        for element in string.split(","):
+            element = element.strip()
+            if not element:
+                continue
+
+            if not element.isdigit():
+                return None
+
+            ret.append(int(element))
+
+        return ret
+
+    def toStr(self, value: list[int]) -> str:
+        return ", ".join(str(i) for i in value)
+
+
 class Font:
     def fromStr(self, string: str) -> QFont | None:
         font = QFont()

@@ -16,6 +16,7 @@ Custom serializers used in our settings.
 """
 
 
+from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
 
@@ -26,3 +27,19 @@ class Font:
 
     def toStr(self, value: QFont) -> str:
         return value.toString()
+
+
+class Size:
+    def fromStr(self, string: str) -> QSize | None:
+        size = string.split(",", 1)
+        if len(size) != 2:
+            return None
+        w, h = size
+        w = w.strip()
+        h = h.strip()
+        if w.isdigit() and h.isdigit():
+            return QSize(int(w), int(h))
+        return None
+
+    def toStr(self, value: QSize) -> str:
+        return f"{value.width()}, {value.height()}"

@@ -38,6 +38,10 @@ class DefaultPathsBase(ABC):
         ...
 
     @abstractmethod
+    def getStateFileName(self) -> str:
+        ...
+
+    @abstractmethod
     def getDefaultConfigFolder(self) -> pathlib.Path:
         ...
 
@@ -58,6 +62,9 @@ class DefaultPathsBase(ABC):
 
     def getConfigFilePath(self) -> pathlib.Path:
         return self.getConfigFolderPath() / self.getConfigFileName()
+
+    def getStateFilePath(self) -> pathlib.Path:
+        return self.getConfigFolderPath() / self.getStateFileName()
 
     def getPidFilePath(self) -> pathlib.Path:
         return self.getConfigFolderPath() / self.PID_FILE_NAME

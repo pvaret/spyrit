@@ -22,11 +22,15 @@ from spyrit.default_paths_base import DefaultPathsBase
 
 
 class DefaultPaths(DefaultPathsBase):
-    CONFIG_FILE_NAME = constants.CONFIG_FILE_NAME_LINUX
     CONFIG_FOLDER_NAME = constants.CONFIG_FOLDER_NAME_LINUX
+    CONFIG_FILE_NAME = constants.CONFIG_FILE_NAME_LINUX
+    STATE_FILE_NAME = constants.STATE_FILE_NAME_LINUX
 
     def getConfigFileName(self) -> str:
         return self.CONFIG_FILE_NAME
+
+    def getStateFileName(self) -> str:
+        return self.STATE_FILE_NAME
 
     def getDefaultConfigFolder(self) -> pathlib.Path:
         return self.getUserHomeFolder() / self.CONFIG_FOLDER_NAME

@@ -32,11 +32,13 @@ PID_FILE_NAME = "spyrit.pid"
 
 # Settings
 
-CONFIG_FILE_NAME_LINUX: str = "spyrit.conf"
 CONFIG_FOLDER_NAME_LINUX: str = ".config/spyritng"
+CONFIG_FILE_NAME_LINUX: str = "spyrit.conf"
+STATE_FILE_NAME_LINUX: str = ".spyrit.state"
 
-CONFIG_FILE_NAME_WINDOWS: str = "Spyrit.ini"
 CONFIG_FOLDER_NAME_WINDOWS: str = "SpyritNG"
+CONFIG_FILE_NAME_WINDOWS: str = "Spyrit.ini"
+STATE_FILE_NAME_WINDOWS: str = "Spyrit.state"
 
 SETTINGS_SAVE_DELAY_MS: int = 5_000  # milliseconds
 

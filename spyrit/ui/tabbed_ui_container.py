@@ -28,7 +28,6 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from spyrit import constants
 from spyrit.ui.tabbed_ui_element import TabbedUIElement
 
 
@@ -69,9 +68,6 @@ class TabbedUIContainer(QMainWindow):
     ) -> None:
         super().__init__(parent)
 
-        self.resize(
-            constants.DEFAULT_WINDOW_WIDTH, constants.DEFAULT_WINDOW_HEIGHT
-        )
         self.setWindowTitle("")
 
         # Create and set up the QTabWidget that's going to contain the
@@ -280,6 +276,7 @@ class TabbedUIContainer(QMainWindow):
         self.setWindowTitle("")
         self.setWindowTitle(widget.windowTitle())
 
+    @Slot()
     def _applyCurrentTabProperties(self) -> None:
         """
         Look up the current tab's UI element, and apply its properties to the
@@ -291,6 +288,7 @@ class TabbedUIContainer(QMainWindow):
         if isinstance(widget, TabbedUIElement):
             self._applyTabProperties(widget)
 
+    @Slot(str)
     def _onTabTitleChanged(self, title: str) -> None:
         """
         Enact a tab's request to change its title.
@@ -303,6 +301,7 @@ class TabbedUIContainer(QMainWindow):
             if index != -1:
                 self._tab_widget.setTabText(index, title)
 
+    @Slot(str)
     def _onWindowTitleChanged(self, title: str) -> None:
         """
         Enact a tab's request to change the window's title.
@@ -314,6 +313,7 @@ class TabbedUIContainer(QMainWindow):
             if self._tab_widget.currentWidget() is widget:
                 self.setWindowTitle(title)
 
+    @Slot()
     def _onCurrentTabChanged(self) -> None:
         """
         Update the window's properties on the basis of the currently visible
@@ -325,6 +325,7 @@ class TabbedUIContainer(QMainWindow):
         if isinstance(widget, TabbedUIElement):
             self._applyTabProperties(widget)
 
+    @Slot(int)
     def _onTabCloseRequested(self, index: int) -> None:
         """
         This signal handler should be called when a UI element was interacted
@@ -337,6 +338,7 @@ class TabbedUIContainer(QMainWindow):
         if isinstance(widget, TabbedUIElement):
             widget.maybeClose()
 
+    @Slot()
     def _onUIRequestedClosing(self) -> None:
         """
         This signal handler should be called when the widget in a tab agrees to

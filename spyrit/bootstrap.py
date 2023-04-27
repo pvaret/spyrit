@@ -23,9 +23,10 @@ from signal import Signals
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 
-from spyrit import platform, resources
+from spyrit import constants, platform, resources
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.settings.spyrit_state import SpyritState
 from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
 from spyrit.ui.main_ui_factory import SpyritMainUIFactory
@@ -103,10 +104,18 @@ def bootstrap(args: list[str]) -> int:
     # Instantiate the settings and autoload/save them.
 
     settings = SpyritSettings()
+    state = SpyritState()
 
     with (
         Singletonizer(default_paths.getPidFilePath()) as singletonizer,
-        settings.autosave(default_paths.getConfigFilePath()) as saver,
+        settings.autosave(
+            default_paths.getConfigFilePath(),
+            save_delay=constants.SETTINGS_SAVE_DELAY_MS // 1000,
+        ) as settings_saver,
+        state.autosave(
+            default_paths.getStateFilePath(),
+            save_delay=constants.STATE_SAVE_DELAY_MS // 1000,
+        ) as state_saver,
     ):
         # Ensure there is no other instance of the program running.
 
@@ -132,7 +141,7 @@ def bootstrap(args: list[str]) -> int:
         # OSes.
 
         if (sighup := getattr(Signals, "SIGHUP", None)) is not None:
-            save_settings_on_signal(sighup, saver)
+            save_settings_on_signal(sighup, settings_saver, state_saver)
 
         # Apply UI theme as needed.
 
@@ -141,8 +150,10 @@ def bootstrap(args: list[str]) -> int:
         # Build the UI.
 
         ui_factory = TabbedUIFactory(
-            tabbed_ui_element_factory=SpyritMainUIFactory(settings),
-            tabbed_ui_container_factory=SpyritMainWindowFactory(settings),
+            tabbed_ui_element_factory=SpyritMainUIFactory(settings, state),
+            tabbed_ui_container_factory=SpyritMainWindowFactory(
+                settings, state
+            ),
         )
         ui_factory.createNewUIInNewWindow()
 

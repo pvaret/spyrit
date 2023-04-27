@@ -17,9 +17,11 @@ window.
 """
 
 
+from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.tabbed_ui_container import TabbedUIContainer
 from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
@@ -30,12 +32,22 @@ class MainWindow(TabbedUIContainer):
     things like Spyrit settings.
     """
 
+    _state: SpyritState
+
     def __init__(
         self,
         settings: SpyritSettings,
+        state: SpyritState,
         parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
+
+        self._state = state
+
+        # Apply saved properties.
+
+        if (size := state.window_size.get()).isValid() and not size.isEmpty():
+            self.resize(size)
 
         # Set up keyboard shortcuts.
 
@@ -51,6 +63,13 @@ class MainWindow(TabbedUIContainer):
         ):
             ShortcutWithKeySetting(parent=self, key=shortcut, slot=slot)
 
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        # Store the new window size on resize.
+
+        self._state.window_size.set(event.size())
+
+        return super().resizeEvent(event)
+
 
 class SpyritMainWindowFactory:
     """
@@ -59,9 +78,11 @@ class SpyritMainWindowFactory:
     """
 
     _settings: SpyritSettings
+    _state: SpyritState
 
-    def __init__(self, settings: SpyritSettings) -> None:
+    def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
         self._settings = settings
+        self._state = state
 
     def __call__(self) -> MainWindow:
-        return MainWindow(self._settings)
+        return MainWindow(self._settings, self._state)

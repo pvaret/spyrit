@@ -21,6 +21,7 @@ from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.buttons import Button, WorldButton
@@ -40,12 +41,16 @@ class WelcomePane(Pane):
     """
 
     _settings: SpyritSettings
+    _state: SpyritState
     _ui: UIRemoteProtocol
 
-    def __init__(self, settings: SpyritSettings, ui: UIRemoteProtocol) -> None:
+    def __init__(
+        self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
+    ) -> None:
         super().__init__()
 
         self._settings = settings
+        self._state = state
         self._ui = ui
 
         # Create the main layout.
@@ -131,6 +136,7 @@ class WelcomePane(Pane):
 
         self._ui.append(WorldPane(world, self._ui))
 
+    @Slot()
     def _setTitles(self) -> None:
         self._ui.setTabTitle(f"Welcome to {constants.APPLICATION_NAME}!")
         self._ui.setWindowTitle(constants.APPLICATION_NAME)

@@ -40,7 +40,8 @@ CONFIG_FOLDER_NAME_WINDOWS: str = "SpyritNG"
 CONFIG_FILE_NAME_WINDOWS: str = "Spyrit.ini"
 STATE_FILE_NAME_WINDOWS: str = "Spyrit.state"
 
-SETTINGS_SAVE_DELAY_MS: int = 5_000  # milliseconds
+SETTINGS_SAVE_DELAY_MS: int = 3_000  # milliseconds
+STATE_SAVE_DELAY_MS: int = 10_000  # milliseconds
 
 # UI
 

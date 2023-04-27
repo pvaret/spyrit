@@ -42,7 +42,6 @@ def save_settings_on_signal(
         logging.info("Signal received -- saving settings.")
 
         for saver in savers:
-            logging.debug(f"Saving {saver.path()}...")
             saver.doSave()
 
         if (
@@ -55,4 +54,4 @@ def save_settings_on_signal(
     try:
         signal.signal(sig, _on_signal)
     except ValueError as e:
-        logging.warning(f"Failed to install signal handler: {e}")
+        logging.warning("Failed to install signal handler: %s", e)

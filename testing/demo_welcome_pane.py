@@ -16,6 +16,7 @@ if __name__ == "__main__":
 
     from spyrit import resources
     from spyrit.settings.spyrit_settings import SpyritSettings
+    from spyrit.settings.spyrit_state import SpyritState
     from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
     from spyrit.ui.welcome_pane import WelcomePane
 
@@ -27,10 +28,12 @@ if __name__ == "__main__":
     ]:
         settings.newSection(name).name.set(name)
 
+    state = SpyritState()
+
     resources.load()
     app = QApplication(sys.argv)
     ui = Mock(spec=UIRemoteProtocol)
-    pane = WelcomePane(settings, ui)
+    pane = WelcomePane(settings, state, ui)
     pane.show()
 
     app.exec()

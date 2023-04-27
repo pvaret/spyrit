@@ -22,7 +22,7 @@ requires-python = ">=3.11"
 
 dependencies = [
     "PySide6",
-    "SunsetSettings",
+    "SunsetSettings>=0.5.1",
 ]
 
 [project.optional-dependencies]

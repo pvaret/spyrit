@@ -41,10 +41,8 @@ def load() -> bool:
         sys.path.insert(0, this_dir)
 
         try:
-            import ___compiled  # type: ignore  # for when it's missing.
-
-            if ___compiled:
-                del ___compiled  # So it's not considered unused.
+            import spyrit.resources.___compiled  # type: ignore
+            del spyrit.resources.___compiled
 
             _resources_loaded = True
 

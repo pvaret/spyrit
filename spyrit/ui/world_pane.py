@@ -36,10 +36,26 @@ from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 
 
+class Splitter(QSplitter):
+    _state: SpyritState.UI
+
+    def __init__(self, state: SpyritState.UI) -> None:
+        super().__init__()
+
+        self._state = state
+        self.setSizes(state.splitter_sizes.get())
+        self.splitterMoved.connect(self._saveSplitterSizes)
+
+    @Slot()
+    def _saveSplitterSizes(self) -> None:
+        self._state.splitter_sizes.set(self.sizes())
+
+
 class WorldPane(Pane):
     _settings: SpyritSettings
     _state: SpyritState
     _ui: UIRemoteProtocol
+    _splitter: QSplitter
 
     def __init__(
         self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
@@ -57,14 +73,14 @@ class WorldPane(Pane):
 
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
-        self.layout().addWidget(splitter := QSplitter())
+        self.layout().addWidget(splitter := Splitter(state.ui))
 
         splitter.addWidget(view := OutputView(settings.ui.output))
         splitter.addWidget(inputbox := InputBox(settings))
         splitter.setCollapsible(0, False)
         splitter.setCollapsible(1, False)
         splitter.setOrientation(Qt.Orientation.Vertical)
-        splitter.setSizes([1000, 100])
+        splitter.setSizes(state.ui.splitter_sizes.get())
 
         view.setFocusProxy(inputbox)
         self.setFocusProxy(inputbox)

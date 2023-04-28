@@ -16,10 +16,10 @@ Declaration of the Spyrit state "settings".
 """
 
 from PySide6.QtCore import QSize
-from sunset import Key, Settings
+from sunset import Bunch, Key, Settings
 
 from spyrit import constants
-from spyrit.settings.serializers import Size
+from spyrit.settings.serializers import IntList, Size
 
 _default_size = QSize(
     constants.DEFAULT_WINDOW_WIDTH,
@@ -32,9 +32,14 @@ def _size_validator(size: QSize) -> bool:
 
 
 class SpyritState(Settings):
-    window_size = Key(
-        _default_size, serializer=Size(), validator=_size_validator
-    )
+    class UI(Bunch):
+        window_size = Key(
+            _default_size, serializer=Size(), validator=_size_validator
+        )
+
+        splitter_sizes = Key(default=[1000, 100], serializer=IntList())
+
+    ui = UI()
 
     def getStateSectionForSettingsSection(
         self, settings: Settings

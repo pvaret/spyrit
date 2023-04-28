@@ -46,7 +46,9 @@ class MainWindow(TabbedUIContainer):
 
         # Apply saved properties.
 
-        if (size := state.window_size.get()).isValid() and not size.isEmpty():
+        if (
+            size := state.ui.window_size.get()
+        ).isValid() and not size.isEmpty():
             self.resize(size)
 
         # Set up keyboard shortcuts.
@@ -66,7 +68,7 @@ class MainWindow(TabbedUIContainer):
     def resizeEvent(self, event: QResizeEvent) -> None:
         # Store the new window size on resize.
 
-        self._state.window_size.set(event.size())
+        self._state.ui.window_size.set(event.size())
 
         return super().resizeEvent(event)
 

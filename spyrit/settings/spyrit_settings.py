@@ -129,6 +129,8 @@ class SpyritSettings(Settings):
         move_current_tab_left = _new_shortcut("Ctrl+Shift+PgUp")
         move_current_tab_right = _new_shortcut("Ctrl+Shift+PgDown")
         toggle_second_input = _new_shortcut("Ctrl+M")
+        history_previous = _new_shortcut("Ctrl+Up")
+        history_next = _new_shortcut("Ctrl+Down")
 
     class Network(Bunch):
         server = Key(default="")

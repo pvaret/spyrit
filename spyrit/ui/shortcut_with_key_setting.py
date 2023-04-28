@@ -16,9 +16,11 @@ A class that binds a QShortcut to a SunsetSettings key containing a
 QKeySequence.
 """
 
+import logging
+
 from typing import Callable
 
-from PySide6.QtCore import QObject, SignalInstance, Slot
+from PySide6.QtCore import QObject, Qt, SignalInstance, Slot
 from PySide6.QtGui import QShortcut
 
 from sunset import Key
@@ -39,11 +41,17 @@ class ShortcutWithKeySetting(QObject):
         super().__init__(parent=parent)
 
         self._shortcut = QShortcut(parent)
+        self._shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         self._key = key
         self._key.onValueChangeCall(self.updateShortcut)
         self.updateShortcut(self._key.get())
 
         self._shortcut.activated.connect(slot)
+        self._shortcut.activated.connect(self._debug)
 
     def updateShortcut(self, key: KeyShortcut) -> None:
         self._shortcut.setKey(key)
+
+    @Slot()
+    def _debug(self) -> None:
+        logging.debug("Shortcut %s activated.", self._shortcut.key().toString())

@@ -31,6 +31,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.input_box import InputBox, Postman
+from spyrit.ui.input_history import Historian
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
@@ -80,8 +81,8 @@ class WorldPane(Pane):
         # Add and set up the widgets of the game UI.
 
         splitter.addWidget(view := OutputView(settings.ui.output))
-        splitter.addWidget(second_inputbox := InputBox(settings))
-        splitter.addWidget(inputbox := InputBox(settings))
+        splitter.addWidget(second_inputbox := InputBox())
+        splitter.addWidget(inputbox := InputBox())
 
         splitter.setSizes(state.ui.splitter_sizes.get())
 
@@ -132,8 +133,43 @@ class WorldPane(Pane):
 
         # Plug the inputs into the network connection.
 
-        Postman(inputbox, connection, parent=self)
-        Postman(second_inputbox, connection, parent=self)
+        main_postman = Postman(inputbox, connection)
+        second_postman = Postman(second_inputbox, connection)
+
+        # Set up history recording for the input boxes. Note that the history
+        # state is shared between the boxes.
+
+        main_historian = Historian(inputbox, state.history, parent=self)
+        main_postman.inputSent.connect(main_historian.recordNewInput)
+
+        second_historian = Historian(
+            second_inputbox, state.history, parent=self
+        )
+        second_postman.inputSent.connect(second_historian.recordNewInput)
+
+        # Set up the key shortcuts for the history search.
+
+        ShortcutWithKeySetting(
+            inputbox,
+            settings.shortcuts.history_next,
+            main_historian.historyNext,
+        )
+        ShortcutWithKeySetting(
+            inputbox,
+            settings.shortcuts.history_previous,
+            main_historian.historyPrevious,
+        )
+
+        ShortcutWithKeySetting(
+            second_inputbox,
+            settings.shortcuts.history_next,
+            second_historian.historyNext,
+        )
+        ShortcutWithKeySetting(
+            second_inputbox,
+            settings.shortcuts.history_previous,
+            second_historian.historyPrevious,
+        )
 
         # And start the connection.
 

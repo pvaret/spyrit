@@ -18,7 +18,7 @@ Declaration of the Spyrit state "settings".
 import operator
 
 from PySide6.QtCore import QSize
-from sunset import Bunch, Key, Settings
+from sunset import Bunch, Key, List, Settings
 
 from spyrit import constants
 from spyrit.settings.serializers import IntList, Size
@@ -47,7 +47,15 @@ class SpyritState(Settings):
         splitter_sizes = Key(default=[1000, 100, 100], serializer=IntList())
         second_input_visible = ToggleKey(default=False)
 
+    class History(Bunch):
+        max_history_length = Key(default=100, validator=lambda value: value > 0)
+        history = List(Key(default=""))
+
     ui = UI()
+    history = History()
+
+    # Here follows a helper method to match settings hierarchy and state
+    # hierarchy.
 
     def getStateSectionForSettingsSection(
         self, settings: Settings

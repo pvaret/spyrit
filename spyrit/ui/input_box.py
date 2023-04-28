@@ -20,7 +20,6 @@ from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QTextEdit, QWidget
 
 from spyrit.network.connection import Connection
-from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 _CRLF = "\r\n"
@@ -34,13 +33,6 @@ class InputBox(QTextEdit):
     # This signal fires when this input box no longer wants to have the focus.
 
     expelFocus = Signal()  # noqa: N815
-
-    _settings: SpyritSettings
-
-    def __init__(self, settings: SpyritSettings) -> None:
-        super().__init__()
-
-        self._settings = settings
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
         # Handle the Enter/Return special case.
@@ -90,13 +82,8 @@ class Postman(QObject):
     _inputbox: InputBox
     _connection: Connection
 
-    def __init__(
-        self,
-        inputbox: InputBox,
-        connection: Connection,
-        parent: QObject | None = None,
-    ) -> None:
-        super().__init__(parent)
+    def __init__(self, inputbox: InputBox, connection: Connection) -> None:
+        super().__init__(parent=connection)
 
         self._inputbox = inputbox
         self._connection = connection

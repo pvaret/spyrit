@@ -15,11 +15,15 @@ Implements an input box for the user to type text in.
 """
 
 
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import QObject, Qt, Signal, Slot
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QTextEdit, QWidget
 
+from spyrit.network.connection import Connection
 from spyrit.settings.spyrit_settings import SpyritSettings
+
+
+_CRLF = "\r\n"
 
 
 class InputBox(QTextEdit):
@@ -72,3 +76,36 @@ class InputBox(QTextEdit):
             self.setFocus()
         elif has_focus:
             self.expelFocus.emit()
+
+
+class Postman(QObject):
+    """
+    Manages posting from an InputBox to a Connection.
+    """
+
+    # This signal fires when we successfully sent an input to the connection.
+
+    inputSent = Signal(str)  # noqa: N815
+
+    _inputbox: InputBox
+    _connection: Connection
+
+    def __init__(
+        self,
+        inputbox: InputBox,
+        connection: Connection,
+        parent: QObject | None = None,
+    ) -> None:
+        super().__init__(parent)
+
+        self._inputbox = inputbox
+        self._connection = connection
+
+        self._inputbox.returnPressed.connect(self._sendInput)
+
+    @Slot()
+    def _sendInput(self) -> None:
+        text = self._inputbox.toPlainText()
+        if self._connection.send(text + _CRLF):
+            self._inputbox.clear()
+            self.inputSent.emit(text)

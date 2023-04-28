@@ -30,7 +30,7 @@ from spyrit.network.processors import (
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.base_pane import Pane
-from spyrit.ui.input_box import InputBox
+from spyrit.ui.input_box import InputBox, Postman
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
@@ -69,29 +69,41 @@ class WorldPane(Pane):
 
         self.active.connect(self._setTitles)
 
-        # WIP test garbage follows.
-        # TODO: finish.
+        # Set up the splitter widget that hosts the game UI.
 
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().addWidget(splitter := Splitter(state.ui))
+        splitter.setChildrenCollapsible(False)
+        splitter.setOrientation(Qt.Orientation.Vertical)
+
+        # Add and set up the widgets of the game UI.
 
         splitter.addWidget(view := OutputView(settings.ui.output))
         splitter.addWidget(second_inputbox := InputBox(settings))
         splitter.addWidget(inputbox := InputBox(settings))
-        splitter.setChildrenCollapsible(False)
-        splitter.setOrientation(Qt.Orientation.Vertical)
+
         splitter.setSizes(state.ui.splitter_sizes.get())
+
+        # Set up the focus logic for the game UI. TL;DR: both the pane and the
+        # view forward to the main input, and also the focus is set when the
+        # pane is first displayed.
 
         self.setFocusProxy(inputbox)
         view.setFocusProxy(inputbox)
         QTimer.singleShot(0, self.setFocus)  # type: ignore
 
+        # The second input transfers its focus to the main input when the second
+        # input no longer wants it.
+
+        second_inputbox.expelFocus.connect(inputbox.setFocus)
+
+        # Plug in the second input toggling logic.
+
         second_inputbox.toggleVisibility(state.ui.second_input_visible.get())
         state.ui.second_input_visible.onValueChangeCall(
             second_inputbox.toggleVisibility
         )
-        second_inputbox.expelFocus.connect(inputbox.setFocus)
 
         ShortcutWithKeySetting(
             self,
@@ -99,7 +111,7 @@ class WorldPane(Pane):
             state.ui.second_input_visible.toggle,
         )
 
-        cursor = view.textCursor()
+        # Set up the network connection and plug it into the data parsing logic.
 
         connection = Connection(settings.net, parent=self)
 
@@ -108,25 +120,24 @@ class WorldPane(Pane):
             FlowControlProcessor(),
             parent=self,
         )
+
         bind_processor_to_connection(processor, connection)
 
-        scribe = Scribe(cursor, settings=settings.ui.output, parent=self)
+        # Plug the parsing logic into the game view update logic.
+
+        scribe = Scribe(
+            view.textCursor(), settings=settings.ui.output, parent=self
+        )
         processor.fragmentsReady.connect(scribe.inscribe)
 
+        # Plug the inputs into the network connection.
+
+        Postman(inputbox, connection, parent=self)
+        Postman(second_inputbox, connection, parent=self)
+
+        # And start the connection.
+
         connection.start()
-
-        def on_text_entered() -> None:
-            text = inputbox.toPlainText()
-            if connection.send(text + "\r\n"):
-                inputbox.clear()
-
-        def on_secondary_text_entered() -> None:
-            text = second_inputbox.toPlainText()
-            if connection.send(text + "\r\n"):
-                second_inputbox.clear()
-
-        inputbox.returnPressed.connect(on_text_entered)
-        second_inputbox.returnPressed.connect(on_secondary_text_entered)
 
     @Slot()
     def _setTitles(self) -> None:

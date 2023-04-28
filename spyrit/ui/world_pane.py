@@ -34,6 +34,7 @@ from spyrit.ui.input_box import InputBox
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
+from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
 class Splitter(QSplitter):
@@ -76,15 +77,27 @@ class WorldPane(Pane):
         self.layout().addWidget(splitter := Splitter(state.ui))
 
         splitter.addWidget(view := OutputView(settings.ui.output))
+        splitter.addWidget(second_inputbox := InputBox(settings))
         splitter.addWidget(inputbox := InputBox(settings))
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, False)
+        splitter.setChildrenCollapsible(False)
         splitter.setOrientation(Qt.Orientation.Vertical)
         splitter.setSizes(state.ui.splitter_sizes.get())
 
-        view.setFocusProxy(inputbox)
         self.setFocusProxy(inputbox)
+        view.setFocusProxy(inputbox)
         QTimer.singleShot(0, self.setFocus)  # type: ignore
+
+        second_inputbox.toggleVisibility(state.ui.second_input_visible.get())
+        state.ui.second_input_visible.onValueChangeCall(
+            second_inputbox.toggleVisibility
+        )
+        second_inputbox.expelFocus.connect(inputbox.setFocus)
+
+        ShortcutWithKeySetting(
+            self,
+            settings.shortcuts.toggle_second_input,
+            state.ui.second_input_visible.toggle,
+        )
 
         cursor = view.textCursor()
 
@@ -107,7 +120,13 @@ class WorldPane(Pane):
             if connection.send(text + "\r\n"):
                 inputbox.clear()
 
+        def on_secondary_text_entered() -> None:
+            text = second_inputbox.toPlainText()
+            if connection.send(text + "\r\n"):
+                second_inputbox.clear()
+
         inputbox.returnPressed.connect(on_text_entered)
+        second_inputbox.returnPressed.connect(on_secondary_text_entered)
 
     @Slot()
     def _setTitles(self) -> None:

@@ -16,6 +16,8 @@ A class that binds a QShortcut to a SunsetSettings key containing a
 QKeySequence.
 """
 
+from typing import Callable
+
 from PySide6.QtCore import QObject, SignalInstance, Slot
 from PySide6.QtGui import QShortcut
 
@@ -32,7 +34,7 @@ class ShortcutWithKeySetting(QObject):
         self,
         parent: QObject,
         key: Key[KeyShortcut],
-        slot: Slot | SignalInstance,
+        slot: Slot | SignalInstance | Callable[[], None],
     ) -> None:
         super().__init__(parent=parent)
 

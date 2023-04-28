@@ -56,8 +56,10 @@ class SlidingPaneContainer(QScrollArea):
         self._panes_pending_cleanup = []
         self._active_pane_index = 0
 
-        # Set up the view port: no margins, no scrollbars.
+        # Set up the view port: no margins, no scrollbars, no focus. (Only child
+        # widgets get to have the focus.)
 
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

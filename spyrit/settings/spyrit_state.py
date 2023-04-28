@@ -15,6 +15,8 @@
 Declaration of the Spyrit state "settings".
 """
 
+import operator
+
 from PySide6.QtCore import QSize
 from sunset import Bunch, Key, Settings
 
@@ -31,13 +33,19 @@ def _size_validator(size: QSize) -> bool:
     return size.isValid() and not size.isEmpty()
 
 
+class ToggleKey(Key[bool]):
+    def toggle(self) -> None:
+        self.updateValue(operator.not_)
+
+
 class SpyritState(Settings):
     class UI(Bunch):
         window_size = Key(
             _default_size, serializer=Size(), validator=_size_validator
         )
 
-        splitter_sizes = Key(default=[1000, 100], serializer=IntList())
+        splitter_sizes = Key(default=[1000, 100, 100], serializer=IntList())
+        second_input_visible = ToggleKey(default=False)
 
     ui = UI()
 

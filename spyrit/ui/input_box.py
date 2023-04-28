@@ -15,9 +15,9 @@ Implements an input box for the user to type text in.
 """
 
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import QTextEdit
+from PySide6.QtWidgets import QTextEdit, QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 
@@ -27,6 +27,10 @@ class InputBox(QTextEdit):
 
     returnPressed = Signal()  # noqa: N815
 
+    # This signal fires when this input box no longer wants to have the focus.
+
+    expelFocus = Signal()  # noqa: N815
+
     _settings: SpyritSettings
 
     def __init__(self, settings: SpyritSettings) -> None:
@@ -35,6 +39,8 @@ class InputBox(QTextEdit):
         self._settings = settings
 
     def keyPressEvent(self, e: QKeyEvent) -> None:
+        # Handle the Enter/Return special case.
+
         if (
             e.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter)
             and e.modifiers() == Qt.KeyboardModifier.NoModifier
@@ -43,4 +49,26 @@ class InputBox(QTextEdit):
             e.accept()
             return
 
+        # Handle the Tab special case. By default QTextEdit handles the Tab key
+        # by adding a tab character to its text. We want the default QWidget
+        # handling instead.
+
+        if e.key() == Qt.Key.Key_Tab:
+            QWidget.keyPressEvent(self, e)
+            return
+
+        # Else let the event proceed.
+
         super().keyPressEvent(e)
+
+    @Slot(bool)
+    def toggleVisibility(self, visible: bool) -> None:
+        has_focus = self.hasFocus()
+
+        self.setVisible(visible)
+        self.setEnabled(visible)  # Note that this may clear the focus.
+
+        if visible:
+            self.setFocus()
+        elif has_focus:
+            self.expelFocus.emit()

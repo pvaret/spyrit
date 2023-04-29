@@ -136,7 +136,7 @@ WORLDS_SCHEMA = {
 SETTINGS_SCHEMA = {
     "keys": (
         ("app.name", {"serializer": Str(), "default": "Spyrit"}),
-        ("app.version", {"serializer": Str(), "default": "0.5dev"}),
+        ("app.version", {"serializer": Str(), "default": "0.5"}),
         (
             "log.file",
             {"serializer": Str(), "default": "[WORLDNAME]-%Y.%m.%d.log"},

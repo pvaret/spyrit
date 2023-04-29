@@ -10,7 +10,7 @@ from setuptools import setup
 this_dir = os.path.dirname(__file__)
 
 APPNAME = "Spyrit"  # TODO: get from spyrit itself
-VERSION = "0.5dev"  # TODO: get from spyrit itself
+VERSION = "0.5"  # TODO: get from spyrit itself
 
 RM = "rm"
 BUILDDIR = os.path.join(this_dir, "build")

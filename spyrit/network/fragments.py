@@ -24,8 +24,7 @@ from spyrit.network.connection import Status
 
 
 class Fragment(ABC):
-    def __eq__(self, other: Any) -> bool:
-        return type(self) is type(other)
+    ...
 
 
 class FragmentList(list[Fragment]):
@@ -45,7 +44,7 @@ class ByteFragment(Fragment):
         self.data = data
 
     def __eq__(self, other: Any) -> bool:
-        return super().__eq__(other) and self.data == other.data
+        return isinstance(other, ByteFragment) and self.data == other.data
 
 
 class TextFragment(Fragment):
@@ -57,7 +56,7 @@ class TextFragment(Fragment):
         self.text = text
 
     def __eq__(self, other: Any) -> bool:
-        return super().__eq__(other) and self.text == other.text
+        return isinstance(other, TextFragment) and self.text == other.text
 
 
 class FlowControlCode(enum.Enum):
@@ -74,7 +73,9 @@ class FlowControlFragment(Fragment):
         self.code = code
 
     def __eq__(self, other: Any) -> bool:
-        return super().__eq__(other) and self.code == other.code
+        return (
+            isinstance(other, FlowControlFragment) and self.code == other.code
+        )
 
 
 class NetworkFragment(Fragment):
@@ -88,4 +89,4 @@ class NetworkFragment(Fragment):
         self.text = text
 
     def __eq__(self, other: Any) -> bool:
-        return super().__eq__(other) and self.event == other.event
+        return isinstance(other, NetworkFragment) and self.event == other.event

@@ -18,12 +18,14 @@ Implements container classes for typed fragments of network data.
 import enum
 
 from abc import ABC
+from typing import Any
 
 from spyrit.network.connection import Status
 
 
 class Fragment(ABC):
-    pass
+    def __eq__(self, other: Any) -> bool:
+        return type(self) is type(other)
 
 
 class FragmentList(list[Fragment]):
@@ -42,6 +44,9 @@ class ByteFragment(Fragment):
     def __init__(self, data: bytes) -> None:
         self.data = data
 
+    def __eq__(self, other: Any) -> bool:
+        return super().__eq__(other) and self.data == other.data
+
 
 class TextFragment(Fragment):
     __match_args__ = ("text",)
@@ -50,6 +55,9 @@ class TextFragment(Fragment):
 
     def __init__(self, text: str) -> None:
         self.text = text
+
+    def __eq__(self, other: Any) -> bool:
+        return super().__eq__(other) and self.text == other.text
 
 
 class FlowControlCode(enum.Enum):
@@ -65,6 +73,9 @@ class FlowControlFragment(Fragment):
     def __init__(self, code: FlowControlCode) -> None:
         self.code = code
 
+    def __eq__(self, other: Any) -> bool:
+        return super().__eq__(other) and self.code == other.code
+
 
 class NetworkFragment(Fragment):
     __match_args__ = ("event", "text")
@@ -75,3 +86,6 @@ class NetworkFragment(Fragment):
     def __init__(self, event: Status, text: str) -> None:
         self.event = event
         self.text = text
+
+    def __eq__(self, other: Any) -> bool:
+        return super().__eq__(other) and self.event == other.event

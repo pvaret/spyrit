@@ -2,13 +2,21 @@ from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 from sunset import Key
 
-from spyrit.network.fragments import ByteFragment, Fragment, TextFragment
+from spyrit.network.fragments import (
+    ANSIFragment,
+    ByteFragment,
+    Fragment,
+    TextFragment,
+)
 from spyrit.network.processors import (
+    ANSIProcessor,
     BaseProcessor,
     ChainProcessor,
     UnicodeProcessor,
 )
 from spyrit.settings.spyrit_settings import Encoding
+from spyrit.ui.colors import ANSIColor, AnsiColorCodes, NoColor, RGBColor
+from spyrit.ui.format import CharFormat
 
 
 class OutputCatcher:
@@ -67,6 +75,259 @@ class TestUnicodeProcessor:
         key.set(Encoding.UTF8)
         processor.feed([ByteFragment(b"test\xc3\xa9")])
         assert output.get() == [TextFragment("testé")]
+
+
+class TestANSIProcessor:
+    def test_no_ansi(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        processor.feed(
+            [ByteFragment(b"no ANSI codes here"), TextFragment("Nor here.")]
+        )
+        assert output.get() == [
+            ByteFragment(b"no ANSI codes here"),
+            TextFragment("Nor here."),
+        ]
+
+    def test_ansi_found_between_bytes(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        # Note that 99999 is not a valid SGR code, so the resulting format is
+        # empty.
+
+        processor.feed([ByteFragment(b"BEFORE\033[99999mAFTER\033[99999mEND")])
+        assert output.get() == [
+            ByteFragment(b"BEFORE"),
+            ANSIFragment(CharFormat()),
+            ByteFragment(b"AFTER"),
+            ANSIFragment(CharFormat()),
+            ByteFragment(b"END"),
+        ]
+
+    def test_ansi_reconstructed_from_split_packets(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        # Note that 99999 is not a valid SGR code, so the resulting format is
+        # empty.
+
+        processor.feed(
+            [ByteFragment(b"BEFORE\033[99"), ByteFragment(b"999mAFTER")]
+        )
+        assert output.get() == [
+            ByteFragment(b"BEFORE"),
+            ANSIFragment(CharFormat()),
+            ByteFragment(b"AFTER"),
+        ]
+
+    def test_ansi_reset(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        reset_all = CharFormat(
+            bold=False,
+            italic=False,
+            underline=False,
+            reverse=False,
+            strikeout=False,
+            foreground=NoColor(),
+            background=NoColor(),
+        )
+
+        processor.feed([ByteFragment(b"\033[m")])
+        assert output.get() == [ANSIFragment(reset_all)]
+
+        processor.feed([ByteFragment(b"\033[0m")])
+        assert output.get() == [ANSIFragment(reset_all)]
+
+    def test_ansi_sgr_sequences(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        processor.feed([ByteFragment(b"\033[1m")])
+        assert output.get() == [ANSIFragment(CharFormat(bold=True))]
+
+        processor.feed([ByteFragment(b"\033[3m")])
+        assert output.get() == [ANSIFragment(CharFormat(italic=True))]
+
+        processor.feed([ByteFragment(b"\033[4m")])
+        assert output.get() == [ANSIFragment(CharFormat(underline=True))]
+
+        processor.feed([ByteFragment(b"\033[7m")])
+        assert output.get() == [ANSIFragment(CharFormat(reverse=True))]
+
+        processor.feed([ByteFragment(b"\033[9m")])
+        assert output.get() == [ANSIFragment(CharFormat(strikeout=True))]
+
+        processor.feed([ByteFragment(b"\033[21m")])
+        assert output.get() == [ANSIFragment(CharFormat(bold=False))]
+
+        processor.feed([ByteFragment(b"\033[22m")])
+        assert output.get() == [ANSIFragment(CharFormat(bold=False))]
+
+        processor.feed([ByteFragment(b"\033[23m")])
+        assert output.get() == [ANSIFragment(CharFormat(italic=False))]
+
+        processor.feed([ByteFragment(b"\033[24m")])
+        assert output.get() == [ANSIFragment(CharFormat(underline=False))]
+
+        processor.feed([ByteFragment(b"\033[27m")])
+        assert output.get() == [ANSIFragment(CharFormat(reverse=False))]
+
+        processor.feed([ByteFragment(b"\033[29m")])
+        assert output.get() == [ANSIFragment(CharFormat(strikeout=False))]
+
+        processor.feed([ByteFragment(b"\033[30m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=ANSIColor(AnsiColorCodes.Black)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[31m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=ANSIColor(AnsiColorCodes.Red)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[32m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=ANSIColor(AnsiColorCodes.Green)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[33m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(foreground=ANSIColor(AnsiColorCodes.Yellow))
+            )
+        ]
+
+        processor.feed([ByteFragment(b"\033[34m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=ANSIColor(AnsiColorCodes.Blue)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[35m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(foreground=ANSIColor(AnsiColorCodes.Magenta))
+            )
+        ]
+
+        processor.feed([ByteFragment(b"\033[36m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=ANSIColor(AnsiColorCodes.Cyan)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[37m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(foreground=ANSIColor(AnsiColorCodes.LightGray))
+            )
+        ]
+
+        processor.feed([ByteFragment(b"\033[38;5;42m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=ANSIColor(42)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[38;2;55;66;77m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(foreground=RGBColor(55, 66, 77)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[39m")])
+        assert output.get() == [ANSIFragment(CharFormat(foreground=NoColor()))]
+
+        processor.feed([ByteFragment(b"\033[40m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=ANSIColor(AnsiColorCodes.Black)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[41m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=ANSIColor(AnsiColorCodes.Red)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[42m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=ANSIColor(AnsiColorCodes.Green)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[43m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(background=ANSIColor(AnsiColorCodes.Yellow))
+            )
+        ]
+
+        processor.feed([ByteFragment(b"\033[44m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=ANSIColor(AnsiColorCodes.Blue)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[45m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(background=ANSIColor(AnsiColorCodes.Magenta))
+            )
+        ]
+
+        processor.feed([ByteFragment(b"\033[46m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=ANSIColor(AnsiColorCodes.Cyan)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[47m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(background=ANSIColor(AnsiColorCodes.LightGray))
+            )
+        ]
+
+        processor.feed([ByteFragment(b"\033[48;5;42m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=ANSIColor(42)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[48;2;55;66;77m")])
+        assert output.get() == [
+            ANSIFragment(CharFormat(background=RGBColor(55, 66, 77)))
+        ]
+
+        processor.feed([ByteFragment(b"\033[49m")])
+        assert output.get() == [ANSIFragment(CharFormat(background=NoColor()))]
+
+    def test_compound_ansi_sequence(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        processor.feed([ByteFragment(b"\033[1;4;27;31m")])
+        assert output.get() == [
+            ANSIFragment(
+                CharFormat(
+                    bold=True,
+                    underline=True,
+                    reverse=False,
+                    foreground=ANSIColor(AnsiColorCodes.Red),
+                )
+            )
+        ]
+
+    def test_invalid_extended_color_sequence(self) -> None:
+        processor = ANSIProcessor()
+        output = OutputCatcher(processor)
+
+        processor.feed([ByteFragment(b"\033[38m")])
+        assert output.get() == [ANSIFragment(CharFormat())]
+
+        processor.feed([ByteFragment(b"\033[38;99999m")])
+        assert output.get() == [ANSIFragment(CharFormat())]
+
+        processor.feed([ByteFragment(b"\033[48m")])
+        assert output.get() == [ANSIFragment(CharFormat())]
+
+        processor.feed([ByteFragment(b"\033[48;99999m")])
+        assert output.get() == [ANSIFragment(CharFormat())]
 
 
 class TestChainProcessor:

@@ -22,11 +22,14 @@ import logging
 
 from typing import Iterable, Iterator
 
+import regex
+
 from PySide6.QtCore import QObject, Signal, Slot
 from sunset import Key
 
 from spyrit.network.connection import Connection, Status
 from spyrit.network.fragments import (
+    ANSIFragment,
     ByteFragment,
     FlowControlCode,
     FlowControlFragment,
@@ -35,6 +38,8 @@ from spyrit.network.fragments import (
     NetworkFragment,
     TextFragment,
 )
+from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
+from spyrit.ui.format import CharFormat
 from spyrit.settings.spyrit_settings import Encoding
 
 
@@ -78,6 +83,149 @@ class BaseProcessor(QObject):
         if self._output_buffer:
             self.fragmentsReady.emit(self._output_buffer)
             self._output_buffer.clear()
+
+
+class ANSIProcessor(BaseProcessor):
+    """
+    This processor implements parsing of the SGR part of the ANSI specification.
+    """
+
+    ESC = b"\033"
+    CSI = ESC + regex.escape(rb"[")
+
+    _pending_data: bytes
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+
+        self._pending_data = b""
+
+        self._re = regex.compile(
+            self.CSI
+            + rb"(?P<sgr>"
+            + rb"("  # Start SGR codes
+            + rb"\d+"  # First code
+            + rb"(;\d+)*"  # Extra codes
+            + rb")?"  # End SGR codes
+            + rb")"
+            + rb"m"  # SGR marker
+        )
+
+    def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
+        match fragment:
+            case ByteFragment(data):
+                data = self._pending_data + data
+                self._pending_data = b""
+
+                while data:
+                    match = regex.search(self._re, data, partial=True)
+
+                    if match is None:
+                        yield ByteFragment(data)
+                        return
+
+                    if match.start() > 0:
+                        yield ByteFragment(data[: match.start()])
+
+                    if match.partial:
+                        self._pending_data += data[match.start() :]
+                        return
+
+                    data = data[match.end() :]
+
+                    code_bytes = match.group("sgr")
+                    codes = (
+                        [int(item) for item in code_bytes.split(b";")]
+                        if code_bytes
+                        else []
+                    )
+
+                    yield self.fragmentFromSGRCodes(codes)
+
+            case _:
+                yield fragment
+
+    def fragmentFromSGRCodes(self, codes: list[int]) -> ANSIFragment:
+        if not codes:  # An empty SGR sequence should be treated as a reset.
+            codes = [0]
+
+        format_ = CharFormat()
+
+        while codes:
+            match code := codes.pop(0):
+                case 0:
+                    format_.resetAll()
+
+                case 1:
+                    # TODO: Add setting to decide if this should be bold or a
+                    # lighter color or both.
+                    format_.setBold()
+                case 3:
+                    format_.setItalic()
+                case 4:
+                    format_.setUnderline()
+                case 7:
+                    format_.setReverse()
+                case 9:
+                    format_.setStrikeout()
+
+                case 21 | 22:
+                    format_.setBold(False)
+                case 23:
+                    format_.setItalic(False)
+                case 24:
+                    format_.setUnderline(False)
+                case 27:
+                    format_.setReverse(False)
+                case 29:
+                    format_.setStrikeout(False)
+
+                case _ if 30 <= code <= 37:
+                    format_.setForeground(ANSIColor(code - 30))
+
+                case 38:
+                    match codes:
+                        case [2, r, g, b, *codes]:
+                            format_.setForeground(RGBColor(r, g, b))
+                        case [5, n, *codes]:
+                            format_.setForeground(ANSIColor(n))
+                        case _:
+                            seq = ";".join(str(i) for i in [code] + codes)
+                            logging.debug(
+                                "Received invalid ANSI SGR sequence: %s", seq
+                            )
+                            continue
+
+                case 39:
+                    format_.setForeground(NoColor())
+
+                case _ if 40 <= code <= 47:
+                    format_.setBackground(ANSIColor(code - 40))
+
+                case 48:
+                    match codes:
+                        case [2, r, g, b, *codes]:
+                            format_.setBackground(RGBColor(r, g, b))
+                        case [5, n, *codes]:
+                            format_.setBackground(ANSIColor(n))
+                        case _:
+                            seq = ";".join(str(i) for i in [code] + codes)
+                            logging.debug(
+                                "Received invalid ANSI SGR sequence: %s", seq
+                            )
+                            continue
+
+                case 49:
+                    format_.setBackground(NoColor())
+
+                # TODO: Support extra colors in the 90-100 range?
+
+                case _:
+                    logging.debug(
+                        "Unsupported ANSI SGR code received: %d", code
+                    )
+
+        return ANSIFragment(format_)
 
 
 class UnicodeProcessor(BaseProcessor):

@@ -1,7 +1,15 @@
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
-from spyrit.settings.serializers import Font, IntList, Size
+from spyrit.settings.serializers import (
+    ColorSerializer,
+    Font,
+    FormatSerializer,
+    IntList,
+    Size,
+)
+from spyrit.ui.colors import ANSIColor, AnsiColorCodes, NoColor, RGBColor
+from spyrit.ui.format import CharFormat
 
 
 def test_int_list_serializer() -> None:
@@ -36,3 +44,101 @@ def test_size_serializer() -> None:
     assert size.height() == 34
 
     assert Size().toStr(QSize(56, 78)) == "56, 78"
+
+
+def test_color_serializer() -> None:
+    assert ColorSerializer().toStr(NoColor()) == "-"
+    assert ColorSerializer().toStr(ANSIColor(AnsiColorCodes.Black)) == "Black"
+    assert (
+        ColorSerializer().toStr(ANSIColor(AnsiColorCodes.LightCyan))
+        == "LightCyan"
+    )
+    assert ColorSerializer().toStr(ANSIColor(201)) == "201"
+    assert ColorSerializer().toStr(RGBColor(0, 0, 0)) == "#000000"
+    assert ColorSerializer().toStr(RGBColor(123, 231, 132)) == "#7be784"
+
+    assert ColorSerializer().fromStr("") is None
+    assert ColorSerializer().fromStr("-") == NoColor()
+    assert ColorSerializer().fromStr("#7be784") == RGBColor(123, 231, 132)
+    assert ColorSerializer().fromStr("128") == ANSIColor(128)
+    assert ColorSerializer().fromStr("0") == ANSIColor(AnsiColorCodes.Black)
+    assert ColorSerializer().fromStr("black") == ANSIColor(AnsiColorCodes.Black)
+    assert ColorSerializer().fromStr("BLACK") == ANSIColor(AnsiColorCodes.Black)
+    assert ColorSerializer().fromStr("13") == ANSIColor(
+        AnsiColorCodes.LightMagenta
+    )
+    assert ColorSerializer().fromStr("lightmagenta") == ANSIColor(
+        AnsiColorCodes.LightMagenta
+    )
+    assert ColorSerializer().fromStr("LIGHTMAGENTA") == ANSIColor(
+        AnsiColorCodes.LightMagenta
+    )
+    assert ColorSerializer().fromStr("300") is None
+    assert ColorSerializer().fromStr("-1") is None
+    assert ColorSerializer().fromStr("#000") is None
+    assert ColorSerializer().fromStr("#1234567") is None
+    assert ColorSerializer().fromStr("123456") is None
+
+
+def test_format_serializer() -> None:
+    assert FormatSerializer().toStr(CharFormat()) == ""
+    assert FormatSerializer().toStr(
+        CharFormat(
+            bold=True,
+            italic=True,
+            underline=True,
+            reverse=True,
+            strikeout=True,
+            foreground=RGBColor(0, 0, 0),
+            background=ANSIColor(AnsiColorCodes.White),
+        )
+    ) == (
+        "bold ; italic ; underline ; reverse ; strikeout ;"
+        " foreground: #000000 ; background: White"
+    )
+    assert FormatSerializer().toStr(
+        CharFormat(
+            bold=False,
+            italic=False,
+            underline=False,
+            reverse=False,
+            strikeout=False,
+            foreground=NoColor(),
+        )
+    ) == (
+        "-bold ; -italic ; -underline ; -reverse ; -strikeout ;"
+        " foreground: -"
+    )
+
+    assert FormatSerializer().fromStr(
+        "bold ; +italic ; UNDERLINE ; + reverse ; strikeout ;"
+        " foreground: #000000 ; background: White"
+    ) == CharFormat(
+        bold=True,
+        italic=True,
+        underline=True,
+        reverse=True,
+        strikeout=True,
+        foreground=RGBColor(0, 0, 0),
+        background=ANSIColor(AnsiColorCodes.White),
+    )
+    assert FormatSerializer().fromStr(
+        "-bold ; -italic ; !underline ; -reverse ; ! strikeout ;"
+        " foreground: -"
+    ) == CharFormat(
+        bold=False,
+        italic=False,
+        underline=False,
+        reverse=False,
+        strikeout=False,
+        foreground=NoColor(),
+    )
+    assert FormatSerializer().fromStr("background: #000000") == CharFormat(
+        background=RGBColor(0, 0, 0)
+    )
+    assert FormatSerializer().fromStr("badground: #000000") is None
+    assert FormatSerializer().fromStr("badground: #0000") is None
+    assert FormatSerializer().fromStr("background: #00000000") is None
+    assert FormatSerializer().fromStr("background: #0000zz") is None
+    assert FormatSerializer().fromStr("invalid") is None
+    assert FormatSerializer().fromStr("bold ; invalid") is None

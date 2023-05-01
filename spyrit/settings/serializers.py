@@ -16,8 +16,13 @@ Custom serializers used in our settings.
 """
 
 
+import re
+
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
+
+from spyrit.ui.colors import ANSIColor, AnsiColorCodes, Color, NoColor, RGBColor
+from spyrit.ui.format import CharFormat
 
 
 class IntList:
@@ -63,3 +68,122 @@ class Size:
 
     def toStr(self, value: QSize) -> str:
         return f"{value.width()}, {value.height()}"
+
+
+class ColorSerializer:
+    def fromStr(self, string: str) -> Color | None:
+        string = string.strip()
+
+        if string == "-":
+            return NoColor()
+
+        if string.isdigit():
+            ansi_code = int(string)
+            if 0 <= ansi_code <= 255:
+                return ANSIColor(ansi_code)
+
+        string = string.lower()
+
+        if re.match(r"#[0-9a-f]{6}$", string):
+            r = int(string[1:3], 16)
+            g = int(string[3:5], 16)
+            b = int(string[5:7], 16)
+
+            return RGBColor(r, g, b)
+
+        for code in AnsiColorCodes:
+            if code.name.lower() == string:
+                return ANSIColor(code)
+
+        return None
+
+    def toStr(self, value: Color) -> str:
+        match value:
+            case NoColor():
+                return "-"
+
+            case ANSIColor(ansi_code):
+                for code in AnsiColorCodes:
+                    if code == ansi_code:
+                        return code.name
+
+                return str(ansi_code)
+
+            case _:
+                return value.asHex()
+
+
+class FormatSerializer:
+    def fromStr(self, string: str) -> CharFormat | None:
+        format = CharFormat()  # pylint: disable=redefined-builtin
+
+        for item in string.split(";"):
+            item = item.strip().lower()
+
+            apply = True
+            if item.startswith(("+", "-", "!")):
+                apply = not item.startswith(("-", "!"))
+                item = item[1:].lstrip()
+
+            match item:
+                case "bold":
+                    format.setBold(apply)
+
+                case "italic":
+                    format.setItalic(apply)
+
+                case "underline":
+                    format.setUnderline(apply)
+
+                case "reverse":
+                    format.setReverse(apply)
+
+                case "strikeout":
+                    format.setStrikeout(apply)
+
+                case _ if ":" in item:
+                    scope, maybe_color = item.split(":", 1)
+                    color = ColorSerializer().fromStr(maybe_color)
+
+                    if color is None:
+                        return None
+
+                    if scope == "foreground":
+                        format.setForeground(color)
+                    elif scope == "background":
+                        format.setBackground(color)
+                    else:
+                        return None
+
+                case _:
+                    return None
+
+        return format
+
+    def toStr(self, value: CharFormat) -> str:
+        items: list[str] = []
+
+        if value.bold is not None:
+            items.append(("-" if not value.bold else "") + "bold")
+
+        if value.italic is not None:
+            items.append(("-" if not value.italic else "") + "italic")
+
+        if value.underline is not None:
+            items.append(("-" if not value.underline else "") + "underline")
+
+        if value.reverse is not None:
+            items.append(("-" if not value.reverse else "") + "reverse")
+
+        if value.strikeout is not None:
+            items.append(("-" if not value.strikeout else "") + "strikeout")
+
+        if value.foreground is not None:
+            string = ColorSerializer().toStr(value.foreground)
+            items.append(f"foreground: {string}")
+
+        if value.background is not None:
+            string = ColorSerializer().toStr(value.background)
+            items.append(f"background: {string}")
+
+        return " ; ".join(items)

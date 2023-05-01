@@ -363,6 +363,8 @@ class NoColor(Color):
 
 
 class ANSIColor(Color):
+    __match_args__ = ("_ansi_code",)
+
     _ansi_code: int
 
     def __init__(self, ansi_code: int) -> None:
@@ -400,4 +402,4 @@ class RGBColor(Color):
         self._b = b
 
     def asHex(self) -> str:
-        return f"{self._r:02x}{self._g:02x}{self._b:02x}"
+        return f"#{self._r:02x}{self._g:02x}{self._b:02x}"

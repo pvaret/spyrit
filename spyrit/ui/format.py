@@ -21,7 +21,7 @@ from typing import Any
 from spyrit.ui.colors import Color, NoColor
 
 
-class CharFormat:
+class FormatUpdate:
     bold: bool | None = None
     italic: bool | None = None
     underline: bool | None = None
@@ -79,7 +79,7 @@ class CharFormat:
         self.background = color
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, CharFormat):
+        if not isinstance(other, FormatUpdate):
             return False
 
         return all(

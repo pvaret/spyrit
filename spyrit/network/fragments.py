@@ -21,7 +21,7 @@ from abc import ABC
 from typing import Any
 
 from spyrit.network.connection import Status
-from spyrit.ui.format import CharFormat
+from spyrit.ui.format import FormatUpdate
 
 
 class Fragment(ABC):
@@ -61,16 +61,18 @@ class TextFragment(Fragment):
 
 
 class ANSIFragment(Fragment):
-    __match_args__ = ("format",)
+    __match_args__ = ("format_update",)
 
-    format: CharFormat
+    format_update: FormatUpdate
 
-    # pylint: disable-next=redefined-builtin
-    def __init__(self, format: CharFormat) -> None:
-        self.format = format
+    def __init__(self, format_update: FormatUpdate) -> None:
+        self.format_update = format_update
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, ANSIFragment) and self.format == other.format
+        return (
+            isinstance(other, ANSIFragment)
+            and self.format_update == other.format_update
+        )
 
 
 class FlowControlCode(enum.Enum):

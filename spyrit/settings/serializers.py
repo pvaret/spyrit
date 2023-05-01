@@ -22,7 +22,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
 from spyrit.ui.colors import ANSIColor, AnsiColorCodes, Color, NoColor, RGBColor
-from spyrit.ui.format import CharFormat
+from spyrit.ui.format import FormatUpdate
 
 
 class IntList:
@@ -114,8 +114,8 @@ class ColorSerializer:
 
 
 class FormatSerializer:
-    def fromStr(self, string: str) -> CharFormat | None:
-        format = CharFormat()  # pylint: disable=redefined-builtin
+    def fromStr(self, string: str) -> FormatUpdate | None:
+        format_update = FormatUpdate()
 
         for item in string.split(";"):
             item = item.strip().lower()
@@ -127,19 +127,19 @@ class FormatSerializer:
 
             match item:
                 case "bold":
-                    format.setBold(apply)
+                    format_update.setBold(apply)
 
                 case "italic":
-                    format.setItalic(apply)
+                    format_update.setItalic(apply)
 
                 case "underline":
-                    format.setUnderline(apply)
+                    format_update.setUnderline(apply)
 
                 case "reverse":
-                    format.setReverse(apply)
+                    format_update.setReverse(apply)
 
                 case "strikeout":
-                    format.setStrikeout(apply)
+                    format_update.setStrikeout(apply)
 
                 case _ if ":" in item:
                     scope, maybe_color = item.split(":", 1)
@@ -149,18 +149,18 @@ class FormatSerializer:
                         return None
 
                     if scope == "foreground":
-                        format.setForeground(color)
+                        format_update.setForeground(color)
                     elif scope == "background":
-                        format.setBackground(color)
+                        format_update.setBackground(color)
                     else:
                         return None
 
                 case _:
                     return None
 
-        return format
+        return format_update
 
-    def toStr(self, value: CharFormat) -> str:
+    def toStr(self, value: FormatUpdate) -> str:
         items: list[str] = []
 
         if value.bold is not None:

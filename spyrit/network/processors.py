@@ -39,7 +39,7 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
-from spyrit.ui.format import CharFormat
+from spyrit.ui.format import FormatUpdate
 from spyrit.settings.spyrit_settings import Encoding
 
 
@@ -149,46 +149,46 @@ class ANSIProcessor(BaseProcessor):
         if not codes:  # An empty SGR sequence should be treated as a reset.
             codes = [0]
 
-        format_ = CharFormat()
+        format_update = FormatUpdate()
 
         while codes:
             match code := codes.pop(0):
                 case 0:
-                    format_.resetAll()
+                    format_update.resetAll()
 
                 case 1:
                     # TODO: Add setting to decide if this should be bold or a
                     # lighter color or both.
-                    format_.setBold()
+                    format_update.setBold()
                 case 3:
-                    format_.setItalic()
+                    format_update.setItalic()
                 case 4:
-                    format_.setUnderline()
+                    format_update.setUnderline()
                 case 7:
-                    format_.setReverse()
+                    format_update.setReverse()
                 case 9:
-                    format_.setStrikeout()
+                    format_update.setStrikeout()
 
                 case 21 | 22:
-                    format_.setBold(False)
+                    format_update.setBold(False)
                 case 23:
-                    format_.setItalic(False)
+                    format_update.setItalic(False)
                 case 24:
-                    format_.setUnderline(False)
+                    format_update.setUnderline(False)
                 case 27:
-                    format_.setReverse(False)
+                    format_update.setReverse(False)
                 case 29:
-                    format_.setStrikeout(False)
+                    format_update.setStrikeout(False)
 
                 case _ if 30 <= code <= 37:
-                    format_.setForeground(ANSIColor(code - 30))
+                    format_update.setForeground(ANSIColor(code - 30))
 
                 case 38:
                     match codes:
                         case [2, r, g, b, *codes]:
-                            format_.setForeground(RGBColor(r, g, b))
+                            format_update.setForeground(RGBColor(r, g, b))
                         case [5, n, *codes]:
-                            format_.setForeground(ANSIColor(n))
+                            format_update.setForeground(ANSIColor(n))
                         case _:
                             seq = ";".join(str(i) for i in [code] + codes)
                             logging.debug(
@@ -197,17 +197,17 @@ class ANSIProcessor(BaseProcessor):
                             continue
 
                 case 39:
-                    format_.setForeground(NoColor())
+                    format_update.setForeground(NoColor())
 
                 case _ if 40 <= code <= 47:
-                    format_.setBackground(ANSIColor(code - 40))
+                    format_update.setBackground(ANSIColor(code - 40))
 
                 case 48:
                     match codes:
                         case [2, r, g, b, *codes]:
-                            format_.setBackground(RGBColor(r, g, b))
+                            format_update.setBackground(RGBColor(r, g, b))
                         case [5, n, *codes]:
-                            format_.setBackground(ANSIColor(n))
+                            format_update.setBackground(ANSIColor(n))
                         case _:
                             seq = ";".join(str(i) for i in [code] + codes)
                             logging.debug(
@@ -216,7 +216,7 @@ class ANSIProcessor(BaseProcessor):
                             continue
 
                 case 49:
-                    format_.setBackground(NoColor())
+                    format_update.setBackground(NoColor())
 
                 # TODO: Support extra colors in the 90-100 range?
 
@@ -225,7 +225,7 @@ class ANSIProcessor(BaseProcessor):
                         "Unsupported ANSI SGR code received: %d", code
                     )
 
-        return ANSIFragment(format_)
+        return ANSIFragment(format_update)
 
 
 class UnicodeProcessor(BaseProcessor):

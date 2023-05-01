@@ -9,7 +9,7 @@ from spyrit.settings.serializers import (
     Size,
 )
 from spyrit.ui.colors import ANSIColor, AnsiColorCodes, NoColor, RGBColor
-from spyrit.ui.format import CharFormat
+from spyrit.ui.format import FormatUpdate
 
 
 def test_int_list_serializer() -> None:
@@ -81,9 +81,9 @@ def test_color_serializer() -> None:
 
 
 def test_format_serializer() -> None:
-    assert FormatSerializer().toStr(CharFormat()) == ""
+    assert FormatSerializer().toStr(FormatUpdate()) == ""
     assert FormatSerializer().toStr(
-        CharFormat(
+        FormatUpdate(
             bold=True,
             italic=True,
             underline=True,
@@ -97,7 +97,7 @@ def test_format_serializer() -> None:
         " foreground: #000000 ; background: White"
     )
     assert FormatSerializer().toStr(
-        CharFormat(
+        FormatUpdate(
             bold=False,
             italic=False,
             underline=False,
@@ -113,7 +113,7 @@ def test_format_serializer() -> None:
     assert FormatSerializer().fromStr(
         "bold ; +italic ; UNDERLINE ; + reverse ; strikeout ;"
         " foreground: #000000 ; background: White"
-    ) == CharFormat(
+    ) == FormatUpdate(
         bold=True,
         italic=True,
         underline=True,
@@ -125,7 +125,7 @@ def test_format_serializer() -> None:
     assert FormatSerializer().fromStr(
         "-bold ; -italic ; !underline ; -reverse ; ! strikeout ;"
         " foreground: -"
-    ) == CharFormat(
+    ) == FormatUpdate(
         bold=False,
         italic=False,
         underline=False,
@@ -133,7 +133,7 @@ def test_format_serializer() -> None:
         strikeout=False,
         foreground=NoColor(),
     )
-    assert FormatSerializer().fromStr("background: #000000") == CharFormat(
+    assert FormatSerializer().fromStr("background: #000000") == FormatUpdate(
         background=RGBColor(0, 0, 0)
     )
     assert FormatSerializer().fromStr("badground: #000000") is None

@@ -22,10 +22,13 @@ import logging
 from typing import Iterable
 
 from PySide6.QtCore import QObject, Slot
-from PySide6.QtGui import QColor, QFont, QTextCursor, QTextCharFormat
+from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
+from sunset import Key
+
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import (
+    ANSIFragment,
     FlowControlCode,
     FlowControlFragment,
     Fragment,
@@ -34,25 +37,121 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.ui.colors import Color, NoColor
+from spyrit.ui.format import FormatUpdate
 
 
-class TextFormat(QTextCharFormat):
-    def __init__(self, text_format: SpyritSettings.UI.Output.Format) -> None:
-        super().__init__()
+class CharFormatUpdater:
+    """
+    Applies extended format updates to a QTextCharFormat, including tricky ones
+    like reverse video.
+    """
 
-        if text_format.italic.get():
-            self.setFontItalic(True)
+    _char_format: QTextCharFormat
+    _foreground: Color
+    _background: Color
+    _default_foreground: Color
+    _default_background: Color
+    _reverse: bool = False
 
-        if text_format.bold.get():
-            self.setFontWeight(QFont.Weight.Bold)
+    # TODO: Handle highlighted FG color too.
 
-        if text_format.underlined.get():
-            self.setFontUnderline(True)
+    def __init__(
+        self,
+        foreground: Key[Color],
+        background: Key[Color],
+        char_format: QTextCharFormat,
+    ) -> None:
+        self._char_format = char_format
 
-        if href := text_format.href.get():
-            self.setAnchorHref(href)
+        # Set up the default colors for when the format's colors are not
+        # otherwise overriden.
 
-        self.setForeground(QColor(text_format.text_color.asHex()))
+        self._default_foreground = foreground.get()
+        self._default_background = background.get()
+        foreground.onValueChangeCall(self._setDefaultForeground)
+        background.onValueChangeCall(self._setDefaultBackground)
+
+        # Apply the default colors once.
+
+        self.setForeground(NoColor())
+        self.setBackground(NoColor())
+
+    def _setDefaultForeground(self, color: Color) -> None:
+        self._default_foreground = color
+
+    def _setDefaultBackground(self, color: Color) -> None:
+        self._default_foreground = color
+
+    def setReverse(self, reverse: bool) -> None:
+        self._reverse = reverse
+        self.setForeground(self._foreground)
+        self.setBackground(self._background)
+
+    def setForeground(self, color: Color) -> None:
+        """
+        Update the current foreground color. If reverse video is on, this will
+        in fact update the background of the text.
+        """
+
+        self._foreground = color
+
+        if color.isUnset():
+            color = self._default_foreground
+
+        if self._reverse:
+            self._char_format.setBackground(QColor(color.asHex()))
+        else:
+            self._char_format.setForeground(QColor(color.asHex()))
+
+    def setBackground(self, color: Color) -> None:
+        """
+        Update the current background color. If reverse video is on, this will
+        in fact update the foreground of the text.
+        """
+
+        self._background = color
+
+        if color.isUnset():
+            if not self._reverse:
+                # As a special case, if the color is unset and we're not in
+                # reverse video mode, then we outright clear the background
+                # color of the format. That way the background of the output
+                # view itself will be used.
+
+                self._char_format.clearBackground()
+                return
+
+            color = self._default_background
+
+        if self._reverse:
+            self._char_format.setForeground(QColor(color.asHex()))
+        else:
+            self._char_format.setBackground(QColor(color.asHex()))
+
+    def applyFormatUpdate(self, format_update: FormatUpdate) -> None:
+        if format_update.bold is not None:
+            self._char_format.setFontWeight(
+                QFont.Weight.Bold if format_update.bold else QFont.Weight.Medium
+            )
+
+        if format_update.italic is not None:
+            self._char_format.setFontItalic(format_update.italic)
+
+        if format_update.underline is not None:
+            self._char_format.setFontUnderline(format_update.underline)
+
+        if format_update.reverse is not None:
+            self.setReverse(format_update.reverse)
+
+        if format_update.strikeout is not None:
+            self._char_format.setFontStrikeOut(format_update.strikeout)
+
+        if format_update.foreground is not None:
+            self.setForeground(format_update.foreground)
+
+        if format_update.background is not None:
+            self.setBackground(format_update.background)
 
 
 class Scribe(QObject):
@@ -63,7 +162,9 @@ class Scribe(QObject):
 
     _cursor: QTextCursor
     _settings: SpyritSettings.UI.Output
-    _pending_newline: bool
+    _char_format: QTextCharFormat
+    _format_updater: CharFormatUpdater
+    _pending_newline: bool = False
 
     def __init__(
         self,
@@ -73,10 +174,14 @@ class Scribe(QObject):
     ) -> None:
         super().__init__(parent)
 
-        cursor.setCharFormat(TextFormat(settings.text_format))
         self._cursor = cursor
         self._settings = settings
-        self._pending_newline = False
+        self._char_format = QTextCharFormat()
+        self._format_updater = CharFormatUpdater(
+            settings.default_text_color,
+            settings.background_color,
+            self._char_format,
+        )
 
     @Slot(FragmentList)
     def inscribe(self, fragments: Iterable[Fragment]) -> None:
@@ -92,6 +197,9 @@ class Scribe(QObject):
                 case FlowControlFragment(code):
                     if code == FlowControlCode.LF:
                         self._insertNewLine()
+
+                case ANSIFragment(format_update):
+                    self._format_updater.applyFormatUpdate(format_update)
 
                 case NetworkFragment(event, text):
                     match event:
@@ -115,17 +223,18 @@ class Scribe(QObject):
 
     def _insertText(self, text: str) -> None:
         self._flushPendingNewLine()
-        self._cursor.insertText(text)
+        self._cursor.insertText(text, self._char_format)
 
     def _insertStatusText(self, text: str) -> None:
         self._flushPendingNewLine()
 
-        format_ = self._cursor.charFormat()
-        self._cursor.setCharFormat(
-            TextFormat(self._settings.status_text_format)
+        formatter = CharFormatUpdater(
+            self._settings.default_text_color,
+            self._settings.background_color,
+            status_text_format := QTextCharFormat(),
         )
-        self._cursor.insertText(f"→ {text}")
-        self._cursor.setCharFormat(format_)
+        formatter.applyFormatUpdate(self._settings.status_text_format.get())
+        self._cursor.insertText(f"→ {text}", status_text_format)
 
         self._insertNewLine()
 

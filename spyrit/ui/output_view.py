@@ -39,9 +39,9 @@ class OutputView(QTextEdit):
         self._applyStyleSheet()
 
     def _applyStyleSheet(self, _: Any = None) -> None:
-        background_color = self._settings.background_color.asHex()
+        background_color = self._settings.background_color.get().asHex()
         self.setStyleSheet(
             f"""
-            background-color: {background_color} ;
+            QTextEdit{{ background-color: {background_color} }};
             """
         )

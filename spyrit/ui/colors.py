@@ -342,7 +342,7 @@ class Color(ABC):
     def asHex(self) -> str:
         ...
 
-    def isEmpty(self) -> bool:
+    def isUnset(self) -> bool:
         return False
 
     def __eq__(self, other: Any) -> bool:
@@ -350,16 +350,16 @@ class Color(ABC):
             return False
 
         return (
-            self.isEmpty() and other.isEmpty()
+            self.isUnset() and other.isUnset()
         ) or self.asHex().lower() == other.asHex().lower()
 
 
 class NoColor(Color):
-    def isEmpty(self) -> bool:
+    def isUnset(self) -> bool:
         return True
 
     def asHex(self) -> str:
-        raise NotImplementedError
+        return ""
 
 
 class ANSIColor(Color):

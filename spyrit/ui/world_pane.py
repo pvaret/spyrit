@@ -22,6 +22,7 @@ from PySide6.QtWidgets import QSplitter, QHBoxLayout
 from spyrit import constants
 from spyrit.network.connection import Connection
 from spyrit.network.processors import (
+    ANSIProcessor,
     ChainProcessor,
     FlowControlProcessor,
     UnicodeProcessor,
@@ -117,6 +118,7 @@ class WorldPane(Pane):
         connection = Connection(settings.net, parent=self)
 
         processor = ChainProcessor(
+            ANSIProcessor(),
             UnicodeProcessor(settings.net.encoding),
             FlowControlProcessor(),
             parent=self,

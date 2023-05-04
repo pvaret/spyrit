@@ -15,7 +15,6 @@
 Provides utilities to make Spyrit resources available to Qt.
 """
 
-import sys
 import logging
 import pathlib
 
@@ -38,23 +37,23 @@ def load() -> bool:
     if not _resources_loaded:
         this_file = pathlib.Path(__file__)
         this_dir: str = this_file.parent.absolute().as_posix()
-        sys.path.insert(0, this_dir)
 
         try:
-            import spyrit.resources.___compiled  # type: ignore
-            del spyrit.resources.___compiled
+            # pylint: disable-next=import-outside-toplevel
+            import spyrit.resources.___compiled as compiled  # noqa: F401
 
             _resources_loaded = True
+            del compiled
 
         except ImportError:
             logger.error(
-                f"Resources not compiled. In order to compile them, run:\n"
-                f" pyside6-rcc --generator python"
-                f" --compress 9 --threshold 0.95"
-                f" --output {this_dir}/___compiled.py"
-                f" {this_dir}/resources.qrc"
+                "Resources not compiled. In order to compile them, run:\n"
+                " pyside6-rcc --generator python"
+                " --compress 9 --threshold 0.95"
+                " --output %s/___compiled.py"
+                " %s/resources.qrc",
+                this_dir,
+                this_dir,
             )
-        finally:
-            sys.path.remove(this_dir)
 
     return _resources_loaded

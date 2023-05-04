@@ -18,6 +18,7 @@ Implements a widget to display the text of a game.
 
 from typing import Any
 
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QTextEdit
 
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -32,11 +33,30 @@ class OutputView(QTextEdit):
 
         self._settings = settings
 
-        self._settings.font.onValueChangeCall(self.setFont)
-        self.setFont(self._settings.font.get())
+        # Set up the appearance of the output view.
+
+        self._settings.font.onValueChangeCall(self.setFixedPitchFont)
+        self.setFixedPitchFont(self._settings.font.get())
 
         self._settings.background_color.onValueChangeCall(self._applyStyleSheet)
         self._applyStyleSheet()
+
+    def setFixedPitchFont(self, font: QFont) -> None:
+        # Forced the pitch of the font to be fixed.
+
+        font.setFixedPitch(True)
+
+        # Disallow looking up missing characters from a different font.
+
+        font.setStyleStrategy(font.StyleStrategy.NoFontMerging)
+
+        # If the font is missing, at least, replace it with a monospace font.
+
+        font.setStyleHint(font.StyleHint.Monospace)
+
+        # Finally set the updated font.
+
+        self.setFont(font)
 
     def _applyStyleSheet(self, _: Any = None) -> None:
         background_color = self._settings.background_color.get().asHex()

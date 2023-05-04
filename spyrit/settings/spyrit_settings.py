@@ -86,7 +86,7 @@ class SpyritSettings(Settings):
                 ),
                 serializer=serializers.FormatSerializer(),
             )
-            ansi_bold_effect = Key(default=ANSIBoldEffect.BRIGHT)
+            ansi_bold_effect = Key(default=ANSIBoldEffect.BOTH)
 
         output = Output()
 

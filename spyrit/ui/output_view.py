@@ -18,7 +18,8 @@ Implements a widget to display the text of a game.
 
 from typing import Any
 
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QFontMetrics
 from PySide6.QtWidgets import QTextEdit
 
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -41,6 +42,10 @@ class OutputView(QTextEdit):
         self._settings.background_color.onValueChangeCall(self._applyStyleSheet)
         self._applyStyleSheet()
 
+        # Set up the scrollbar.
+
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
     def setFixedPitchFont(self, font: QFont) -> None:
         # Forced the pitch of the font to be fixed.
 
@@ -57,6 +62,11 @@ class OutputView(QTextEdit):
         # Finally set the updated font.
 
         self.setFont(font)
+
+        # And use its line height as the step increment when scrolling the view.
+
+        step = QFontMetrics(font).lineSpacing() - 1
+        self.verticalScrollBar().setSingleStep(step)
 
     def _applyStyleSheet(self, _: Any = None) -> None:
         background_color = self._settings.background_color.get().asHex()

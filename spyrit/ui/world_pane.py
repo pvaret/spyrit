@@ -36,6 +36,7 @@ from spyrit.ui.input_history import Historian
 from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
+from spyrit.ui.scroller import Scroller
 from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
@@ -86,6 +87,10 @@ class WorldPane(Pane):
         splitter.addWidget(inputbox := InputBox())
 
         splitter.setSizes(state.ui.splitter_sizes.get())
+
+        # Install up the user-friendly scrollbar helper.
+
+        Scroller(view.verticalScrollBar())
 
         # Set up the focus logic for the game UI. TL;DR: both the pane and the
         # view forward to the main input, and also the focus is set when the

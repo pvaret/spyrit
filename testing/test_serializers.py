@@ -85,6 +85,7 @@ def test_format_serializer() -> None:
     assert FormatSerializer().toStr(
         FormatUpdate(
             bold=True,
+            bright=True,
             italic=True,
             underline=True,
             reverse=True,
@@ -93,12 +94,13 @@ def test_format_serializer() -> None:
             background=ANSIColor(AnsiColorCodes.White),
         )
     ) == (
-        "bold ; italic ; underline ; reverse ; strikeout ;"
+        "bold ; bright ; italic ; underline ; reverse ; strikeout ;"
         " foreground: #000000 ; background: White"
     )
     assert FormatSerializer().toStr(
         FormatUpdate(
             bold=False,
+            bright=False,
             italic=False,
             underline=False,
             reverse=False,
@@ -106,15 +108,16 @@ def test_format_serializer() -> None:
             foreground=NoColor(),
         )
     ) == (
-        "-bold ; -italic ; -underline ; -reverse ; -strikeout ;"
+        "-bold ; -bright ; -italic ; -underline ; -reverse ; -strikeout ;"
         " foreground: -"
     )
 
     assert FormatSerializer().fromStr(
-        "bold ; +italic ; UNDERLINE ; + reverse ; strikeout ;"
+        "bold ; Bright ; +italic ; UNDERLINE ; + reverse ; strikeout ;"
         " foreground: #000000 ; background: White"
     ) == FormatUpdate(
         bold=True,
+        bright=True,
         italic=True,
         underline=True,
         reverse=True,
@@ -123,10 +126,11 @@ def test_format_serializer() -> None:
         background=ANSIColor(AnsiColorCodes.White),
     )
     assert FormatSerializer().fromStr(
-        "-bold ; -italic ; !underline ; -reverse ; ! strikeout ;"
+        "-bold ; - bright ; -italic ; !underline ; -reverse ; ! strikeout ;"
         " foreground: -"
     ) == FormatUpdate(
         bold=False,
+        bright=False,
         italic=False,
         underline=False,
         reverse=False,

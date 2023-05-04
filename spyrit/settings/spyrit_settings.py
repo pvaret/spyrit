@@ -16,7 +16,7 @@ Declaration of the Spyrit settings.
 """
 
 
-from enum import StrEnum
+import enum
 
 from PySide6.QtGui import QFont
 from sunset import Key, Bunch, Settings
@@ -27,11 +27,17 @@ from spyrit.ui.colors import ANSIColor, AnsiColorCodes, Color
 from spyrit.ui.format import FormatUpdate
 
 
-class Encoding(StrEnum):
+class Encoding(enum.StrEnum):
     ASCII = "ASCII"
     LATIN1 = "Latin 1"
     UTF8 = "UTF-8"
     CP437 = "CP437"
+
+
+class ANSIBoldEffect(enum.Flag):
+    BRIGHT = enum.auto()
+    BOLD = enum.auto()
+    BOTH = BRIGHT | BOLD
 
 
 def _new_shortcut(combination: str) -> Key[key_shortcut.KeyShortcut]:
@@ -80,6 +86,7 @@ class SpyritSettings(Settings):
                 ),
                 serializer=serializers.FormatSerializer(),
             )
+            ansi_bold_effect = Key(default=ANSIBoldEffect.BRIGHT)
 
         output = Output()
 

@@ -23,6 +23,7 @@ from spyrit.ui.colors import Color, NoColor
 
 class FormatUpdate:
     bold: bool | None = None
+    bright: bool | None = None
     italic: bool | None = None
     underline: bool | None = None
     reverse: bool | None = None
@@ -33,6 +34,7 @@ class FormatUpdate:
     def __init__(  # pylint: disable=too-many-arguments
         self,
         bold: bool | None = None,
+        bright: bool | None = None,
         italic: bool | None = None,
         underline: bool | None = None,
         reverse: bool | None = None,
@@ -41,6 +43,7 @@ class FormatUpdate:
         background: Color | None = None,
     ) -> None:
         self.bold = bold
+        self.bright = bright
         self.italic = italic
         self.underline = underline
         self.reverse = reverse
@@ -50,6 +53,7 @@ class FormatUpdate:
 
     def resetAll(self) -> None:
         self.setBold(False)
+        self.setBright(False)
         self.setItalic(False)
         self.setUnderline(False)
         self.setReverse(False)
@@ -59,6 +63,9 @@ class FormatUpdate:
 
     def setBold(self, bold: bool = True) -> None:
         self.bold = bold
+
+    def setBright(self, bright: bool = True) -> None:
+        self.bright = bright
 
     def setItalic(self, italic: bool = True) -> None:
         self.italic = italic
@@ -85,6 +92,7 @@ class FormatUpdate:
         return all(
             (
                 self.bold == other.bold,
+                self.bright == other.bright,
                 self.italic == other.italic,
                 self.underline == other.underline,
                 self.reverse == other.reverse,

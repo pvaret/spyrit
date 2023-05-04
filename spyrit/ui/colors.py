@@ -345,6 +345,9 @@ class Color(ABC):
     def isUnset(self) -> bool:
         return False
 
+    def bright(self) -> "Color":
+        return self
+
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Color):
             return False
@@ -380,6 +383,11 @@ class ANSIColor(Color):
             return hex_
 
         return "#000000"
+
+    def bright(self) -> "ANSIColor":
+        if not 0 <= (ansi_code := self._ansi_code) <= 7:
+            return self
+        return ANSIColor(ansi_code + 8)
 
 
 class RGBColor(Color):

@@ -40,7 +40,7 @@ from spyrit.network.fragments import (
 )
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
-from spyrit.settings.spyrit_settings import Encoding
+from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
 
 
 class BaseProcessor(QObject):
@@ -93,11 +93,17 @@ class ANSIProcessor(BaseProcessor):
     ESC = b"\033"
     CSI = ESC + regex.escape(rb"[")
 
+    _ansi_bold_effect: Key[ANSIBoldEffect]
     _pending_data: bytes
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(
+        self,
+        ansi_bold_effect: Key[ANSIBoldEffect],
+        parent: QObject | None = None,
+    ) -> None:
         super().__init__(parent)
 
+        self._ansi_bold_effect = ansi_bold_effect
         self._pending_data = b""
 
         self._re = regex.compile(
@@ -149,6 +155,8 @@ class ANSIProcessor(BaseProcessor):
         if not codes:  # An empty SGR sequence should be treated as a reset.
             codes = [0]
 
+        ansi_bold_effect = self._ansi_bold_effect.get()
+
         format_update = FormatUpdate()
 
         while codes:
@@ -157,9 +165,10 @@ class ANSIProcessor(BaseProcessor):
                     format_update.resetAll()
 
                 case 1:
-                    # TODO: Add setting to decide if this should be bold or a
-                    # lighter color or both.
-                    format_update.setBold()
+                    if ansi_bold_effect & ANSIBoldEffect.BOLD:
+                        format_update.setBold()
+                    if ansi_bold_effect & ANSIBoldEffect.BRIGHT:
+                        format_update.setBright()
                 case 3:
                     format_update.setItalic()
                 case 4:
@@ -171,6 +180,7 @@ class ANSIProcessor(BaseProcessor):
 
                 case 21 | 22:
                     format_update.setBold(False)
+                    format_update.setBright(False)
                 case 23:
                     format_update.setItalic(False)
                 case 24:

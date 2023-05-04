@@ -14,7 +14,7 @@ from spyrit.network.processors import (
     ChainProcessor,
     UnicodeProcessor,
 )
-from spyrit.settings.spyrit_settings import Encoding
+from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
 from spyrit.ui.colors import ANSIColor, AnsiColorCodes, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
@@ -79,7 +79,7 @@ class TestUnicodeProcessor:
 
 class TestANSIProcessor:
     def test_no_ansi(self) -> None:
-        processor = ANSIProcessor()
+        processor = ANSIProcessor(Key(default=ANSIBoldEffect.BOLD))
         output = OutputCatcher(processor)
 
         processor.feed(
@@ -91,7 +91,7 @@ class TestANSIProcessor:
         ]
 
     def test_ansi_found_between_bytes(self) -> None:
-        processor = ANSIProcessor()
+        processor = ANSIProcessor(Key(default=ANSIBoldEffect.BOLD))
         output = OutputCatcher(processor)
 
         # Note that 99999 is not a valid SGR code, so the resulting format is
@@ -107,7 +107,7 @@ class TestANSIProcessor:
         ]
 
     def test_ansi_reconstructed_from_split_packets(self) -> None:
-        processor = ANSIProcessor()
+        processor = ANSIProcessor(Key(default=ANSIBoldEffect.BOLD))
         output = OutputCatcher(processor)
 
         # Note that 99999 is not a valid SGR code, so the resulting format is
@@ -123,11 +123,12 @@ class TestANSIProcessor:
         ]
 
     def test_ansi_reset(self) -> None:
-        processor = ANSIProcessor()
+        processor = ANSIProcessor(Key(default=ANSIBoldEffect.BOLD))
         output = OutputCatcher(processor)
 
         reset_all = FormatUpdate(
             bold=False,
+            bright=False,
             italic=False,
             underline=False,
             reverse=False,
@@ -143,11 +144,22 @@ class TestANSIProcessor:
         assert output.get() == [ANSIFragment(reset_all)]
 
     def test_ansi_sgr_sequences(self) -> None:
-        processor = ANSIProcessor()
+        bold_effect = Key(default=ANSIBoldEffect.BOLD)
+        processor = ANSIProcessor(bold_effect)
         output = OutputCatcher(processor)
 
         processor.feed([ByteFragment(b"\033[1m")])
         assert output.get() == [ANSIFragment(FormatUpdate(bold=True))]
+
+        bold_effect.set(ANSIBoldEffect.BRIGHT)
+        processor.feed([ByteFragment(b"\033[1m")])
+        assert output.get() == [ANSIFragment(FormatUpdate(bright=True))]
+
+        bold_effect.set(ANSIBoldEffect.BOTH)
+        processor.feed([ByteFragment(b"\033[1m")])
+        assert output.get() == [
+            ANSIFragment(FormatUpdate(bold=True, bright=True))
+        ]
 
         processor.feed([ByteFragment(b"\033[3m")])
         assert output.get() == [ANSIFragment(FormatUpdate(italic=True))]
@@ -162,10 +174,14 @@ class TestANSIProcessor:
         assert output.get() == [ANSIFragment(FormatUpdate(strikeout=True))]
 
         processor.feed([ByteFragment(b"\033[21m")])
-        assert output.get() == [ANSIFragment(FormatUpdate(bold=False))]
+        assert output.get() == [
+            ANSIFragment(FormatUpdate(bold=False, bright=False))
+        ]
 
         processor.feed([ByteFragment(b"\033[22m")])
-        assert output.get() == [ANSIFragment(FormatUpdate(bold=False))]
+        assert output.get() == [
+            ANSIFragment(FormatUpdate(bold=False, bright=False))
+        ]
 
         processor.feed([ByteFragment(b"\033[23m")])
         assert output.get() == [ANSIFragment(FormatUpdate(italic=False))]
@@ -318,7 +334,7 @@ class TestANSIProcessor:
         ]
 
     def test_compound_ansi_sequence(self) -> None:
-        processor = ANSIProcessor()
+        processor = ANSIProcessor(Key(default=ANSIBoldEffect.BOLD))
         output = OutputCatcher(processor)
 
         processor.feed([ByteFragment(b"\033[1;4;27;31m")])
@@ -334,7 +350,7 @@ class TestANSIProcessor:
         ]
 
     def test_invalid_extended_color_sequence(self) -> None:
-        processor = ANSIProcessor()
+        processor = ANSIProcessor(Key(default=ANSIBoldEffect.BOLD))
         output = OutputCatcher(processor)
 
         processor.feed([ByteFragment(b"\033[38m")])

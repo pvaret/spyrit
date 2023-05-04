@@ -52,6 +52,7 @@ class CharFormatUpdater:
     _background: Color
     _default_foreground: Color
     _default_background: Color
+    _bright: bool = False
     _reverse: bool = False
 
     # TODO: Handle highlighted FG color too.
@@ -83,34 +84,48 @@ class CharFormatUpdater:
     def _setDefaultBackground(self, color: Color) -> None:
         self._default_foreground = color
 
+    def setBright(self, bright: bool) -> None:
+        self._bright = bright
+        self.setForeground()
+        self.setBackground()
+
     def setReverse(self, reverse: bool) -> None:
         self._reverse = reverse
-        self.setForeground(self._foreground)
-        self.setBackground(self._background)
+        self.setForeground()
+        self.setBackground()
 
-    def setForeground(self, color: Color) -> None:
+    def setForeground(self, color: Color | None = None) -> None:
         """
         Update the current foreground color. If reverse video is on, this will
         in fact update the background of the text.
         """
 
-        self._foreground = color
+        if color is None:
+            color = self._foreground
+        else:
+            self._foreground = color
 
         if color.isUnset():
             color = self._default_foreground
+
+        if self._bright:
+            color = color.bright()
 
         if self._reverse:
             self._char_format.setBackground(QColor(color.asHex()))
         else:
             self._char_format.setForeground(QColor(color.asHex()))
 
-    def setBackground(self, color: Color) -> None:
+    def setBackground(self, color: Color | None = None) -> None:
         """
         Update the current background color. If reverse video is on, this will
         in fact update the foreground of the text.
         """
 
-        self._background = color
+        if color is None:
+            color = self._background
+        else:
+            self._background = color
 
         if color.isUnset():
             if not self._reverse:
@@ -134,6 +149,9 @@ class CharFormatUpdater:
             self._char_format.setFontWeight(
                 QFont.Weight.Bold if format_update.bold else QFont.Weight.Medium
             )
+
+        if format_update.bright is not None:
+            self.setBright(format_update.bright)
 
         if format_update.italic is not None:
             self._char_format.setFontItalic(format_update.italic)

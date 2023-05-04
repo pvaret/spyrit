@@ -118,7 +118,7 @@ class WorldPane(Pane):
         connection = Connection(settings.net, parent=self)
 
         processor = ChainProcessor(
-            ANSIProcessor(),
+            ANSIProcessor(settings.ui.output.ansi_bold_effect),
             UnicodeProcessor(settings.net.encoding),
             FlowControlProcessor(),
             parent=self,

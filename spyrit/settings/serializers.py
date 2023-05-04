@@ -129,6 +129,9 @@ class FormatSerializer:
                 case "bold":
                     format_update.setBold(apply)
 
+                case "bright":
+                    format_update.setBright(apply)
+
                 case "italic":
                     format_update.setItalic(apply)
 
@@ -165,6 +168,9 @@ class FormatSerializer:
 
         if value.bold is not None:
             items.append(("-" if not value.bold else "") + "bold")
+
+        if value.bright is not None:
+            items.append(("-" if not value.bright else "") + "bright")
 
         if value.italic is not None:
             items.append(("-" if not value.italic else "") + "italic")

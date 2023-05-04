@@ -228,7 +228,11 @@ class ANSIProcessor(BaseProcessor):
                 case 49:
                     format_update.setBackground(NoColor())
 
-                # TODO: Support extra colors in the 90-100 range?
+                case _ if 90 <= code <= 97:
+                    format_update.setForeground(ANSIColor(code - 90 + 8))
+
+                case _ if 100 <= code <= 107:
+                    format_update.setBackground(ANSIColor(code - 100 + 8))
 
                 case _:
                     logging.debug(

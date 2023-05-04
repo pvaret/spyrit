@@ -132,7 +132,7 @@ def bootstrap(args: list[str]) -> int:
             logging.error("Resources failed to load.")
             return -1
 
-        if QFontDatabase.addApplicationFont(":/fonts/monof55.ttf") == -1:
+        if QFontDatabase.addApplicationFont(":/fonts/NotoSansMono.ttf") == -1:
             logging.error("Default game font not found in resources.")
             return -1
 

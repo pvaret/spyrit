@@ -25,6 +25,7 @@ from spyrit.network.processors import (
     ANSIProcessor,
     ChainProcessor,
     FlowControlProcessor,
+    LineBatchingProcessor,
     UnicodeProcessor,
     bind_processor_to_connection,
 )
@@ -126,10 +127,15 @@ class WorldPane(Pane):
             ANSIProcessor(settings.ui.output.ansi_bold_effect),
             UnicodeProcessor(settings.net.encoding),
             FlowControlProcessor(),
+            line_processor := LineBatchingProcessor(),
             parent=self,
         )
 
         bind_processor_to_connection(processor, connection)
+
+        # Refresh the display each time an entire line is processed.
+
+        line_processor.lineProcessed.connect(view.repaint)
 
         # Plug the parsing logic into the game view update logic.
 

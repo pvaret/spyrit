@@ -30,11 +30,6 @@ class TabbedUIElement(QWidget):
 
     tabTitleChanged: Signal = Signal(str)  # noqa: N815
 
-    # This signal is emitted when the UI wants its containing window's title to
-    # be updated.
-
-    windowTitleChanged: Signal = Signal(str)  # noqa: N815
-
     # This signal is emitted when this UI wants to no longer be pinned to its
     # containing window.
 

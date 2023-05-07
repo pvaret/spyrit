@@ -121,7 +121,12 @@ class TabbedUIElement(QWidget):
         """
 
         if self.canCloseNow():
-            # Unpinning the UI element without reattaching it causes it to
-            # close.
+            self.doClose()
 
-            self.wantToBeUnpinned.emit()
+    def doClose(self) -> None:
+        """
+        Actually close this tab unconditionally.
+        """
+
+        self.wantToBeUnpinned.emit()
+        self.deleteLater()

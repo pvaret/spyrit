@@ -41,7 +41,7 @@ class DependencyChecker:
     REQUIRED_PYTHON_VERSION = constants.REQUIRED_PYTHON_VERSION
     REQUIRED_QT_VERSION = constants.REQUIRED_QT_VERSION
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.dependencies_met: bool = True
         self.python_check_msg: str = ""
         self.pyside_check_msg: str = ""
@@ -69,13 +69,13 @@ class DependencyChecker:
         v = sys.version_info[0:2]
 
         if v >= self.REQUIRED_PYTHON_VERSION:
-            self.python_check_msg = "🗸 Found Python v%s.%s." % v
+            py_major, py_minor = v
+            self.python_check_msg = f"🗸 Found Python v{py_major}.{py_minor}."
 
         else:
             self.dependencies_met = False
-            self.python_check_msg = (
-                "❌ Python v%d.%d required!" % self.REQUIRED_PYTHON_VERSION
-            )
+            py_major, py_minor = self.REQUIRED_PYTHON_VERSION
+            self.python_check_msg = f"❌ Python v{py_major}.{py_minor} required!"
 
     def checkPySide6Installed(self) -> None:
         if PySide6 is None:
@@ -86,7 +86,8 @@ class DependencyChecker:
             )
 
         else:
-            self.pyside_check_msg = "🗸 Found PySide6 v%s." % PySide6.__version__
+            version = PySide6.__version__
+            self.pyside_check_msg = f"🗸 Found PySide6 v{version}."
 
     @staticmethod
     def qtVersion() -> tuple[bool, tuple[int, int]]:
@@ -109,13 +110,15 @@ class DependencyChecker:
         found, version = self.qtVersion()
 
         if found and version >= self.REQUIRED_QT_VERSION:
-            self.qt_check_msg = "🗸 Found Qt v%s.%s." % version[0:2]
+            qt_major, qt_minor = version
+            self.qt_check_msg = f"🗸 Found Qt v{qt_major}.{qt_minor}."
 
         else:
             self.dependencies_met = False
+            qt_major, qt_minor = self.REQUIRED_QT_VERSION
             self.qt_check_msg = (
-                "❌ Qt v%d.%d required!"
+                f"❌ Qt v{qt_major}.{qt_minor} required!"
                 " Installing the most recent version of PySide6"
                 " (see https://pypi.org/project/PySide6/)"
-                " should provide this dependency." % self.REQUIRED_QT_VERSION
+                " should provide this dependency."
             )

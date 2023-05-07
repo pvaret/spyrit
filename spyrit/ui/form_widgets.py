@@ -81,7 +81,7 @@ class PortLineEdit(LineEdit):
             widget_value_setter=self.setText,
             widget_value_changed_signal=self.textEdited,
             to_value_converter=lambda text: int(text) if text.isdigit() else 0,
-            from_value_converter=lambda value: str(value),
+            from_value_converter=str,
         )
 
 

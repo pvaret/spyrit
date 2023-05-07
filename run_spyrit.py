@@ -13,11 +13,11 @@
 # Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-import os
-import sys
+"""
+Imports and runs the main function of the application.
+"""
 
-sys.path.insert(0, os.path.dirname(__file__))
 
-from spyrit import main  # noqa
+from spyrit import main
 
 main.run()

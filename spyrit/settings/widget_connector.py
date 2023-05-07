@@ -38,6 +38,7 @@ class Connector(Generic[_T]):
     _to_value_converter: Callable[[str], _T]
     _from_value_converter: Callable[[_T], str]
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         key: Key[_T],

@@ -21,7 +21,7 @@ dynamic = ["version", "description"]
 requires-python = ">=3.11"
 
 dependencies = [
-    "PySide6",
+    "PySide6>=6.5.0",
     "regex",
     "SunsetSettings>=0.5.1",
 ]
@@ -38,6 +38,14 @@ spyrit = "spyrit.main:run"
 
 [tool.flit.module]
 name = "spyrit"
+
+[tool.pylint.main]
+# Allow pylint to load PySide6 to check the existence of module members.
+extension-pkg-allow-list = ["PySide6"]
+
+[tool.pylint.basic]
+# Inform pylint of our actual method naming convention.
+method-naming-style = "camelCase"
 
 [tool.mypy]
 show_error_codes = true

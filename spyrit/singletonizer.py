@@ -86,18 +86,22 @@ class PIDFile:
                 fd = self._path.open()
 
             except OSError as e:
-                logging.error(f"Error while opening PID file {self._path}: {e}")
+                logging.error(
+                    "Error while opening PID file %s: %s", self._path, e
+                )
                 raise
 
             try:
                 # Lock the file exclusively, in a non-blocking operation.
 
                 self._flock_func(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-                logging.debug(f"PID file {self._path} successfully locked.")
+                logging.debug("PID file %s successfully locked.", self._path)
 
             except OSError as e:
                 if e.errno != errno.EAGAIN:
-                    logging.error(f"Failed to lock PID file {self._path}: {e}")
+                    logging.error(
+                        "Failed to lock PID file %s: %s", self._path, e
+                    )
                     raise
 
                 # EAGAIN means someone else owns the lock. That's fine.
@@ -116,7 +120,7 @@ class PIDFile:
                 # huge deal. The locking is the important part, and at this
                 # point, it succeeded.
 
-                logging.debug(f"Failed to write PID file {self._path}: {e}")
+                logging.debug("Failed to write PID file %s: %s", self._path, e)
 
             return True
 
@@ -149,7 +153,7 @@ class PIDFile:
             self._path.touch()
 
         except OSError as e:
-            logging.error(f"Error while creating PID file {self._path}: {e}")
+            logging.error("Error while creating PID file %s: %s", self._path, e)
             raise
 
 
@@ -194,7 +198,7 @@ class Singletonizer(QObject):
 
         if self._pidfile.tryLock():
             logging.info(
-                f"Main process instance running with PID {os.getpid()}."
+                "Main process instance running with PID %s.", os.getpid()
             )
             server = _server_factory(self)
             server.setSocketOptions(
@@ -208,14 +212,16 @@ class Singletonizer(QObject):
             server.removeServer(self._socket_name)
 
             logging.debug(
-                "Starting singleton server on named socket"
-                f" '{self._socket_name}'..."
+                "Starting singleton server on named socket '%s'...",
+                self._socket_name,
             )
 
             if not server.listen(self._socket_name):
                 logging.error(
-                    f"Failed to create named socket '{self._socket_name}' for"
-                    f" singleton server: {server.errorString()}"
+                    "Failed to create named socket '%s' for singleton server:"
+                    " %s",
+                    self._socket_name,
+                    server.errorString(),
                 )
                 return
 
@@ -227,7 +233,7 @@ class Singletonizer(QObject):
 
         else:
             logging.debug(
-                f"Process with PID {os.getpid()} is not the main instance."
+                "Process with PID %s is not the main instance.", os.getpid()
             )
 
     def __enter__(self) -> "Singletonizer":
@@ -259,8 +265,8 @@ class Singletonizer(QObject):
         conn = self._socket_factory()
 
         logging.debug(
-            "Attempting connection to singleton server on named socket"
-            f" '{socket_name}'..."
+            "Attempting connection to singleton server on named socket '%s'...",
+            socket_name,
         )
 
         conn.setSocketOptions(QLocalSocket.SocketOption.AbstractNamespaceOption)
@@ -268,7 +274,9 @@ class Singletonizer(QObject):
         if not conn.waitForConnected(msecs=1000):
             logging.error(
                 "Failed to connect to singleton server on named socket"
-                f" '{socket_name}: {conn.errorString()}'"
+                " '%s': %s",
+                socket_name,
+                conn.errorString(),
             )
             return
 
@@ -315,9 +323,9 @@ class Singletonizer(QObject):
 
         socket_name = f"singleton~{constants.APPLICATION_NAME}"
 
-        dir = self._path.parent
+        directory = self._path.parent
         try:
-            stat = dir.stat()
+            stat = directory.stat()
             socket_name = f"{socket_name}~{stat.st_dev}~{stat.st_ino}"
         except OSError:
             pass

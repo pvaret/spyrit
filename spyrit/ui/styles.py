@@ -32,7 +32,7 @@ class StyleManager(QObject):
         logging.debug(
             "Installed styles found: %s.", ", ".join(QStyleFactory.keys())
         )
-        logging.debug("Currently style: %s", app.style().name())
+        logging.debug("Current style: %s", app.style().name())
 
         self._app = app
         style_key.onValueChangeCall(self._updateStyle)

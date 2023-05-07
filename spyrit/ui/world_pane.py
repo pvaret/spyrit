@@ -60,7 +60,6 @@ class WorldPane(Pane):
     _settings: SpyritSettings
     _state: SpyritState
     _ui: UIRemoteProtocol
-    _splitter: QSplitter
 
     def __init__(
         self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
@@ -100,7 +99,6 @@ class WorldPane(Pane):
         self.setFocusProxy(inputbox)
         view.setFocusProxy(inputbox)
         self.setTabOrder(inputbox, second_inputbox)
-        QTimer.singleShot(0, self.setFocus)  # type: ignore
 
         # The second input transfers its focus to the main input when the second
         # input no longer wants it.
@@ -120,9 +118,16 @@ class WorldPane(Pane):
             state.ui.second_input_visible.toggle,
         )
 
-        # Set up the network connection and plug it into the data parsing logic.
+        # Set up the network connection.
 
         connection = Connection(settings.net, parent=self)
+
+        # Set up the inputs and plug them into the connection.
+
+        self._setUpInput(connection, inputbox)
+        self._setUpInput(connection, second_inputbox)
+
+        # Plug the connection into the data parsing logic
 
         processor = ChainProcessor(
             ANSIProcessor(settings.ui.output.ansi_bold_effect),
@@ -145,49 +150,37 @@ class WorldPane(Pane):
         )
         processor.fragmentsReady.connect(scribe.inscribe)
 
-        # Plug the inputs into the network connection.
+        # And start the connection.
 
-        main_postman = Postman(inputbox, connection)
-        second_postman = Postman(second_inputbox, connection)
+        connection.start()
 
-        # Set up history recording for the input boxes. Note that the history
-        # state is shared between the boxes.
+        # Make sure this widget gets the focus after getting displayed.
 
-        main_historian = Historian(inputbox, state.history, parent=self)
-        main_postman.inputSent.connect(main_historian.recordNewInput)
+        QTimer.singleShot(0, self.setFocus)  # type: ignore
 
-        second_historian = Historian(
-            second_inputbox, state.history, parent=self
-        )
-        second_postman.inputSent.connect(second_historian.recordNewInput)
+    def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
+        # Plug the input into the network connection.
+
+        postman = Postman(inputbox, connection)
+
+        # Set up history recording for the input box. Note that the
+        # history state is shared between the boxes.
+
+        historian = Historian(inputbox, self._state.history, parent=inputbox)
+        postman.inputSent.connect(historian.recordNewInput)
 
         # Set up the key shortcuts for the history search.
 
         ShortcutWithKeySetting(
             inputbox,
-            settings.shortcuts.history_next,
-            main_historian.historyNext,
+            self._settings.shortcuts.history_next,
+            historian.historyNext,
         )
         ShortcutWithKeySetting(
             inputbox,
-            settings.shortcuts.history_previous,
-            main_historian.historyPrevious,
+            self._settings.shortcuts.history_previous,
+            historian.historyPrevious,
         )
-
-        ShortcutWithKeySetting(
-            second_inputbox,
-            settings.shortcuts.history_next,
-            second_historian.historyNext,
-        )
-        ShortcutWithKeySetting(
-            second_inputbox,
-            settings.shortcuts.history_previous,
-            second_historian.historyPrevious,
-        )
-
-        # And start the connection.
-
-        connection.start()
 
     @Slot()
     def _setTitles(self) -> None:

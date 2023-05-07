@@ -28,12 +28,12 @@ class Pane(QWidget):
 
     # This signal is sent when the SlidingPaneContainer makes this pane active.
 
-    active = Signal()  # noqa: N815
+    active: Signal = Signal()  # noqa: N815
 
     # This signal is sent when the SlidingPaneContainer makes this pane
     # inactive.
 
-    inactive = Signal()  # noqa: N815
+    inactive: Signal = Signal()  # noqa: N815
 
     def makeActive(self) -> None:
         self.setEnabled(True)

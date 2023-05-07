@@ -24,9 +24,9 @@ from spyrit.ui.sliding_pane_container import SlidingPaneContainer  # noqa: E402
 
 
 class TestPane(Pane):
-    wantAppend = Signal()  # noqa: N815
-    wantAppendNoSwitch = Signal()  # noqa: N815
-    wantPop = Signal()  # noqa: N815
+    wantAppend: Signal = Signal()  # noqa: N815
+    wantAppendNoSwitch: Signal = Signal()  # noqa: N815
+    wantPop: Signal = Signal()  # noqa: N815
 
     def __init__(self, i: int) -> None:
         super().__init__()

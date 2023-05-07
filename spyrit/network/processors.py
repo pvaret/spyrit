@@ -54,7 +54,7 @@ class BaseProcessor(QObject):
 
     # This signal fires when a processor has some output ready.
 
-    fragmentsReady = Signal(FragmentList)  # noqa: N815
+    fragmentsReady: Signal = Signal(FragmentList)  # noqa: N815
 
     _output_buffer: list[Fragment]
 

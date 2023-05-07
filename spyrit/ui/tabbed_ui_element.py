@@ -28,22 +28,22 @@ class TabbedUIElement(QWidget):
 
     # This signal is emitted when the UI wants its tab title to be updated.
 
-    tabTitleChanged = Signal(str)  # noqa: N815
+    tabTitleChanged: Signal = Signal(str)  # noqa: N815
 
     # This signal is emitted when the UI wants its containing window's title to
     # be updated.
 
-    windowTitleChanged = Signal(str)  # noqa: N815
+    windowTitleChanged: Signal = Signal(str)  # noqa: N815
 
     # This signal is emitted when this UI wants to no longer be pinned to its
     # containing window.
 
-    wantToBeUnpinned = Signal()  # noqa: N815
+    wantToBeUnpinned: Signal = Signal()  # noqa: N815
 
     # This signal is emitted when this UI wants to be detached from its current
     # containing window and into a new window.
 
-    wantToDetachToNewWindow = Signal()  # noqa: N815
+    wantToDetachToNewWindow: Signal = Signal()  # noqa: N815
 
     _tab_title: str
     _window_title: str

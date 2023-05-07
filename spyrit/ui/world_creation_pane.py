@@ -47,7 +47,7 @@ _FORM_WIDTH = _UNIT * 20
 
 
 class WorldCreationForm(QWidget):
-    updated = Signal()  # noqa: N815
+    updated: Signal = Signal()  # noqa: N815
 
     def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()

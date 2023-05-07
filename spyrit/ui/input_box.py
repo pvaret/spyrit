@@ -28,11 +28,11 @@ _CRLF = "\r\n"
 class InputBox(QTextEdit):
     # This signal fires when the user presses Enter in the input box.
 
-    returnPressed = Signal()  # noqa: N815
+    returnPressed: Signal = Signal()  # noqa: N815
 
     # This signal fires when this input box no longer wants to have the focus.
 
-    expelFocus = Signal()  # noqa: N815
+    expelFocus: Signal = Signal()  # noqa: N815
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -77,7 +77,7 @@ class Postman(QObject):
 
     # This signal fires when we successfully sent an input to the connection.
 
-    inputSent = Signal(str)  # noqa: N815
+    inputSent: Signal = Signal(str)  # noqa: N815
 
     _inputbox: InputBox
     _connection: Connection

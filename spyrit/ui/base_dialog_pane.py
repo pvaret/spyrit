@@ -26,11 +26,11 @@ from spyrit.ui.base_pane import Pane
 class BaseDialogPane(Pane):
     # Signal emitted when the user clicks the dialog acceptance button.
 
-    okClicked = Signal()  # noqa: N815
+    okClicked: Signal = Signal()  # noqa: N815
 
     # Signal emitted when the user clicks the dialog cancel button.
 
-    cancelClicked = Signal()  # noqa: N815
+    cancelClicked: Signal = Signal()  # noqa: N815
 
     _widget: QWidget
 

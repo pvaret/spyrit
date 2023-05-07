@@ -180,7 +180,7 @@ class Scribe(QObject):
 
     # This signal fires whenever a full line was inscribed into the cursor.
 
-    newLineInscribed = Signal()  # noqa: N815
+    newLineInscribed: Signal = Signal()  # noqa: N815
 
     _cursor: QTextCursor
     _settings: SpyritSettings.UI.Output

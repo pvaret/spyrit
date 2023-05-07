@@ -16,7 +16,7 @@ Implements a UI to play in a world.
 """
 
 
-from PySide6.QtCore import Qt, QTimer, Slot
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QSplitter, QHBoxLayout
 
 from spyrit import constants
@@ -153,10 +153,6 @@ class WorldPane(Pane):
         # And start the connection.
 
         connection.start()
-
-        # Make sure this widget gets the focus after getting displayed.
-
-        QTimer.singleShot(0, self.setFocus)  # type: ignore
 
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
         # Plug the input into the network connection.

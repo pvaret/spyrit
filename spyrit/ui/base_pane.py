@@ -37,6 +37,7 @@ class Pane(QWidget):
 
     def makeActive(self) -> None:
         self.setEnabled(True)
+        self.setFocus()
         self.active.emit()
 
     def makeInactive(self) -> None:

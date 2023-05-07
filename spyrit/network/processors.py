@@ -27,6 +27,7 @@ import regex
 from PySide6.QtCore import QObject, Signal, Slot
 from sunset import Key
 
+from spyrit import constants
 from spyrit.network.connection import Connection, Status
 from spyrit.network.fragments import (
     ANSIFragment,
@@ -381,7 +382,9 @@ class ChainProcessor(BaseProcessor):
 
 
 def bind_processor_to_connection(
-    processor: BaseProcessor, connection: Connection
+    processor: BaseProcessor,
+    connection: Connection,
+    block_size: int = constants.PROCESSOR_BLOCK_SIZE_BYTES,
 ) -> None:
     """
     This helper sets up a feed of the byte data and connection status changes
@@ -390,7 +393,9 @@ def bind_processor_to_connection(
 
     @Slot(bytes)
     def _feed_data_to_processor(data: bytes) -> None:
-        processor.feed([ByteFragment(data)])
+        while data:
+            fragment, data = data[:block_size], data[block_size:]
+            processor.feed([ByteFragment(fragment)])
 
     @Slot(Status, str)
     def _feed_status_to_processor(status: Status, text: str) -> None:

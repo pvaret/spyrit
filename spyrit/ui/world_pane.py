@@ -93,8 +93,8 @@ class WorldPane(Pane):
         Scroller(view.verticalScrollBar())
 
         # Set up the focus logic for the game UI. TL;DR: both the pane and the
-        # view forward to the main input, and also the focus is set when the
-        # pane is first displayed.
+        # view forward to the main input, and the second input comes after the
+        # main input in the tab order.
 
         self.setFocusProxy(inputbox)
         view.setFocusProxy(inputbox)

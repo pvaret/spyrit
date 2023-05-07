@@ -324,6 +324,7 @@ class TabbedUIContainer(QMainWindow):
 
         if isinstance(widget, TabbedUIElement):
             self._applyTabProperties(widget)
+            widget.setFocus()
 
     @Slot(int)
     def _onTabCloseRequested(self, index: int) -> None:

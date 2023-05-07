@@ -69,6 +69,7 @@ class MainUI(TabbedUIElement):
         self._container = SlidingPaneContainer()
         self._container.append(WelcomePane(settings, state, _UIRemote(self)))
         self.setWidget(self._container)
+        self.setFocusProxy(self._container)
 
     def append(self, widget: Pane) -> None:
         return self._container.append(widget)

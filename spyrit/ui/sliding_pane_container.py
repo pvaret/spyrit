@@ -177,6 +177,7 @@ class SlidingPaneContainer(QScrollArea):
             pane_from.makeInactive()
         if pane_to is not None:
             pane_to.makeActive()
+            self.setFocusProxy(pane_to)
 
         # If the animation is currently running already, then use its current
         # position as the starting position for a new animation.

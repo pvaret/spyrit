@@ -99,6 +99,7 @@ class WorldPane(Pane):
 
         self.setFocusProxy(inputbox)
         view.setFocusProxy(inputbox)
+        self.setTabOrder(inputbox, second_inputbox)
         QTimer.singleShot(0, self.setFocus)  # type: ignore
 
         # The second input transfers its focus to the main input when the second

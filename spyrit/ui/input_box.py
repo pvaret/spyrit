@@ -34,6 +34,14 @@ class InputBox(QTextEdit):
 
     expelFocus = Signal()  # noqa: N815
 
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        # Use tabs to change the focus instead of entering them as character in
+        # the input box.
+
+        self.setTabChangesFocus(True)
+
     def keyPressEvent(self, e: QKeyEvent) -> None:
         # Handle the Enter/Return special case.
 
@@ -43,14 +51,6 @@ class InputBox(QTextEdit):
         ):
             self.returnPressed.emit()
             e.accept()
-            return
-
-        # Handle the Tab special case. By default QTextEdit handles the Tab key
-        # by adding a tab character to its text. We want the default QWidget
-        # handling instead.
-
-        if e.key() == Qt.Key.Key_Tab:
-            QWidget.keyPressEvent(self, e)
             return
 
         # Else let the event proceed.

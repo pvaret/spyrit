@@ -23,6 +23,7 @@ from spyrit import constants
 from spyrit.network.connection import Connection
 from spyrit.network.processors import (
     ANSIProcessor,
+    BaseProcessor,
     ChainProcessor,
     FlowControlProcessor,
     LineBatchingProcessor,
@@ -80,13 +81,51 @@ class WorldPane(Pane):
         splitter.setChildrenCollapsible(False)
         splitter.setOrientation(Qt.Orientation.Vertical)
 
+        # Create and set up the game UI's widgets.
+
+        view, inputbox, second_inputbox = self._addGameWidgets(splitter)
+
+        # Set up the network connection.
+
+        connection = Connection(settings.net, parent=self)
+
+        # Set up the inputs' behavior and plug them into the connection.
+
+        self._setUpInput(connection, inputbox)
+        self._setUpInput(connection, second_inputbox)
+
+        # Plug the connection into the data parsing logic.
+
+        processor = self._createGameDataProcessor(connection)
+
+        # Create the game view update helper.
+
+        scribe = Scribe(
+            view.textCursor(), settings=settings.ui.output, parent=self
+        )
+
+        # Plug the parsing logic into the game view update logic.
+
+        processor.fragmentsReady.connect(scribe.inscribe)
+
+        # Refresh the display each time a new line is added.
+
+        scribe.newLineInscribed.connect(view.repaint)
+
+        # And start the connection.
+
+        connection.start()
+
+    def _addGameWidgets(
+        self, splitter: QSplitter
+    ) -> tuple[OutputView, InputBox, InputBox]:
         # Add and set up the widgets of the game UI.
 
-        splitter.addWidget(view := OutputView(settings.ui.output))
+        splitter.addWidget(view := OutputView(self._settings.ui.output))
         splitter.addWidget(second_inputbox := InputBox())
         splitter.addWidget(inputbox := InputBox())
 
-        splitter.setSizes(state.ui.splitter_sizes.get())
+        splitter.setSizes(self._state.ui.splitter_sizes.get())
 
         # Install up the user-friendly scrollbar helper.
 
@@ -107,52 +146,17 @@ class WorldPane(Pane):
 
         # Plug in the second input toggling logic.
 
-        second_inputbox.toggleVisibility(state.ui.second_input_visible.get())
-        state.ui.second_input_visible.onValueChangeCall(
-            second_inputbox.toggleVisibility
-        )
+        input_visible_key = self._state.ui.second_input_visible
+        second_inputbox.toggleVisibility(input_visible_key.get())
+        input_visible_key.onValueChangeCall(second_inputbox.toggleVisibility)
 
         ShortcutWithKeySetting(
             self,
-            settings.shortcuts.toggle_second_input,
-            state.ui.second_input_visible.toggle,
+            self._settings.shortcuts.toggle_second_input,
+            input_visible_key.toggle,
         )
 
-        # Set up the network connection.
-
-        connection = Connection(settings.net, parent=self)
-
-        # Set up the inputs and plug them into the connection.
-
-        self._setUpInput(connection, inputbox)
-        self._setUpInput(connection, second_inputbox)
-
-        # Plug the connection into the data parsing logic
-
-        processor = ChainProcessor(
-            ANSIProcessor(settings.ui.output.ansi_bold_effect),
-            UnicodeProcessor(settings.net.encoding),
-            FlowControlProcessor(),
-            LineBatchingProcessor(),
-            parent=self,
-        )
-
-        bind_processor_to_connection(processor, connection)
-
-        # Plug the parsing logic into the game view update logic.
-
-        scribe = Scribe(
-            view.textCursor(), settings=settings.ui.output, parent=self
-        )
-        processor.fragmentsReady.connect(scribe.inscribe)
-
-        # Refresh the display each time a new line is added.
-
-        scribe.newLineInscribed.connect(view.repaint)
-
-        # And start the connection.
-
-        connection.start()
+        return view, inputbox, second_inputbox
 
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
         # Plug the input into the network connection.
@@ -177,6 +181,19 @@ class WorldPane(Pane):
             self._settings.shortcuts.history_previous,
             historian.historyPrevious,
         )
+
+    def _createGameDataProcessor(self, connection: Connection) -> BaseProcessor:
+        processor = ChainProcessor(
+            ANSIProcessor(self._settings.ui.output.ansi_bold_effect),
+            UnicodeProcessor(self._settings.net.encoding),
+            FlowControlProcessor(),
+            LineBatchingProcessor(),
+            parent=self,
+        )
+
+        bind_processor_to_connection(processor, connection)
+
+        return processor
 
     @Slot()
     def _setTitles(self) -> None:

@@ -133,15 +133,11 @@ class WorldPane(Pane):
             ANSIProcessor(settings.ui.output.ansi_bold_effect),
             UnicodeProcessor(settings.net.encoding),
             FlowControlProcessor(),
-            line_processor := LineBatchingProcessor(),
+            LineBatchingProcessor(),
             parent=self,
         )
 
         bind_processor_to_connection(processor, connection)
-
-        # Refresh the display each time an entire line is processed.
-
-        line_processor.lineProcessed.connect(view.repaint)
 
         # Plug the parsing logic into the game view update logic.
 
@@ -149,6 +145,10 @@ class WorldPane(Pane):
             view.textCursor(), settings=settings.ui.output, parent=self
         )
         processor.fragmentsReady.connect(scribe.inscribe)
+
+        # Refresh the display each time a new line is added.
+
+        scribe.newLineInscribed.connect(view.repaint)
 
         # And start the connection.
 

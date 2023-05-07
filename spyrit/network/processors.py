@@ -329,20 +329,20 @@ class FlowControlProcessor(BaseProcessor):
 
 
 class LineBatchingProcessor(BaseProcessor):
-    # This signal fires when a single line worth of fragments was processed
-    # through this processor. It can be used to take action for each new line.
-
-    lineProcessed = Signal()  # noqa: N815
+    """
+    This processor flushes the pending fragments whenever a new line has been
+    processed.
+    """
 
     def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
+        yield fragment
+
         match fragment:
             case FlowControlFragment(FlowControlCode.LF):
-                yield fragment
                 self._maybeSignalOutputReady()
-                self.lineProcessed.emit()
 
             case _:
-                yield fragment
+                pass
 
 
 class ChainProcessor(BaseProcessor):

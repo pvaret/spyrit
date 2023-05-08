@@ -17,6 +17,7 @@ be applied to a cursor.
 """
 
 
+import enum
 import logging
 
 from typing import Iterable
@@ -39,6 +40,11 @@ from spyrit.network.fragments import (
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.colors import Color, NoColor
 from spyrit.ui.format import FormatUpdate
+
+
+class _MessageLevel(enum.Enum):
+    INFO = enum.auto()
+    ERROR = enum.auto()
 
 
 class CharFormatUpdater:
@@ -224,6 +230,7 @@ class Scribe(QObject):
                     self._format_updater.applyFormatUpdate(format_update)
 
                 case NetworkFragment(event, text):
+                    level = _MessageLevel.INFO
                     match event:
                         case Status.DISCONNECTED:
                             message = "Disconnected."
@@ -235,7 +242,8 @@ class Scribe(QObject):
                             message = "Connected!"
                         case Status.ERROR:
                             message = f"Error: {text}!"
-                    self._insertStatusText(message)
+                            level = _MessageLevel.ERROR
+                    self._insertStatusText(message, level)
 
                 case _:
                     logging.debug(
@@ -247,8 +255,12 @@ class Scribe(QObject):
         self._flushPendingNewLine()
         self._cursor.insertText(text, self._char_format)
 
-    def _insertStatusText(self, text: str) -> None:
+    def _insertStatusText(
+        self, text: str, level: _MessageLevel = _MessageLevel.INFO
+    ) -> None:
         self._flushPendingNewLine()
+
+        prefix = {_MessageLevel.INFO: "•", _MessageLevel.ERROR: "⚠"}[level]
 
         formatter = CharFormatUpdater(
             self._settings.default_text_color,
@@ -256,7 +268,7 @@ class Scribe(QObject):
             status_text_format := QTextCharFormat(),
         )
         formatter.applyFormatUpdate(self._settings.status_text_format.get())
-        self._cursor.insertText(f"→ {text}", status_text_format)
+        self._cursor.insertText(f"{prefix} {text}", status_text_format)
 
         self._insertNewLine()
 

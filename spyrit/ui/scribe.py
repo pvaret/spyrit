@@ -61,8 +61,6 @@ class CharFormatUpdater:
     _bright: bool = False
     _reverse: bool = False
 
-    # TODO: Handle highlighted FG color too.
-
     def __init__(
         self,
         foreground: Key[Color],

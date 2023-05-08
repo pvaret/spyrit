@@ -24,7 +24,7 @@ REQUIRED_QT_VERSION: tuple[int, int] = (6, 5)
 # Name
 
 APPLICATION_NAME: str = "SpyritNG"
-SPYRIT_VERSION: str = "0.5-dev"
+SPYRIT_VERSION: str = "0.6-dev"
 
 # PID file
 

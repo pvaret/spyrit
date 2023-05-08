@@ -16,6 +16,8 @@ Provide the main UI of Spyrit, to be embedded in a tabbed container.
 """
 
 
+from typing import Callable
+
 from PySide6.QtWidgets import QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -48,6 +50,9 @@ class _UIRemote:
     def setTabTitle(self, title: str) -> None:
         self._ui.setTabTitle(title)
 
+    def setCloseRequestCallback(self, callback: Callable[[], bool]) -> None:
+        self._ui.setCloseRequestCallback(callback)
+
 
 class MainUI(TabbedUIElement):
     """
@@ -55,6 +60,7 @@ class MainUI(TabbedUIElement):
     """
 
     _container: SlidingPaneContainer
+    _close_request_func: Callable[[], bool]
 
     def __init__(
         self,
@@ -71,11 +77,21 @@ class MainUI(TabbedUIElement):
         self.setWidget(self._container)
         self.setFocusProxy(self._container)
 
+        # Set a default function to check if the tab can be closed.
+
+        self._close_request_func = lambda: True
+
     def append(self, widget: Pane) -> None:
         return self._container.append(widget)
 
     def pop(self) -> None:
         return self._container.pop()
+
+    def setCloseRequestCallback(self, callback: Callable[[], bool]) -> None:
+        self._close_request_func = callback
+
+    def canCloseNow(self) -> bool:
+        return self._close_request_func()
 
 
 class SpyritMainUIFactory:

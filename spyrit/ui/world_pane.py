@@ -17,10 +17,10 @@ Implements a UI to play in a world.
 
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QSplitter, QHBoxLayout
+from PySide6.QtWidgets import QMessageBox, QSplitter, QHBoxLayout
 
 from spyrit import constants
-from spyrit.network.connection import Connection
+from spyrit.network.connection import Connection, Status
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
@@ -61,6 +61,8 @@ class WorldPane(Pane):
     _settings: SpyritSettings
     _state: SpyritState
     _ui: UIRemoteProtocol
+    _world_name: str
+    _connected: bool = False
 
     def __init__(
         self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
@@ -71,6 +73,14 @@ class WorldPane(Pane):
         self._state = state
         self._ui = ui
 
+        # Set up the callback to be queried when a tab close request occurs.
+
+        ui.setCloseRequestCallback(self._maybeAskUserIfReadyToClose)
+
+        # Plug events into the corresponding handles.
+
+        self._settings.name.onValueChangeCall(self._setWorldName)
+        self._setWorldName(self._settings.name.get())
         self.active.connect(self._setTitles)
 
         # Set up the splitter widget that hosts the game UI.
@@ -88,6 +98,10 @@ class WorldPane(Pane):
         # Set up the network connection.
 
         connection = Connection(settings.net, parent=self)
+
+        # Keep track of the connection status.
+
+        connection.statusChanged.connect(self._recallConnectionStatus)
 
         # Set up the inputs' behavior and plug them into the connection.
 
@@ -195,8 +209,39 @@ class WorldPane(Pane):
 
         return processor
 
+    def _setWorldName(self, name: str) -> None:
+        self._world_name = name or "Unnamed world"
+        self._setTitles()
+
     @Slot()
     def _setTitles(self) -> None:
-        world_name = self._settings.name.get() or "Unnamed world"
-        self._ui.setTabTitle(world_name)
-        self._ui.setWindowTitle(f"{constants.APPLICATION_NAME} - {world_name}")
+        self._ui.setTabTitle(self._world_name)
+        self._ui.setWindowTitle(
+            f"{constants.APPLICATION_NAME} - {self._world_name}"
+        )
+
+    @Slot(Status)
+    def _recallConnectionStatus(self, status: Status) -> None:
+        self._connected = status == Status.CONNECTED
+
+    def _maybeAskUserIfReadyToClose(self) -> bool:
+        # If there is currently no connection to a game, this UI can be closed
+        # right away.
+
+        if not self._connected:
+            return True
+
+        # Else, ask the user for confirmation.
+
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Icon.Question)
+        dialog.setWindowTitle("Disconnect?")
+        dialog.setText(
+            f"You are still connected to <b>{self._world_name}</b>.<br/>"
+            "Disconnect and close this tab?"
+        )
+        dialog.addButton(QMessageBox.StandardButton.Cancel)
+        ok = dialog.addButton(QMessageBox.StandardButton.Ok)
+        ok.setText("Disconnect and close")
+
+        return dialog.exec() == QMessageBox.StandardButton.Ok

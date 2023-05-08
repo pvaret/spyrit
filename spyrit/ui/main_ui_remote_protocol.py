@@ -19,7 +19,7 @@ UIRemote implementation knows about the MainUI class, but the classes that use
 the remote shouldn't.
 """
 
-from typing import Protocol
+from typing import Callable, Protocol
 
 from spyrit.ui.base_pane import Pane
 
@@ -35,4 +35,7 @@ class UIRemoteProtocol(Protocol):
         ...
 
     def setTabTitle(self, title: str) -> None:
+        ...
+
+    def setCloseRequestCallback(self, callback: Callable[[], bool]) -> None:
         ...

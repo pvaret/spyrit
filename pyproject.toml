@@ -32,6 +32,9 @@ test = [
     "pytest",
     "pytest-mock",
 ]
+dev = [
+    "types-regex",
+]
 
 [project.gui-scripts]
 spyrit = "spyrit.main:run"

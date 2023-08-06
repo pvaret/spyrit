@@ -19,7 +19,7 @@ Declaration of the Spyrit settings.
 import enum
 
 from PySide6.QtGui import QFont
-from sunset import Key, Bunch, Settings
+from sunset import Bunch, Key, Settings
 
 from spyrit import constants
 from spyrit.settings import key_shortcut, serializers
@@ -57,8 +57,25 @@ def _color_key(ansi_color: AnsiColorCodes) -> Key[Color]:
     )
 
 
+def _format_key(
+    color: AnsiColorCodes | None, italic: bool = False, bold: bool = False
+) -> Key[FormatUpdate]:
+    format_ = FormatUpdate()
+    if color is not None:
+        format_.setForeground(ANSIColor(color))
+    if italic:
+        format_.setItalic(True)
+    if bold:
+        format_.setBold(True)
+    return Key(default=format_, serializer=serializers.FormatSerializer())
+
+
 class SpyritSettings(Settings):
     class KeyShortcuts(Bunch):
+        """
+        Records the keyboard shortcuts for common UI actions.
+        """
+
         new_tab = _new_shortcut("Ctrl+T")
         new_window = _new_shortcut("Ctrl+Shift+N")
         close_current_tab = _new_shortcut("Ctrl+W")
@@ -71,29 +88,60 @@ class SpyritSettings(Settings):
         history_next = _new_shortcut("Ctrl+Down")
 
     class Network(Bunch):
+        """
+        Records the necessary information to connect to a game.
+        """
+
+        # Server address and port for the game. Server can be an IPv4, IPv6 or a
+        # resolvable DNS address.
         server = Key(default="")
         port = Key(default=0)
+
+        # Stores a game's expected text encoding. It most cases it will be
+        # ASCII, but some games get fancy with extended characters.
         encoding = Key(default=Encoding.ASCII)
 
     class UI(Bunch):
+        """
+        Records the visual properties of the UI.
+        """
+
         class Output(Bunch):
+            """
+            Records the visual properties of the main game view.
+            """
+
+            # The font use to render game text. Should be a monotype font.
             font = Key(default=_default_font(), serializer=serializers.Font())
+
+            # The background color of the window where game text is rendered.
             background_color = _color_key(AnsiColorCodes.Black)
+
+            # The color used to render game text when no other color is applied
+            # through e.g. ANSI codes or user-defined formatting.
             default_text_color = _color_key(AnsiColorCodes.LightGray)
-            status_text_format = Key(
-                default=FormatUpdate(
-                    foreground=ANSIColor(AnsiColorCodes.DarkGray), italic=True
-                ),
-                serializer=serializers.FormatSerializer(),
+
+            # Rendering properties of the text used for status messages.
+            status_text_format = _format_key(
+                color=AnsiColorCodes.DarkGray,
+                italic=True,
+                bold=True,
             )
+
+            # How to interpret the 'bold' ANSI code. There is no clear standard
+            # between actually using a heavier font weight and a lighter font
+            # color, so by default we do both.
             ansi_bold_effect = Key(default=ANSIBoldEffect.BOTH)
 
-        output = Output()
+        output: Output = Output()
 
+        # The name of the Qt style to use for the UI. If none, use the default
+        # for the platform.
         style = Key(default="")
 
-    shortcuts = KeyShortcuts()
-    net = Network()
-    ui = UI()
+    shortcuts: KeyShortcuts = KeyShortcuts()
+    net: Network = Network()
+    ui: UI = UI()
 
+    # The display name of the game.
     name = Key(default="")

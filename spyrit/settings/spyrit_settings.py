@@ -23,7 +23,7 @@ from sunset import Bunch, Key, Settings
 
 from spyrit import constants
 from spyrit.settings import key_shortcut, serializers
-from spyrit.ui.colors import ANSIColor, AnsiColorCodes, Color
+from spyrit.ui.colors import ANSIColor, ANSIColorCodes, Color
 from spyrit.ui.format import FormatUpdate
 
 
@@ -50,7 +50,7 @@ def _default_font() -> QFont:
     )
 
 
-def _color_key(ansi_color: AnsiColorCodes) -> Key[Color]:
+def _color_key(ansi_color: ANSIColorCodes) -> Key[Color]:
     return Key(
         default=ANSIColor(ansi_color),
         serializer=serializers.ColorSerializer(),
@@ -58,7 +58,7 @@ def _color_key(ansi_color: AnsiColorCodes) -> Key[Color]:
 
 
 def _format_key(
-    color: AnsiColorCodes | None, italic: bool = False, bold: bool = False
+    color: ANSIColorCodes | None, italic: bool = False, bold: bool = False
 ) -> Key[FormatUpdate]:
     format_ = FormatUpdate()
     if color is not None:
@@ -115,15 +115,15 @@ class SpyritSettings(Settings):
             font = Key(default=_default_font(), serializer=serializers.Font())
 
             # The background color of the window where game text is rendered.
-            background_color = _color_key(AnsiColorCodes.Black)
+            background_color = _color_key(ANSIColorCodes.Black)
 
             # The color used to render game text when no other color is applied
             # through e.g. ANSI codes or user-defined formatting.
-            default_text_color = _color_key(AnsiColorCodes.LightGray)
+            default_text_color = _color_key(ANSIColorCodes.LightGray)
 
             # Rendering properties of the text used for status messages.
             status_text_format = _format_key(
-                color=AnsiColorCodes.DarkGray,
+                color=ANSIColorCodes.DarkGray,
                 italic=True,
                 bold=True,
             )

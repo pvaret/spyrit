@@ -8,7 +8,7 @@ from spyrit.settings.serializers import (
     IntList,
     Size,
 )
-from spyrit.ui.colors import ANSIColor, AnsiColorCodes, NoColor, RGBColor
+from spyrit.ui.colors import ANSIColor, ANSIColorCodes, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
 
@@ -48,9 +48,9 @@ def test_size_serializer() -> None:
 
 def test_color_serializer() -> None:
     assert ColorSerializer().toStr(NoColor()) == "-"
-    assert ColorSerializer().toStr(ANSIColor(AnsiColorCodes.Black)) == "Black"
+    assert ColorSerializer().toStr(ANSIColor(ANSIColorCodes.Black)) == "Black"
     assert (
-        ColorSerializer().toStr(ANSIColor(AnsiColorCodes.LightCyan))
+        ColorSerializer().toStr(ANSIColor(ANSIColorCodes.LightCyan))
         == "LightCyan"
     )
     assert ColorSerializer().toStr(ANSIColor(201)) == "201"
@@ -61,17 +61,17 @@ def test_color_serializer() -> None:
     assert ColorSerializer().fromStr("-") == NoColor()
     assert ColorSerializer().fromStr("#7be784") == RGBColor(123, 231, 132)
     assert ColorSerializer().fromStr("128") == ANSIColor(128)
-    assert ColorSerializer().fromStr("0") == ANSIColor(AnsiColorCodes.Black)
-    assert ColorSerializer().fromStr("black") == ANSIColor(AnsiColorCodes.Black)
-    assert ColorSerializer().fromStr("BLACK") == ANSIColor(AnsiColorCodes.Black)
+    assert ColorSerializer().fromStr("0") == ANSIColor(ANSIColorCodes.Black)
+    assert ColorSerializer().fromStr("black") == ANSIColor(ANSIColorCodes.Black)
+    assert ColorSerializer().fromStr("BLACK") == ANSIColor(ANSIColorCodes.Black)
     assert ColorSerializer().fromStr("13") == ANSIColor(
-        AnsiColorCodes.LightMagenta
+        ANSIColorCodes.LightMagenta
     )
     assert ColorSerializer().fromStr("lightmagenta") == ANSIColor(
-        AnsiColorCodes.LightMagenta
+        ANSIColorCodes.LightMagenta
     )
     assert ColorSerializer().fromStr("LIGHTMAGENTA") == ANSIColor(
-        AnsiColorCodes.LightMagenta
+        ANSIColorCodes.LightMagenta
     )
     assert ColorSerializer().fromStr("300") is None
     assert ColorSerializer().fromStr("-1") is None
@@ -91,7 +91,7 @@ def test_format_serializer() -> None:
             reverse=True,
             strikeout=True,
             foreground=RGBColor(0, 0, 0),
-            background=ANSIColor(AnsiColorCodes.White),
+            background=ANSIColor(ANSIColorCodes.White),
         )
     ) == (
         "bold ; bright ; italic ; underline ; reverse ; strikeout ;"
@@ -123,7 +123,7 @@ def test_format_serializer() -> None:
         reverse=True,
         strikeout=True,
         foreground=RGBColor(0, 0, 0),
-        background=ANSIColor(AnsiColorCodes.White),
+        background=ANSIColor(ANSIColorCodes.White),
     )
     assert FormatSerializer().fromStr(
         "-bold ; - bright ; -italic ; !underline ; -reverse ; ! strikeout ;"

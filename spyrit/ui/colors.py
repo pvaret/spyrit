@@ -53,7 +53,7 @@ class Solarized(StrEnum):
     DarkGreen = "#6a7a00"
 
 
-class AnsiColorCodes(IntEnum):
+class ANSIColorCodes(IntEnum):
     Black = 0
     Red = 1
     Green = 2
@@ -73,22 +73,22 @@ class AnsiColorCodes(IntEnum):
 
 
 SolarizedPalette: dict[int, str] = {
-    AnsiColorCodes.Black: Solarized.Base03,
-    AnsiColorCodes.Red: Solarized.DarkRed,
-    AnsiColorCodes.Green: Solarized.DarkGreen,
-    AnsiColorCodes.Yellow: Solarized.DarkYellow,
-    AnsiColorCodes.Blue: Solarized.DarkBlue,
-    AnsiColorCodes.Magenta: Solarized.DarkMagenta,
-    AnsiColorCodes.Cyan: Solarized.DarkCyan,
-    AnsiColorCodes.LightGray: Solarized.Base0,
-    AnsiColorCodes.DarkGray: Solarized.Base01,
-    AnsiColorCodes.LightRed: Solarized.Red,
-    AnsiColorCodes.LightGreen: Solarized.Green,
-    AnsiColorCodes.LightYellow: Solarized.Yellow,
-    AnsiColorCodes.LightBlue: Solarized.Blue,
-    AnsiColorCodes.LightMagenta: Solarized.Magenta,
-    AnsiColorCodes.LightCyan: Solarized.Cyan,
-    AnsiColorCodes.White: Solarized.Base1,
+    ANSIColorCodes.Black: Solarized.Base03,
+    ANSIColorCodes.Red: Solarized.DarkRed,
+    ANSIColorCodes.Green: Solarized.DarkGreen,
+    ANSIColorCodes.Yellow: Solarized.DarkYellow,
+    ANSIColorCodes.Blue: Solarized.DarkBlue,
+    ANSIColorCodes.Magenta: Solarized.DarkMagenta,
+    ANSIColorCodes.Cyan: Solarized.DarkCyan,
+    ANSIColorCodes.LightGray: Solarized.Base0,
+    ANSIColorCodes.DarkGray: Solarized.Base01,
+    ANSIColorCodes.LightRed: Solarized.Red,
+    ANSIColorCodes.LightGreen: Solarized.Green,
+    ANSIColorCodes.LightYellow: Solarized.Yellow,
+    ANSIColorCodes.LightBlue: Solarized.Blue,
+    ANSIColorCodes.LightMagenta: Solarized.Magenta,
+    ANSIColorCodes.LightCyan: Solarized.Cyan,
+    ANSIColorCodes.White: Solarized.Base1,
 }
 
 ExtendedANSIPalette = {

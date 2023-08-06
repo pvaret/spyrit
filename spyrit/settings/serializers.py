@@ -21,7 +21,7 @@ import re
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
-from spyrit.ui.colors import ANSIColor, AnsiColorCodes, Color, NoColor, RGBColor
+from spyrit.ui.colors import ANSIColor, ANSIColorCodes, Color, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
 
@@ -91,7 +91,7 @@ class ColorSerializer:
 
             return RGBColor(r, g, b)
 
-        for code in AnsiColorCodes:
+        for code in ANSIColorCodes:
             if code.name.lower() == string:
                 return ANSIColor(code)
 
@@ -103,7 +103,7 @@ class ColorSerializer:
                 return "-"
 
             case ANSIColor(ansi_code):
-                for code in AnsiColorCodes:
+                for code in ANSIColorCodes:
                     if code == ansi_code:
                         return code.name
 

@@ -15,7 +15,7 @@ from spyrit.network.processors import (
     UnicodeProcessor,
 )
 from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
-from spyrit.ui.colors import ANSIColor, AnsiColorCodes, NoColor, RGBColor
+from spyrit.ui.colors import ANSIColor, ANSIColorCodes, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
 
@@ -198,54 +198,54 @@ class TestANSIProcessor:
         processor.feed([ByteFragment(b"\033[30m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Black))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Black))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[31m")])
         assert output.get() == [
-            ANSIFragment(FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Red)))
+            ANSIFragment(FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Red)))
         ]
 
         processor.feed([ByteFragment(b"\033[32m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Green))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Green))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[33m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Yellow))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Yellow))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[34m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Blue))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Blue))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[35m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Magenta))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Magenta))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[36m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.Cyan))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Cyan))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[37m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(foreground=ANSIColor(AnsiColorCodes.LightGray))
+                FormatUpdate(foreground=ANSIColor(ANSIColorCodes.LightGray))
             )
         ]
 
@@ -267,54 +267,54 @@ class TestANSIProcessor:
         processor.feed([ByteFragment(b"\033[40m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.Black))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.Black))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[41m")])
         assert output.get() == [
-            ANSIFragment(FormatUpdate(background=ANSIColor(AnsiColorCodes.Red)))
+            ANSIFragment(FormatUpdate(background=ANSIColor(ANSIColorCodes.Red)))
         ]
 
         processor.feed([ByteFragment(b"\033[42m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.Green))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.Green))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[43m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.Yellow))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.Yellow))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[44m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.Blue))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.Blue))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[45m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.Magenta))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.Magenta))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[46m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.Cyan))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.Cyan))
             )
         ]
 
         processor.feed([ByteFragment(b"\033[47m")])
         assert output.get() == [
             ANSIFragment(
-                FormatUpdate(background=ANSIColor(AnsiColorCodes.LightGray))
+                FormatUpdate(background=ANSIColor(ANSIColorCodes.LightGray))
             )
         ]
 
@@ -344,7 +344,7 @@ class TestANSIProcessor:
                     bold=True,
                     underline=True,
                     reverse=False,
-                    foreground=ANSIColor(AnsiColorCodes.Red),
+                    foreground=ANSIColor(ANSIColorCodes.Red),
                 )
             )
         ]

@@ -76,6 +76,10 @@ class TestUnicodeProcessor:
         processor.feed([ByteFragment(b"test\xc3\xa9")])
         assert output.get() == [TextFragment("testé")]
 
+    def test_all_encodings_are_valid(self) -> None:
+        for encoding in Encoding:
+            assert "x".encode(encoding) != b""
+
 
 class TestANSIProcessor:
     def test_no_ansi(self) -> None:

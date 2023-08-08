@@ -22,7 +22,8 @@ from PySide6.QtGui import QFont
 from sunset import Bunch, Key, Settings
 
 from spyrit import constants
-from spyrit.settings import key_shortcut, serializers
+from spyrit.settings import serializers
+from spyrit.settings.key_shortcut import shortcut_from_default, Shortcut
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, Color
 from spyrit.ui.format import FormatUpdate
 
@@ -40,13 +41,13 @@ class ANSIBoldEffect(enum.Flag):
     BOTH = BRIGHT | BOLD
 
 
-def _new_shortcut(combination: str) -> Key[key_shortcut.KeyShortcut]:
-    return Key(default=key_shortcut.from_default(combination))
+def _shortcut_key(combination: str) -> Key[Shortcut]:
+    return Key(default=shortcut_from_default(combination))
 
 
-def _default_font() -> QFont:
-    return QFont(
-        constants.DEFAULT_FONT_FAMILY, constants.DEFAULT_FONT_POINT_SIZE
+def _font_key(font_family: list[str], font_size: int) -> Key[QFont]:
+    return Key(
+        default=QFont(font_family, font_size), serializer=serializers.Font()
     )
 
 
@@ -76,16 +77,18 @@ class SpyritSettings(Settings):
         Records the keyboard shortcuts for common UI actions.
         """
 
-        new_tab = _new_shortcut("Ctrl+T")
-        new_window = _new_shortcut("Ctrl+Shift+N")
-        close_current_tab = _new_shortcut("Ctrl+W")
-        switch_to_previous_tab = _new_shortcut("Ctrl+PgUp")
-        switch_to_next_tab = _new_shortcut("Ctrl+PgDown")
-        move_current_tab_left = _new_shortcut("Ctrl+Shift+PgUp")
-        move_current_tab_right = _new_shortcut("Ctrl+Shift+PgDown")
-        toggle_second_input = _new_shortcut("Ctrl+M")
-        history_previous = _new_shortcut("Ctrl+Up")
-        history_next = _new_shortcut("Ctrl+Down")
+        new_tab: Key[Shortcut] = _shortcut_key("Ctrl+T")
+        new_window: Key[Shortcut] = _shortcut_key("Ctrl+Shift+N")
+        close_current_tab: Key[Shortcut] = _shortcut_key("Ctrl+W")
+        switch_to_previous_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgUp")
+        switch_to_next_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgDown")
+        move_current_tab_left: Key[Shortcut] = _shortcut_key("Ctrl+Shift+PgUp")
+        move_current_tab_right: Key[Shortcut] = _shortcut_key(
+            "Ctrl+Shift+PgDown"
+        )
+        toggle_second_input: Key[Shortcut] = _shortcut_key("Ctrl+M")
+        history_previous: Key[Shortcut] = _shortcut_key("Ctrl+Up")
+        history_next: Key[Shortcut] = _shortcut_key("Ctrl+Down")
 
     class Network(Bunch):
         """
@@ -94,12 +97,12 @@ class SpyritSettings(Settings):
 
         # Server address and port for the game. Server can be an IPv4, IPv6 or a
         # resolvable DNS address.
-        server = Key(default="")
-        port = Key(default=0)
+        server: Key[str] = Key(default="")
+        port: Key[int] = Key(default=0)
 
         # Stores a game's expected text encoding. It most cases it will be
         # ASCII, but some games get fancy with extended characters.
-        encoding = Key(default=Encoding.ASCII)
+        encoding: Key[Encoding] = Key(default=Encoding.ASCII)
 
     class UI(Bunch):
         """
@@ -112,17 +115,21 @@ class SpyritSettings(Settings):
             """
 
             # The font use to render game text. Should be a monotype font.
-            font = Key(default=_default_font(), serializer=serializers.Font())
+            font: Key[QFont] = _font_key(
+                constants.DEFAULT_FONT_FAMILY, constants.DEFAULT_FONT_POINT_SIZE
+            )
 
             # The background color of the window where game text is rendered.
-            background_color = _color_key(ANSIColorCodes.Black)
+            background_color: Key[Color] = _color_key(ANSIColorCodes.Black)
 
             # The color used to render game text when no other color is applied
             # through e.g. ANSI codes or user-defined formatting.
-            default_text_color = _color_key(ANSIColorCodes.LightGray)
+            default_text_color: Key[Color] = _color_key(
+                ANSIColorCodes.LightGray
+            )
 
             # Rendering properties of the text used for status messages.
-            status_text_format = _format_key(
+            status_text_format: Key[FormatUpdate] = _format_key(
                 color=ANSIColorCodes.DarkGray,
                 italic=True,
                 bold=True,
@@ -131,17 +138,19 @@ class SpyritSettings(Settings):
             # How to interpret the 'bold' ANSI code. There is no clear standard
             # between actually using a heavier font weight and a lighter font
             # color, so by default we do both.
-            ansi_bold_effect = Key(default=ANSIBoldEffect.BOTH)
+            ansi_bold_effect: Key[ANSIBoldEffect] = Key(
+                default=ANSIBoldEffect.BOTH
+            )
 
         output: Output = Output()
 
         # The name of the Qt style to use for the UI. If none, use the default
         # for the platform.
-        style = Key(default="")
+        style: Key[str] = Key(default="")
 
     shortcuts: KeyShortcuts = KeyShortcuts()
     net: Network = Network()
     ui: UI = UI()
 
     # The display name of the game.
-    name = Key(default="")
+    name: Key[str] = Key(default="")

@@ -19,36 +19,36 @@ Implements a key shortcut type that's serializable by SunsetSettings.
 from PySide6.QtGui import QKeySequence
 
 
-class KeyShortcut(QKeySequence):
+class Shortcut(QKeySequence):
     """
     A subclass of QKeySequence that can be serialized into SunsetSettings.
     """
 
     @classmethod
-    def fromStr(cls, value: str) -> "KeyShortcut | None":
+    def fromStr(cls, value: str) -> "Shortcut | None":
         """
-        Build a KeyShortcut from native text. Native means that Cmd on Mac OS X
+        Build a Shortcut from native text. Native means that Cmd on Mac OS X
         typically takes the role of Ctrl on Linux/Windows.
         """
 
-        key = KeyShortcut(value, format=QKeySequence.SequenceFormat.NativeText)
+        key = Shortcut(value, format=QKeySequence.SequenceFormat.NativeText)
         return None if key.isEmpty() else key
 
     def toStr(self) -> str:
         """
-        Serialize a KeyShortcut to native text. Native means that Cmd on Mac OS
-        X typically takes the role of Ctrl on Linux/Windows.
+        Serialize a Shortcut to native text. Native means that Cmd on Mac OS X
+        typically takes the role of Ctrl on Linux/Windows.
         """
 
         return self.toString(format=QKeySequence.SequenceFormat.NativeText)
 
 
-def from_default(value: str) -> KeyShortcut:
+def shortcut_from_default(value: str) -> Shortcut:
     """
-    Build a KeyShortcut from *portable* text. Portable means that we can
-    specify the same shortcut on all platforms and Qt adapts it to the
-    native modifiers for the platform.
+    Build a Shortcut from *portable* text. Portable means that we can specify
+    the same shortcut on all platforms and Qt adapts it to the native modifiers
+    for the platform.
     """
 
-    key = KeyShortcut(value, format=QKeySequence.SequenceFormat.PortableText)
+    key = Shortcut(value, format=QKeySequence.SequenceFormat.PortableText)
     return key

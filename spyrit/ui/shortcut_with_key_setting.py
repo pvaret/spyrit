@@ -25,17 +25,17 @@ from PySide6.QtGui import QShortcut
 
 from sunset import Key
 
-from spyrit.settings.key_shortcut import KeyShortcut
+from spyrit.settings.key_shortcut import Shortcut
 
 
 class ShortcutWithKeySetting(QObject):
     _shortcut: QShortcut
-    _key: Key[KeyShortcut]
+    _key: Key[Shortcut]
 
     def __init__(
         self,
         parent: QObject,
-        key: Key[KeyShortcut],
+        key: Key[Shortcut],
         slot: Slot | SignalInstance | Callable[[], None],
     ) -> None:
         super().__init__(parent=parent)
@@ -49,7 +49,7 @@ class ShortcutWithKeySetting(QObject):
         self._shortcut.activated.connect(slot)
         self._shortcut.activated.connect(self._debug)
 
-    def updateShortcut(self, key: KeyShortcut) -> None:
+    def updateShortcut(self, key: Shortcut) -> None:
         self._shortcut.setKey(key)
 
     @Slot()

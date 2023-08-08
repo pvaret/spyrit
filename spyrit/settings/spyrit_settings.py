@@ -19,7 +19,7 @@ Declaration of the Spyrit settings.
 import enum
 
 from PySide6.QtGui import QFont
-from sunset import Bunch, Key, Settings
+from sunset import Bunch, Key, List, Settings
 
 from spyrit import constants
 from spyrit.settings import serializers
@@ -41,6 +41,38 @@ class ANSIBoldEffect(enum.Flag):
     BOTH = BRIGHT | BOLD
 
 
+class PatternScope(enum.Enum):
+    # A pattern with this scope will match if and only it matches the entire
+    # line.
+    ENTIRE_LINE = enum.auto()
+
+    # Every subset of a line of text that matches a pattern with this scope will
+    # be considered an independent match.
+    ANYWHERE_IN_LINE = enum.auto()
+
+
+class PatternType(enum.Enum):
+    # An ANYTHING pattern matches any characters, as *few* as possible,
+    # including none at all.
+    ANYTHING = enum.auto()
+
+    # An EXACT_MATCH pattern matches the pattern string exactly, after
+    # normalisation.
+    EXACT_MATCH = enum.auto()
+
+    # An ANY_OF pattern matches any of the characters in the pattern string in
+    # any order, as many as possible.
+    ANY_OF = enum.auto()
+
+    # An ANY_NOT_IN pattern matches any characters not in the pattern string, as
+    # many as possible.
+    ANY_NOT_IN = enum.auto()
+
+    # A REGEX pattern uses the pattern string as a regex, matching as many
+    # characters as possible.
+    REGEX = enum.auto()
+
+
 def _shortcut_key(combination: str) -> Key[Shortcut]:
     return Key(default=shortcut_from_default(combination))
 
@@ -59,7 +91,9 @@ def _color_key(ansi_color: ANSIColorCodes) -> Key[Color]:
 
 
 def _format_key(
-    color: ANSIColorCodes | None, italic: bool = False, bold: bool = False
+    color: ANSIColorCodes | None = None,
+    italic: bool = False,
+    bold: bool = False,
 ) -> Key[FormatUpdate]:
     format_ = FormatUpdate()
     if color is not None:
@@ -148,8 +182,36 @@ class SpyritSettings(Settings):
         # for the platform.
         style: Key[str] = Key(default="")
 
+    class Pattern(Bunch):
+        """
+        Records a compound user-defined pattern, to be matched against game text
+        so e.g. custom formatting can be applied.
+        """
+
+        class Fragment(Bunch):
+            # The type of pattern stored in this fragment.
+            type: Key[PatternType] = Key(default=PatternType.ANYTHING)
+
+            # The text of the pattern in this fragment. Unused if the pattern
+            # type is ANYTHING.
+            pattern_text: Key[str] = Key(default="")
+
+            # Which format to apply to the given fragment.
+            format: Key[FormatUpdate] = _format_key()
+
+        # Whether to match entire lines, or anywhere in lines.
+        scope: Key[PatternScope] = Key(default=PatternScope.ENTIRE_LINE)
+
+        # The sub-pattern fragments that make up this pattern.
+        fragments: List[Fragment] = List(Fragment())
+
+        # The format to apply to the fragment matches that don't have their own
+        # specific format.
+        format: Key[FormatUpdate] = _format_key()
+
     shortcuts: KeyShortcuts = KeyShortcuts()
     net: Network = Network()
+    patterns: List[Pattern]
     ui: UI = UI()
 
     # The display name of the game.

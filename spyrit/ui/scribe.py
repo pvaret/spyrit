@@ -42,6 +42,10 @@ from spyrit.ui.colors import Color, NoColor
 from spyrit.ui.format import FormatUpdate
 
 
+_INFO_PREFIX = "•"
+_ERROR_PREFIX = "‼"
+
+
 class _MessageLevel(enum.Enum):
     INFO = enum.auto()
     ERROR = enum.auto()
@@ -149,6 +153,10 @@ class CharFormatUpdater:
             self._char_format.setBackground(QColor(color.asHex()))
 
     def applyFormatUpdate(self, format_update: FormatUpdate) -> None:
+        """
+        Computes and applies the current format with the given update.
+        """
+
         if format_update.bold is not None:
             self._char_format.setFontWeight(
                 QFont.Weight.Bold if format_update.bold else QFont.Weight.Medium
@@ -258,7 +266,10 @@ class Scribe(QObject):
     ) -> None:
         self._flushPendingNewLine()
 
-        prefix = {_MessageLevel.INFO: "•", _MessageLevel.ERROR: "⚠"}[level]
+        prefix = {
+            _MessageLevel.INFO: _INFO_PREFIX,
+            _MessageLevel.ERROR: _ERROR_PREFIX,
+        }[level]
 
         formatter = CharFormatUpdater(
             self._settings.default_text_color,

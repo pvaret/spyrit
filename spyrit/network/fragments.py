@@ -106,3 +106,26 @@ class NetworkFragment(Fragment):
 
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, NetworkFragment) and self.event == other.event
+
+
+class PatternMatchFragment(Fragment):
+    __match_args__ = ("format", "start", "end")
+
+    format: FormatUpdate
+    start: int
+    end: int
+
+    def __init__(self, format_: FormatUpdate, start: int, end: int) -> None:
+        self.format = format_
+        self.start = start
+        self.end = end
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, PatternMatchFragment):
+            return False
+
+        return (
+            self.format == other.format
+            and self.start == other.start
+            and self.end == other.end
+        )

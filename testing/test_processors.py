@@ -1,11 +1,14 @@
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
-from sunset import Key
+from sunset import Key, List, Settings
 
 from spyrit.network.fragments import (
     ANSIFragment,
     ByteFragment,
+    FlowControlCode,
+    FlowControlFragment,
     Fragment,
+    PatternMatchFragment,
     TextFragment,
 )
 from spyrit.network.processors import (
@@ -13,8 +16,15 @@ from spyrit.network.processors import (
     BaseProcessor,
     ChainProcessor,
     UnicodeProcessor,
+    UserPatternProcessor,
 )
-from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
+from spyrit.settings.spyrit_settings import (
+    ANSIBoldEffect,
+    Encoding,
+    PatternScope,
+    PatternType,
+    SpyritSettings,
+)
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
@@ -368,6 +378,285 @@ class TestANSIProcessor:
 
         processor.feed([ByteFragment(b"\033[48;99999m")])
         assert output.get() == [ANSIFragment(FormatUpdate())]
+
+
+class TestUserPatternProcessor:
+    def _match_output(
+        self, output: OutputCatcher
+    ) -> list[PatternMatchFragment]:
+        return [f for f in output.get() if isinstance(f, PatternMatchFragment)]
+
+    def test_simple_line_match(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ENTIRE_LINE)
+
+        f1 = p1.fragments.appendOne()
+        f1.format.set(format_ := FormatUpdate(italic=True))
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("abcde")
+
+        processor.feed(
+            [TextFragment("abcde"), FlowControlFragment(FlowControlCode.LF)]
+        )
+        assert self._match_output(output) == [
+            PatternMatchFragment(format_, 0, 5),
+        ]
+
+    def test_complex_line_match(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ENTIRE_LINE)
+        p1.format.set(format_ := FormatUpdate(italic=True))
+
+        p1.fragments.appendOne().type.set(PatternType.ANYTHING)
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("abcde")
+
+        p1.fragments.appendOne().type.set(PatternType.ANYTHING)
+
+        processor.feed(
+            [
+                TextFragment("1234abcde12345"),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+        assert self._match_output(output) == [
+            PatternMatchFragment(format_, 0, 4),
+            PatternMatchFragment(format_, 4, 9),
+            PatternMatchFragment(format_, 9, 14),
+        ]
+
+    def test_simple_anywhere_match(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p1.format.set(format_ := FormatUpdate(italic=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("abcde")
+
+        processor.feed(
+            [
+                TextFragment("1234abcde12345"),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+        assert self._match_output(output) == [
+            PatternMatchFragment(format_, 4, 9),
+        ]
+
+    def test_complex_anywhere_match(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.ANY_NOT_IN)
+        f1.pattern_text.set("x")
+        f1.format.set(format1 := FormatUpdate(italic=True))
+
+        f2 = p1.fragments.appendOne()
+        f2.type.set(PatternType.REGEX)
+        f2.pattern_text.set("a{4,8}")
+        f2.format.set(format2 := FormatUpdate(bold=True))
+
+        f3 = p1.fragments.appendOne()
+        f3.type.set(PatternType.EXACT_MATCH)
+        f3.pattern_text.set("aaaab")
+        f3.format.set(format3 := FormatUpdate(underline=True))
+
+        processor.feed(
+            [
+                TextFragment("xxxxxxxaaaaaaaaaaaaaaaabxxxxx"),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+        assert self._match_output(output) == [
+            PatternMatchFragment(format1, 7, 15),
+            PatternMatchFragment(format2, 15, 19),
+            PatternMatchFragment(format3, 19, 24),
+        ]
+
+    def test_repeated_anywhere_match(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p1.format.set(format_ := FormatUpdate(bold=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.REGEX)
+        f1.pattern_text.set("a{2,5}")
+
+        processor.feed(
+            [
+                TextFragment(" a  aa  aaaaa  aaaaaa  aaaaaaa"),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+
+        assert self._match_output(output) == [
+            PatternMatchFragment(format_, 4, 6),
+            PatternMatchFragment(format_, 8, 13),
+            PatternMatchFragment(format_, 15, 20),
+            PatternMatchFragment(format_, 23, 28),
+            PatternMatchFragment(format_, 28, 30),
+        ]
+
+    def test_match_across_text_fragments(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p1.format.set(format_ := FormatUpdate(bold=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("ab")
+
+        processor.feed(
+            [
+                TextFragment("    a"),
+                TextFragment("b    "),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+        assert self._match_output(output) == [
+            PatternMatchFragment(format_, 4, 6),
+        ]
+
+        processor.feed(
+            [
+                TextFragment("   a "),
+                TextFragment("b    "),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+        assert self._match_output(output) == []
+
+    def test_fragment_format_overrides_pattern_format(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ENTIRE_LINE)
+        p1.format.set(line_format := FormatUpdate(bright=True, underline=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.ANYTHING)
+
+        f2 = p1.fragments.appendOne()
+        f2.type.set(PatternType.EXACT_MATCH)
+        f2.pattern_text.set("test")
+        f2.format.set(
+            fragment_format := FormatUpdate(strikeout=True, reverse=True)
+        )
+
+        f3 = p1.fragments.appendOne()
+        f3.type.set(PatternType.ANYTHING)
+
+        processor.feed(
+            [
+                TextFragment("....test...."),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+
+        assert self._match_output(output) == [
+            PatternMatchFragment(line_format, 0, 4),
+            PatternMatchFragment(fragment_format, 4, 8),
+            PatternMatchFragment(line_format, 8, 12),
+        ]
+
+    def test_fragments_passed_verbatim(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
+        output = OutputCatcher(processor)
+
+        p1 = patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p1.format.set(format_ := FormatUpdate(bold=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("test")
+
+        processor.feed(
+            [
+                TextFragment("  te"),
+                ANSIFragment(FormatUpdate(reverse=True)),
+                TextFragment("st  "),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+        assert output.get() == [
+            PatternMatchFragment(format_, 2, 6),
+            TextFragment("  te"),
+            ANSIFragment(FormatUpdate(reverse=True)),
+            TextFragment("st  "),
+            FlowControlFragment(FlowControlCode.LF),
+        ]
+
+    def test_parent_patterns_matched_first(self) -> None:
+        class TestSettings(Settings):
+            patterns: List[SpyritSettings.Pattern] = List(
+                SpyritSettings.Pattern()
+            )
+
+        parent_settings = TestSettings()
+        derived_settings = parent_settings.newSection("child")
+
+        processor = UserPatternProcessor(derived_settings.patterns)
+        output = OutputCatcher(processor)
+
+        p1 = parent_settings.patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p1.format.set(format1 := FormatUpdate(underline=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("cdef")
+
+        p2 = derived_settings.patterns.appendOne()
+        p2.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p2.format.set(format2 := FormatUpdate(bright=True))
+
+        f2 = p2.fragments.appendOne()
+        f2.type.set(PatternType.EXACT_MATCH)
+        f2.pattern_text.set("abcd")
+
+        processor.feed(
+            [
+                TextFragment("abcdef"),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+
+        assert self._match_output(output) == [
+            PatternMatchFragment(format1, 2, 6),
+            PatternMatchFragment(format2, 0, 4),
+        ]
 
 
 class TestChainProcessor:

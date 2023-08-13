@@ -25,7 +25,7 @@ from typing import Iterable, Iterator
 import regex
 
 from PySide6.QtCore import QObject, Signal, Slot
-from sunset import Key
+from sunset import Key, List
 
 from spyrit import constants
 from spyrit.network.connection import Connection, Status
@@ -37,11 +37,17 @@ from spyrit.network.fragments import (
     Fragment,
     FragmentList,
     NetworkFragment,
+    PatternMatchFragment,
     TextFragment,
 )
+from spyrit.network.pattern import find_matches
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
-from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
+from spyrit.settings.spyrit_settings import (
+    ANSIBoldEffect,
+    Encoding,
+    SpyritSettings,
+)
 
 
 class BaseProcessor(QObject):
@@ -344,6 +350,50 @@ class LineBatchingProcessor(BaseProcessor):
 
             case _:
                 pass
+
+
+class UserPatternProcessor(BaseProcessor):
+    """
+    This processor batches entire lines of text and searches them for
+    user-provided patterns, in order to apply conditional user-provided
+    formatting.
+    """
+
+    _patterns: List[SpyritSettings.Pattern]
+    _fragment_buffer: list[Fragment]
+    _line_so_far: str = ""
+
+    def __init__(self, patterns: List[SpyritSettings.Pattern]) -> None:
+        super().__init__()
+
+        self._patterns = patterns
+        self._fragment_buffer = []
+
+    def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
+        self._fragment_buffer.append(fragment)
+
+        match fragment:
+            case TextFragment(text):
+                self._line_so_far += text
+
+            case NetworkFragment() | FlowControlFragment(FlowControlCode.LF):
+                yield from self._applyUserPatterns(self._line_so_far)
+                yield from self._fragment_buffer
+                self._line_so_far = ""
+                self._fragment_buffer.clear()
+
+            case _:
+                pass
+
+    def _applyUserPatterns(self, line: str) -> Iterator[PatternMatchFragment]:
+        for pattern in self._patterns.iter(List.PARENT_FIRST):
+            for start, end, format_ in find_matches(pattern, line):
+                if start == end:
+                    continue
+                if format_.empty():
+                    format_ = pattern.format.get()
+                if not format_.empty():
+                    yield PatternMatchFragment(format_, start, end)
 
 
 class ChainProcessor(BaseProcessor):

@@ -28,6 +28,7 @@ from spyrit.network.processors import (
     FlowControlProcessor,
     LineBatchingProcessor,
     UnicodeProcessor,
+    UserPatternProcessor,
     bind_processor_to_connection,
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -202,6 +203,7 @@ class WorldPane(Pane):
             UnicodeProcessor(self._settings.net.encoding),
             FlowControlProcessor(),
             LineBatchingProcessor(),
+            UserPatternProcessor(self._settings.patterns),
             parent=self,
         )
 

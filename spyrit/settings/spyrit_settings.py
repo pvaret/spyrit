@@ -211,7 +211,7 @@ class SpyritSettings(Settings):
 
     shortcuts: KeyShortcuts = KeyShortcuts()
     net: Network = Network()
-    patterns: List[Pattern]
+    patterns: List[Pattern] = List(Pattern())
     ui: UI = UI()
 
     # The display name of the game.

@@ -85,6 +85,21 @@ class FormatUpdate:
     def setBackground(self, color: Color) -> None:
         self.background = color
 
+    def empty(self) -> bool:
+        return all(
+            attribute is None
+            for attribute in (
+                self.bold,
+                self.bright,
+                self.italic,
+                self.underline,
+                self.reverse,
+                self.strikeout,
+                self.foreground,
+                self.background,
+            )
+        )
+
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, FormatUpdate):
             return False

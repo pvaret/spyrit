@@ -88,21 +88,17 @@ class CharFormatUpdater:
         def valid_color(this: Color, other: Color | None) -> Color:
             return other if other is not None and not other.isUnset() else this
 
-        bold = reduce(not_none, (f.bold for f in formats), self._bold)
-        bright = reduce(not_none, (f.bright for f in formats), self._bright)
-        italic = reduce(not_none, (f.italic for f in formats), self._italic)
-        underline = reduce(
-            not_none, (f.underline for f in formats), self._underline
-        )
-        reverse = reduce(not_none, (f.reverse for f in formats), self._reverse)
-        strikeout = reduce(
-            not_none, (f.strikeout for f in formats), self._strikeout
-        )
+        bold = reduce(not_none, (f.bold for f in formats), False)
+        bright = reduce(not_none, (f.bright for f in formats), False)
+        italic = reduce(not_none, (f.italic for f in formats), False)
+        underline = reduce(not_none, (f.underline for f in formats), False)
+        reverse = reduce(not_none, (f.reverse for f in formats), False)
+        strikeout = reduce(not_none, (f.strikeout for f in formats), False)
         foreground = reduce(
-            valid_color, (f.foreground for f in formats), self._foreground
+            valid_color, (f.foreground for f in formats), NoColor()
         )
         background = reduce(
-            valid_color, (f.background for f in formats), self._background
+            valid_color, (f.background for f in formats), NoColor()
         )
 
         if bold != self._bold:
@@ -138,7 +134,7 @@ class CharFormatUpdater:
                 bright, reverse, foreground, background
             )
             if fg_color.isUnset():
-                char_format.clearBackground()
+                char_format.clearForeground()
             else:
                 char_format.setForeground(QColor(fg_color.asHex()))
 

@@ -168,6 +168,7 @@ class Scribe(QObject):
     _char_format: QTextCharFormat
     _format_updater: CharFormatUpdater
     _pending_newline: bool = False
+    _at_line_start: bool = True
 
     def __init__(
         self,
@@ -237,10 +238,13 @@ class Scribe(QObject):
         self._flushPendingNewLine()
         self._format_updater.applyFormat(self._char_format)
         self._cursor.insertText(text, self._char_format)
+        self._at_line_start = False
 
     def _insertStatusText(
         self, text: str, level: _MessageLevel = _MessageLevel.INFO
     ) -> None:
+        if not self._at_line_start:
+            self._insertNewLine()
         self._flushPendingNewLine()
 
         prefix = {
@@ -257,12 +261,14 @@ class Scribe(QObject):
         formatter.pushFormat(self._settings.status_text_format.get())
         formatter.applyFormat(status_text_format := QTextCharFormat())
         self._cursor.insertText(f"{prefix} {text}", status_text_format)
+        self._at_line_start = False
 
         self._insertNewLine()
 
     def _insertNewLine(self) -> None:
         self._flushPendingNewLine()
         self._pending_newline = True
+        self._at_line_start = True
         self.newLineInscribed.emit()
 
     def _flushPendingNewLine(self) -> None:

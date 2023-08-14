@@ -87,6 +87,7 @@ def _color_key(ansi_color: ANSIColorCodes) -> Key[Color]:
     return Key(
         default=ANSIColor(ansi_color),
         serializer=serializers.ColorSerializer(),
+        value_type=Color,
     )
 
 

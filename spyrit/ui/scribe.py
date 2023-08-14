@@ -20,12 +20,12 @@ be applied to a cursor.
 import enum
 import logging
 
+from functools import reduce
+
 from typing import Iterable
 
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
-from sunset import Key
-
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import (
@@ -53,135 +53,108 @@ class _MessageLevel(enum.Enum):
 
 class CharFormatUpdater:
     """
-    Applies extended format updates to a QTextCharFormat, including tricky ones
-    like reverse video.
+    Maintains a stack of currently active formats, so that the topmost value for
+    each attribute can be applied to a QTextCharFormat.
     """
 
-    _char_format: QTextCharFormat
-    _foreground: Color
-    _background: Color
-    _default_foreground: Color
-    _default_background: Color
+    _format_stack: dict[int, FormatUpdate]
+    _bold: bool = False
     _bright: bool = False
+    _italic: bool = False
+    _underline: bool = False
     _reverse: bool = False
+    _strikeout: bool = False
+    _foreground: Color = NoColor()
+    _background: Color = NoColor()
 
-    def __init__(
-        self,
-        foreground: Key[Color],
-        background: Key[Color],
-        char_format: QTextCharFormat,
-    ) -> None:
-        self._char_format = char_format
+    def __init__(self) -> None:
+        self._format_stack = {}
 
-        # Set up the default colors for when the format's colors are not
-        # otherwise overriden.
+    def pushFormat(self, format_: FormatUpdate) -> None:
+        self._format_stack[id(format_)] = format_
 
-        self._default_foreground = foreground.get()
-        self._default_background = background.get()
-        foreground.onValueChangeCall(self._setDefaultForeground)
-        background.onValueChangeCall(self._setDefaultBackground)
+    def popFormat(self, format_: FormatUpdate) -> None:
+        try:
+            del self._format_stack[id(format_)]
+        except IndexError:
+            return
 
-        # Apply the default colors once.
+    def applyFormat(self, char_format: QTextCharFormat) -> None:
+        formats = list(self._format_stack.values())
 
-        self.setForeground(NoColor())
-        self.setBackground(NoColor())
+        def not_none(this: bool, other: bool | None) -> bool:
+            return other if other is not None else this
 
-    def _setDefaultForeground(self, color: Color) -> None:
-        self._default_foreground = color
+        def valid_color(this: Color, other: Color | None) -> Color:
+            return other if other is not None and not other.isUnset() else this
 
-    def _setDefaultBackground(self, color: Color) -> None:
-        self._default_foreground = color
+        bold = reduce(not_none, (f.bold for f in formats), self._bold)
+        bright = reduce(not_none, (f.bright for f in formats), self._bright)
+        italic = reduce(not_none, (f.italic for f in formats), self._italic)
+        underline = reduce(
+            not_none, (f.underline for f in formats), self._underline
+        )
+        reverse = reduce(not_none, (f.reverse for f in formats), self._reverse)
+        strikeout = reduce(
+            not_none, (f.strikeout for f in formats), self._strikeout
+        )
+        foreground = reduce(
+            valid_color, (f.foreground for f in formats), self._foreground
+        )
+        background = reduce(
+            valid_color, (f.background for f in formats), self._background
+        )
 
-    def setBright(self, bright: bool) -> None:
-        self._bright = bright
-        self.setForeground()
-        self.setBackground()
-
-    def setReverse(self, reverse: bool) -> None:
-        self._reverse = reverse
-        self.setForeground()
-        self.setBackground()
-
-    def setForeground(self, color: Color | None = None) -> None:
-        """
-        Update the current foreground color. If reverse video is on, this will
-        in fact update the background of the text.
-        """
-
-        if color is None:
-            color = self._foreground
-        else:
-            self._foreground = color
-
-        if color.isUnset():
-            color = self._default_foreground
-
-        if self._bright:
-            color = color.bright()
-
-        if self._reverse:
-            self._char_format.setBackground(QColor(color.asHex()))
-        else:
-            self._char_format.setForeground(QColor(color.asHex()))
-
-    def setBackground(self, color: Color | None = None) -> None:
-        """
-        Update the current background color. If reverse video is on, this will
-        in fact update the foreground of the text.
-        """
-
-        if color is None:
-            color = self._background
-        else:
-            self._background = color
-
-        if color.isUnset():
-            if not self._reverse:
-                # As a special case, if the color is unset and we're not in
-                # reverse video mode, then we outright clear the background
-                # color of the format. That way the background of the output
-                # view itself will be used.
-
-                self._char_format.clearBackground()
-                return
-
-            color = self._default_background
-
-        if self._reverse:
-            self._char_format.setForeground(QColor(color.asHex()))
-        else:
-            self._char_format.setBackground(QColor(color.asHex()))
-
-    def applyFormatUpdate(self, format_update: FormatUpdate) -> None:
-        """
-        Computes and applies the current format with the given update.
-        """
-
-        if format_update.bold is not None:
-            self._char_format.setFontWeight(
-                QFont.Weight.Bold if format_update.bold else QFont.Weight.Medium
+        if bold != self._bold:
+            self._bold = bold
+            char_format.setFontWeight(
+                QFont.Weight.Bold if bold else QFont.Weight.Medium
             )
 
-        if format_update.bright is not None:
-            self.setBright(format_update.bright)
+        if italic != self._italic:
+            self._italic = italic
+            char_format.setFontItalic(italic)
 
-        if format_update.italic is not None:
-            self._char_format.setFontItalic(format_update.italic)
+        if underline != self._underline:
+            self._underline = underline
+            char_format.setFontUnderline(underline)
 
-        if format_update.underline is not None:
-            self._char_format.setFontUnderline(format_update.underline)
+        if strikeout != self._strikeout:
+            self._strikeout = strikeout
+            char_format.setFontStrikeOut(strikeout)
 
-        if format_update.reverse is not None:
-            self.setReverse(format_update.reverse)
+        if (bright, reverse, foreground, background) != (
+            self._bright,
+            self._reverse,
+            self._foreground,
+            self._background,
+        ):
+            self._bright = bright
+            self._reverse = reverse
+            self._foreground = foreground
+            self._background = background
 
-        if format_update.strikeout is not None:
-            self._char_format.setFontStrikeOut(format_update.strikeout)
+            fg_color, bg_color = self._computeColors(
+                bright, reverse, foreground, background
+            )
+            if fg_color.isUnset():
+                char_format.clearBackground()
+            else:
+                char_format.setForeground(QColor(fg_color.asHex()))
 
-        if format_update.foreground is not None:
-            self.setForeground(format_update.foreground)
+            if bg_color.isUnset():
+                char_format.clearBackground()
+            else:
+                char_format.setBackground(QColor(bg_color.asHex()))
 
-        if format_update.background is not None:
-            self.setBackground(format_update.background)
+    @staticmethod
+    def _computeColors(
+        bright: bool, reverse: bool, foreground: Color, background: Color
+    ) -> tuple[Color, Color]:
+        if bright:
+            foreground = foreground.bright()
+
+        return (background, foreground) if reverse else (foreground, background)
 
 
 class Scribe(QObject):
@@ -211,11 +184,18 @@ class Scribe(QObject):
         self._cursor = cursor
         self._settings = settings
         self._char_format = QTextCharFormat()
-        self._format_updater = CharFormatUpdater(
-            settings.default_text_color,
-            settings.background_color,
-            self._char_format,
+        self._format_updater = CharFormatUpdater()
+        self._ansi_format = FormatUpdate()
+
+        base_format = FormatUpdate(
+            foreground=settings.default_text_color.get(),
+            background=settings.background_color.get(),
         )
+        settings.default_text_color.onValueChangeCall(base_format.setForeground)
+        settings.background_color.onValueChangeCall(base_format.setBackground)
+
+        self._format_updater.pushFormat(base_format)
+        self._format_updater.pushFormat(self._ansi_format)
 
     @Slot(FragmentList)
     def inscribe(self, fragments: Iterable[Fragment]) -> None:
@@ -233,7 +213,7 @@ class Scribe(QObject):
                         self._insertNewLine()
 
                 case ANSIFragment(format_update):
-                    self._format_updater.applyFormatUpdate(format_update)
+                    self._ansi_format.update(format_update)
 
                 case NetworkFragment(event, text):
                     level = _MessageLevel.INFO
@@ -259,6 +239,7 @@ class Scribe(QObject):
 
     def _insertText(self, text: str) -> None:
         self._flushPendingNewLine()
+        self._format_updater.applyFormat(self._char_format)
         self._cursor.insertText(text, self._char_format)
 
     def _insertStatusText(
@@ -271,12 +252,14 @@ class Scribe(QObject):
             _MessageLevel.ERROR: _ERROR_PREFIX,
         }[level]
 
-        formatter = CharFormatUpdater(
-            self._settings.default_text_color,
-            self._settings.background_color,
-            status_text_format := QTextCharFormat(),
+        base_format = FormatUpdate(
+            foreground=self._settings.default_text_color.get(),
+            background=self._settings.background_color.get(),
         )
-        formatter.applyFormatUpdate(self._settings.status_text_format.get())
+        formatter = CharFormatUpdater()
+        formatter.pushFormat(base_format)
+        formatter.pushFormat(self._settings.status_text_format.get())
+        formatter.applyFormat(status_text_format := QTextCharFormat())
         self._cursor.insertText(f"{prefix} {text}", status_text_format)
 
         self._insertNewLine()

@@ -396,14 +396,20 @@ class RGBColor(Color):
     _b: int
 
     def __init__(self, r: int, g: int, b: int) -> None:
-        if not 0 <= r <= 255:
+        if r < 0:
             r = 0
+        elif 255 < r:
+            r = 255
 
-        if not 0 <= g <= 255:
+        if g < 0:
             g = 0
+        elif 255 < g:
+            g = 255
 
-        if not 0 <= b <= 255:
+        if b < 0:
             b = 0
+        elif 255 < b:
+            b = 255
 
         self._r = r
         self._g = g
@@ -411,3 +417,75 @@ class RGBColor(Color):
 
     def asHex(self) -> str:
         return f"#{self._r:02x}{self._g:02x}{self._b:02x}"
+
+    def bright(self) -> "RGBColor":
+        r, g, b = brighten(
+            self._r / 255, self._g / 255, self._b / 255, brightness=0.1
+        )
+
+        return RGBColor(round(r * 255), round(g * 255), round(b * 255))
+
+
+def brighten(
+    r: float, g: float, b: float, brightness: float
+) -> tuple[float, float, float]:
+    h, s, l_ = rgb_to_hsl(r, g, b)
+
+    dl = 1.0 - l_
+    dl -= dl * brightness
+    l_ = 1.0 - dl
+
+    return hsl_to_rgb(h, s, l_)
+
+
+def rgb_to_hsl(r: float, g: float, b: float) -> tuple[float, float, float]:
+    maxf = max((r, g, b))
+    minf = min((r, g, b))
+    l_ = (maxf + minf) / 2
+
+    if maxf == minf:
+        h = s = 0.0
+
+    else:
+        if l_ > 0.5:
+            s = (maxf - minf) / (2.0 - (maxf + minf))
+        else:
+            s = (maxf - minf) / (maxf + minf)
+
+        if maxf == r:
+            h = ((g - b) / (maxf - minf)) / 6
+        elif maxf == g:
+            h = ((b - r) / (maxf - minf) + 2.0) / 6
+        else:
+            h = ((r - g) / (maxf - minf) + 4.0) / 6
+
+    return h, s, l_
+
+
+def hsl_to_rgb(h: float, s: float, l_: float) -> tuple[float, float, float]:
+    if s == 0.0:
+        r = g = b = l_
+
+    else:
+        if l_ < 0.5:
+            q = l_ * (1 + s)
+        else:
+            q = l_ + s * (1 - l_)
+        p = 2 * l_ - q
+
+        r = _hue_to_rgb(p, q, h + 1 / 3)
+        g = _hue_to_rgb(p, q, h)
+        b = _hue_to_rgb(p, q, h - 1 / 3)
+
+    return r, g, b
+
+
+def _hue_to_rgb(p: float, q: float, h: float) -> float:
+    h %= 1
+    if h < 1 / 6:
+        return p + (q - p) * 6 * h
+    if h < 1 / 2:
+        return q
+    if h < 2 / 3:
+        return p + (q - p) * (2 / 3 - h) * 6
+    return p

@@ -55,3 +55,47 @@ class TestFormat:
             foreground=NoColor(),
             background=NoColor(),
         )
+
+    def test_update(self) -> None:
+        format_ = FormatUpdate()
+        format_.resetAll()
+
+        format_.update(FormatUpdate(bold=True))
+        assert format_.bold
+        format_.update(FormatUpdate(bold=False))
+        assert not format_.bold
+
+        format_.update(FormatUpdate(bright=True))
+        assert format_.bright
+        format_.update(FormatUpdate(bright=False))
+        assert not format_.bright
+
+        format_.update(FormatUpdate(italic=True))
+        assert format_.italic
+        format_.update(FormatUpdate(italic=False))
+        assert not format_.italic
+
+        format_.update(FormatUpdate(underline=True))
+        assert format_.underline
+        format_.update(FormatUpdate(underline=False))
+        assert not format_.underline
+
+        format_.update(FormatUpdate(reverse=True))
+        assert format_.reverse
+        format_.update(FormatUpdate(reverse=False))
+        assert not format_.reverse
+
+        format_.update(FormatUpdate(strikeout=True))
+        assert format_.strikeout
+        format_.update(FormatUpdate(strikeout=False))
+        assert not format_.strikeout
+
+        format_.update(FormatUpdate(foreground=ANSIColor(ANSIColorCodes.Red)))
+        assert format_.foreground == ANSIColor(ANSIColorCodes.Red)
+        format_.update(FormatUpdate(foreground=NoColor()))
+        assert format_.foreground == NoColor()
+
+        format_.update(FormatUpdate(background=ANSIColor(ANSIColorCodes.Red)))
+        assert format_.background == ANSIColor(ANSIColorCodes.Red)
+        format_.update(FormatUpdate(background=NoColor()))
+        assert format_.background == NoColor()

@@ -5,7 +5,9 @@ from spyrit.network.fragments import (
     ANSIFragment,
     FlowControlCode,
     FlowControlFragment,
+    MatchBoundary,
     NetworkFragment,
+    PatternMatchFragment,
     TextFragment,
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -368,4 +370,74 @@ class TestScribe:
         assert cursor.get() == (
             "[fg: 55,55,55 ; bg: 200,200,200]Test.\n"
             "[italic ; fg: 55,55,55 ; bg: 200,200,200]• Disconnected."
+        )
+
+    def test_pattern_match_fragments(self) -> None:
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(RGBColor(100, 100, 100))
+        settings.background_color.set(RGBColor(10, 10, 10))
+
+        cursor = TestCursor()
+        scribe = Scribe(cursor, settings)
+        format_ = FormatUpdate(reverse=True)
+
+        scribe.inscribe([TextFragment("1234")])
+        scribe.inscribe([PatternMatchFragment(format_, MatchBoundary.START)])
+        scribe.inscribe([TextFragment("5678")])
+        scribe.inscribe([PatternMatchFragment(format_, MatchBoundary.END)])
+        scribe.inscribe([TextFragment("9012")])
+
+        assert cursor.get() == (
+            "[fg: 100,100,100 ; bg: 10,10,10]1234"
+            "[fg: 10,10,10 ; bg: 100,100,100]5678"
+            "[fg: 100,100,100 ; bg: 10,10,10]9012"
+        )
+
+    def test_pattern_match_override_ansi(self) -> None:
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(RGBColor(100, 100, 100))
+        settings.background_color.set(RGBColor(10, 10, 10))
+
+        cursor = TestCursor()
+        scribe = Scribe(cursor, settings)
+        pattern_format = FormatUpdate(foreground=RGBColor(50, 50, 50))
+        ansi_format = FormatUpdate(foreground=RGBColor(20, 20, 20))
+
+        scribe.inscribe([ANSIFragment(ansi_format)])
+        scribe.inscribe(
+            [PatternMatchFragment(pattern_format, MatchBoundary.START)]
+        )
+        scribe.inscribe([TextFragment("1234")])
+        scribe.inscribe(
+            [PatternMatchFragment(pattern_format, MatchBoundary.END)]
+        )
+        scribe.inscribe([TextFragment("5678")])
+
+        assert cursor.get() == (
+            "[fg: 50,50,50 ; bg: 10,10,10]1234"
+            "[fg: 20,20,20 ; bg: 10,10,10]5678"
+        )
+
+    def test_later_pattern_match_overrides_earlier(self) -> None:
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(RGBColor(100, 100, 100))
+        settings.background_color.set(RGBColor(10, 10, 10))
+
+        cursor = TestCursor()
+        scribe = Scribe(cursor, settings)
+        format1 = FormatUpdate(foreground=RGBColor(20, 20, 20))
+        format2 = FormatUpdate(foreground=RGBColor(50, 50, 50))
+
+        scribe.inscribe([PatternMatchFragment(format1, MatchBoundary.START)])
+        scribe.inscribe([TextFragment("1234")])
+        scribe.inscribe([PatternMatchFragment(format2, MatchBoundary.START)])
+        scribe.inscribe([TextFragment("5678")])
+        scribe.inscribe([PatternMatchFragment(format2, MatchBoundary.END)])
+        scribe.inscribe([TextFragment("9012")])
+        scribe.inscribe([PatternMatchFragment(format1, MatchBoundary.END)])
+
+        assert cursor.get() == (
+            "[fg: 20,20,20 ; bg: 10,10,10]1234"
+            "[fg: 50,50,50 ; bg: 10,10,10]5678"
+            "[fg: 20,20,20 ; bg: 10,10,10]9012"
         )

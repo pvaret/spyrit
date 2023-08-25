@@ -34,7 +34,9 @@ from spyrit.network.fragments import (
     FlowControlFragment,
     Fragment,
     FragmentList,
+    MatchBoundary,
     NetworkFragment,
+    PatternMatchFragment,
     TextFragment,
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -227,6 +229,12 @@ class Scribe(QObject):
                             message = f"Error: {text}!"
                             level = _MessageLevel.ERROR
                     self._insertStatusText(message, level)
+
+                case PatternMatchFragment(format_, MatchBoundary.START):
+                    self._format_updater.pushFormat(format_)
+
+                case PatternMatchFragment(format_, MatchBoundary.END):
+                    self._format_updater.popFormat(format_)
 
                 case _:
                     logging.debug(

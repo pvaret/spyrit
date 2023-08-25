@@ -134,3 +134,35 @@ class FormatUpdate:
                 self.background == other.background,
             )
         )
+
+    def toStr(self) -> str:
+        items: list[str] = []
+
+        if self.bold is not None:
+            items.append(("-" if not self.bold else "") + "bold")
+
+        if self.bright is not None:
+            items.append(("-" if not self.bright else "") + "bright")
+
+        if self.italic is not None:
+            items.append(("-" if not self.italic else "") + "italic")
+
+        if self.underline is not None:
+            items.append(("-" if not self.underline else "") + "underline")
+
+        if self.reverse is not None:
+            items.append(("-" if not self.reverse else "") + "reverse")
+
+        if self.strikeout is not None:
+            items.append(("-" if not self.strikeout else "") + "strikeout")
+
+        if self.foreground is not None:
+            items.append(f"foreground: {self.foreground.toStr()}")
+
+        if self.background is not None:
+            items.append(f"background: {self.background.toStr()}")
+
+        return " ; ".join(items)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.toStr()})"

@@ -18,14 +18,23 @@ Implements container classes for typed fragments of network data.
 import enum
 
 from abc import ABC
-from typing import Any
+from typing import Any, Sequence
 
 from spyrit.network.connection import Status
 from spyrit.ui.format import FormatUpdate
 
 
 class Fragment(ABC):
-    ...
+    __match_args__: Sequence[str]
+
+    def __repr__(self) -> str:
+        classname = self.__class__.__name__
+        args: list[str] = []
+
+        for argname in self.__match_args__:
+            args.append(argname + "=" + repr(getattr(self, argname, "?")))
+
+        return f"{classname}({','.join(args)})"
 
 
 class FragmentList(list[Fragment]):
@@ -108,24 +117,38 @@ class NetworkFragment(Fragment):
         return isinstance(other, NetworkFragment) and self.event == other.event
 
 
+class MatchBoundary(enum.Enum):
+    START = enum.auto()
+    END = enum.auto()
+
+
 class PatternMatchFragment(Fragment):
-    __match_args__ = ("format", "start", "end")
+    __match_args__ = ("format", "boundary")
 
     format: FormatUpdate
-    start: int
-    end: int
+    boundary: MatchBoundary
 
-    def __init__(self, format_: FormatUpdate, start: int, end: int) -> None:
+    def __init__(self, format_: FormatUpdate, boundary: MatchBoundary) -> None:
         self.format = format_
-        self.start = start
-        self.end = end
+        self.boundary = boundary
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, PatternMatchFragment):
             return False
 
-        return (
-            self.format == other.format
-            and self.start == other.start
-            and self.end == other.end
-        )
+        return self.format == other.format and self.boundary == other.boundary
+
+
+class DummyFragment(Fragment):
+    __match_args__ = ("value",)
+
+    value: Any
+
+    def __init__(self, value: Any) -> None:
+        self.value = value
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, DummyFragment):
+            return False
+
+        return self.value == other.value

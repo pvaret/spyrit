@@ -36,6 +36,7 @@ from spyrit.network.fragments import (
     FlowControlFragment,
     Fragment,
     FragmentList,
+    MatchBoundary,
     NetworkFragment,
     PatternMatchFragment,
     TextFragment,
@@ -352,6 +353,61 @@ class LineBatchingProcessor(BaseProcessor):
                 pass
 
 
+def inject_fragments_into_buffer(
+    fragments: Iterable[tuple[int, Fragment]], buffer: list[Fragment]
+) -> list[Fragment]:
+    """
+    Injects the given fragments at their associated positions into the given
+    fragment buffer, where a position is measured from character counts in
+    TextFragment fragments.
+
+    The buffer is emptied as part of the processing.
+    """
+
+    # This is guaranteed to preserve the order in which the matches were found.
+    # This order can be important in case the associated formatting instructions
+    # override each other. I.e., if a low priority match formats the text red
+    # and a high priority match formats it blue at the same position, then the
+    # text should consistently be blue.
+    fragments_in_order: dict[int, list[Fragment]] = {}
+    for fragment_pos, buffer_fragment in fragments:
+        fragments_in_order.setdefault(fragment_pos, []).append(buffer_fragment)
+
+    ret: list[Fragment] = []
+    current_pos = 0
+
+    for fragment_pos in sorted(fragments_in_order.keys()):
+        while current_pos < fragment_pos:
+            if not buffer:
+                break
+
+            match buffer_fragment := buffer.pop(0):
+                case TextFragment(text):
+                    fragment_offset = fragment_pos - current_pos
+                    assert fragment_offset > 0
+
+                    if len(text) < fragment_offset:
+                        current_pos += len(text)
+                        ret.append(buffer_fragment)
+                        continue
+
+                    if len(text) > fragment_offset:
+                        buffer.insert(0, TextFragment(text[fragment_offset:]))
+
+                    ret.append(TextFragment(text[:fragment_offset]))
+                    current_pos += fragment_offset
+
+                case _:
+                    ret.append(buffer_fragment)
+
+        ret.extend(fragments_in_order[fragment_pos])
+
+    while buffer:
+        ret.append(buffer.pop(0))
+
+    return ret
+
+
 class UserPatternProcessor(BaseProcessor):
     """
     This processor batches entire lines of text and searches them for
@@ -377,15 +433,27 @@ class UserPatternProcessor(BaseProcessor):
                 self._line_so_far += text
 
             case NetworkFragment() | FlowControlFragment(FlowControlCode.LF):
-                yield from self._applyUserPatterns(self._line_so_far)
-                yield from self._fragment_buffer
+                patterns: list[tuple[int, PatternMatchFragment]] = []
+                for format_, start, end in self._findUserPatterns(
+                    self._line_so_far
+                ):
+                    pattern = PatternMatchFragment(format_, MatchBoundary.START)
+                    patterns.append((start, pattern))
+                    pattern = PatternMatchFragment(format_, MatchBoundary.END)
+                    patterns.append((end, pattern))
+
+                yield from inject_fragments_into_buffer(
+                    patterns, self._fragment_buffer
+                )
                 self._line_so_far = ""
                 self._fragment_buffer.clear()
 
             case _:
                 pass
 
-    def _applyUserPatterns(self, line: str) -> Iterator[PatternMatchFragment]:
+    def _findUserPatterns(
+        self, line: str
+    ) -> Iterator[tuple[FormatUpdate, int, int]]:
         for pattern in self._patterns.iter(List.PARENT_FIRST):
             for start, end, format_ in find_matches(pattern, line):
                 if start == end:
@@ -393,7 +461,7 @@ class UserPatternProcessor(BaseProcessor):
                 if format_.empty():
                     format_ = pattern.format.get()
                 if not format_.empty():
-                    yield PatternMatchFragment(format_, start, end)
+                    yield (format_, start, end)
 
 
 class ChainProcessor(BaseProcessor):

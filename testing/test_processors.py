@@ -5,9 +5,11 @@ from sunset import Key, List, Settings
 from spyrit.network.fragments import (
     ANSIFragment,
     ByteFragment,
+    DummyFragment,
     FlowControlCode,
     FlowControlFragment,
     Fragment,
+    MatchBoundary,
     PatternMatchFragment,
     TextFragment,
 )
@@ -17,6 +19,7 @@ from spyrit.network.processors import (
     ChainProcessor,
     UnicodeProcessor,
     UserPatternProcessor,
+    inject_fragments_into_buffer,
 )
 from spyrit.settings.spyrit_settings import (
     ANSIBoldEffect,
@@ -380,12 +383,160 @@ class TestANSIProcessor:
         assert output.get() == [ANSIFragment(FormatUpdate())]
 
 
-class TestUserPatternProcessor:
-    def _match_output(
-        self, output: OutputCatcher
-    ) -> list[PatternMatchFragment]:
-        return [f for f in output.get() if isinstance(f, PatternMatchFragment)]
+class TestInjectFragmentsInBuffer:
+    def test_empty_buffer(self) -> None:
+        buffer: list[Fragment] = []
+        fragments: list[tuple[int, Fragment]] = []
 
+        assert inject_fragments_into_buffer(fragments, buffer) == []
+
+        fragments = [
+            (0, DummyFragment(1)),
+            (0, DummyFragment(2)),
+        ]
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            DummyFragment(1),
+            DummyFragment(2),
+        ]
+
+    def test_empty_fragments(self) -> None:
+        buffer: list[Fragment] = [
+            DummyFragment(1),
+            TextFragment("test"),
+            DummyFragment(2),
+        ]
+        fragments: list[tuple[int, Fragment]] = []
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            DummyFragment(1),
+            TextFragment("test"),
+            DummyFragment(2),
+        ]
+
+    def test_fragments_inserted_at_boundaries(self) -> None:
+        buffer: list[Fragment] = [TextFragment("0123456789")]
+        fragments: list[tuple[int, Fragment]] = [
+            (0, DummyFragment(1)),
+            (10, DummyFragment(2)),
+        ]
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            DummyFragment(1),
+            TextFragment("0123456789"),
+            DummyFragment(2),
+        ]
+
+    def test_fragments_inserted_inside_text(self) -> None:
+        buffer: list[Fragment] = [TextFragment("0123456789")]
+        fragments: list[tuple[int, Fragment]] = [
+            (2, DummyFragment(1)),
+            (8, DummyFragment(2)),
+        ]
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            TextFragment("01"),
+            DummyFragment(1),
+            TextFragment("234567"),
+            DummyFragment(2),
+            TextFragment("89"),
+        ]
+
+    def test_fragments_insertion_order_preserved(self) -> None:
+        buffer: list[Fragment] = [TextFragment("0123456789")]
+        fragments: list[tuple[int, Fragment]] = [
+            (0, DummyFragment(10)),
+            (2, DummyFragment(20)),
+            (8, DummyFragment(30)),
+            (10, DummyFragment(40)),
+            (0, DummyFragment(11)),
+            (2, DummyFragment(21)),
+            (8, DummyFragment(31)),
+            (10, DummyFragment(41)),
+            (0, DummyFragment(12)),
+            (2, DummyFragment(22)),
+            (8, DummyFragment(32)),
+            (10, DummyFragment(42)),
+            (0, DummyFragment(13)),
+            (2, DummyFragment(23)),
+            (8, DummyFragment(33)),
+            (10, DummyFragment(43)),
+        ]
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            DummyFragment(10),
+            DummyFragment(11),
+            DummyFragment(12),
+            DummyFragment(13),
+            TextFragment("01"),
+            DummyFragment(20),
+            DummyFragment(21),
+            DummyFragment(22),
+            DummyFragment(23),
+            TextFragment("234567"),
+            DummyFragment(30),
+            DummyFragment(31),
+            DummyFragment(32),
+            DummyFragment(33),
+            TextFragment("89"),
+            DummyFragment(40),
+            DummyFragment(41),
+            DummyFragment(42),
+            DummyFragment(43),
+        ]
+
+    def test_fragments_inserted_as_early_as_possible(self) -> None:
+        buffer: list[Fragment] = [
+            DummyFragment(("buffer", 1)),
+            TextFragment("01234"),
+            DummyFragment(("buffer", 2)),
+            TextFragment("56789"),
+            DummyFragment(("buffer", 3)),
+        ]
+        fragments: list[tuple[int, Fragment]] = [
+            (0, DummyFragment(("fragment", 1))),
+            (5, DummyFragment(("fragment", 2))),
+            (10, DummyFragment(("fragment", 3))),
+        ]
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            DummyFragment(("fragment", 1)),
+            DummyFragment(("buffer", 1)),
+            TextFragment("01234"),
+            DummyFragment(("fragment", 2)),
+            DummyFragment(("buffer", 2)),
+            TextFragment("56789"),
+            DummyFragment(("fragment", 3)),
+            DummyFragment(("buffer", 3)),
+        ]
+
+    def test_abherent_positions_handled_gracefully(self) -> None:
+        buffer: list[Fragment] = [TextFragment("0123456789")]
+        fragments: list[tuple[int, Fragment]] = [
+            (-10, DummyFragment(1)),
+            (100, DummyFragment(2)),
+        ]
+
+        assert inject_fragments_into_buffer(fragments, buffer) == [
+            DummyFragment(1),
+            TextFragment("0123456789"),
+            DummyFragment(2),
+        ]
+
+    def test_processing_empties_the_buffer(self) -> None:
+        buffer: list[Fragment] = [
+            DummyFragment(1),
+            TextFragment("test"),
+            DummyFragment(2),
+        ]
+        fragments: list[tuple[int, Fragment]] = [(2, DummyFragment(0))]
+
+        inject_fragments_into_buffer(fragments, buffer)
+
+        assert buffer == []
+
+
+class TestUserPatternProcessor:
     def test_simple_line_match(self) -> None:
         patterns = List(SpyritSettings.Pattern())
         processor = UserPatternProcessor(patterns)
@@ -402,8 +553,11 @@ class TestUserPatternProcessor:
         processor.feed(
             [TextFragment("abcde"), FlowControlFragment(FlowControlCode.LF)]
         )
-        assert self._match_output(output) == [
-            PatternMatchFragment(format_, 0, 5),
+        assert output.get() == [
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("abcde"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
     def test_complex_line_match(self) -> None:
@@ -429,10 +583,17 @@ class TestUserPatternProcessor:
                 FlowControlFragment(FlowControlCode.LF),
             ]
         )
-        assert self._match_output(output) == [
-            PatternMatchFragment(format_, 0, 4),
-            PatternMatchFragment(format_, 4, 9),
-            PatternMatchFragment(format_, 9, 14),
+        assert output.get() == [
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("1234"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("abcde"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("12345"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
     def test_simple_anywhere_match(self) -> None:
@@ -454,8 +615,13 @@ class TestUserPatternProcessor:
                 FlowControlFragment(FlowControlCode.LF),
             ]
         )
-        assert self._match_output(output) == [
-            PatternMatchFragment(format_, 4, 9),
+        assert output.get() == [
+            TextFragment("1234"),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("abcde"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            TextFragment("12345"),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
     def test_complex_anywhere_match(self) -> None:
@@ -487,10 +653,19 @@ class TestUserPatternProcessor:
                 FlowControlFragment(FlowControlCode.LF),
             ]
         )
-        assert self._match_output(output) == [
-            PatternMatchFragment(format1, 7, 15),
-            PatternMatchFragment(format2, 15, 19),
-            PatternMatchFragment(format3, 19, 24),
+        assert output.get() == [
+            TextFragment("xxxxxxx"),
+            PatternMatchFragment(format1, MatchBoundary.START),
+            TextFragment("aaaaaaaa"),
+            PatternMatchFragment(format1, MatchBoundary.END),
+            PatternMatchFragment(format2, MatchBoundary.START),
+            TextFragment("aaaa"),
+            PatternMatchFragment(format2, MatchBoundary.END),
+            PatternMatchFragment(format3, MatchBoundary.START),
+            TextFragment("aaaab"),
+            PatternMatchFragment(format3, MatchBoundary.END),
+            TextFragment("xxxxx"),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
     def test_repeated_anywhere_match(self) -> None:
@@ -513,12 +688,27 @@ class TestUserPatternProcessor:
             ]
         )
 
-        assert self._match_output(output) == [
-            PatternMatchFragment(format_, 4, 6),
-            PatternMatchFragment(format_, 8, 13),
-            PatternMatchFragment(format_, 15, 20),
-            PatternMatchFragment(format_, 23, 28),
-            PatternMatchFragment(format_, 28, 30),
+        assert output.get() == [
+            TextFragment(" a  "),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("aa"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            TextFragment("  "),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("aaaaa"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            TextFragment("  "),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("aaaaa"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            TextFragment("a  "),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("aaaaa"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("aa"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
     def test_match_across_text_fragments(self) -> None:
@@ -541,8 +731,14 @@ class TestUserPatternProcessor:
                 FlowControlFragment(FlowControlCode.LF),
             ]
         )
-        assert self._match_output(output) == [
-            PatternMatchFragment(format_, 4, 6),
+        assert output.get() == [
+            TextFragment("    "),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("a"),
+            TextFragment("b"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            TextFragment("    "),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
         processor.feed(
@@ -552,7 +748,11 @@ class TestUserPatternProcessor:
                 FlowControlFragment(FlowControlCode.LF),
             ]
         )
-        assert self._match_output(output) == []
+        assert output.get() == [
+            TextFragment("   a "),
+            TextFragment("b    "),
+            FlowControlFragment(FlowControlCode.LF),
+        ]
 
     def test_fragment_format_overrides_pattern_format(self) -> None:
         patterns = List(SpyritSettings.Pattern())
@@ -583,10 +783,17 @@ class TestUserPatternProcessor:
             ]
         )
 
-        assert self._match_output(output) == [
-            PatternMatchFragment(line_format, 0, 4),
-            PatternMatchFragment(fragment_format, 4, 8),
-            PatternMatchFragment(line_format, 8, 12),
+        assert output.get() == [
+            PatternMatchFragment(line_format, MatchBoundary.START),
+            TextFragment("...."),
+            PatternMatchFragment(line_format, MatchBoundary.END),
+            PatternMatchFragment(fragment_format, MatchBoundary.START),
+            TextFragment("test"),
+            PatternMatchFragment(fragment_format, MatchBoundary.END),
+            PatternMatchFragment(line_format, MatchBoundary.START),
+            TextFragment("...."),
+            PatternMatchFragment(line_format, MatchBoundary.END),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
     def test_fragments_passed_verbatim(self) -> None:
@@ -611,26 +818,22 @@ class TestUserPatternProcessor:
             ]
         )
         assert output.get() == [
-            PatternMatchFragment(format_, 2, 6),
-            TextFragment("  te"),
+            TextFragment("  "),
+            PatternMatchFragment(format_, MatchBoundary.START),
+            TextFragment("te"),
             ANSIFragment(FormatUpdate(reverse=True)),
-            TextFragment("st  "),
+            TextFragment("st"),
+            PatternMatchFragment(format_, MatchBoundary.END),
+            TextFragment("  "),
             FlowControlFragment(FlowControlCode.LF),
         ]
 
-    def test_parent_patterns_matched_first(self) -> None:
-        class TestSettings(Settings):
-            patterns: List[SpyritSettings.Pattern] = List(
-                SpyritSettings.Pattern()
-            )
-
-        parent_settings = TestSettings()
-        derived_settings = parent_settings.newSection("child")
-
-        processor = UserPatternProcessor(derived_settings.patterns)
+    def test_overlapping_matches(self) -> None:
+        patterns = List(SpyritSettings.Pattern())
+        processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
-        p1 = parent_settings.patterns.appendOne()
+        p1 = patterns.appendOne()
         p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
         p1.format.set(format1 := FormatUpdate(underline=True))
 
@@ -638,7 +841,7 @@ class TestUserPatternProcessor:
         f1.type.set(PatternType.EXACT_MATCH)
         f1.pattern_text.set("cdef")
 
-        p2 = derived_settings.patterns.appendOne()
+        p2 = patterns.appendOne()
         p2.scope.set(PatternScope.ANYWHERE_IN_LINE)
         p2.format.set(format2 := FormatUpdate(bright=True))
 
@@ -653,9 +856,59 @@ class TestUserPatternProcessor:
             ]
         )
 
-        assert self._match_output(output) == [
-            PatternMatchFragment(format1, 2, 6),
-            PatternMatchFragment(format2, 0, 4),
+        assert output.get() == [
+            PatternMatchFragment(format2, MatchBoundary.START),
+            TextFragment("ab"),
+            PatternMatchFragment(format1, MatchBoundary.START),
+            TextFragment("cd"),
+            PatternMatchFragment(format2, MatchBoundary.END),
+            TextFragment("ef"),
+            PatternMatchFragment(format1, MatchBoundary.END),
+            FlowControlFragment(FlowControlCode.LF),
+        ]
+
+    def test_parent_pattern_matches_first(self) -> None:
+        class TestSettings(Settings):
+            patterns: List[SpyritSettings.Pattern] = List(
+                SpyritSettings.Pattern()
+            )
+
+        parent_settings = TestSettings()
+        derived_settings = parent_settings.newSection("child")
+
+        processor = UserPatternProcessor(derived_settings.patterns)
+        output = OutputCatcher(processor)
+
+        p1 = parent_settings.patterns.appendOne()
+        p1.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p1.format.set(parent_format := FormatUpdate(underline=True))
+
+        f1 = p1.fragments.appendOne()
+        f1.type.set(PatternType.EXACT_MATCH)
+        f1.pattern_text.set("abcd")
+
+        p2 = derived_settings.patterns.appendOne()
+        p2.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        p2.format.set(derived_format := FormatUpdate(bright=True))
+
+        f2 = p2.fragments.appendOne()
+        f2.type.set(PatternType.EXACT_MATCH)
+        f2.pattern_text.set("abcd")
+
+        processor.feed(
+            [
+                TextFragment("abcd"),
+                FlowControlFragment(FlowControlCode.LF),
+            ]
+        )
+
+        assert output.get() == [
+            PatternMatchFragment(parent_format, MatchBoundary.START),
+            PatternMatchFragment(derived_format, MatchBoundary.START),
+            TextFragment("abcd"),
+            PatternMatchFragment(parent_format, MatchBoundary.END),
+            PatternMatchFragment(derived_format, MatchBoundary.END),
+            FlowControlFragment(FlowControlCode.LF),
         ]
 
 

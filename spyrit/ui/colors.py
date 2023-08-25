@@ -348,6 +348,10 @@ class Color(ABC):
     def bright(self) -> "Color":
         return self
 
+    @abstractmethod
+    def toStr(self) -> str:
+        ...
+
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Color):
             return False
@@ -363,6 +367,9 @@ class NoColor(Color):
 
     def asHex(self) -> str:
         return ""
+
+    def toStr(self) -> str:
+        return "-"
 
 
 class ANSIColor(Color):
@@ -383,6 +390,13 @@ class ANSIColor(Color):
             return hex_
 
         return "#000000"
+
+    def toStr(self) -> str:
+        for code in ANSIColorCodes:
+            if code == self._ansi_code:
+                return code.name
+
+        return str(self._ansi_code)
 
     def bright(self) -> "ANSIColor":
         if not 0 <= (ansi_code := self._ansi_code) <= 7:
@@ -417,6 +431,9 @@ class RGBColor(Color):
 
     def asHex(self) -> str:
         return f"#{self._r:02x}{self._g:02x}{self._b:02x}"
+
+    def toStr(self) -> str:
+        return self.asHex()
 
     def bright(self) -> "RGBColor":
         r, g, b = brighten(

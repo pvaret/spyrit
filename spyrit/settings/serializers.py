@@ -98,19 +98,7 @@ class ColorSerializer:
         return None
 
     def toStr(self, value: Color) -> str:
-        match value:
-            case NoColor():
-                return "-"
-
-            case ANSIColor(ansi_code):
-                for code in ANSIColorCodes:
-                    if code == ansi_code:
-                        return code.name
-
-                return str(ansi_code)
-
-            case _:
-                return value.asHex()
+        return value.toStr()
 
 
 class FormatSerializer:
@@ -164,32 +152,4 @@ class FormatSerializer:
         return format_update
 
     def toStr(self, value: FormatUpdate) -> str:
-        items: list[str] = []
-
-        if value.bold is not None:
-            items.append(("-" if not value.bold else "") + "bold")
-
-        if value.bright is not None:
-            items.append(("-" if not value.bright else "") + "bright")
-
-        if value.italic is not None:
-            items.append(("-" if not value.italic else "") + "italic")
-
-        if value.underline is not None:
-            items.append(("-" if not value.underline else "") + "underline")
-
-        if value.reverse is not None:
-            items.append(("-" if not value.reverse else "") + "reverse")
-
-        if value.strikeout is not None:
-            items.append(("-" if not value.strikeout else "") + "strikeout")
-
-        if value.foreground is not None:
-            string = ColorSerializer().toStr(value.foreground)
-            items.append(f"foreground: {string}")
-
-        if value.background is not None:
-            string = ColorSerializer().toStr(value.background)
-            items.append(f"background: {string}")
-
-        return " ; ".join(items)
+        return value.toStr()

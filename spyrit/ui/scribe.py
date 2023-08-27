@@ -21,11 +21,11 @@ import enum
 import logging
 
 from functools import reduce
-
 from typing import Iterable
 
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
+from sunset import Key
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import (
@@ -60,17 +60,15 @@ class CharFormatUpdater:
     """
 
     _format_stack: dict[int, FormatUpdate]
-    _bold: bool = False
-    _bright: bool = False
-    _italic: bool = False
-    _underline: bool = False
-    _reverse: bool = False
-    _strikeout: bool = False
-    _foreground: Color = NoColor()
-    _background: Color = NoColor()
+    _default_text_color: Key[Color]
+    _canvas_color: Key[Color]
 
-    def __init__(self) -> None:
+    def __init__(
+        self, default_text_color: Key[Color], canvas_color: Key[Color]
+    ) -> None:
         self._format_stack = {}
+        self._default_text_color = default_text_color
+        self._canvas_color = canvas_color
 
     def pushFormat(self, format_: FormatUpdate) -> None:
         self._format_stack[id(format_)] = format_
@@ -103,56 +101,46 @@ class CharFormatUpdater:
             valid_color, (f.background for f in formats), NoColor()
         )
 
-        if bold != self._bold:
-            self._bold = bold
-            char_format.setFontWeight(
-                QFont.Weight.Bold if bold else QFont.Weight.Medium
-            )
+        char_format.setFontWeight(
+            QFont.Weight.Bold if bold else QFont.Weight.Medium
+        )
+        char_format.setFontItalic(italic)
+        char_format.setFontUnderline(underline)
+        char_format.setFontStrikeOut(strikeout)
 
-        if italic != self._italic:
-            self._italic = italic
-            char_format.setFontItalic(italic)
+        actual_foreground, actual_background = self._computeColors(
+            bright, reverse, foreground, background
+        )
 
-        if underline != self._underline:
-            self._underline = underline
-            char_format.setFontUnderline(underline)
+        if actual_foreground.isUnset():
+            # This should not normally happen, unless the user configured
+            # NoColor() as their default text color. Qt will then use the
+            # default system text color.
+            char_format.clearForeground()
+        else:
+            char_format.setForeground(QColor(actual_foreground.asHex()))
 
-        if strikeout != self._strikeout:
-            self._strikeout = strikeout
-            char_format.setFontStrikeOut(strikeout)
+        if actual_background.isUnset():
+            char_format.clearBackground()
+        else:
+            char_format.setBackground(QColor(actual_background.asHex()))
 
-        if (bright, reverse, foreground, background) != (
-            self._bright,
-            self._reverse,
-            self._foreground,
-            self._background,
-        ):
-            self._bright = bright
-            self._reverse = reverse
-            self._foreground = foreground
-            self._background = background
-
-            fg_color, bg_color = self._computeColors(
-                bright, reverse, foreground, background
-            )
-            if fg_color.isUnset():
-                char_format.clearForeground()
-            else:
-                char_format.setForeground(QColor(fg_color.asHex()))
-
-            if bg_color.isUnset():
-                char_format.clearBackground()
-            else:
-                char_format.setBackground(QColor(bg_color.asHex()))
-
-    @staticmethod
     def _computeColors(
-        bright: bool, reverse: bool, foreground: Color, background: Color
+        self, bright: bool, reverse: bool, foreground: Color, background: Color
     ) -> tuple[Color, Color]:
+        if foreground.isUnset():
+            foreground = self._default_text_color.get()
+
         if bright:
             foreground = foreground.bright()
 
-        return (background, foreground) if reverse else (foreground, background)
+        if reverse:
+            foreground, background = background, foreground
+
+            if foreground.isUnset():
+                foreground = self._canvas_color.get()
+
+        return foreground, background
 
 
 class Scribe(QObject):
@@ -183,17 +171,10 @@ class Scribe(QObject):
         self._cursor = cursor
         self._settings = settings
         self._char_format = QTextCharFormat()
-        self._format_updater = CharFormatUpdater()
-        self._ansi_format = FormatUpdate()
-
-        base_format = FormatUpdate(
-            foreground=settings.default_text_color.get(),
-            background=settings.background_color.get(),
+        self._format_updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
         )
-        settings.default_text_color.onValueChangeCall(base_format.setForeground)
-        settings.background_color.onValueChangeCall(base_format.setBackground)
-
-        self._format_updater.pushFormat(base_format)
+        self._ansi_format = FormatUpdate()
         self._format_updater.pushFormat(self._ansi_format)
 
     @Slot(FragmentList)
@@ -260,12 +241,9 @@ class Scribe(QObject):
             _MessageLevel.ERROR: _ERROR_PREFIX,
         }[level]
 
-        base_format = FormatUpdate(
-            foreground=self._settings.default_text_color.get(),
-            background=self._settings.background_color.get(),
+        formatter = CharFormatUpdater(
+            self._settings.default_text_color, self._settings.canvas_color
         )
-        formatter = CharFormatUpdater()
-        formatter.pushFormat(base_format)
         formatter.pushFormat(self._settings.status_text_format.get())
         formatter.applyFormat(status_text_format := QTextCharFormat())
         self._cursor.insertText(f"{prefix} {text}", status_text_format)

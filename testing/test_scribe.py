@@ -58,7 +58,13 @@ class TestCursor(QTextCursor):
 
 class TestCharFormatUpdater:
     def test_format_updates_properly_applied(self) -> None:
-        updater = CharFormatUpdater()
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(NoColor())
+        settings.canvas_color.set(NoColor())
+
+        updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
+        )
         updater.pushFormat(format_ := FormatUpdate())
         char_format = QTextCharFormat()
 
@@ -126,8 +132,45 @@ class TestCharFormatUpdater:
         updater.applyFormat(char_format)
         assert _describe_char_format(char_format) == ""
 
+    def test_default_colors_properly_used(self) -> None:
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(NoColor())
+        settings.canvas_color.set(NoColor())
+
+        updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
+        )
+        updater.pushFormat(format_ := FormatUpdate())
+        char_format = QTextCharFormat()
+
+        updater.applyFormat(char_format)
+        assert _describe_char_format(char_format) == ""
+
+        settings.default_text_color.set(RGBColor(10, 10, 10))
+        settings.canvas_color.set(RGBColor(100, 100, 100))
+
+        updater.applyFormat(char_format)
+        assert _describe_char_format(char_format) == "fg: 10,10,10"
+
+        format_.setBright(True)
+        updater.applyFormat(char_format)
+        assert _describe_char_format(char_format) == "fg: 34,34,34"
+
+        format_.setReverse(True)
+        updater.applyFormat(char_format)
+        assert (
+            _describe_char_format(char_format)
+            == "fg: 100,100,100 ; bg: 34,34,34"
+        )
+
     def test_format_layers_applied_in_order(self) -> None:
-        updater = CharFormatUpdater()
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(NoColor())
+        settings.canvas_color.set(NoColor())
+
+        updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
+        )
         char_format = QTextCharFormat()
 
         format1 = FormatUpdate(bold=True, italic=True)
@@ -154,6 +197,10 @@ class TestCharFormatUpdater:
         assert _describe_char_format(char_format) == "bold ; italic ; strikeout"
 
     def test_identical_format_popped_correctly(self) -> None:
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(NoColor())
+        settings.canvas_color.set(NoColor())
+
         format1 = FormatUpdate(bold=True)
         format2 = FormatUpdate(bold=False, italic=True)
         format3 = FormatUpdate(bold=True)
@@ -161,7 +208,9 @@ class TestCharFormatUpdater:
         assert format1 == format3
 
         char_format = QTextCharFormat()
-        updater = CharFormatUpdater()
+        updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
+        )
 
         updater.pushFormat(format1)
         updater.pushFormat(format2)
@@ -175,7 +224,9 @@ class TestCharFormatUpdater:
         assert _describe_char_format(char_format) == "bold ; italic"
 
         char_format = QTextCharFormat()
-        updater = CharFormatUpdater()
+        updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
+        )
 
         updater.pushFormat(format1)
         updater.pushFormat(format2)
@@ -189,24 +240,21 @@ class TestCharFormatUpdater:
         assert _describe_char_format(char_format) == "italic"
 
     def test_reverse_plus_bright(self) -> None:
-        char_format = QTextCharFormat()
-        updater = CharFormatUpdater()
-        updater.pushFormat(format_ := FormatUpdate())
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(RGBColor(100, 100, 100))
+        settings.canvas_color.set(RGBColor(10, 10, 10))
 
-        format_.setForeground(RGBColor(100, 100, 100))
-        format_.setBackground(RGBColor(10, 10, 10))
-        updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 100,100,100 ; bg: 10,10,10"
+        char_format = QTextCharFormat()
+        updater = CharFormatUpdater(
+            settings.default_text_color, settings.canvas_color
         )
+        updater.pushFormat(format_ := FormatUpdate())
+        updater.applyFormat(char_format)
+        assert _describe_char_format(char_format) == "fg: 100,100,100"
 
         format_.setBright(True)
         updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 115,115,115 ; bg: 10,10,10"
-        )
+        assert _describe_char_format(char_format) == "fg: 115,115,115"
 
         format_.setReverse(True)
         updater.applyFormat(char_format)
@@ -227,7 +275,6 @@ class TestScribe:
     def test_carriage_return_behavior(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
@@ -251,57 +298,66 @@ class TestScribe:
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test.")])
-        assert cursor.get() == "[fg: 100,100,100 ; bg: 10,10,10]Test."
+        assert cursor.get() == "[fg: 100,100,100]Test."
 
         scribe.inscribe([FlowControlFragment(FlowControlCode.LF)])
         assert cursor.get() == ""
 
         scribe.inscribe([TextFragment("Test.")])
-        assert cursor.get() == "\n[fg: 100,100,100 ; bg: 10,10,10]Test."
+        assert cursor.get() == "\n[fg: 100,100,100]Test."
 
     def test_basic_text(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test!")])
-        assert cursor.get() == "[fg: 100,100,100 ; bg: 10,10,10]Test!"
+        assert cursor.get() == "[fg: 100,100,100]Test!"
 
         scribe.inscribe([TextFragment("More text.")])  # No LF.
-        assert cursor.get() == "[fg: 100,100,100 ; bg: 10,10,10]More text."
+        assert cursor.get() == "[fg: 100,100,100]More text."
 
         scribe.inscribe([FlowControlFragment(FlowControlCode.LF)])
         assert cursor.get() == ""
 
         scribe.inscribe([TextFragment("Yet more text.")])
-        assert (
-            cursor.get() == "\n[fg: 100,100,100 ; bg: 10,10,10]Yet more text."
-        )
+        assert cursor.get() == "\n[fg: 100,100,100]Yet more text."
 
     def test_default_text_color_update_applied(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test!")])
-        assert cursor.get() == "[fg: 100,100,100 ; bg: 10,10,10]Test!"
+        assert cursor.get() == "[fg: 100,100,100]Test!"
 
         settings.default_text_color.set(RGBColor(50, 50, 50))
-        settings.background_color.set(RGBColor(200, 200, 200))
 
         scribe.inscribe([TextFragment("Test!")])
-        assert cursor.get() == "[fg: 50,50,50 ; bg: 200,200,200]Test!"
+        assert cursor.get() == "[fg: 50,50,50]Test!"
+
+    def test_reverse_format_uses_canvas_color(self) -> None:
+        settings = SpyritSettings.UI.Output()
+        settings.default_text_color.set(RGBColor(100, 100, 100))
+        settings.canvas_color.set(RGBColor(200, 200, 200))
+
+        cursor = TestCursor()
+        scribe = Scribe(cursor, settings)
+
+        scribe.inscribe([TextFragment("Test!")])
+        assert cursor.get() == "[fg: 100,100,100]Test!"
+
+        scribe.inscribe([ANSIFragment(FormatUpdate(reverse=True))])
+        scribe.inscribe([TextFragment("Test!")])
+        assert cursor.get() == "[fg: 200,200,200 ; bg: 100,100,100]Test!"
 
     def test_ansi_fragments(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
@@ -310,9 +366,7 @@ class TestScribe:
         assert cursor.get() == ""
 
         scribe.inscribe([TextFragment("")])
-        assert (
-            cursor.get() == "[bold ; italic ; fg: 100,100,100 ; bg: 10,10,10]"
-        )
+        assert cursor.get() == "[bold ; italic ; fg: 100,100,100]"
 
         scribe.inscribe(
             [ANSIFragment(FormatUpdate(bold=False, underline=True))]
@@ -321,46 +375,38 @@ class TestScribe:
             [ANSIFragment(FormatUpdate(underline=False, strikeout=True))]
         )
         scribe.inscribe([TextFragment("")])
-        assert (
-            cursor.get()
-            == "[italic ; strikeout ; fg: 100,100,100 ; bg: 10,10,10]"
-        )
+        assert cursor.get() == "[italic ; strikeout ; fg: 100,100,100]"
 
     def test_network_fragments(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
         settings.status_text_format.set(FormatUpdate())
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([NetworkFragment(Status.CONNECTING, "")])
-        assert cursor.get() == "[fg: 100,100,100 ; bg: 10,10,10]• Connecting..."
+        assert cursor.get() == "[fg: 100,100,100]• Connecting..."
 
         scribe.inscribe([NetworkFragment(Status.CONNECTED, "")])
-        assert cursor.get() == "\n[fg: 100,100,100 ; bg: 10,10,10]• Connected!"
+        assert cursor.get() == "\n[fg: 100,100,100]• Connected!"
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
 
         settings.default_text_color.set(RGBColor(55, 55, 55))
-        settings.background_color.set(RGBColor(200, 200, 200))
         settings.status_text_format.set(FormatUpdate(italic=True))
 
         scribe.inscribe([NetworkFragment(Status.RESOLVING, "test.test")])
         assert cursor.get() == (
-            "[italic ; fg: 55,55,55 ; bg: 200,200,200]"
-            "• Looking up 'test.test'..."
+            "[italic ; fg: 55,55,55]• Looking up 'test.test'..."
         )
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([NetworkFragment(Status.ERROR, "(test)")])
-        assert cursor.get() == (
-            "[italic ; fg: 55,55,55 ; bg: 200,200,200]‼ Error: (test)!"
-        )
+        assert cursor.get() == ("[italic ; fg: 55,55,55]‼ Error: (test)!")
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
@@ -368,14 +414,13 @@ class TestScribe:
         scribe.inscribe([TextFragment("Test.")])  # No LF.
         scribe.inscribe([NetworkFragment(Status.DISCONNECTED, "")])
         assert cursor.get() == (
-            "[fg: 55,55,55 ; bg: 200,200,200]Test.\n"
-            "[italic ; fg: 55,55,55 ; bg: 200,200,200]• Disconnected."
+            "[fg: 55,55,55]Test.\n[italic ; fg: 55,55,55]• Disconnected."
         )
 
     def test_pattern_match_fragments(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
+        settings.canvas_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
@@ -388,15 +433,14 @@ class TestScribe:
         scribe.inscribe([TextFragment("9012")])
 
         assert cursor.get() == (
-            "[fg: 100,100,100 ; bg: 10,10,10]1234"
+            "[fg: 100,100,100]1234"
             "[fg: 10,10,10 ; bg: 100,100,100]5678"
-            "[fg: 100,100,100 ; bg: 10,10,10]9012"
+            "[fg: 100,100,100]9012"
         )
 
     def test_pattern_match_override_ansi(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
@@ -413,15 +457,11 @@ class TestScribe:
         )
         scribe.inscribe([TextFragment("5678")])
 
-        assert cursor.get() == (
-            "[fg: 50,50,50 ; bg: 10,10,10]1234"
-            "[fg: 20,20,20 ; bg: 10,10,10]5678"
-        )
+        assert cursor.get() == ("[fg: 50,50,50]1234[fg: 20,20,20]5678")
 
     def test_later_pattern_match_overrides_earlier(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
-        settings.background_color.set(RGBColor(10, 10, 10))
 
         cursor = TestCursor()
         scribe = Scribe(cursor, settings)
@@ -437,7 +477,5 @@ class TestScribe:
         scribe.inscribe([PatternMatchFragment(format1, MatchBoundary.END)])
 
         assert cursor.get() == (
-            "[fg: 20,20,20 ; bg: 10,10,10]1234"
-            "[fg: 50,50,50 ; bg: 10,10,10]5678"
-            "[fg: 20,20,20 ; bg: 10,10,10]9012"
+            "[fg: 20,20,20]1234[fg: 50,50,50]5678[fg: 20,20,20]9012"
         )

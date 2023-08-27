@@ -39,7 +39,7 @@ class OutputView(QTextEdit):
         self._settings.font.onValueChangeCall(self.setFixedPitchFont)
         self.setFixedPitchFont(self._settings.font.get())
 
-        self._settings.background_color.onValueChangeCall(self._applyStyleSheet)
+        self._settings.canvas_color.onValueChangeCall(self._applyStyleSheet)
         self._applyStyleSheet()
 
         # Set up the scrollbar.
@@ -69,7 +69,7 @@ class OutputView(QTextEdit):
         self.verticalScrollBar().setSingleStep(step)
 
     def _applyStyleSheet(self, _: Any = None) -> None:
-        background_color = self._settings.background_color.get().asHex()
+        background_color = self._settings.canvas_color.get().asHex()
         self.setStyleSheet(
             f"""
             QTextEdit{{ background-color: {background_color} }};

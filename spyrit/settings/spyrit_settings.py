@@ -154,8 +154,8 @@ class SpyritSettings(Settings):
                 constants.DEFAULT_FONT_FAMILY, constants.DEFAULT_FONT_POINT_SIZE
             )
 
-            # The background color of the window where game text is rendered.
-            background_color: Key[Color] = _color_key(ANSIColorCodes.Black)
+            # The color of the UI canvas onto which game text is rendered.
+            canvas_color: Key[Color] = _color_key(ANSIColorCodes.Black)
 
             # The color used to render game text when no other color is applied
             # through e.g. ANSI codes or user-defined formatting.

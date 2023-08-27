@@ -33,6 +33,7 @@ from spyrit.network.processors import (
 )
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.input_box import InputBox, Postman
 from spyrit.ui.input_history import Historian
@@ -40,7 +41,6 @@ from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
-from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
 class Splitter(QSplitter):
@@ -165,11 +165,15 @@ class WorldPane(Pane):
         second_inputbox.toggleVisibility(input_visible_key.get())
         input_visible_key.onValueChangeCall(second_inputbox.toggleVisibility)
 
-        ShortcutWithKeySetting(
-            self,
-            self._settings.shortcuts.toggle_second_input,
-            input_visible_key.toggle,
+        self.addAction(
+            second_input_toggle := ActionWithKeySetting(
+                self,
+                "Toggle Second Input",
+                self._settings.shortcuts.toggle_second_input,
+                input_visible_key.toggle,
+            )
         )
+        second_input_toggle.setCheckable(True)
 
         return view, inputbox, second_inputbox
 
@@ -186,15 +190,21 @@ class WorldPane(Pane):
 
         # Set up the key shortcuts for the history search.
 
-        ShortcutWithKeySetting(
-            inputbox,
-            self._settings.shortcuts.history_next,
-            historian.historyNext,
+        inputbox.addAction(
+            ActionWithKeySetting(
+                inputbox,
+                "History Next",
+                self._settings.shortcuts.history_next,
+                historian.historyNext,
+            )
         )
-        ShortcutWithKeySetting(
-            inputbox,
-            self._settings.shortcuts.history_previous,
-            historian.historyPrevious,
+        inputbox.addAction(
+            ActionWithKeySetting(
+                inputbox,
+                "History Previous",
+                self._settings.shortcuts.history_previous,
+                historian.historyPrevious,
+            )
         )
 
     def _createGameDataProcessor(self, connection: Connection) -> BaseProcessor:

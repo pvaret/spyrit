@@ -22,8 +22,8 @@ from PySide6.QtWidgets import QWidget
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.tabbed_ui_container import TabbedUIContainer
-from spyrit.ui.shortcut_with_key_setting import ShortcutWithKeySetting
 
 
 class MainWindow(TabbedUIContainer):
@@ -53,17 +53,37 @@ class MainWindow(TabbedUIContainer):
 
         # Set up keyboard shortcuts.
 
-        key_settings = settings.shortcuts
-        for shortcut, slot in (
-            (key_settings.new_tab, self.newTabRequested),
-            (key_settings.new_window, self.newWindowRequested),
-            (key_settings.close_current_tab, self.maybeCloseCurrentTab),
-            (key_settings.switch_to_next_tab, self.switchToNextTab),
-            (key_settings.switch_to_previous_tab, self.switchToPreviousTab),
-            (key_settings.move_current_tab_right, self.moveCurrentTabRight),
-            (key_settings.move_current_tab_left, self.moveCurrentTabLeft),
+        shortcuts = settings.shortcuts
+        for text, shortcut, slot in (
+            ("New Tab", shortcuts.new_tab, self.newTabRequested),
+            ("New Window", shortcuts.new_window, self.newWindowRequested),
+            (
+                "Close Tab",
+                shortcuts.close_current_tab,
+                self.maybeCloseCurrentTab,
+            ),
+            ("Next Tab", shortcuts.switch_to_next_tab, self.switchToNextTab),
+            (
+                "Previous Tab",
+                shortcuts.switch_to_previous_tab,
+                self.switchToPreviousTab,
+            ),
+            (
+                "Move Tab Right",
+                shortcuts.move_current_tab_right,
+                self.moveCurrentTabRight,
+            ),
+            (
+                "Move Tab Left",
+                shortcuts.move_current_tab_left,
+                self.moveCurrentTabLeft,
+            ),
         ):
-            ShortcutWithKeySetting(parent=self, key=shortcut, slot=slot)
+            self.addAction(
+                ActionWithKeySetting(
+                    parent=self, text=text, key=shortcut, slot=slot
+                )
+            )
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         # Store the new window size on resize.

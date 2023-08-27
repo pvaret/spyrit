@@ -12,8 +12,7 @@
 #
 
 """
-A class that binds a QShortcut to a SunsetSettings key containing a
-QKeySequence.
+A QAction subclass that binds to a SunsetSettings key containing a QKeySequence.
 """
 
 import logging
@@ -21,37 +20,48 @@ import logging
 from typing import Callable
 
 from PySide6.QtCore import QObject, Qt, SignalInstance, Slot
-from PySide6.QtGui import QShortcut
+from PySide6.QtGui import QAction
 
 from sunset import Key
 
 from spyrit.settings.key_shortcut import Shortcut
 
 
-class ShortcutWithKeySetting(QObject):
-    _shortcut: QShortcut
-    _key: Key[Shortcut]
+class ActionWithKeySetting(QAction):
+    _key: Shortcut
 
     def __init__(
         self,
         parent: QObject,
+        text: str,
         key: Key[Shortcut],
         slot: Slot | SignalInstance | Callable[[], None],
     ) -> None:
         super().__init__(parent=parent)
 
-        self._shortcut = QShortcut(parent)
-        self._shortcut.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
-        self._key = key
-        self._key.onValueChangeCall(self.updateShortcut)
-        self.updateShortcut(self._key.get())
+        self.setText(text)
+        self.setShortcutContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
+        key.onValueChangeCall(self.updateShortcut)
+        self.updateShortcut(key.get())
 
-        self._shortcut.activated.connect(slot)
-        self._shortcut.activated.connect(self._debug)
+        self.triggered.connect(slot)
+        self.triggered.connect(self._debug)
 
     def updateShortcut(self, key: Shortcut) -> None:
-        self._shortcut.setKey(key)
+        self._key = key
+        self.setShortcut(key)
 
     @Slot()
     def _debug(self) -> None:
-        logging.debug("Shortcut %s activated.", self._shortcut.key().toString())
+        if self.isCheckable():
+            logging.debug(
+                "Action '%s' (%s) toggled to %s.",
+                self.text(),
+                self._key.toString(),
+                self.isChecked(),
+            )
+
+        else:
+            logging.debug(
+                "Action '%s' (%s) activated.", self.text(), self._key.toString()
+            )

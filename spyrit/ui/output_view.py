@@ -18,9 +18,9 @@ Implements a widget to display the text of a game.
 
 from typing import Any
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QFontMetrics
-from PySide6.QtWidgets import QAbstractSlider, QTextEdit
+from PySide6.QtWidgets import QTextEdit
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 
@@ -45,30 +45,6 @@ class OutputView(QTextEdit):
         # Set up the scrollbar.
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-
-    @Slot()
-    def scrollOnePageUp(self) -> None:
-        self.verticalScrollBar().triggerAction(
-            QAbstractSlider.SliderAction.SliderPageStepSub
-        )
-
-    @Slot()
-    def scrollOnePageDown(self) -> None:
-        self.verticalScrollBar().triggerAction(
-            QAbstractSlider.SliderAction.SliderPageStepAdd
-        )
-
-    @Slot()
-    def scrollOneLineUp(self) -> None:
-        self.verticalScrollBar().triggerAction(
-            QAbstractSlider.SliderAction.SliderSingleStepSub
-        )
-
-    @Slot()
-    def scrollOneLineDown(self) -> None:
-        self.verticalScrollBar().triggerAction(
-            QAbstractSlider.SliderAction.SliderSingleStepAdd
-        )
 
     def setFixedPitchFont(self, font: QFont) -> None:
         # Forced the pitch of the font to be fixed.

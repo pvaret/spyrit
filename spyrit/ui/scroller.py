@@ -19,7 +19,7 @@ widget.
 
 
 from PySide6.QtCore import QObject, Slot
-from PySide6.QtWidgets import QScrollBar
+from PySide6.QtWidgets import QAbstractSlider, QScrollBar
 
 
 class Scroller(QObject):
@@ -59,3 +59,27 @@ class Scroller(QObject):
     def maybeScrollToBottom(self) -> None:
         if self._pin_to_bottom:
             self._scrollbar.setValue(self._scrollbar.maximum())
+
+    @Slot()
+    def scrollOnePageUp(self) -> None:
+        self._scrollbar.triggerAction(
+            QAbstractSlider.SliderAction.SliderPageStepSub
+        )
+
+    @Slot()
+    def scrollOnePageDown(self) -> None:
+        self._scrollbar.triggerAction(
+            QAbstractSlider.SliderAction.SliderPageStepAdd
+        )
+
+    @Slot()
+    def scrollOneLineUp(self) -> None:
+        self._scrollbar.triggerAction(
+            QAbstractSlider.SliderAction.SliderSingleStepSub
+        )
+
+    @Slot()
+    def scrollOneLineDown(self) -> None:
+        self._scrollbar.triggerAction(
+            QAbstractSlider.SliderAction.SliderSingleStepAdd
+        )

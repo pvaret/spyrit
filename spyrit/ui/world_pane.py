@@ -144,7 +144,7 @@ class WorldPane(Pane):
 
         # Install up the user-friendly scrollbar helper.
 
-        Scroller(view.verticalScrollBar())
+        scroller = Scroller(view.verticalScrollBar())
 
         # Set up view-related shortcuts. Those need to be on the WorldPane
         # itself because the view never has focus.
@@ -154,7 +154,7 @@ class WorldPane(Pane):
                 parent=self,
                 text="Page Up",
                 key=self._settings.shortcuts.page_up,
-                slot=view.scrollOnePageUp,
+                slot=scroller.scrollOnePageUp,
             )
         )
 
@@ -163,7 +163,7 @@ class WorldPane(Pane):
                 parent=self,
                 text="Page Down",
                 key=self._settings.shortcuts.page_down,
-                slot=view.scrollOnePageDown,
+                slot=scroller.scrollOnePageDown,
             )
         )
 
@@ -172,7 +172,7 @@ class WorldPane(Pane):
                 parent=self,
                 text="Scroll Up",
                 key=self._settings.shortcuts.line_up,
-                slot=view.scrollOneLineUp,
+                slot=scroller.scrollOneLineUp,
             )
         )
 
@@ -181,7 +181,7 @@ class WorldPane(Pane):
                 parent=self,
                 text="Scroll Down",
                 key=self._settings.shortcuts.line_down,
-                slot=view.scrollOneLineDown,
+                slot=scroller.scrollOneLineDown,
             )
         )
 

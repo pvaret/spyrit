@@ -146,6 +146,45 @@ class WorldPane(Pane):
 
         Scroller(view.verticalScrollBar())
 
+        # Set up view-related shortcuts. Those need to be on the WorldPane
+        # itself because the view never has focus.
+
+        self.addAction(
+            ActionWithKeySetting(
+                parent=self,
+                text="Page Up",
+                key=self._settings.shortcuts.page_up,
+                slot=view.scrollOnePageUp,
+            )
+        )
+
+        self.addAction(
+            ActionWithKeySetting(
+                parent=self,
+                text="Page Down",
+                key=self._settings.shortcuts.page_down,
+                slot=view.scrollOnePageDown,
+            )
+        )
+
+        self.addAction(
+            ActionWithKeySetting(
+                parent=self,
+                text="Scroll Up",
+                key=self._settings.shortcuts.line_up,
+                slot=view.scrollOneLineUp,
+            )
+        )
+
+        self.addAction(
+            ActionWithKeySetting(
+                parent=self,
+                text="Scroll Down",
+                key=self._settings.shortcuts.line_down,
+                slot=view.scrollOneLineDown,
+            )
+        )
+
         # Set up the focus logic for the game UI. TL;DR: both the pane and the
         # view forward to the main input, and the second input comes after the
         # main input in the tab order.

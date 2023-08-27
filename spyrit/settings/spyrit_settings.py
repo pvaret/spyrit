@@ -121,6 +121,10 @@ class SpyritSettings(Settings):
         move_current_tab_right: Key[Shortcut] = _shortcut_key(
             "Ctrl+Shift+PgDown"
         )
+        page_up: Key[Shortcut] = _shortcut_key("PgUp")
+        page_down: Key[Shortcut] = _shortcut_key("PgDown")
+        line_up: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Up")
+        line_down: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Down")
         toggle_second_input: Key[Shortcut] = _shortcut_key("Ctrl+M")
         history_previous: Key[Shortcut] = _shortcut_key("Ctrl+Up")
         history_next: Key[Shortcut] = _shortcut_key("Ctrl+Down")

@@ -19,8 +19,6 @@ import logging
 import pathlib
 
 
-logger = logging.getLogger(__name__)
-
 _resources_loaded: bool = False
 
 
@@ -46,7 +44,7 @@ def load() -> bool:
             del compiled
 
         except ImportError:
-            logger.error(
+            logging.error(
                 "Resources not compiled. In order to compile them, run:\n"
                 " pyside6-rcc --generator python"
                 " --compress 9 --threshold 0.95"

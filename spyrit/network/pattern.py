@@ -193,6 +193,7 @@ def find_matches(pattern: SpyritSettings.Pattern, text: str) -> list[Match]:
 
     while not done:
         done = True
+        last_start = start
 
         for matches, last_match_end in match_pattern_to_text(
             pattern, text, start
@@ -214,6 +215,7 @@ def find_matches(pattern: SpyritSettings.Pattern, text: str) -> list[Match]:
                     start = last_match_end
                     done = False
 
+            ret.append((last_start, last_match_end, pattern.format.get()))
             ret.extend(matches)
             break
 

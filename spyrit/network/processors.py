@@ -456,11 +456,7 @@ class UserPatternProcessor(BaseProcessor):
     ) -> Iterator[tuple[FormatUpdate, int, int]]:
         for pattern in self._patterns.iter(List.PARENT_FIRST):
             for start, end, format_ in find_matches(pattern, line):
-                if start == end:
-                    continue
-                if format_.empty():
-                    format_ = pattern.format.get()
-                if not format_.empty():
+                if start != end and not format_.empty():
                     yield (format_, start, end)
 
 

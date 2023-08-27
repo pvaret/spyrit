@@ -567,7 +567,7 @@ class TestUserPatternProcessor:
 
         p1 = patterns.appendOne()
         p1.scope.set(PatternScope.ENTIRE_LINE)
-        p1.format.set(format_ := FormatUpdate(italic=True))
+        p1.format.set(pattern_format := FormatUpdate(italic=True))
 
         p1.fragments.appendOne().type.set(PatternType.ANYTHING)
 
@@ -584,15 +584,9 @@ class TestUserPatternProcessor:
             ]
         )
         assert output.get() == [
-            PatternMatchFragment(format_, MatchBoundary.START),
-            TextFragment("1234"),
-            PatternMatchFragment(format_, MatchBoundary.END),
-            PatternMatchFragment(format_, MatchBoundary.START),
-            TextFragment("abcde"),
-            PatternMatchFragment(format_, MatchBoundary.END),
-            PatternMatchFragment(format_, MatchBoundary.START),
-            TextFragment("12345"),
-            PatternMatchFragment(format_, MatchBoundary.END),
+            PatternMatchFragment(pattern_format, MatchBoundary.START),
+            TextFragment("1234abcde12345"),
+            PatternMatchFragment(pattern_format, MatchBoundary.END),
             FlowControlFragment(FlowControlCode.LF),
         ]
 
@@ -786,11 +780,9 @@ class TestUserPatternProcessor:
         assert output.get() == [
             PatternMatchFragment(line_format, MatchBoundary.START),
             TextFragment("...."),
-            PatternMatchFragment(line_format, MatchBoundary.END),
             PatternMatchFragment(fragment_format, MatchBoundary.START),
             TextFragment("test"),
             PatternMatchFragment(fragment_format, MatchBoundary.END),
-            PatternMatchFragment(line_format, MatchBoundary.START),
             TextFragment("...."),
             PatternMatchFragment(line_format, MatchBoundary.END),
             FlowControlFragment(FlowControlCode.LF),

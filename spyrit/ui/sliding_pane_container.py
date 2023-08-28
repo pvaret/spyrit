@@ -34,7 +34,7 @@ class SlidingPaneContainer(QScrollArea):
 
     # How long should the switch animation last, in milliseconds.
 
-    _ANIMATION_DURATION: int = constants.ANIMATION_DURATION_MS
+    _ANIMATION_DURATION: int = constants.PANE_ANIMATION_DURATION_MS
 
     # Which animation should be used for the switch.
 

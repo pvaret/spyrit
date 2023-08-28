@@ -48,7 +48,8 @@ STATE_SAVE_DELAY_MS: int = 10_000  # milliseconds
 DEFAULT_WINDOW_WIDTH: int = 1000
 DEFAULT_WINDOW_HEIGHT: int = 800
 
-ANIMATION_DURATION_MS: int = 500  # milliseconds
+PANE_ANIMATION_DURATION_MS: int = 500  # milliseconds
+SCROLL_ANIMATION_DURATION_MS: int = 250  # milliseconds
 
 DEFAULT_FONT_FAMILY: list[str] = ["Noto Sans Mono", "monospace"]
 DEFAULT_FONT_POINT_SIZE: int = 12

@@ -184,6 +184,18 @@ class Scroller(QObject):
             QAbstractSlider.SliderAction.SliderSingleStepAdd
         )
 
+    @Slot()
+    def scrollToTop(self) -> None:
+        self._scrollbar.triggerAction(
+            QAbstractSlider.SliderAction.SliderToMinimum
+        )
+
+    @Slot()
+    def scrollToBottom(self) -> None:
+        self._scrollbar.triggerAction(
+            QAbstractSlider.SliderAction.SliderToMaximum
+        )
+
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self._scrollbar and isinstance(event, QWheelEvent):
             # The default wheel event handler applies the scrolling delta from

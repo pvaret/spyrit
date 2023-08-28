@@ -149,41 +149,24 @@ class WorldPane(Pane):
         # Set up view-related shortcuts. Those need to be on the WorldPane
         # itself because the view never has focus.
 
-        self.addAction(
-            ActionWithKeySetting(
-                parent=self,
-                text="Page Up",
-                key=self._settings.shortcuts.page_up,
-                slot=scroller.scrollOnePageUp,
+        shortcuts = self._settings.shortcuts
+        for text, shortcut, slot in (
+            ("Page Up", shortcuts.page_up, scroller.scrollOnePageUp),
+            ("Page Down", shortcuts.page_down, scroller.scrollOnePageDown),
+            ("Scroll Up", shortcuts.line_up, scroller.scrollOneLineUp),
+            ("Scroll Down", shortcuts.line_down, scroller.scrollOneLineDown),
+            ("Scroll to Top", shortcuts.scroll_to_top, scroller.scrollToTop),
+            (
+                "Scroll to Bottom",
+                shortcuts.scroll_to_bottom,
+                scroller.scrollToBottom,
+            ),
+        ):
+            self.addAction(
+                ActionWithKeySetting(
+                    parent=self, text=text, key=shortcut, slot=slot
+                )
             )
-        )
-
-        self.addAction(
-            ActionWithKeySetting(
-                parent=self,
-                text="Page Down",
-                key=self._settings.shortcuts.page_down,
-                slot=scroller.scrollOnePageDown,
-            )
-        )
-
-        self.addAction(
-            ActionWithKeySetting(
-                parent=self,
-                text="Scroll Up",
-                key=self._settings.shortcuts.line_up,
-                slot=scroller.scrollOneLineUp,
-            )
-        )
-
-        self.addAction(
-            ActionWithKeySetting(
-                parent=self,
-                text="Scroll Down",
-                key=self._settings.shortcuts.line_down,
-                slot=scroller.scrollOneLineDown,
-            )
-        )
 
         # Set up the focus logic for the game UI. TL;DR: both the pane and the
         # view forward to the main input, and the second input comes after the

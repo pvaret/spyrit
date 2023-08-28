@@ -125,6 +125,8 @@ class SpyritSettings(Settings):
         page_down: Key[Shortcut] = _shortcut_key("PgDown")
         line_up: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Up")
         line_down: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Down")
+        scroll_to_top: Key[Shortcut] = _shortcut_key("Ctrl+Home")
+        scroll_to_bottom: Key[Shortcut] = _shortcut_key("Ctrl+End")
         toggle_second_input: Key[Shortcut] = _shortcut_key("Ctrl+M")
         history_previous: Key[Shortcut] = _shortcut_key("Ctrl+Up")
         history_next: Key[Shortcut] = _shortcut_key("Ctrl+Down")

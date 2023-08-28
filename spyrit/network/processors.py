@@ -20,11 +20,13 @@ that makes semantic sense and can be fed into e.g. a text display widget.
 import codecs
 import logging
 
+from collections import deque
 from typing import Iterable, Iterator
 
 import regex
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
+
 from sunset import Key, List
 
 from spyrit import constants
@@ -91,6 +93,53 @@ class BaseProcessor(QObject):
         if self._output_buffer:
             self.fragmentsReady.emit(self._output_buffer)
             self._output_buffer.clear()
+
+
+class PacketSplitterProcessor(BaseProcessor):
+    """
+    This processor splits incoming packets into smaller chunks and makes sure
+    the Qt event loop has time to run between each chunk. This helps the UI feel
+    snappier.
+    """
+
+    _BLOCK_SIZE: int = constants.PROCESSOR_BLOCK_SIZE_BYTES
+
+    _chunk_processing_timer: QTimer
+    _input_buffer: deque[Fragment]
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+
+        self._input_buffer = deque()
+        self._chunk_processing_timer = QTimer()
+        self._chunk_processing_timer.setSingleShot(True)
+        self._chunk_processing_timer.timeout.connect(self.processOneChunk)
+
+    def feed(self, fragments: Iterable[Fragment]) -> None:
+        self._input_buffer.extend(fragments)
+        self._chunk_processing_timer.start()
+
+    @Slot()
+    def processOneChunk(self) -> None:
+        if not self._input_buffer:
+            return
+
+        fragment = self._input_buffer.popleft()
+
+        match fragment:
+            case ByteFragment(data):
+                if len(data) > self._BLOCK_SIZE:
+                    fragment = ByteFragment(data[: self._BLOCK_SIZE])
+                    self._input_buffer.appendleft(
+                        ByteFragment(data[self._BLOCK_SIZE :])
+                    )
+            case _:
+                pass
+
+        self._output_buffer.append(fragment)
+        self._maybeSignalOutputReady()
+
+        self._chunk_processing_timer.start()
 
 
 class ANSIProcessor(BaseProcessor):
@@ -498,7 +547,6 @@ class ChainProcessor(BaseProcessor):
 def bind_processor_to_connection(
     processor: BaseProcessor,
     connection: Connection,
-    block_size: int = constants.PROCESSOR_BLOCK_SIZE_BYTES,
 ) -> None:
     """
     This helper sets up a feed of the byte data and connection status changes
@@ -507,9 +555,7 @@ def bind_processor_to_connection(
 
     @Slot(bytes)
     def _feed_data_to_processor(data: bytes) -> None:
-        while data:
-            fragment, data = data[:block_size], data[block_size:]
-            processor.feed([ByteFragment(fragment)])
+        processor.feed([ByteFragment(data)])
 
     @Slot(Status, str)
     def _feed_status_to_processor(status: Status, text: str) -> None:

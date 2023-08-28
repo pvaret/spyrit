@@ -24,9 +24,9 @@ from spyrit.network.connection import Connection, Status
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
+    PacketSplitterProcessor,
     ChainProcessor,
     FlowControlProcessor,
-    LineBatchingProcessor,
     UnicodeProcessor,
     UserPatternProcessor,
     bind_processor_to_connection,
@@ -122,10 +122,6 @@ class WorldPane(Pane):
         # Plug the parsing logic into the game view update logic.
 
         processor.fragmentsReady.connect(scribe.inscribe)
-
-        # Refresh the display each time a new line is added.
-
-        scribe.newLineInscribed.connect(view.repaint)
 
         # And start the connection.
 
@@ -231,10 +227,10 @@ class WorldPane(Pane):
 
     def _createGameDataProcessor(self, connection: Connection) -> BaseProcessor:
         processor = ChainProcessor(
+            PacketSplitterProcessor(),
             ANSIProcessor(self._settings.ui.output.ansi_bold_effect),
             UnicodeProcessor(self._settings.net.encoding),
             FlowControlProcessor(),
-            LineBatchingProcessor(),
             UserPatternProcessor(self._settings.patterns),
             parent=self,
         )

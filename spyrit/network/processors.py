@@ -385,23 +385,6 @@ class FlowControlProcessor(BaseProcessor):
                 yield fragment
 
 
-class LineBatchingProcessor(BaseProcessor):
-    """
-    This processor flushes the pending fragments whenever a new line has been
-    processed.
-    """
-
-    def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
-        yield fragment
-
-        match fragment:
-            case FlowControlFragment(FlowControlCode.LF):
-                self._maybeSignalOutputReady()
-
-            case _:
-                pass
-
-
 def inject_fragments_into_buffer(
     fragments: Iterable[tuple[int, Fragment]], buffer: list[Fragment]
 ) -> list[Fragment]:

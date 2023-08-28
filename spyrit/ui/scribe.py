@@ -23,8 +23,9 @@ import logging
 from functools import reduce
 from typing import Iterable
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Slot
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
+
 from sunset import Key
 
 from spyrit.network.connection import Status
@@ -149,10 +150,6 @@ class Scribe(QObject):
     formatted text on the given cursor.
     """
 
-    # This signal fires whenever a full line was inscribed into the cursor.
-
-    newLineInscribed: Signal = Signal()  # noqa: N815
-
     _cursor: QTextCursor
     _settings: SpyritSettings.UI.Output
     _char_format: QTextCharFormat
@@ -255,7 +252,6 @@ class Scribe(QObject):
         self._flushPendingNewLine()
         self._pending_newline = True
         self._at_line_start = True
-        self.newLineInscribed.emit()
 
     def _flushPendingNewLine(self) -> None:
         if self._pending_newline:

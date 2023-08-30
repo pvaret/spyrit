@@ -36,7 +36,7 @@ def _describe_char_format(char_format: QTextCharFormat) -> str:
     return " ; ".join(ret)
 
 
-class TestCursor(QTextCursor):
+class MockCursor(QTextCursor):
     _text: str = ""
 
     def insertText(
@@ -276,7 +276,7 @@ class TestScribe:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([FlowControlFragment(FlowControlCode.LF)])
@@ -285,7 +285,7 @@ class TestScribe:
         scribe.inscribe([FlowControlFragment(FlowControlCode.LF)])
         assert cursor.get() == "\n"
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([FlowControlFragment(FlowControlCode.CR)])
@@ -294,7 +294,7 @@ class TestScribe:
         scribe.inscribe([FlowControlFragment(FlowControlCode.CR)])
         assert cursor.get() == ""
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test.")])
@@ -310,7 +310,7 @@ class TestScribe:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test!")])
@@ -329,7 +329,7 @@ class TestScribe:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test!")])
@@ -345,7 +345,7 @@ class TestScribe:
         settings.default_text_color.set(RGBColor(100, 100, 100))
         settings.canvas_color.set(RGBColor(200, 200, 200))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test!")])
@@ -359,7 +359,7 @@ class TestScribe:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([ANSIFragment(FormatUpdate(bold=True, italic=True))])
@@ -382,7 +382,7 @@ class TestScribe:
         settings.default_text_color.set(RGBColor(100, 100, 100))
         settings.status_text_format.set(FormatUpdate())
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([NetworkFragment(Status.CONNECTING, "")])
@@ -391,7 +391,7 @@ class TestScribe:
         scribe.inscribe([NetworkFragment(Status.CONNECTED, "")])
         assert cursor.get() == "\n[fg: 100,100,100]• Connected!"
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         settings.default_text_color.set(RGBColor(55, 55, 55))
@@ -402,13 +402,13 @@ class TestScribe:
             "[italic ; fg: 55,55,55]• Looking up 'test.test'..."
         )
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([NetworkFragment(Status.ERROR, "(test)")])
         assert cursor.get() == ("[italic ; fg: 55,55,55]‼ Error: (test)!")
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test.")])  # No LF.
@@ -422,7 +422,7 @@ class TestScribe:
         settings.default_text_color.set(RGBColor(100, 100, 100))
         settings.canvas_color.set(RGBColor(10, 10, 10))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
         format_ = FormatUpdate(reverse=True)
 
@@ -442,7 +442,7 @@ class TestScribe:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
         pattern_format = FormatUpdate(foreground=RGBColor(50, 50, 50))
         ansi_format = FormatUpdate(foreground=RGBColor(20, 20, 20))
@@ -463,7 +463,7 @@ class TestScribe:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(RGBColor(100, 100, 100))
 
-        cursor = TestCursor()
+        cursor = MockCursor()
         scribe = Scribe(cursor, settings)
         format1 = FormatUpdate(foreground=RGBColor(20, 20, 20))
         format2 = FormatUpdate(foreground=RGBColor(50, 50, 50))

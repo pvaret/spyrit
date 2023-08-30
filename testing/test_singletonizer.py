@@ -6,11 +6,13 @@ from pathlib import Path
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
+from PySide6.QtCore import QByteArray
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
 
 from spyrit.singletonizer import PIDFile, Singletonizer
 
 _TEST_PID = 12345678
+_TEST_PID_REMOTE = 87654321
 
 
 class TestPIDFile:
@@ -85,7 +87,8 @@ class TestSingletonizer:
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
@@ -107,7 +110,8 @@ class TestSingletonizer:
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
@@ -129,19 +133,22 @@ class TestSingletonizer:
         path_b.mkdir(parents=True)
         singletonizer_a1 = Singletonizer(
             path_a / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
         singletonizer_a2 = Singletonizer(
             path_a / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
         singletonizer_b = Singletonizer(
             path_b / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
@@ -166,7 +173,8 @@ class TestSingletonizer:
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
@@ -195,7 +203,8 @@ class TestSingletonizer:
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
@@ -206,6 +215,9 @@ class TestSingletonizer:
         singletonizer._onNewConnectionReceived()  # type: ignore
 
         stub_socket.readAll.assert_called_once()  # type: ignore
+        stub_socket.write.assert_called_once_with(  # type: ignore
+            str(_TEST_PID).encode("ascii")
+        )
         stub_slot.assert_called_once()
 
     def test_send_secondary_instance_notification(
@@ -216,6 +228,9 @@ class TestSingletonizer:
         stub_socket = mocker.Mock(spec=QLocalSocket)
 
         stub_pidfile.tryLock = mocker.Mock(return_value=False)
+        stub_socket.readAll = mocker.Mock(
+            return_value=QByteArray(str(_TEST_PID_REMOTE).encode("ascii"))
+        )
 
         stub_make_socket_name = mocker.Mock(return_value="test-socket-name")
         monkeypatch.setattr(
@@ -224,13 +239,18 @@ class TestSingletonizer:
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
-            _pidfile_factory=lambda _: stub_pidfile,
+            pid=_TEST_PID,
+            _pidfile_factory=lambda _, __: stub_pidfile,
             _server_factory=lambda _: stub_server,
             _socket_factory=lambda: stub_socket,
         )
-        singletonizer.notifyNewInstanceStarted()
+
+        remote_pid = singletonizer.notifyNewInstanceStarted()
+        assert remote_pid == str(_TEST_PID_REMOTE)
 
         stub_socket.connectToServer.assert_called_once_with(  # type: ignore
             "test-socket-name"
         )
-        stub_socket.write.assert_called_once()  # type: ignore
+        stub_socket.write.assert_called_once_with(  # type: ignore
+            str(_TEST_PID).encode("ascii")
+        )

@@ -30,6 +30,12 @@ from PySide6.QtNetwork import QLocalServer, QLocalSocket
 
 from spyrit import constants
 
+# How long to wait for the instance start notification socket operations. It's a
+# local socket so it should be fast, and it's mainly for informational purposes
+# so exceeding the timeout is not a very big deal.
+
+_TIMEOUT_MS = 100
+
 
 class PIDFile:
     """
@@ -156,6 +162,9 @@ class PIDFile:
             logging.error("Error while creating PID file %s: %s", self._path, e)
             raise
 
+    def __del__(self) -> None:
+        self.unlock()
+
 
 class Singletonizer(QObject):
     """
@@ -176,6 +185,7 @@ class Singletonizer(QObject):
     newInstanceStarted: Signal = Signal()  # noqa: N815
 
     _path: Path
+    _pid: int
     _pidfile: PIDFile | None
     _server: QLocalServer | None
     _socket_name: str
@@ -184,7 +194,8 @@ class Singletonizer(QObject):
     def __init__(
         self,
         pidfile: Path,
-        _pidfile_factory: Callable[[Path], PIDFile] = PIDFile,
+        pid: int = os.getpid(),
+        _pidfile_factory: Callable[[Path, int], PIDFile] = PIDFile,
         _server_factory: Callable[[QObject], QLocalServer] = QLocalServer,
         _socket_factory: Callable[[], QLocalSocket] = QLocalSocket,
     ) -> None:
@@ -192,13 +203,14 @@ class Singletonizer(QObject):
 
         self._server = None
         self._path = pidfile
-        self._pidfile = _pidfile_factory(self._path)
+        self._pid = pid
+        self._pidfile = _pidfile_factory(self._path, self._pid)
         self._socket_name = ""
         self._socket_factory = _socket_factory
 
         if self._pidfile.tryLock():
             logging.info(
-                "Main process instance running with PID %s.", os.getpid()
+                "Main process instance running with PID %s.", self._pid
             )
             server = _server_factory(self)
             server.setSocketOptions(
@@ -233,7 +245,7 @@ class Singletonizer(QObject):
 
         else:
             logging.debug(
-                "Process with PID %s is not the main instance.", os.getpid()
+                "Process with PID %s is not the main instance.", self._pid
             )
 
     def __enter__(self) -> "Singletonizer":
@@ -253,12 +265,14 @@ class Singletonizer(QObject):
         running.
         """
 
-        return self._pidfile is not None and self._pidfile.tryLock()
+        return (pidfile := self._pidfile) is not None and pidfile.tryLock()
 
-    def notifyNewInstanceStarted(self) -> None:
+    def notifyNewInstanceStarted(self) -> str:
         """
         Lets the main instance of this program, if any, know that a new instance
         is trying to start.
+
+        Returns a string representing the main instance's PID, if applicable.
         """
 
         socket_name = self._makeSocketName()
@@ -271,19 +285,30 @@ class Singletonizer(QObject):
 
         conn.setSocketOptions(QLocalSocket.SocketOption.AbstractNamespaceOption)
         conn.connectToServer(socket_name)
-        if not conn.waitForConnected(msecs=1000):
+        if not conn.waitForConnected(msecs=_TIMEOUT_MS):
             logging.error(
                 "Failed to connect to singleton server on named socket"
                 " '%s': %s",
                 socket_name,
                 conn.errorString(),
             )
-            return
+            return "?unknown?"
 
-        conn.write(b"\0")
-        conn.waitForBytesWritten(msecs=1000)
+        pid = str(self._pid)
+        conn.write(pid.encode("ascii", errors="ignore"))
+        conn.waitForBytesWritten(msecs=_TIMEOUT_MS)
+        conn.waitForReadyRead(msecs=_TIMEOUT_MS)
+        remote_pid = conn.readAll().data().decode("ascii", errors="ignore")
         conn.close()
         conn.deleteLater()
+
+        logging.debug(
+            "New instance notification for PID %s sent to socket '%s'.",
+            pid,
+            socket_name,
+        )
+
+        return remote_pid if remote_pid.isdigit() else "?unknown?"
 
     def shutdown(self) -> None:
         """
@@ -293,26 +318,36 @@ class Singletonizer(QObject):
         main one.
         """
 
-        if self._server is not None:
-            self._server.close()
-            self._server.removeServer(self._socket_name)
-            self._server.deleteLater()
+        if (server := self._server) is not None:
+            server.close()
+            server.removeServer(self._socket_name)
+            server.deleteLater()
             self._server = None
 
-        if self._pidfile is not None:
-            if self._pidfile.tryLock():
-                self._pidfile.unlock()
+        if (pidfile := self._pidfile) is not None:
+            if pidfile.tryLock():
+                pidfile.unlock()
             self._pidfile = None
 
     def _onNewConnectionReceived(self) -> None:
-        if self._server is None:
+        if (server := self._server) is None:
             return
 
-        while self._server.hasPendingConnections():
-            conn = self._server.nextPendingConnection()
-            conn.readAll()
+        while server.hasPendingConnections():
+            conn = server.nextPendingConnection()
+            conn.waitForReadyRead(msecs=_TIMEOUT_MS)
+            pid = conn.readAll().data().decode("ascii", errors="ignore")
+            conn.write(str(self._pid).encode("ascii", errors="ignore"))
+            conn.waitForBytesWritten(msecs=_TIMEOUT_MS)
             conn.close()
             conn.deleteLater()
+
+            logging.debug(
+                "Received notification that another instance attempted to start"
+                " (PID %s).",
+                pid if pid.isdigit() else "?unknown?",
+            )
+
             self.newInstanceStarted.emit()
 
     def _makeSocketName(self) -> str:

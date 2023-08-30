@@ -106,24 +106,16 @@ def bootstrap(args: list[str]) -> int:
     settings = SpyritSettings()
     state = SpyritState()
 
-    with (
-        Singletonizer(default_paths.getPidFilePath()) as singletonizer,
-        settings.autosave(
-            default_paths.getConfigFilePath(),
-            save_delay=constants.SETTINGS_SAVE_DELAY_MS // 1000,
-        ) as settings_saver,
-        state.autosave(
-            default_paths.getStateFilePath(),
-            save_delay=constants.STATE_SAVE_DELAY_MS // 1000,
-        ) as state_saver,
-    ):
+    with Singletonizer(default_paths.getPidFilePath()) as singletonizer:
         # Ensure there is no other instance of the program running.
 
         if not singletonizer.isMainInstance():
+            remote_pid = singletonizer.notifyNewInstanceStarted()
             logging.info(
-                "Another instance of the program is already running. Quitting."
+                "Another instance of the program is already running with"
+                " PID %s. Quitting.",
+                remote_pid,
             )
-            singletonizer.notifyNewInstanceStarted()
             return 0
 
         # Load resources, else bail.
@@ -136,33 +128,44 @@ def bootstrap(args: list[str]) -> int:
             logging.error("Default game font not found in resources.")
             return -1
 
-        # Hook the SIGHUP signal to a helper forcing a save of current settings.
-        # Don't assume the signal exists in the enum as it's not true on all
-        # OSes.
+        with (
+            settings.autosave(
+                default_paths.getConfigFilePath(),
+                save_delay=constants.SETTINGS_SAVE_DELAY_MS // 1000,
+            ) as settings_saver,
+            state.autosave(
+                default_paths.getStateFilePath(),
+                save_delay=constants.STATE_SAVE_DELAY_MS // 1000,
+            ) as state_saver,
+        ):
+            # Hook the SIGHUP signal to a helper forcing a save of current
+            # settings. Don't assume the signal exists in the enum as it's not
+            # true on all OSes.
 
-        if (sighup := getattr(Signals, "SIGHUP", None)) is not None:
-            save_settings_on_signal(sighup, settings_saver, state_saver)
+            if (sighup := getattr(Signals, "SIGHUP", None)) is not None:
+                save_settings_on_signal(sighup, settings_saver, state_saver)
 
-        # Apply UI style as needed.
+            # Apply UI style as needed.
 
-        StyleManager(app, settings.ui.style)
+            StyleManager(app, settings.ui.style)
 
-        # Build the UI.
+            # Build the UI.
 
-        ui_factory = TabbedUIFactory(
-            tabbed_ui_element_factory=SpyritMainUIFactory(settings, state),
-            tabbed_ui_container_factory=SpyritMainWindowFactory(
-                settings, state
-            ),
-        )
-        ui_factory.createNewUIInNewWindow()
+            ui_factory = TabbedUIFactory(
+                tabbed_ui_element_factory=SpyritMainUIFactory(settings, state),
+                tabbed_ui_container_factory=SpyritMainWindowFactory(
+                    settings, state
+                ),
+            )
+            ui_factory.createNewUIInNewWindow()
 
-        # Open a new window when another instance of the program was launched.
+            # Open a new window when another instance of the program was
+            # launched.
 
-        singletonizer.newInstanceStarted.connect(
-            ui_factory.createNewUIInNewWindow
-        )
+            singletonizer.newInstanceStarted.connect(
+                ui_factory.createNewUIInNewWindow
+            )
 
-        # And start the show.
+            # And start the show.
 
-        return app.exec()
+            return app.exec()

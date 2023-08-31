@@ -8,7 +8,7 @@ authors = [{name = "P. Varet", email = "p.varet@gmail.com"}]
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Environment :: X11 Applications :: Qt",
     "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",

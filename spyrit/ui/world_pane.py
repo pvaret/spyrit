@@ -65,6 +65,10 @@ class WorldPane(Pane):
     _world_name: str
     _connected: bool = False
 
+    # This pane is never garbage collected.
+
+    pane_is_persistent = True
+
     def __init__(
         self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
     ) -> None:

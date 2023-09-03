@@ -73,7 +73,9 @@ class MainUI(TabbedUIElement):
         # Set up the main widget for this UI.
 
         self._container = SlidingPaneContainer()
-        self._container.append(WelcomePane(settings, state, _UIRemote(self)))
+        self._container.addPaneRight(
+            WelcomePane(settings, state, _UIRemote(self))
+        )
         self.setWidget(self._container)
         self.setFocusProxy(self._container)
 
@@ -82,10 +84,10 @@ class MainUI(TabbedUIElement):
         self._close_request_func = lambda: True
 
     def append(self, widget: Pane) -> None:
-        return self._container.append(widget)
+        return self._container.addPaneRight(widget)
 
     def pop(self) -> None:
-        return self._container.pop()
+        return self._container.slideLeft()
 
     def setCloseRequestCallback(self, callback: Callable[[], bool]) -> None:
         self._close_request_func = callback

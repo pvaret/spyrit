@@ -40,6 +40,10 @@ class WelcomePane(Pane):
     software.
     """
 
+    # This pane is never garbage collected.
+
+    pane_is_persistent = True
+
     _settings: SpyritSettings
     _state: SpyritState
     _ui: UIRemoteProtocol

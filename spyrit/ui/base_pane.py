@@ -26,20 +26,48 @@ class Pane(QWidget):
     Base class for widget that go into a SlidingPaneContainer.
     """
 
+    # These signals allow this pane to request that a new pane is added to the
+    # parent container, respectively to the left and to the right of this
+    # container.
+
+    addPaneLeftRequested: Signal = Signal(QWidget)  # noqa: N815
+    addPaneRightRequested: Signal = Signal(QWidget)  # noqa: N815
+
+    # These signals allow this pane to request that the container makes the
+    # pane to the left or, respectively, to the right of this one, the
+    # currently visible pane.
+
+    slideLeftRequested: Signal = Signal()  # noqa: N815
+    slideRightRequested: Signal = Signal()  # noqa: N815
+
     # This signal is sent when the SlidingPaneContainer makes this pane active.
 
     active: Signal = Signal()  # noqa: N815
 
-    # This signal is sent when the SlidingPaneContainer makes this pane
-    # inactive.
+    # Whether the Pane will be garbage-collected when out of view.
 
-    inactive: Signal = Signal()  # noqa: N815
+    pane_is_persistent: bool = False
 
-    def makeActive(self) -> None:
-        self.setEnabled(True)
-        self.setFocus()
-        self.active.emit()
+    def addPaneLeft(self, pane: "Pane") -> None:
+        """
+        Request that the given pane be inserted to the left of this one.
+        """
+        self.addPaneLeftRequested.emit(pane)
 
-    def makeInactive(self) -> None:
-        self.setEnabled(False)
-        self.inactive.emit()
+    def addPaneRight(self, pane: "Pane") -> None:
+        """
+        Request that the given pane be inserted to the right of this one.
+        """
+        self.addPaneRightRequested.emit(pane)
+
+    def slideLeft(self) -> None:
+        """
+        Request that the container slides to the pane to the left of this one.
+        """
+        self.slideLeftRequested.emit()
+
+    def slideRight(self) -> None:
+        """
+        Request that the container slides to the pane to the right of this one.
+        """
+        self.slideRightRequested.emit()

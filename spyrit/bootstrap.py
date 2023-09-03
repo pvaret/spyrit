@@ -25,6 +25,7 @@ from PySide6.QtWidgets import QApplication
 
 from spyrit import constants, platform, resources
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
+from spyrit.gc_stats import GCStats
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.signal_handlers import save_settings_on_signal
@@ -165,6 +166,11 @@ def bootstrap(args: list[str]) -> int:
             singletonizer.newInstanceStarted.connect(
                 ui_factory.createNewUIInNewWindow
             )
+
+            # Set up the GC stats logger.
+
+            if flags.debug:
+                GCStats(app)
 
             # And start the show.
 

@@ -62,3 +62,7 @@ MAX_TCP_PORT = 65535
 # Game data processing
 
 PROCESSOR_BLOCK_SIZE_BYTES = 128
+
+# Internals and debugging
+
+GC_STATS_DUMP_PERIOD = 60  # seconds

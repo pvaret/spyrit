@@ -115,7 +115,7 @@ class WorldCreationPane(BaseDialogPane):
         self._maybeEnableConnectButton()
 
         self.okClicked.connect(self._openWorld)
-        self.cancelClicked.connect(self._ui.pop)
+        self.cancelClicked.connect(self.slideLeft)
         self.active.connect(self._setTitles)
 
     @Slot()
@@ -129,7 +129,7 @@ class WorldCreationPane(BaseDialogPane):
             self._world_settings
         )
         world_pane = WorldPane(self._world_settings, state, self._ui)
-        self._ui.append(world_pane)
+        self.addPaneRight(world_pane)
 
     @Slot()
     def _setTitles(self) -> None:

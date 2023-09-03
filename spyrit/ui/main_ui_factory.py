@@ -38,12 +38,6 @@ class _UIRemote:
     def __init__(self, ui: "MainUI") -> None:
         self._ui = ui
 
-    def append(self, pane: Pane) -> None:
-        self._ui.append(pane)
-
-    def pop(self) -> None:
-        self._ui.pop()
-
     def setWindowTitle(self, title: str) -> None:
         self._ui.setWindowTitle(title)
 

@@ -127,7 +127,7 @@ class WelcomePane(Pane):
     @Slot()
     def _openWorldCreationPane(self) -> None:
         pane = WorldCreationPane(self._settings, self._state, self._ui)
-        self._ui.append(pane)
+        self.addPaneRight(pane)
 
     @Slot()
     def _openWorldPane(self) -> None:
@@ -138,7 +138,7 @@ class WelcomePane(Pane):
         world = button.settings()
         state = self._state.getStateSectionForSettingsSection(world)
 
-        self._ui.append(WorldPane(world, state, self._ui))
+        self.addPaneRight(WorldPane(world, state, self._ui))
 
     @Slot()
     def _setTitles(self) -> None:

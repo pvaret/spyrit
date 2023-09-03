@@ -21,16 +21,8 @@ the remote shouldn't.
 
 from typing import Callable, Protocol
 
-from spyrit.ui.base_pane import Pane
-
 
 class UIRemoteProtocol(Protocol):
-    def append(self, pane: Pane) -> None:
-        ...
-
-    def pop(self) -> None:
-        ...
-
     def setWindowTitle(self, title: str) -> None:
         ...
 

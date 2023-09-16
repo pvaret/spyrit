@@ -37,7 +37,6 @@ from spyrit.ui.form_widgets import (
     ServerLineEdit,
     TextLineEdit,
 )
-from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
 from spyrit.ui.world_pane import WorldPane
 
 
@@ -93,12 +92,9 @@ class WorldCreationForm(QWidget):
 class WorldCreationPane(BaseDialogPane):
     _world_settings: SpyritSettings
     _state: SpyritState
-    _ui: UIRemoteProtocol
     _connect_button: QPushButton
 
-    def __init__(
-        self, settings: SpyritSettings, state: SpyritState, ui: UIRemoteProtocol
-    ) -> None:
+    def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
         super().__init__(
             ok_button := QPushButton("Connect!"),
             cancel_button=QPushButton("Cancel"),
@@ -107,7 +103,6 @@ class WorldCreationPane(BaseDialogPane):
         self._connect_button = ok_button
         self._world_settings = settings.newSection()
         self._state = state
-        self._ui = ui
 
         self.setWidget(form := WorldCreationForm(self._world_settings))
 
@@ -116,7 +111,6 @@ class WorldCreationPane(BaseDialogPane):
 
         self.okClicked.connect(self._openWorld)
         self.cancelClicked.connect(self.slideLeft)
-        self.active.connect(self._setTitles)
 
     @Slot()
     def _openWorld(self) -> None:
@@ -128,13 +122,8 @@ class WorldCreationPane(BaseDialogPane):
         state = self._state.getStateSectionForSettingsSection(
             self._world_settings
         )
-        world_pane = WorldPane(self._world_settings, state, self._ui)
+        world_pane = WorldPane(self._world_settings, state)
         self.addPaneRight(world_pane)
-
-    @Slot()
-    def _setTitles(self) -> None:
-        self._ui.setTabTitle("New world")
-        self._ui.setWindowTitle(constants.APPLICATION_NAME)
 
     @Slot()
     def _maybeEnableConnectButton(self) -> None:

@@ -18,8 +18,7 @@ Class that provides a tabbed main window container.
 
 from typing import cast
 
-from PySide6.QtCore import QEvent, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QShowEvent
+from PySide6.QtCore import QEvent, Qt, Signal, Slot
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QMainWindow,
@@ -28,6 +27,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from spyrit import constants
 from spyrit.ui.tabbed_ui_element import TabbedUIElement
 
 
@@ -37,8 +37,7 @@ class TabbedUIContainer(QMainWindow):
     individual UIs.
 
     It makes no application-centric decisions. It just contains individual
-    application UIs. Those UIs are in charge of requesting window-level changes,
-    such as setting a new title.
+    application UIs. Those UIs are in charge of requesting window-level changes.
     """
 
     # This signal is emitted when this window newly received the focus.
@@ -60,7 +59,6 @@ class TabbedUIContainer(QMainWindow):
     newWindowRequested: Signal = Signal()  # noqa: N815
 
     _tab_widget: QTabWidget
-    _property_refresh_timer: QTimer
 
     def __init__(
         self,
@@ -68,7 +66,7 @@ class TabbedUIContainer(QMainWindow):
     ) -> None:
         super().__init__(parent)
 
-        self.setWindowTitle("")
+        self.setWindowTitle(constants.APPLICATION_NAME)
 
         # Create and set up the QTabWidget that's going to contain the
         # individual UIs.
@@ -78,18 +76,6 @@ class TabbedUIContainer(QMainWindow):
         self._tab_widget.setTabsClosable(True)
         self.setCentralWidget(self._tab_widget)
 
-        # This timer is used to apply tab properties asynchronously, which
-        # avoids some race conditions.
-
-        self._property_refresh_timer = QTimer()
-        self._property_refresh_timer.setSingleShot(True)
-        self._property_refresh_timer.setInterval(0)
-
-        self._property_refresh_timer.timeout.connect(
-            self._applyCurrentTabProperties
-        )
-
-        self._tab_widget.currentChanged.connect(self._onCurrentTabChanged)
         self._tab_widget.tabCloseRequested.connect(self._onTabCloseRequested)
 
         # Set up the button that requests creation of new tabs. The default
@@ -116,13 +102,10 @@ class TabbedUIContainer(QMainWindow):
         """
 
         widget.setParent(self._tab_widget)
-        widget.tabTitleChanged.connect(self._onTabTitleChanged)
-        widget.windowTitleChanged.connect(self._onWindowTitleChanged)
         widget.wantToBeUnpinned.connect(self._onUIRequestedClosing)
 
-        self._tab_widget.addTab(widget, widget.tabTitle())
+        self._tab_widget.addTab(widget, "")
         self._tab_widget.setCurrentWidget(widget)
-        self._applyTabProperties(widget)
 
     def unpin(self, widget: TabbedUIElement) -> None:
         """
@@ -203,12 +186,8 @@ class TabbedUIContainer(QMainWindow):
         ):
             self._tab_widget.removeTab(index)
             self._tab_widget.removeTab(index)
-            self._tab_widget.insertTab(
-                index, widget_left, widget_left.tabTitle()
-            )
-            self._tab_widget.insertTab(
-                index, widget_right, widget_right.tabTitle()
-            )
+            self._tab_widget.insertTab(index, widget_left, "")
+            self._tab_widget.insertTab(index, widget_right, "")
             self._tab_widget.setCurrentIndex(index + 1)
 
     @Slot()
@@ -231,12 +210,8 @@ class TabbedUIContainer(QMainWindow):
         ):
             self._tab_widget.removeTab(index - 1)
             self._tab_widget.removeTab(index - 1)
-            self._tab_widget.insertTab(
-                index - 1, widget_left, widget_left.tabTitle()
-            )
-            self._tab_widget.insertTab(
-                index - 1, widget_right, widget_right.tabTitle()
-            )
+            self._tab_widget.insertTab(index - 1, widget_left, "")
+            self._tab_widget.insertTab(index - 1, widget_right, "")
             self._tab_widget.setCurrentIndex(index - 1)
 
     def event(self, event: QEvent) -> bool:
@@ -252,79 +227,6 @@ class TabbedUIContainer(QMainWindow):
             self.closing.emit()
 
         return super().event(event)
-
-    def showEvent(self, event: QShowEvent) -> None:
-        # WORKAROUND: There is a race condition wherein Qt fails to set the
-        # window title before the window is shown. So we explicitly re-apply the
-        # current tab's properties on the next iteration of the main loop after
-        # the window is shown.
-
-        self._property_refresh_timer.start()
-
-        return super().showEvent(event)
-
-    def _applyTabProperties(self, widget: TabbedUIElement) -> None:
-        """
-        Apply the given tab's properties to the containing window.
-        """
-
-        # WORKAROUND: Qt does not update the title if it thinks the new title is
-        # identical to the previous one. Which is a problem when the title was
-        # not in fact set due to the race condition mentioned above. So we
-        # change the title twice to force the update.
-
-        self.setWindowTitle("")
-        self.setWindowTitle(widget.windowTitle())
-
-    @Slot()
-    def _applyCurrentTabProperties(self) -> None:
-        """
-        Look up the current tab's UI element, and apply its properties to the
-        window.
-        """
-
-        widget = self._tab_widget.currentWidget()
-
-        if isinstance(widget, TabbedUIElement):
-            self._applyTabProperties(widget)
-
-    @Slot(str)
-    def _onTabTitleChanged(self, title: str) -> None:
-        """
-        Enact a tab's request to change its title.
-        """
-
-        widget = self.sender()
-
-        if isinstance(widget, TabbedUIElement):
-            index = self._tab_widget.indexOf(widget)
-            if index != -1:
-                self._tab_widget.setTabText(index, title)
-
-    @Slot(str)
-    def _onWindowTitleChanged(self, title: str) -> None:
-        """
-        Enact a tab's request to change the window's title.
-        """
-
-        widget = self.sender()
-
-        if isinstance(widget, TabbedUIElement):
-            if self._tab_widget.currentWidget() is widget:
-                self.setWindowTitle(title)
-
-    @Slot()
-    def _onCurrentTabChanged(self) -> None:
-        """
-        Update the window's properties on the basis of the currently visible
-        tab.
-        """
-
-        widget = self._tab_widget.currentWidget()
-
-        if isinstance(widget, TabbedUIElement):
-            self._applyTabProperties(widget)
-            widget.setFocus()
 
     @Slot(int)
     def _onTabCloseRequested(self, index: int) -> None:

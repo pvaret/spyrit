@@ -26,10 +26,6 @@ class TabbedUIElement(QWidget):
     The base class for widgets meant to be contained in a tabbed main window.
     """
 
-    # This signal is emitted when the UI wants its tab title to be updated.
-
-    tabTitleChanged: Signal = Signal(str)  # noqa: N815
-
     # This signal is emitted when this UI wants to no longer be pinned to its
     # containing window.
 
@@ -39,9 +35,6 @@ class TabbedUIElement(QWidget):
     # containing window and into a new window.
 
     wantToDetachToNewWindow: Signal = Signal()  # noqa: N815
-
-    _tab_title: str
-    _window_title: str
 
     def __init__(
         self,
@@ -55,11 +48,6 @@ class TabbedUIElement(QWidget):
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        # Keep track of the UI's properties we'll want to propagate.
-
-        self._tab_title = ""
-        self._window_title = ""
-
     def setWidget(self, widget: QWidget) -> None:
         """
         Sets the UI's main widget.
@@ -71,41 +59,6 @@ class TabbedUIElement(QWidget):
             return
 
         self.layout().addWidget(widget)
-
-    def tabTitle(self) -> str:
-        """
-        Return the currently desired tab title for this UI element.
-        """
-
-        return self._tab_title
-
-    def setTabTitle(self, title: str) -> None:
-        """
-        Set and propagate the currently desired tab title for this UI element.
-        """
-
-        self._tab_title = title
-        self.tabTitleChanged.emit(title)
-
-    def windowTitle(self) -> str:
-        """
-        Return the currently desired window title for this UI element.
-        """
-
-        return self._window_title
-
-    def setWindowTitle(self, arg__1: str) -> None:
-        """
-        Set and propagate the currently desired window title for this UI
-        element.
-
-        Note that this is an override of the QWidget method.
-        """
-
-        self._window_title = arg__1
-        self.windowTitleChanged.emit(arg__1)
-
-        super().setWindowTitle(arg__1)
 
     def canCloseNow(self) -> bool:
         """

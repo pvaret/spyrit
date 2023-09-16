@@ -3,8 +3,6 @@
 import pathlib
 import sys
 
-from unittest.mock import Mock
-
 from PySide6.QtWidgets import QApplication
 
 
@@ -17,7 +15,6 @@ if __name__ == "__main__":
     from spyrit import resources
     from spyrit.settings.spyrit_settings import SpyritSettings
     from spyrit.settings.spyrit_state import SpyritState
-    from spyrit.ui.main_ui_remote_protocol import UIRemoteProtocol
     from spyrit.ui.welcome_pane import WelcomePane
 
     settings = SpyritSettings()
@@ -32,8 +29,7 @@ if __name__ == "__main__":
 
     resources.load()
     app = QApplication(sys.argv)
-    ui = Mock(spec=UIRemoteProtocol)
-    pane = WelcomePane(settings, state, ui)
+    pane = WelcomePane(settings, state)
     pane.show()
 
     app.exec()

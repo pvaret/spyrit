@@ -76,6 +76,10 @@ class TabWidget(QTabWidget):
             CornerWidgetWrapper(self._corner_button), Qt.Corner.TopLeftCorner
         )
 
+        # Set the focus explicitly when the current tab changes.
+
+        self.currentChanged.connect(self._setTabWidgetFocus)
+
     def appendTab(self, widget: QWidget, title: str) -> int:
         index = super().addTab(widget, title)
         self.setCurrentIndex(index)
@@ -134,6 +138,12 @@ class TabWidget(QTabWidget):
         self.insertTab(index_to, widget_from, title_from)
 
         self.setCurrentIndex(index_to)
+
+    @Slot(int)
+    def _setTabWidgetFocus(self, index: int) -> None:
+        widget = self.widget(index)
+        if widget is not None:  # type: ignore
+            widget.setFocus()
 
     def cornerButton(self) -> QAbstractButton:
         return self._corner_button

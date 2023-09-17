@@ -18,7 +18,7 @@ A class that implements the main window of the application.
 import logging
 from typing import Callable
 
-from PySide6.QtCore import QObject, Qt, Signal, Slot
+from PySide6.QtCore import QEvent, QObject, Qt, Signal, Slot
 from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import (
     QAbstractButton,
@@ -241,9 +241,11 @@ class SpyritMainWindow(QMainWindow):
         if self._tab_widget.count() == 0:
             self.close()
 
-    def close(self) -> bool:
-        self.closing.emit(self)
-        return super().close()
+    def event(self, event: QEvent) -> bool:
+        if event.type() == QEvent.Type.Close:
+            self.closing.emit(self)
+
+        return super().event(event)
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         # Store the new window size on resize.

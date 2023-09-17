@@ -399,3 +399,8 @@ class SlidingPaneContainer(QScrollArea):
 
     def __len__(self) -> int:
         return len(self._panes)
+
+    def __del__(self) -> None:
+        logging.debug(
+            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
+        )

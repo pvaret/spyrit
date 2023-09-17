@@ -33,7 +33,7 @@ from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
-from spyrit.ui.main_ui_factory import MainUI
+from spyrit.ui.main_ui_factory import SpyritMainUIFactory
 
 
 class CornerWidgetWrapper(QWidget):
@@ -149,18 +149,21 @@ class SpyritMainWindow(QMainWindow):
     _state: SpyritState
     _tab_widget: TabWidget
     _window_factory: Callable[[], None]
+    _ui_factory: Callable[[], QWidget]
 
     def __init__(
         self,
         settings: SpyritSettings,
         state: SpyritState,
-        factory: Callable[[], None],
+        window_factory: Callable[[], None],
+        ui_factory: Callable[[], QWidget],
     ) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
-        self._window_factory = factory
+        self._window_factory = window_factory
+        self._ui_factory = ui_factory
 
         # Set up the main widget.
 
@@ -226,11 +229,8 @@ class SpyritMainWindow(QMainWindow):
         self.newTab()
 
     def newTab(self) -> None:
-        # TODO: Use a factory for the main UI.
         title = f"Welcome to {constants.APPLICATION_NAME}!"
-        self._tab_widget.appendTab(
-            widget := MainUI(self._settings, self._state, self), title
-        )
+        self._tab_widget.appendTab(widget := self._ui_factory(), title)
         widget.destroyed.connect(self._closeIfEmpty)
 
     def newWindow(self) -> None:
@@ -268,11 +268,15 @@ class SpyritMainWindowFactory:
     _settings: SpyritSettings
     _state: SpyritState
     _windows: set[QObject]
+    _ui_factory: Callable[[], QWidget]
 
     def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
         self._settings = settings
         self._state = state
         self._windows = set()
+
+        factory = SpyritMainUIFactory(self._settings, self._state)
+        self._ui_factory = factory.newUI
 
     def newWindow(self) -> None:
         # Keep a reference to the new window so it's not immediately garbage
@@ -280,7 +284,7 @@ class SpyritMainWindowFactory:
 
         self._windows.add(
             window := SpyritMainWindow(
-                self._settings, self._state, self.newWindow
+                self._settings, self._state, self.newWindow, self._ui_factory
             )
         )
 

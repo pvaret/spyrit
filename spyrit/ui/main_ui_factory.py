@@ -15,50 +15,10 @@
 Provide the main UI of Spyrit, to be embedded in a tabbed container.
 """
 
-import logging
-
-from PySide6.QtWidgets import QWidget
-
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.base_pane import Pane
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.welcome_pane import WelcomePane
-from spyrit.ui.tabbed_ui_element import TabbedUIElement
-
-
-class MainUI(TabbedUIElement):
-    """
-    Class that puts together the application's UI elements.
-    """
-
-    _container: SlidingPaneContainer
-
-    def __init__(
-        self,
-        settings: SpyritSettings,
-        state: SpyritState,
-        parent: QWidget | None = None,
-    ) -> None:
-        super().__init__(parent=parent)
-
-        # Set up the main widget for this UI.
-
-        self._container = SlidingPaneContainer()
-        self._container.addPaneRight(WelcomePane(settings, state))
-        self.setWidget(self._container)
-        self.setFocusProxy(self._container)
-
-    def append(self, widget: Pane) -> None:
-        return self._container.addPaneRight(widget)
-
-    def pop(self) -> None:
-        return self._container.slideLeft()
-
-    def __del__(self) -> None:
-        logging.debug(
-            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
-        )
 
 
 class SpyritMainUIFactory:
@@ -69,5 +29,7 @@ class SpyritMainUIFactory:
         self._settings = settings
         self._state = state
 
-    def __call__(self) -> MainUI:
-        return MainUI(self._settings, self._state)
+    def newUI(self) -> SlidingPaneContainer:
+        ui = SlidingPaneContainer()
+        ui.addPaneRight(WelcomePane(self._settings, self._state))
+        return ui

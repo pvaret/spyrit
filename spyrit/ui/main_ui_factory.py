@@ -15,6 +15,7 @@
 Provide the main UI of Spyrit, to be embedded in a tabbed container.
 """
 
+import logging
 
 from PySide6.QtWidgets import QWidget
 
@@ -53,6 +54,11 @@ class MainUI(TabbedUIElement):
 
     def pop(self) -> None:
         return self._container.slideLeft()
+
+    def __del__(self) -> None:
+        logging.debug(
+            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
+        )
 
 
 class SpyritMainUIFactory:

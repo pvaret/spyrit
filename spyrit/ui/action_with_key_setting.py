@@ -44,8 +44,8 @@ class ActionWithKeySetting(QAction):
         key.onValueChangeCall(self.updateShortcut)
         self.updateShortcut(key.get())
 
-        self.triggered.connect(slot)
         self.triggered.connect(self._debug)
+        self.triggered.connect(slot)
 
     def updateShortcut(self, key: Shortcut) -> None:
         self._key = key

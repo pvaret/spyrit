@@ -21,7 +21,6 @@ from typing import Callable
 from PySide6.QtCore import QEvent, QObject, Qt, Signal, Slot
 from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import (
-    QAbstractButton,
     QHBoxLayout,
     QMainWindow,
     QTabWidget,
@@ -54,8 +53,6 @@ class TabWidget(QTabWidget):
     A QTabWidget with extra helper methods.
     """
 
-    _corner_button: QToolButton
-
     def __init__(self, parent: QWidget) -> None:
         super().__init__(parent)
 
@@ -67,14 +64,6 @@ class TabWidget(QTabWidget):
 
         self.setTabsClosable(True)
         self.tabCloseRequested.connect(self.closeTab)
-
-        # Add a corner widget.
-
-        self._corner_button = QToolButton()
-        self._corner_button.setText("+")
-        self.setCornerWidget(
-            CornerWidgetWrapper(self._corner_button), Qt.Corner.TopLeftCorner
-        )
 
         # Set the focus explicitly when the current tab changes.
 
@@ -144,9 +133,6 @@ class TabWidget(QTabWidget):
         widget = self.widget(index)
         if widget is not None:  # type: ignore
             widget.setFocus()
-
-    def cornerButton(self) -> QAbstractButton:
-        return self._corner_button
 
 
 class SpyritMainWindow(QMainWindow):
@@ -232,7 +218,12 @@ class SpyritMainWindow(QMainWindow):
 
         # Bind the "new tab" action above to the tab widget's corner button.
 
-        self._tab_widget.cornerButton().clicked.connect(new_tab_action.trigger)
+        corner_button = QToolButton()
+        self._tab_widget.setCornerWidget(
+            CornerWidgetWrapper(corner_button), Qt.Corner.TopLeftCorner
+        )
+        corner_button.setDefaultAction(new_tab_action)
+        corner_button.setText("+")
 
         # And finally, create one starting game UI.
 

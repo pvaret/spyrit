@@ -40,10 +40,6 @@ class Pane(QWidget):
     slideLeftRequested: Signal = Signal()  # noqa: N815
     slideRightRequested: Signal = Signal()  # noqa: N815
 
-    # This signal is sent when the SlidingPaneContainer makes this pane active.
-
-    active: Signal = Signal()  # noqa: N815
-
     # Whether the Pane will be garbage-collected when out of view.
 
     pane_is_persistent: bool = False
@@ -71,3 +67,10 @@ class Pane(QWidget):
         Request that the container slides to the pane to the right of this one.
         """
         self.slideRightRequested.emit()
+
+    def onActive(self) -> None:
+        """
+        This method is called by the pane container when this pane becomes
+        active. Override in subclasses that need to take action when that
+        happens.
+        """

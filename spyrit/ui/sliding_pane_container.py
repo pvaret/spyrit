@@ -231,7 +231,7 @@ class SlidingPaneContainer(QScrollArea):
         pane.setFocus()
         self.setFocusProxy(pane)
 
-        pane.active.emit()
+        pane.onActive()
 
     def _makePaneInactive(self, pane: Pane) -> None:
         """

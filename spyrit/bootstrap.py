@@ -26,11 +26,11 @@ from PySide6.QtWidgets import QApplication
 from spyrit import constants, platform, resources
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.gc_stats import GCStats
+from spyrit.session.session import Session
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
-from spyrit.ui.main_window import SpyritMainWindowFactory
 from spyrit.ui.styles import StyleManager
 
 
@@ -150,13 +150,13 @@ def bootstrap(args: list[str]) -> int:
 
             # Build the UI.
 
-            window_factory = SpyritMainWindowFactory(settings, state)
-            window_factory.newWindow()
+            session = Session(settings, state)
+            session.newWindow()
 
             # Open a new window when another instance of the program was
             # launched.
 
-            singletonizer.newInstanceStarted.connect(window_factory.newWindow)
+            singletonizer.newInstanceStarted.connect(session.newWindow)
 
             # Set up the GC stats logger.
 

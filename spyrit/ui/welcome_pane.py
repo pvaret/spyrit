@@ -20,6 +20,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
 from spyrit import constants
+from spyrit.session.session import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import HBar, VBar
@@ -45,12 +46,19 @@ class WelcomePane(Pane):
 
     _settings: SpyritSettings
     _state: SpyritState
+    _instance: SessionInstance
 
-    def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
+    def __init__(
+        self,
+        settings: SpyritSettings,
+        state: SpyritState,
+        instance: SessionInstance,
+    ) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
+        self._instance = instance
 
         # Create the main layout.
 
@@ -115,9 +123,14 @@ class WelcomePane(Pane):
         pane_layout.addWidget(VBar())
         pane_layout.addStretch()
 
+    def onActive(self) -> None:
+        # Set the title of the instance when this pane becomes visible.
+
+        self._instance.setTitle(f"Welcome to {constants.APPLICATION_NAME}!")
+
     @Slot()
     def _openWorldCreationPane(self) -> None:
-        pane = WorldCreationPane(self._settings, self._state)
+        pane = WorldCreationPane(self._settings, self._state, self._instance)
         self.addPaneRight(pane)
 
     @Slot()
@@ -129,4 +142,4 @@ class WelcomePane(Pane):
         world = button.settings()
         state = self._state.getStateSectionForSettingsSection(world)
 
-        self.addPaneRight(WorldPane(world, state))
+        self.addPaneRight(WorldPane(world, state, self._instance))

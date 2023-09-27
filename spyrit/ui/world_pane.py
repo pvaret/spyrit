@@ -30,6 +30,7 @@ from spyrit.network.processors import (
     UserPatternProcessor,
     bind_processor_to_connection,
 )
+from spyrit.session.session import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
@@ -59,16 +60,23 @@ class Splitter(QSplitter):
 class WorldPane(Pane):
     _settings: SpyritSettings
     _state: SpyritState
+    _instance: SessionInstance
 
     # This pane is never garbage collected.
 
     pane_is_persistent = True
 
-    def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
+    def __init__(
+        self,
+        settings: SpyritSettings,
+        state: SpyritState,
+        instance: SessionInstance,
+    ) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
+        self._instance = instance
 
         # Set up the splitter widget that hosts the game UI.
 
@@ -109,6 +117,11 @@ class WorldPane(Pane):
 
         connection.start()
 
+    def onActive(self) -> None:
+        # Update the instance title with this world's name.
+
+        self._instance.setTitle(self._settings.name.get())
+
     def _addGameWidgets(
         self, splitter: QSplitter
     ) -> tuple[OutputView, InputBox, InputBox]:
@@ -129,13 +142,13 @@ class WorldPane(Pane):
 
         shortcuts = self._settings.shortcuts
         for text, shortcut, slot in (
-            ("Page Up", shortcuts.page_up, scroller.scrollOnePageUp),
-            ("Page Down", shortcuts.page_down, scroller.scrollOnePageDown),
-            ("Scroll Up", shortcuts.line_up, scroller.scrollOneLineUp),
-            ("Scroll Down", shortcuts.line_down, scroller.scrollOneLineDown),
-            ("Scroll to Top", shortcuts.scroll_to_top, scroller.scrollToTop),
+            ("Page up", shortcuts.page_up, scroller.scrollOnePageUp),
+            ("Page down", shortcuts.page_down, scroller.scrollOnePageDown),
+            ("Scroll up", shortcuts.line_up, scroller.scrollOneLineUp),
+            ("Scroll down", shortcuts.line_down, scroller.scrollOneLineDown),
+            ("Scroll to top", shortcuts.scroll_to_top, scroller.scrollToTop),
             (
-                "Scroll to Bottom",
+                "Scroll to bottom",
                 shortcuts.scroll_to_bottom,
                 scroller.scrollToBottom,
             ),
@@ -168,7 +181,7 @@ class WorldPane(Pane):
         self.addAction(
             second_input_toggle := ActionWithKeySetting(
                 self,
-                "Toggle Second Input",
+                "Toggle second input",
                 self._settings.shortcuts.toggle_second_input,
                 input_visible_key.toggle,
             )
@@ -193,7 +206,7 @@ class WorldPane(Pane):
         inputbox.addAction(
             ActionWithKeySetting(
                 inputbox,
-                "History Next",
+                "History next",
                 self._settings.shortcuts.history_next,
                 historian.historyNext,
             )
@@ -201,7 +214,7 @@ class WorldPane(Pane):
         inputbox.addAction(
             ActionWithKeySetting(
                 inputbox,
-                "History Previous",
+                "History previous",
                 self._settings.shortcuts.history_previous,
                 historian.historyPrevious,
             )

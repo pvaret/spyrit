@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from spyrit import constants
+from spyrit.session.session import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import VBar
@@ -46,6 +47,8 @@ _FORM_WIDTH = _UNIT * 20
 
 
 class WorldCreationForm(QWidget):
+    # This signal fires when any field in the form is updated.
+
     updated: Signal = Signal()  # noqa: N815
 
     def __init__(self, settings: SpyritSettings) -> None:
@@ -92,9 +95,15 @@ class WorldCreationForm(QWidget):
 class WorldCreationPane(BaseDialogPane):
     _world_settings: SpyritSettings
     _state: SpyritState
+    _instance: SessionInstance
     _connect_button: QPushButton
 
-    def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
+    def __init__(
+        self,
+        settings: SpyritSettings,
+        state: SpyritState,
+        instance: SessionInstance,
+    ) -> None:
         super().__init__(
             ok_button := QPushButton("Connect!"),
             cancel_button=QPushButton("Cancel"),
@@ -102,6 +111,7 @@ class WorldCreationPane(BaseDialogPane):
 
         self._connect_button = ok_button
         self._world_settings = settings.newSection()
+        self._instance = instance
         self._state = state
 
         self.setWidget(form := WorldCreationForm(self._world_settings))
@@ -122,7 +132,7 @@ class WorldCreationPane(BaseDialogPane):
         state = self._state.getStateSectionForSettingsSection(
             self._world_settings
         )
-        world_pane = WorldPane(self._world_settings, state)
+        world_pane = WorldPane(self._world_settings, state, self._instance)
         self.addPaneRight(world_pane)
 
     @Slot()
@@ -140,3 +150,6 @@ class WorldCreationPane(BaseDialogPane):
             and self._world_settings.net.server.isSet()
             and self._world_settings.net.server.get() != ""
         )
+
+    def onActive(self) -> None:
+        self._instance.setTitle("New world...")

@@ -16,7 +16,7 @@ A class that implements the main window of the application.
 """
 
 import logging
-from typing import Callable
+import weakref
 
 from PySide6.QtCore import QEvent, QObject, Qt, Signal, Slot
 from PySide6.QtGui import QResizeEvent
@@ -32,7 +32,6 @@ from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
-from spyrit.ui.main_ui_factory import SpyritMainUIFactory
 
 
 class CornerWidgetWrapper(QWidget):
@@ -135,31 +134,84 @@ class TabWidget(QTabWidget):
             widget.setFocus()
 
 
+class TabProxy(QObject):
+    """
+    This class provides an interface to directly set properties on a tab
+    associated with a widget. It keeps a reference to the tab, but not the
+    widget itself.
+    """
+
+    # This signal is emitted when the proxied tab becomes active or,
+    # respectively, inactive.
+
+    active: Signal = Signal(bool)
+
+    _tab_widget: QTabWidget
+    _widget: weakref.ref[QWidget]
+    _active: bool = False
+
+    def __init__(self, tab_widget: QTabWidget, widget: QWidget) -> None:
+        # Using the widget itself as the parent here guarantees that this
+        # TabProxy will be dereferenced when the widget is destroyed, provided
+        # nothing else keep a reference to this TabProxy. (Which they
+        # shouldn't.)
+
+        super().__init__(parent=widget)
+
+        self._tab_widget = tab_widget
+        self._widget = weakref.ref(widget)
+
+        self._setActiveIndex(tab_widget.currentIndex())
+        tab_widget.currentChanged.connect(self._setActiveIndex)
+
+    def _index(self) -> int:
+        widget = self._widget()
+        if widget is None:
+            return -1
+        return self._tab_widget.indexOf(widget)
+
+    @Slot(str)
+    def setTitle(self, title: str) -> None:
+        if (index := self._index()) >= 0:
+            self._tab_widget.setTabText(index, title)
+
+    @Slot(int)
+    def _setActiveIndex(self, active_index: int) -> None:
+        active = active_index == self._index()
+        if active != self._active:
+            self._active = active
+            self.active.emit(active)
+
+
 class SpyritMainWindow(QMainWindow):
     # We fire this signal when the window is being asked to close, since there
     # is no native Qt signal for that.
 
     closing: Signal = Signal(QObject)
 
+    # We fire this signal when the user triggered an action requesting that a
+    # new window is opened.
+
+    newWindowRequested: Signal = Signal()  # noqa: N815
+
+    # We fire this signal when the user triggered an action requesting that a
+    # new tab is opened in this window.
+
+    newTabRequested: Signal = Signal()  # noqa: N815
+
     _settings: SpyritSettings
     _state: SpyritState
     _tab_widget: TabWidget
-    _window_factory: Callable[[], None]
-    _ui_factory: Callable[[], QWidget]
 
     def __init__(
         self,
         settings: SpyritSettings,
         state: SpyritState,
-        window_factory: Callable[[], None],
-        ui_factory: Callable[[], QWidget],
     ) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
-        self._window_factory = window_factory
-        self._ui_factory = ui_factory
 
         # Set up the main widget.
 
@@ -178,10 +230,13 @@ class SpyritMainWindow(QMainWindow):
         shortcuts = settings.shortcuts
         for action in (
             ActionWithKeySetting(
-                self, "New window", shortcuts.new_window, self.newWindow
+                self,
+                "New window",
+                shortcuts.new_window,
+                self.newWindowRequested.emit,
             ),
             new_tab_action := ActionWithKeySetting(
-                self, "New tab", shortcuts.new_tab, self.newTab
+                self, "New tab", shortcuts.new_tab, self.newTabRequested.emit
             ),
             ActionWithKeySetting(
                 self,
@@ -225,17 +280,16 @@ class SpyritMainWindow(QMainWindow):
         corner_button.setDefaultAction(new_tab_action)
         corner_button.setText("+")
 
-        # And finally, create one starting game UI.
+    def appendTab(self, widget: QWidget, title: str) -> TabProxy:
+        """
+        Adds the given widget as a new tab with the given title. Returns a
+        TabProxy bound to the widget and its tab.
+        """
 
-        self.newTab()
-
-    def newTab(self) -> None:
-        title = f"Welcome to {constants.APPLICATION_NAME}!"
-        self._tab_widget.appendTab(widget := self._ui_factory(), title)
         widget.destroyed.connect(self._closeIfEmpty)
+        self._tab_widget.appendTab(widget, title)
 
-    def newWindow(self) -> None:
-        self._window_factory()
+        return TabProxy(self._tab_widget, widget)
 
     @Slot()
     def _closeIfEmpty(self) -> None:
@@ -243,12 +297,21 @@ class SpyritMainWindow(QMainWindow):
             self.close()
 
     def event(self, event: QEvent) -> bool:
+        """
+        Override the default event handle to raise an explicit closing signal
+        when the window is being closed.
+        """
+
         if event.type() == QEvent.Type.Close:
             self.closing.emit(self)
 
         return super().event(event)
 
     def resizeEvent(self, event: QResizeEvent) -> None:
+        """
+        Override the default resize event to store the new size in the state.
+        """
+
         # Store the new window size on resize.
 
         self._state.ui.window_size.set(event.size())
@@ -259,46 +322,3 @@ class SpyritMainWindow(QMainWindow):
         logging.debug(
             "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
         )
-
-
-class SpyritMainWindowFactory:
-    """
-    Creates, shows and maintains a reference to the application's main windows.
-    """
-
-    _settings: SpyritSettings
-    _state: SpyritState
-    _windows: set[QObject]
-    _ui_factory: Callable[[], QWidget]
-
-    def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
-        self._settings = settings
-        self._state = state
-        self._windows = set()
-
-        factory = SpyritMainUIFactory(self._settings, self._state)
-        self._ui_factory = factory.newUI
-
-    def newWindow(self) -> None:
-        # Keep a reference to the new window so it's not immediately garbage
-        # collected.
-
-        self._windows.add(
-            window := SpyritMainWindow(
-                self._settings, self._state, self.newWindow, self._ui_factory
-            )
-        )
-
-        # But do remove its reference when its getting closed so the
-        # object does not leak.
-
-        window.closing.connect(self._forget_window)
-
-        window.show()
-
-    @Slot(QObject)
-    def _forget_window(self, obj: QObject) -> None:
-        try:
-            self._windows.remove(obj)
-        except ValueError:
-            pass

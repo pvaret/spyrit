@@ -20,6 +20,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import QSplitter, QHBoxLayout
 
 from spyrit.network.connection import Connection
+from spyrit.network.keepalive import Keepalive
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
@@ -93,6 +94,10 @@ class WorldPane(Pane):
         # Set up the network connection.
 
         connection = Connection(settings.net, parent=self)
+
+        # Set up keepalives for the connection.
+
+        Keepalive(connection, settings.net.keepalive)
 
         # Set up the inputs' behavior and plug them into the connection.
 

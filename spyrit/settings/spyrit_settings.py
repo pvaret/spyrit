@@ -35,6 +35,10 @@ class Encoding(enum.StrEnum):
     CP437 = "CP437"
 
 
+class KeepaliveMessage(enum.Enum):
+    CARRIAGE_RETURN = b"\n"
+
+
 class ANSIBoldEffect(enum.Flag):
     BRIGHT = enum.auto()
     BOLD = enum.auto()
@@ -136,6 +140,17 @@ class SpyritSettings(Settings):
         Records the necessary information to connect to a game.
         """
 
+        class Keepalive(Bunch):
+            """
+            Records parameters for the network keep-alive function.
+            """
+
+            enabled: Key[bool] = Key(default=False)
+            period_secs: Key[int] = Key(default=5 * 60)
+            message: Key[KeepaliveMessage] = Key(
+                default=KeepaliveMessage.CARRIAGE_RETURN
+            )
+
         # Server address and port for the game. Server can be an IPv4, IPv6 or a
         # resolvable DNS address.
         server: Key[str] = Key(default="")
@@ -144,6 +159,8 @@ class SpyritSettings(Settings):
         # Stores a game's expected text encoding. It most cases it will be
         # ASCII, but some games get fancy with extended characters.
         encoding: Key[Encoding] = Key(default=Encoding.ASCII)
+
+        keepalive: Keepalive = Keepalive()
 
     class UI(Bunch):
         """

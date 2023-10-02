@@ -42,6 +42,10 @@ class InputBox(QTextEdit):
 
         self.setTabChangesFocus(True)
 
+        # Use plain text only.
+
+        self.setAcceptRichText(False)
+
     def keyPressEvent(self, e: QKeyEvent) -> None:
         # Handle the Enter/Return special case.
 

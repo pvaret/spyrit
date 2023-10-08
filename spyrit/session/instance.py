@@ -20,6 +20,9 @@ import logging
 
 from PySide6.QtCore import QObject, Signal, Slot
 
+from spyrit.network.connection import Status
+from spyrit.network.fragments import Fragment, FragmentList, NetworkFragment
+
 
 class SessionInstance(QObject):
     """
@@ -33,6 +36,7 @@ class SessionInstance(QObject):
 
     _title: str = ""
     _active: bool = False
+    _connected: bool = False
 
     def title(self) -> str:
         return self._title
@@ -45,6 +49,15 @@ class SessionInstance(QObject):
     @Slot(bool)
     def setActive(self, active: bool) -> None:
         self._active = active
+
+    @Slot(FragmentList)
+    def updateStateFromFragments(self, fragments: list[Fragment]) -> None:
+        for fragment in fragments:
+            match fragment:
+                case NetworkFragment(event):
+                    self._connected = event == Status.CONNECTED
+                case _:
+                    pass
 
     def __del__(self) -> None:
         logging.debug(

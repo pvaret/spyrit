@@ -118,6 +118,10 @@ class WorldPane(Pane):
 
         processor.fragmentsReady.connect(scribe.inscribe)
 
+        # Update the instance's state from the processed fragment stream.
+
+        processor.fragmentsReady.connect(instance.updateStateFromFragments)
+
         # And start the connection.
 
         connection.start()

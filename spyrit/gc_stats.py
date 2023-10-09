@@ -28,6 +28,17 @@ from spyrit import constants
 
 
 class GCStats(QObject):
+    """
+    Periodically collects and logs memory usage statistics at the debug
+    loglevel.
+
+    Args:
+        parent: What object to parent this one to. Used for lifetime
+            management. Typically this will be the QApplication instance.
+
+        periodicity: How frequently, in seconds, to compute and log the stats.
+    """
+
     _dump_timer: QTimer
 
     def __init__(
@@ -42,6 +53,10 @@ class GCStats(QObject):
 
     @Slot()
     def logGCStats(self) -> None:
+        """
+        Computes memory stats and logs them to the debug loglevel.
+        """
+
         def _reducer(
             current_tally: tuple[int, int],
             obj: object,
@@ -53,11 +68,9 @@ class GCStats(QObject):
 
         count_string = f"{count:,}"
         mem_string = f"{mem:,}"
-        uncollectable = len(gc.garbage)
 
         logging.debug(
-            "GC stats: %s objects (%d uncollectable), %s bytes.",
+            "GC stats: %s objects, %s bytes.",
             count_string,
-            uncollectable,
             mem_string,
         )

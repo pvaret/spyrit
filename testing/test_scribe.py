@@ -385,10 +385,10 @@ class TestScribe:
         cursor = MockCursor()
         scribe = Scribe(cursor, settings)
 
-        scribe.inscribe([NetworkFragment(Status.CONNECTING, "")])
+        scribe.inscribe([NetworkFragment(Status.CONNECTING)])
         assert cursor.get() == "[fg: 100,100,100]• Connecting..."
 
-        scribe.inscribe([NetworkFragment(Status.CONNECTED, "")])
+        scribe.inscribe([NetworkFragment(Status.CONNECTED)])
         assert cursor.get() == "\n[fg: 100,100,100]• Connected!"
 
         cursor = MockCursor()
@@ -412,7 +412,7 @@ class TestScribe:
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([TextFragment("Test.")])  # No LF.
-        scribe.inscribe([NetworkFragment(Status.DISCONNECTED, "")])
+        scribe.inscribe([NetworkFragment(Status.DISCONNECTED)])
         assert cursor.get() == (
             "[fg: 55,55,55]Test.\n[italic ; fg: 55,55,55]• Disconnected."
         )

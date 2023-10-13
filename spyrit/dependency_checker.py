@@ -38,6 +38,11 @@ CHECK_DEPENDENCIES_ARG = "--check-dependencies-only"
 
 
 class DependencyChecker:
+    """
+    A helper that can check if the application's required dependencies are
+    installed.
+    """
+
     REQUIRED_PYTHON_VERSION = constants.REQUIRED_PYTHON_VERSION
     REQUIRED_QT_VERSION = constants.REQUIRED_QT_VERSION
 
@@ -48,6 +53,13 @@ class DependencyChecker:
         self.qt_check_msg: str = ""
 
     def dependenciesMet(self) -> bool:
+        """
+        Checks whether all the needed dependencies are installed.
+
+        Returns:
+            Whether such is the case.
+        """
+
         self.checkPythonVersion()
         self.checkPySide6Installed()
         self.checkQtVersion()
@@ -55,6 +67,17 @@ class DependencyChecker:
         return self.dependencies_met
 
     def messages(self) -> Iterator[str]:
+        """
+        Collects and returns the dependency check messages (be it successes or
+        errors).
+
+        Will not return anything useful if the checker functions have not been
+        called yet.
+
+        Returns:
+            An iterator on the dependency check messages.
+        """
+
         return (
             msg
             for msg in (
@@ -66,6 +89,11 @@ class DependencyChecker:
         )
 
     def checkPythonVersion(self) -> None:
+        """
+        Checks whether the required version of Python is installed, and records
+        the result and a user-friendly explanation message.
+        """
+
         v = sys.version_info[0:2]
 
         if v >= self.REQUIRED_PYTHON_VERSION:
@@ -78,6 +106,10 @@ class DependencyChecker:
             self.python_check_msg = f"❌ Python v{py_major}.{py_minor} required!"
 
     def checkPySide6Installed(self) -> None:
+        """
+        Checks whether the required version of PySide6 is installed, and records
+        the result and a user-friendly explanation message.
+        """
         if PySide6 is None:
             self.dependencies_met = False
             self.pyside_check_msg = (
@@ -91,6 +123,14 @@ class DependencyChecker:
 
     @staticmethod
     def qtVersion() -> tuple[bool, tuple[int, int]]:
+        """
+        Computes and return the currently used version of Qt, if any, in a
+        convenient programmatic format.
+
+        Returns:
+            A tuple of whether a suitable version was found, along with that
+            version as a (major, minor) tuple.
+        """
         if QtCore is None:
             return False, (0, 0)
 
@@ -107,6 +147,11 @@ class DependencyChecker:
         return True, version
 
     def checkQtVersion(self) -> None:
+        """
+        Checks whether the required version of Qt is installed, and records the
+        result and a user-friendly explanation message.
+        """
+
         found, version = self.qtVersion()
 
         if found and version >= self.REQUIRED_QT_VERSION:

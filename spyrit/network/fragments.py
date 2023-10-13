@@ -25,6 +25,15 @@ from spyrit.ui.format import FormatUpdate
 
 
 class Fragment(ABC):
+    """
+    Base class for all Fragments.
+
+    A Fragment is a bit of typed, processed data coming from the game. Fragments
+    pass through Processor that potentially further transform them, so they can
+    be ingested by interested parties down the road -- most importantly, the UI
+    that displays text from the game.
+    """
+
     __match_args__: Sequence[str]
 
     def __repr__(self) -> str:
@@ -46,6 +55,13 @@ class FragmentList(list[Fragment]):
 
 
 class ByteFragment(Fragment):
+    """
+    A Fragment that represents raw binary data read from the game's connection.
+
+    Args:
+        data: A piece of raw data from the game.
+    """
+
     __match_args__ = ("data",)
 
     data: bytes
@@ -58,6 +74,13 @@ class ByteFragment(Fragment):
 
 
 class TextFragment(Fragment):
+    """
+    A Fragment that contains decoded text.
+
+    Args:
+        text: A string of text decoded from the game.
+    """
+
     __match_args__ = ("text",)
 
     text: str
@@ -70,6 +93,14 @@ class TextFragment(Fragment):
 
 
 class ANSIFragment(Fragment):
+    """
+    A Fragment that contains ANSI formatting instructions.
+
+    Args:
+        format_update: The description of a formatting instruction parsed from
+            ANSI.
+    """
+
     __match_args__ = ("format_update",)
 
     format_update: FormatUpdate
@@ -85,11 +116,24 @@ class ANSIFragment(Fragment):
 
 
 class FlowControlCode(enum.Enum):
+    """
+    A flow control code, i.e. a non-printable character that still needs to be
+    accounted for when rendering text.
+    """
+
     CR = enum.auto()
     LF = enum.auto()
 
 
 class FlowControlFragment(Fragment):
+    """
+    A Fragment that contains a text flow control code.
+
+    Args:
+        code: A flow control code, i.e. (broadly) a non-printable character that
+           still affects how the text is rendered.
+    """
+
     __match_args__ = ("code",)
 
     code: FlowControlCode
@@ -104,25 +148,54 @@ class FlowControlFragment(Fragment):
 
 
 class NetworkFragment(Fragment):
+    """
+    A Fragment that contains a network status change event.
+
+    Args:
+        event: A network status event.
+
+        text: A text associated with the event. Optional.
+    """
+
     __match_args__ = ("event", "text")
 
     event: Status
     text: str
 
-    def __init__(self, event: Status, text: str) -> None:
+    def __init__(self, event: Status, text: str = "") -> None:
         self.event = event
         self.text = text
 
     def __eq__(self, other: Any) -> bool:
-        return isinstance(other, NetworkFragment) and self.event == other.event
+        if not isinstance(other, NetworkFragment):
+            return False
+
+        return self.event == other.event and self.text == other.text
 
 
 class MatchBoundary(enum.Enum):
+    """
+    A marker that indicates the start or respectively the end of a found match.
+    """
+
     START = enum.auto()
     END = enum.auto()
 
 
 class PatternMatchFragment(Fragment):
+    """
+    A Fragment that marks either the start or the end of the match for a
+    user-provided pattern, and contains the format to apply to the matched text.
+
+    Meant to be used in pairs surrounding the matched text.
+
+    Args:
+        format_: The format to apply to the matched text.
+
+        boundary: An indication of whether this fragment marks the beginning or
+            the end of the matched text.
+    """
+
     __match_args__ = ("format", "boundary")
 
     format: FormatUpdate
@@ -140,6 +213,13 @@ class PatternMatchFragment(Fragment):
 
 
 class DummyFragment(Fragment):
+    """
+    A Fragment that can contain any value and is used for testing.
+
+    Args:
+        value: Anything.
+    """
+
     __match_args__ = ("value",)
 
     value: Any

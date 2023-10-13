@@ -26,6 +26,10 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 class Status(enum.Enum):
+    """
+    The status of a network connection.
+    """
+
     DISCONNECTED = enum.auto()
     RESOLVING = enum.auto()
     CONNECTING = enum.auto()
@@ -36,6 +40,12 @@ class Status(enum.Enum):
 class Connection(QObject):
     """
     Implements the network connection to a game.
+
+    Args:
+        settings: The settings to use to configure this connection.
+
+        parent: The object to use as this connection's parent. Used for lifetime
+            management.
     """
 
     _settings: SpyritSettings.Network
@@ -63,6 +73,10 @@ class Connection(QObject):
         self._socket.errorOccurred.connect(self._reportErrorOccurred)
 
     def start(self) -> None:
+        """
+        Initiates the process of connecting to the configured server.
+        """
+
         if self._is_connected:
             return
 
@@ -72,9 +86,24 @@ class Connection(QObject):
         )
 
     def stop(self) -> None:
+        """
+        Disconnects from the configured server.
+        """
+
         self._socket.disconnectFromHost()
 
     def send(self, data: str | bytes) -> bool:
+        """
+        Sends the given data to the server, if connected.
+
+        Args:
+            data: The piece of data to be sent. If data is a string, it is
+                converted to bytes using the configured encoding.
+
+        Returns:
+            Whether the data was sent entirely.
+        """
+
         if isinstance(data, str):
             data = data.encode(self._settings.encoding.get(), "ignore")
 
@@ -92,6 +121,11 @@ class Connection(QObject):
 
     @Slot()
     def _readFromSocket(self) -> None:
+        """
+        Pulls data from the socket, if any, and processes it. I.e. emits the
+        corresponding signal.
+        """
+
         if not self._socket.isValid():
             return
 
@@ -107,6 +141,13 @@ class Connection(QObject):
 
     @Slot(QTcpSocket.SocketState)
     def _reportStatusChange(self, status: QTcpSocket.SocketState) -> None:
+        """
+        Emits a status change signal to reflect the new status.
+
+        Args:
+            status: The new status that the socket is in.
+        """
+
         if status == QTcpSocket.SocketState.UnconnectedState:
             # Only report the disconnection if we were connected in the first
             # place.
@@ -127,6 +168,10 @@ class Connection(QObject):
 
     @Slot()
     def _reportErrorOccurred(self) -> None:
+        """
+        Emits a signal to report the error that took place, if any.
+        """
+
         error = self._socket.error()
 
         if error == QTcpSocket.SocketError.RemoteHostClosedError:

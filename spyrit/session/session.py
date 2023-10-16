@@ -27,7 +27,7 @@ broadly here's the design we're going for:
 
 import logging
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject, Slot
 
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -46,16 +46,15 @@ class SessionWindow(QObject):
     a SessionWindow is deleted, its window gets deleted too.
 
     Args:
+        parent: The object to use as this one's parent, for lifetime management
+            purposes.
+
         settings: The application-wide settings object.
 
         state: The application-wide state object.
 
         window: The window that this SessionWindow is to be associated with.
     """
-
-    # This signal fires when this SessionWindow objects wants to be closed.
-
-    closeRequested: Signal = Signal(QObject)  # noqa: N815
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -67,18 +66,19 @@ class SessionWindow(QObject):
 
     def __init__(
         self,
+        parent: QObject,
         settings: SpyritSettings,
         state: SpyritState,
         window: SpyritMainWindow,
     ) -> None:
-        super().__init__()
+        super().__init__(parent)
 
         self._settings = settings
         self._state = state
         self._window = window
 
         window.newTabRequested.connect(self.newInstance)
-        window.closing.connect(self._onWindowClosing)
+        window.closing.connect(self.close)
 
     @Slot()
     def newInstance(self) -> None:
@@ -98,12 +98,13 @@ class SessionWindow(QObject):
         instance.setTab(tab_proxy)
 
     @Slot()
-    def _onWindowClosing(self) -> None:
+    def close(self) -> None:
         """
-        Notify interested parties that this SessionWindow wants to be closed.
+        Causes this SessionWindow to detach itself from its parent, which should
+        trigger its garbage collection.
         """
 
-        self.closeRequested.emit(self)
+        self.setParent(None)  # type: ignore
 
     def __del__(self) -> None:
         logging.debug(
@@ -115,22 +116,21 @@ class Session(QObject):
     """
     A class that keeps tracks of the windows that make up the current play
     session, and can respond to requests to create more windows.
+
+    Args:
+        settings: The application-wide settings object.
+
+        state: The application-wide state object.
     """
 
     _settings: SpyritSettings
     _state: SpyritState
-
-    # Keep track of SessionWindows so they're not immediately garbage collected,
-    # along with their window.
-
-    _session_windows: set[SessionWindow]
 
     def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
-        self._session_windows = set()
 
     def newWindow(self) -> None:
         """
@@ -141,27 +141,10 @@ class Session(QObject):
 
         window.newWindowRequested.connect(self.newWindow)
 
-        session_window = SessionWindow(self._settings, self._state, window)
-        session_window.closeRequested.connect(self._forgetSessionWindow)
-
-        self._session_windows.add(session_window)
+        session_window = SessionWindow(
+            self, self._settings, self._state, window
+        )
 
         session_window.newInstance()
 
         window.show()
-
-    @Slot(SessionWindow)
-    def _forgetSessionWindow(self, session_window: SessionWindow) -> None:
-        """
-        Delete our reference to the given SessionWindow. This will cause it, and
-        the window that it is bound to, to be garbage collected provided nothing
-        else is keeping a reference to it. (Which it shouldn't.)
-
-        Args:
-            session_window: The SessionWindow whose reference is to be deleted.
-        """
-
-        try:
-            self._session_windows.remove(session_window)
-        except KeyError:
-            pass

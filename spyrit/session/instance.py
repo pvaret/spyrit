@@ -21,6 +21,7 @@ import logging
 from typing import Iterable
 
 from PySide6.QtCore import QObject, Slot
+from PySide6.QtWidgets import QMessageBox, QPushButton
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import Fragment, FragmentList, NetworkFragment
@@ -48,6 +49,8 @@ class SessionInstance(QObject):
         """
 
         self._tab = tab
+
+        tab.closeRequested.connect(self.maybeCloseTab)
 
     def title(self) -> str:
         """
@@ -101,6 +104,38 @@ class SessionInstance(QObject):
                     self._connected = event == Status.CONNECTED
                 case _:
                     pass
+
+    @Slot()
+    def maybeCloseTab(self) -> None:
+        """
+        Closes the tab for this instance. If the tab is for a game with an
+        active connection, asks the user for confirmation first.
+        """
+
+        if (tab := self._tab) is None:
+            return
+
+        if not self._connected:
+            tab.close()
+            return
+
+        dialog = QMessageBox(tab.window())
+        dialog.setIcon(QMessageBox.Icon.Question)
+        dialog.setWindowTitle("Really close?")
+        dialog.setText(
+            f"You are still connected to <b>{self._title}</b>. Really close?"
+        )
+        dialog.addButton(
+            close := QPushButton("Close"), QMessageBox.ButtonRole.AcceptRole
+        )
+        dialog.addButton(
+            cancel := QPushButton("Cancel"), QMessageBox.ButtonRole.RejectRole
+        )
+        dialog.setDefaultButton(cancel)
+        dialog.exec()
+
+        if dialog.clickedButton() is close:
+            tab.close()
 
     def __del__(self) -> None:
         logging.debug(

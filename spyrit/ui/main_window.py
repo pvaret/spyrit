@@ -37,6 +37,9 @@ from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 class CornerWidgetWrapper(QWidget):
     """
     Lays out a widget so that it looks tidy as a QTabWidget corner widget.
+
+    Args:
+        widget: The widget to the used as the QTabWidget's corner.
     """
 
     def __init__(self, widget: QWidget) -> None:
@@ -52,12 +55,23 @@ class TabProxy(QObject):
     This class provides an interface to directly set properties on a tab
     associated with a widget. It keeps a reference to the tab, but not the
     widget itself.
+
+    Args:
+        tab_widget: The QTabWidget instance that the tab being proxied belongs
+            to.
+
+        widget: The widget associated with the tab being proxied.
     """
 
     # This signal is emitted when the proxied tab becomes active or,
     # respectively, inactive.
 
     active: Signal = Signal(bool)
+
+    # This signal is emitted when a user action is requesting that this tab be
+    # closed.
+
+    closeRequested: Signal = Signal()  # noqa: N815
 
     _tab_widget: QTabWidget
     _widget: weakref.ref[QWidget]
@@ -78,6 +92,14 @@ class TabProxy(QObject):
         tab_widget.currentChanged.connect(self._setActiveIndex)
 
     def _index(self) -> int:
+        """
+        Returns the index of the proxied tab.
+
+        Returns:
+            The index of the proxied tab in its QTabWidget, or -1 if the tab
+            being proxied no longer exists.
+        """
+
         widget = self._widget()
         if widget is None:
             return -1
@@ -85,11 +107,49 @@ class TabProxy(QObject):
 
     @Slot(str)
     def setTitle(self, title: str) -> None:
+        """
+        Sets the title of the proxied tab.
+
+        Args:
+            title: The title to give this tab.
+        """
+
         if (index := self._index()) >= 0:
             self._tab_widget.setTabText(index, title)
 
+    def window(self) -> QWidget | None:
+        """
+        Returns the toplevel window object for this tab's widget, if any.
+
+        Returns:
+            A toplevel widget if one exists for this tab, else None.
+        """
+
+        if (widget := self._widget()) is not None:
+            return widget.window()
+
+        return None
+
+    def close(self) -> None:
+        """
+        Detaches this tab's widget from its parent. Causes the widget -- and
+        therefore this tab -- to be garbage collected, if nothing else is
+        keeping a reference to it. Which it shouldn't.
+        """
+
+        if (widget := self._widget()) is not None:
+            widget.setParent(None)  # type: ignore
+
     @Slot(int)
     def _setActiveIndex(self, active_index: int) -> None:
+        """
+        Updates this TabProxy's activity status based on the provided current
+        active tab index and this tab's index.
+
+        Args:
+            active_index: The index of the tab that just became active.
+        """
+
         active = active_index == self._index()
         if active != self._active:
             self._active = active
@@ -119,7 +179,7 @@ class TabWidget(QTabWidget):
         # Add a close button to the tabs.
 
         self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.closeTab)
+        self.tabCloseRequested.connect(self.maybeCloseTab)
 
         # Set the focus explicitly when the current tab changes.
 
@@ -163,26 +223,28 @@ class TabWidget(QTabWidget):
         return tab
 
     @Slot()
-    def closeCurrentTab(self) -> None:
+    def maybeCloseCurrentTab(self) -> None:
         """
-        Looks up the currently active tab and closes it.
+        Looks up the currently active tab and closes it if there is no reason
+        not to.
         """
 
-        self.closeTab(self.currentIndex())
+        self.maybeCloseTab(self.currentIndex())
 
     @Slot(int)
-    def closeTab(self, index: int) -> None:
+    def maybeCloseTab(self, index: int) -> None:
         """
-        Close the tab at the given index, if any. Unparents the corresponding
-        widget, which will cause it to become garbage collected if nothing else
-        is keeping a reference to it.
+        Closes the tab at the given index, if there is no reason not to. In
+        practice this only emits a close request signal. The decision of whether
+        to close is done in the model object for this view.
 
         Args:
             index: The index of the tab to close.
         """
 
         if (widget := self.widget(index)) is not None:  # type: ignore
-            widget.setParent(None)  # type: ignore
+            tab = self.tabForWidget(widget)
+            tab.closeRequested.emit()
 
     @Slot()
     def switchToPreviousTab(self) -> None:
@@ -325,7 +387,7 @@ class SpyritMainWindow(QMainWindow):
                 self,
                 "Close tab",
                 shortcuts.close_current_tab,
-                self._tab_widget.closeCurrentTab,
+                self._tab_widget.maybeCloseCurrentTab,
             ),
             ActionWithKeySetting(
                 self,

@@ -18,8 +18,8 @@ A class that implements the main window of the application.
 import logging
 import weakref
 
-from PySide6.QtCore import QEvent, QObject, Qt, Signal, Slot
-from PySide6.QtGui import QResizeEvent
+from PySide6.QtCore import QObject, Qt, Signal, Slot
+from PySide6.QtGui import QCloseEvent, QResizeEvent
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QMainWindow,
@@ -45,93 +45,6 @@ class CornerWidgetWrapper(QWidget):
         self.setLayout(layout := QHBoxLayout())
         layout.addWidget(widget)
         layout.setContentsMargins(2, 2, 2, 4)
-
-
-class TabWidget(QTabWidget):
-    """
-    A QTabWidget with extra helper methods.
-    """
-
-    def __init__(self, parent: QWidget) -> None:
-        super().__init__(parent)
-
-        # Remove the border around the widget.
-
-        self.setDocumentMode(True)
-
-        # Add a close button to the tabs.
-
-        self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.closeTab)
-
-        # Set the focus explicitly when the current tab changes.
-
-        self.currentChanged.connect(self._setTabWidgetFocus)
-
-    def appendTab(self, widget: QWidget, title: str) -> int:
-        index = super().addTab(widget, title)
-        self.setCurrentIndex(index)
-        return index
-
-    @Slot()
-    def closeCurrentTab(self) -> None:
-        self.closeTab(self.currentIndex())
-
-    @Slot(int)
-    def closeTab(self, index: int) -> None:
-        if (widget := self.widget(index)) is not None:  # type: ignore
-            widget.setParent(None)  # type: ignore
-
-    @Slot()
-    def switchToPreviousTab(self) -> None:
-        current_index = self.currentIndex()
-        self.setCurrentIndex(current_index - 1)
-
-    @Slot()
-    def switchToNextTab(self) -> None:
-        current_index = self.currentIndex()
-        self.setCurrentIndex(current_index + 1)
-
-    @Slot()
-    def moveCurrentTabLeft(self) -> None:
-        current_index = self.currentIndex()
-        self._swapTabs(current_index, current_index - 1)
-
-    @Slot()
-    def moveCurrentTabRight(self) -> None:
-        current_index = self.currentIndex()
-        self._swapTabs(current_index, current_index + 1)
-
-    def _swapTabs(self, index_from: int, index_to: int) -> None:
-        index_from = max(0, index_from)
-        index_from = min(self.count() - 1, index_from)
-        index_to = max(0, index_to)
-        index_to = min(self.count() - 1, index_to)
-
-        if index_from == index_to:
-            return
-
-        widget_from = self.widget(index_from)
-        widget_to = self.widget(index_to)
-        title_from = self.tabText(index_from)
-        title_to = self.tabText(index_to)
-        assert widget_from is not None
-        assert widget_to is not None
-
-        # Note that inserting a tab with an existing widget at a new position
-        # removes it from its previous position. So we don't need to do that
-        # explicitly.
-
-        self.insertTab(index_from, widget_to, title_to)
-        self.insertTab(index_to, widget_from, title_from)
-
-        self.setCurrentIndex(index_to)
-
-    @Slot(int)
-    def _setTabWidgetFocus(self, index: int) -> None:
-        widget = self.widget(index)
-        if widget is not None:  # type: ignore
-            widget.setFocus()
 
 
 class TabProxy(QObject):
@@ -181,6 +94,176 @@ class TabProxy(QObject):
         if active != self._active:
             self._active = active
             self.active.emit(active)
+
+
+class TabWidget(QTabWidget):
+    """
+    A QTabWidget with extra helper methods, tailored for use in this
+    application.
+
+    Args:
+        parent: The parent widget for this widget.
+    """
+
+    _tab_proxies: weakref.WeakKeyDictionary[QWidget, TabProxy]
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+
+        self._tab_proxies = weakref.WeakKeyDictionary()
+
+        # Remove the border around the widget.
+
+        self.setDocumentMode(True)
+
+        # Add a close button to the tabs.
+
+        self.setTabsClosable(True)
+        self.tabCloseRequested.connect(self.closeTab)
+
+        # Set the focus explicitly when the current tab changes.
+
+        self.currentChanged.connect(self._setTabWidgetFocus)
+
+    def appendTab(self, widget: QWidget, title: str) -> int:
+        """
+        Appends a tab to the TabWidget, and then switches to it.
+
+        Args:
+            widget: The widget to append in a new tab.
+
+            title: The title of that tab.
+
+        Returns:
+            The index of the new tab.
+        """
+
+        index = super().addTab(widget, title)
+        self.setCurrentIndex(index)
+        return index
+
+    def tabForWidget(self, widget: QWidget) -> TabProxy:
+        """
+        Returns the TabProxy for the tab that contains this widget.
+
+        This doesn't check whether the given widget genuinely corresponds to a
+        tab on this QTabWidget. If such is not the case, calling methods on the
+        TabProxy will just silently fail.
+
+        Args:
+            widget: The widget for which to return a TabProxy.
+
+        Returns:
+            A TabProxy for the tab containing the given widget.
+        """
+
+        if (tab := self._tab_proxies.get(widget)) is None:
+            tab = self._tab_proxies.setdefault(widget, TabProxy(self, widget))
+
+        return tab
+
+    @Slot()
+    def closeCurrentTab(self) -> None:
+        """
+        Looks up the currently active tab and closes it.
+        """
+
+        self.closeTab(self.currentIndex())
+
+    @Slot(int)
+    def closeTab(self, index: int) -> None:
+        """
+        Close the tab at the given index, if any. Unparents the corresponding
+        widget, which will cause it to become garbage collected if nothing else
+        is keeping a reference to it.
+
+        Args:
+            index: The index of the tab to close.
+        """
+
+        if (widget := self.widget(index)) is not None:  # type: ignore
+            widget.setParent(None)  # type: ignore
+
+    @Slot()
+    def switchToPreviousTab(self) -> None:
+        """
+        Make the previous tab active.
+        """
+
+        current_index = self.currentIndex()
+        self.setCurrentIndex(current_index - 1)
+
+    @Slot()
+    def switchToNextTab(self) -> None:
+        """
+        Make the next tab active.
+        """
+
+        current_index = self.currentIndex()
+        self.setCurrentIndex(current_index + 1)
+
+    @Slot()
+    def moveCurrentTabLeft(self) -> None:
+        """
+        Move the current tab one tab to the left.
+        """
+
+        current_index = self.currentIndex()
+        self._swapTabs(current_index, current_index - 1)
+
+    @Slot()
+    def moveCurrentTabRight(self) -> None:
+        """
+        Move the current tab one tab to the right.
+        """
+
+        current_index = self.currentIndex()
+        self._swapTabs(current_index, current_index + 1)
+
+    def _swapTabs(self, index_from: int, index_to: int) -> None:
+        """
+        Swaps the positions of the tabs at the given indexes.
+
+        Args:
+            index_from, index_to: The indexes of the tabs to be swapped.
+        """
+
+        index_from = max(0, index_from)
+        index_from = min(self.count() - 1, index_from)
+        index_to = max(0, index_to)
+        index_to = min(self.count() - 1, index_to)
+
+        if index_from == index_to:
+            return
+
+        widget_from = self.widget(index_from)
+        widget_to = self.widget(index_to)
+        title_from = self.tabText(index_from)
+        title_to = self.tabText(index_to)
+        assert widget_from is not None
+        assert widget_to is not None
+
+        # Note that inserting a tab with an existing widget at a new position
+        # removes it from its previous position. So we don't need to do that
+        # explicitly.
+
+        self.insertTab(index_from, widget_to, title_to)
+        self.insertTab(index_to, widget_from, title_from)
+
+        self.setCurrentIndex(index_to)
+
+    @Slot(int)
+    def _setTabWidgetFocus(self, index: int) -> None:
+        """
+        Give the widget whose tab is at the given index the focus.
+
+        Args:
+            index: The index of the tab whose widget should get the focus.
+        """
+
+        widget = self.widget(index)
+        if widget is not None:  # type: ignore
+            widget.setFocus()
 
 
 class SpyritMainWindow(QMainWindow):
@@ -286,30 +369,38 @@ class SpyritMainWindow(QMainWindow):
         TabProxy bound to the widget and its tab.
         """
 
-        widget.destroyed.connect(self._closeIfEmpty)
         self._tab_widget.appendTab(widget, title)
-
-        return TabProxy(self._tab_widget, widget)
+        widget.destroyed.connect(self._closeIfEmpty)
+        return self._tab_widget.tabForWidget(widget)
 
     @Slot()
     def _closeIfEmpty(self) -> None:
+        """
+        Checks whether there is any tab remaining. Closes this window if not.
+        """
+
         if self._tab_widget.count() == 0:
             self.close()
 
-    def event(self, event: QEvent) -> bool:
+    def closeEvent(self, event: QCloseEvent) -> None:
         """
-        Override the default event handle to raise an explicit closing signal
-        when the window is being closed.
+        Overrides the default close event handler to raise an explicit closing
+        signal, since Qt doesn't do that by default.
+
+        Args:
+            event: The close event being processed.
         """
 
-        if event.type() == QEvent.Type.Close:
-            self.closing.emit(self)
+        self.closing.emit(self)
 
-        return super().event(event)
+        return super().closeEvent(event)
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         """
-        Override the default resize event to store the new size in the state.
+        Overrides the default resize event to store the new size in the state.
+
+        Args:
+            event: The resize event being processed.
         """
 
         # Store the new window size on resize.

@@ -18,10 +18,13 @@ independantly of any UI consideration.
 
 import logging
 
-from PySide6.QtCore import QObject, Signal, Slot
+from typing import Iterable
+
+from PySide6.QtCore import QObject, Slot
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import Fragment, FragmentList, NetworkFragment
+from spyrit.ui.main_window import TabProxy
 
 
 class SessionInstance(QObject):
@@ -30,28 +33,68 @@ class SessionInstance(QObject):
     an SessionInstance is its associated model.
     """
 
-    # This signal fires when the instance's title is updated.
-
-    titleChanged: Signal = Signal(str)  # noqa: N815
-
     _title: str = ""
     _active: bool = False
     _connected: bool = False
+    _tab: TabProxy | None = None
+
+    def setTab(self, tab: TabProxy) -> None:
+        """
+        Attaches this SessionInstance to the given TabProxy.
+
+        Args:
+            tab: The TabProxy that this SessionInstance will use to update the
+                tab's status.
+        """
+
+        self._tab = tab
 
     def title(self) -> str:
+        """
+        Gets the title of the instance, e.g. so it can be applied to the tab.
+
+        Returns:
+            The current title for the instance.
+        """
+
         return self._title
 
     def setTitle(self, title: str) -> None:
+        """
+        Sets the title for this instance.
+
+        Args:
+            title: The title to be set.
+        """
+
         if title != self._title:
             self._title = title
-            self.titleChanged.emit(title)
+            if self._tab is not None:
+                self._tab.setTitle(self._title)
 
     @Slot(bool)
     def setActive(self, active: bool) -> None:
+        """
+        Marks this instance as currently active/inactive, i.e. whether its tab
+        is currently the visible one.
+
+        Args:
+            active: Whether the instance is active.
+        """
+
         self._active = active
 
     @Slot(FragmentList)
-    def updateStateFromFragments(self, fragments: list[Fragment]) -> None:
+    def updateStateFromFragments(self, fragments: Iterable[Fragment]) -> None:
+        """
+        Consumes a stream of Fragments to update the internal state of this
+        instance.
+
+        Args:
+            fragments: An iterable of Fragments, from which to infer updates to
+                the instance's state.
+        """
+
         for fragment in fragments:
             match fragment:
                 case NetworkFragment(event):

@@ -24,6 +24,7 @@ from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 
 from spyrit import constants, platform, resources
+from spyrit.default_paths_base import DefaultPathsBase
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.gc_stats import GCStats
 from spyrit.session.session import Session
@@ -34,7 +35,19 @@ from spyrit.singletonizer import Singletonizer
 from spyrit.ui.styles import StyleManager
 
 
-def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
+def _make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
+    """
+    Creates a command line argument parser for the application.
+
+    Args:
+        default_config_path: The default path where to look for configuration
+            files when not otherwise overridden by the user. This is an
+            argument because different OSes use a different default path.
+
+    Returns:
+        An argument parser, ready to be used.
+    """
+
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -64,9 +77,36 @@ def make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
     return parser
 
 
+def _load_resources() -> bool:
+    """
+    Attempts to load and apply the embedded resources for the application.
+
+    Returns:
+        Whether the loading and applying succeeded.
+    """
+
+    if not resources.load():
+        logging.error("Resources failed to load.")
+        return False
+
+    if QFontDatabase.addApplicationFont(":/fonts/NotoSansMono.ttf") == -1:
+        logging.error("Default game font not found in resources.")
+        return False
+
+    return True
+
+
 def bootstrap(args: list[str]) -> int:
     """
     Initializes and starts the application from the given arguments.
+
+    Args:
+        args: The command line arguments for the application. This should
+            include the program name as argument 0.
+
+    Returns:
+        The application's return code. So, 0 if it ran successfully, some error
+        code otherwise.
     """
 
     # Load default paths.
@@ -75,7 +115,7 @@ def bootstrap(args: list[str]) -> int:
 
     # Parse Python arguments.
 
-    parser = make_arg_parser(
+    parser = _make_arg_parser(
         default_config_path=default_paths.getConfigFolderPath().as_posix()
     )
 
@@ -84,13 +124,14 @@ def bootstrap(args: list[str]) -> int:
 
     program, remaining_args = args[:1], args[1:]
     flags, remaining_args = parser.parse_known_args(remaining_args)
+    args = program + remaining_args
 
     default_paths.setConfigFolderPath(flags.config)
 
     # Put the program name back in with the arguments when creating the
     # QApplication, since Qt expects it.
 
-    app = QApplication(program + remaining_args)
+    app = QApplication(args)
 
     # Set up logging based on args.
 
@@ -100,12 +141,34 @@ def bootstrap(args: list[str]) -> int:
     )
     logging.debug("Debug logging on.")
 
-    # Instantiate the settings and autoload/save them.
+    # Load resources.
 
-    settings = SpyritSettings()
-    state = SpyritState()
+    if not _load_resources():
+        return -1
 
-    with Singletonizer(default_paths.getPidFilePath()) as singletonizer:
+    # And start the app.
+
+    return _start_app(app, default_paths, flags.debug)
+
+
+def _start_app(app: QApplication, paths: DefaultPathsBase, debug: bool) -> int:
+    """
+    Sets up and starts the given application.
+
+    Args:
+        app: The application to be started.
+
+        paths: Path helper object that provides the paths to the application's
+            runtime files (settings and such).
+
+        debug: Whether debug mode is on.
+
+    Returns:
+        The application's return code. So, 0 if it ran successfully, some error
+        code otherwise.
+    """
+
+    with Singletonizer(paths.getPidFilePath()) as singletonizer:
         # Ensure there is no other instance of the program running.
 
         if not singletonizer.isMainInstance():
@@ -117,23 +180,18 @@ def bootstrap(args: list[str]) -> int:
             )
             return 0
 
-        # Load resources, else bail.
+        # Instantiate the settings and autoload/save them.
 
-        if not resources.load():
-            logging.error("Resources failed to load.")
-            return -1
-
-        if QFontDatabase.addApplicationFont(":/fonts/NotoSansMono.ttf") == -1:
-            logging.error("Default game font not found in resources.")
-            return -1
+        settings = SpyritSettings()
+        state = SpyritState()
 
         with (
             settings.autosave(
-                default_paths.getConfigFilePath(),
+                paths.getConfigFilePath(),
                 save_delay=constants.SETTINGS_SAVE_DELAY_MS // 1000,
             ) as settings_saver,
             state.autosave(
-                default_paths.getStateFilePath(),
+                paths.getStateFilePath(),
                 save_delay=constants.STATE_SAVE_DELAY_MS // 1000,
             ) as state_saver,
         ):
@@ -160,7 +218,7 @@ def bootstrap(args: list[str]) -> int:
 
             # Set up the GC stats logger.
 
-            if flags.debug:
+            if debug:
                 GCStats(app)
 
             # And start the show.

@@ -347,10 +347,10 @@ class SpyritMainWindow(QMainWindow):
         state: The application-wide state object.
     """
 
-    # We fire this signal when the window is being asked to close, since there
-    # is no native Qt signal for that.
+    # We fire this signal when the window is being asked to close by a user
+    # action.
 
-    closing: Signal = Signal(QObject)
+    closeRequested: Signal = Signal()  # noqa: N815
 
     # We fire this signal when the user triggered an action requesting that a
     # new window is opened.
@@ -399,20 +399,26 @@ class SpyritMainWindow(QMainWindow):
                 shortcuts.new_window,
                 self.newWindowRequested.emit,
             ),
-            new_tab_action := ActionWithKeySetting(
-                self, "New tab", shortcuts.new_tab, self.newTabRequested.emit
-            ),
             ActionWithKeySetting(
                 self,
-                "Close tab",
-                shortcuts.close_current_tab,
-                self._tab_widget.maybeCloseCurrentTab,
+                "Close window",
+                shortcuts.close_window,
+                self.closeRequested.emit,
+            ),
+            new_tab_action := ActionWithKeySetting(
+                self, "New tab", shortcuts.new_tab, self.newTabRequested.emit
             ),
             ActionWithKeySetting(
                 self,
                 "Next tab",
                 shortcuts.switch_to_next_tab,
                 self._tab_widget.switchToNextTab,
+            ),
+            ActionWithKeySetting(
+                self,
+                "Close tab",
+                shortcuts.close_current_tab,
+                self._tab_widget.maybeCloseCurrentTab,
             ),
             ActionWithKeySetting(
                 self,
@@ -472,16 +478,20 @@ class SpyritMainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """
-        Overrides the default close event handler to raise an explicit closing
-        signal, since Qt doesn't do that by default.
+        Overrides the default close event handler to raise an explicit signal,
+        and lets the handler of that signal decide what to do with the window.
 
         Args:
             event: The close event being processed.
         """
 
-        self.closing.emit(self)
+        self.closeRequested.emit()
 
-        return super().closeEvent(event)
+        # Don't actually follow up on the closing. It will be enacted, if
+        # needed, by the SessionWindow instance that owns this window and will
+        # handle the closeRequested signal.
+
+        event.ignore()
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         """

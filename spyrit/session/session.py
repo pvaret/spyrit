@@ -26,10 +26,11 @@ broadly here's the design we're going for:
 """
 
 import logging
+import weakref
 
 from PySide6.QtCore import QObject, Slot
 
-from spyrit.session.instance import SessionInstance
+from spyrit.session.instance import SessionInstance, askUserIfReadyToClose
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.main_window import SpyritMainWindow, TabProxy
@@ -64,6 +65,10 @@ class SessionWindow(QObject):
 
     _window: SpyritMainWindow
 
+    # Keep track of this window's instances, without references.
+
+    _instances: weakref.WeakSet[SessionInstance]
+
     def __init__(
         self,
         parent: QObject,
@@ -73,12 +78,13 @@ class SessionWindow(QObject):
     ) -> None:
         super().__init__(parent)
 
+        self._instances = weakref.WeakSet()
         self._settings = settings
         self._state = state
         self._window = window
 
         window.newTabRequested.connect(self.newInstance)
-        window.closing.connect(self.close)
+        window.closeRequested.connect(self.maybeClose)
 
     @Slot()
     def newInstance(self) -> None:
@@ -87,7 +93,7 @@ class SessionWindow(QObject):
         the window and the instance to this SessionWindow.
         """
 
-        instance = SessionInstance()
+        self._instances.add(instance := SessionInstance())
 
         # Create the UI for a game.
 
@@ -100,6 +106,19 @@ class SessionWindow(QObject):
         instance.setTab(TabProxy(self._window.tabs(), widget))
 
     @Slot()
+    def maybeClose(self) -> None:
+        """
+        Closes this window if it contains no connected games, or asks the user
+        if they're fine closing them.
+        """
+
+        connected = [
+            instance for instance in self._instances if instance.connected()
+        ]
+
+        if not connected or askUserIfReadyToClose(self._window, connected):
+            self.close()
+
     def close(self) -> None:
         """
         Causes this SessionWindow to detach itself from its parent, which should

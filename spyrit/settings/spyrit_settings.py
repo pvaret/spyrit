@@ -116,8 +116,9 @@ class SpyritSettings(Settings):
         Records the keyboard shortcuts for common UI actions.
         """
 
-        new_tab: Key[Shortcut] = _shortcut_key("Ctrl+T")
         new_window: Key[Shortcut] = _shortcut_key("Ctrl+Shift+N")
+        close_window: Key[Shortcut] = _shortcut_key("Ctrl+Q")
+        new_tab: Key[Shortcut] = _shortcut_key("Ctrl+T")
         close_current_tab: Key[Shortcut] = _shortcut_key("Ctrl+W")
         switch_to_previous_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgUp")
         switch_to_next_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgDown")

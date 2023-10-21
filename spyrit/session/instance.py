@@ -18,14 +18,63 @@ independantly of any UI consideration.
 
 import logging
 
-from typing import Iterable
+from typing import Iterable, Sequence
 
-from PySide6.QtCore import QObject, Slot
-from PySide6.QtWidgets import QMessageBox, QPushButton
+from PySide6.QtCore import Qt, QObject, Slot
+from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
 
 from spyrit.network.connection import Status
 from spyrit.network.fragments import Fragment, FragmentList, NetworkFragment
 from spyrit.ui.main_window import TabProxy
+
+
+def askUserIfReadyToClose(
+    window: QWidget | None, instances: Sequence["SessionInstance"]
+) -> bool:
+    """
+    Asks the user to confirm they are really ready to close still connected
+    games.
+
+    Args:
+        window: The widget to use as the message box's parent.
+
+        instances: The game instances to ask the user about.
+
+    Returns:
+        Whether the user accepted to close the connected games.
+    """
+
+    dialog = QMessageBox(window)
+    dialog.setIcon(QMessageBox.Icon.Question)
+    dialog.setWindowTitle("Really close?")
+    dialog.setTextFormat(Qt.TextFormat.RichText)
+
+    if len(instances) == 1:
+        dialog.setText(
+            f"You are still connected to <b>{instances[0].title()}</b>."
+            " Really close?"
+        )
+    else:
+        dialog.setText(
+            "You are still connected to the following games:<br>"
+            + "".join(
+                f"<b> • {instance.title()}</b><br>" for instance in instances
+            )
+            + "<br>"
+            + "Really close?"
+        )
+
+    dialog.addButton(
+        close := QPushButton("Close"), QMessageBox.ButtonRole.AcceptRole
+    )
+    dialog.addButton(
+        cancel := QPushButton("Cancel"), QMessageBox.ButtonRole.RejectRole
+    )
+    dialog.setDefaultButton(cancel)
+
+    dialog.exec()
+
+    return dialog.clickedButton() is close
 
 
 class SessionInstance(QObject):
@@ -106,6 +155,16 @@ class SessionInstance(QObject):
                 case _:
                     pass
 
+    def connected(self) -> bool:
+        """
+        Returns whether this instance is currently connected to a game.
+
+        Returns:
+            Whether this instance is connected.
+        """
+
+        return self._connected
+
     @Slot()
     def maybeCloseTab(self) -> None:
         """
@@ -116,26 +175,7 @@ class SessionInstance(QObject):
         if (tab := self._tab) is None:
             return
 
-        if not self._connected:
-            tab.close()
-            return
-
-        dialog = QMessageBox(tab.window())
-        dialog.setIcon(QMessageBox.Icon.Question)
-        dialog.setWindowTitle("Really close?")
-        dialog.setText(
-            f"You are still connected to <b>{self._title}</b>. Really close?"
-        )
-        dialog.addButton(
-            close := QPushButton("Close"), QMessageBox.ButtonRole.AcceptRole
-        )
-        dialog.addButton(
-            cancel := QPushButton("Cancel"), QMessageBox.ButtonRole.RejectRole
-        )
-        dialog.setDefaultButton(cancel)
-        dialog.exec()
-
-        if dialog.clickedButton() is close:
+        if not self._connected or askUserIfReadyToClose(tab.window(), [self]):
             tab.close()
 
     def __del__(self) -> None:

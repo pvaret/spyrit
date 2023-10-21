@@ -18,7 +18,7 @@ A class that implements the main window of the application.
 import logging
 import weakref
 
-from PySide6.QtCore import QObject, Qt, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QResizeEvent
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -164,6 +164,11 @@ class TabWidget(QTabWidget):
     Args:
         parent: The parent widget for this widget.
     """
+
+    # This signal fires whenever a tab is added or removed. Its argument is the
+    # new number of tabs.
+
+    tabCountChanged: Signal = Signal(int)  # noqa: N815
 
     _tab_proxies: weakref.WeakKeyDictionary[QWidget, TabProxy]
 
@@ -327,8 +332,41 @@ class TabWidget(QTabWidget):
         if widget is not None:  # type: ignore
             widget.setFocus()
 
+    def tabInserted(self, index: int) -> None:
+        """
+        Reimplemented from parent class to emit a signal when a tab is added.
+
+        Args:
+            index: The index of the inserted tab.
+        """
+
+        self.tabCountChanged.emit(self.count())
+
+        super().tabInserted(index)
+
+    def tabRemoved(self, index: int) -> None:
+        """
+        Reimplemented from parent class to emit a signal when a tab is removed.
+
+        Args:
+            index: The index of the removed tab.
+        """
+
+        self.tabCountChanged.emit(self.count())
+
+        super().tabRemoved(index)
+
 
 class SpyritMainWindow(QMainWindow):
+    """
+    The main window for the application.
+
+    Args:
+        settings: The application-wide settings object.
+
+        state: The application-wide state object.
+    """
+
     # We fire this signal when the window is being asked to close, since there
     # is no native Qt signal for that.
 
@@ -361,6 +399,7 @@ class SpyritMainWindow(QMainWindow):
         # Set up the main widget.
 
         self._tab_widget = TabWidget(self)
+        self._tab_widget.tabCountChanged.connect(self._closeIfEmpty)
         self.setCentralWidget(self._tab_widget)
 
         # Set up the window properties.
@@ -425,24 +464,31 @@ class SpyritMainWindow(QMainWindow):
         corner_button.setDefaultAction(new_tab_action)
         corner_button.setText("+")
 
-    def appendTab(self, widget: QWidget, title: str) -> TabProxy:
+    def tabs(self) -> TabWidget:
         """
-        Adds the given widget as a new tab with the given title. Returns a
-        TabProxy bound to the widget and its tab.
+        Returns a reference to the central TabWidget in this window.
+
+        Returns:
+            The TabWidget hosted in this window.
         """
 
-        self._tab_widget.appendTab(widget, title)
-        widget.destroyed.connect(self._closeIfEmpty)
-        return self._tab_widget.tabForWidget(widget)
+        return self._tab_widget
 
-    @Slot()
-    def _closeIfEmpty(self) -> None:
+    @Slot(int)
+    def _closeIfEmpty(self, tab_count: int) -> None:
         """
-        Checks whether there is any tab remaining. Closes this window if not.
+        Closes this window if it doesn't contain any tab.
+
+        Args:
+            tab_count: The number of tabs currently in this window's tab widget.
         """
 
-        if self._tab_widget.count() == 0:
-            self.close()
+        if tab_count == 0:
+            # Note that we don't close the window right away, we only schedule
+            # the closing, because the code path that triggers this may still
+            # need the window around in order to complete without crashing.
+
+            QTimer.singleShot(0, self.close)  # type: ignore # bad annotation.
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """

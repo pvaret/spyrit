@@ -89,10 +89,15 @@ class SessionWindow(QObject):
 
         instance = SessionInstance()
 
+        # Create the UI for a game.
+
         widget = SlidingPaneContainer(self._window)
         widget.addPaneRight(WelcomePane(self._settings, self._state, instance))
 
-        tab_proxy = self._window.appendTab(widget, instance.title())
+        # Add the UI to a tab and bind the instance to that tab.
+
+        self._window.tabs().appendTab(widget, instance.title())
+        tab_proxy = self._window.tabs().tabForWidget(widget)
         tab_proxy.active.connect(instance.setActive)
 
         instance.setTab(tab_proxy)

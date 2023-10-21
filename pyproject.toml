@@ -4,9 +4,9 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "Spyrit"
-authors = [{name = "P. Varet", email = "p.varet@gmail.com"}]
+authors = [{ name = "P. Varet", email = "p.varet@gmail.com" }]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: X11 Applications :: Qt",
@@ -20,21 +20,11 @@ classifiers = [
 dynamic = ["version", "description"]
 requires-python = ">=3.11"
 
-dependencies = [
-    "PySide6>=6.5.0",
-    "regex",
-    "SunsetSettings>=0.5.1",
-]
+dependencies = ["PySide6>=6.5.0", "regex", "SunsetSettings>=0.5.1"]
 
 [project.optional-dependencies]
-test = [
-    "bandit[toml]",
-    "pytest",
-    "pytest-mock",
-]
-dev = [
-    "types-regex",
-]
+test = ["bandit[toml]", "pytest", "pytest-mock"]
+dev = ["types-regex"]
 
 [project.gui-scripts]
 spyrit = "spyrit.main:run"
@@ -46,14 +36,20 @@ name = "spyrit"
 # Allow pylint to load PySide6 to check the existence of module members.
 extension-pkg-allow-list = ["PySide6"]
 
-[tool.pylint.basic]
+[tool.pylint.BASIC]
 # Inform pylint of our actual method naming convention.
 method-naming-style = "camelCase"
+
+[tool.pylint."MESSAGES CONTROL"]
+
+disable = [
+    "invalid-name", # N815
+]
 
 [tool.mypy]
 show_error_codes = true
 
 [tool.bandit]
 skips = [
-    "B101",  # Disable alerting on 'assert' usage.
+    "B101", # Disable alerting on 'assert' usage.
 ]

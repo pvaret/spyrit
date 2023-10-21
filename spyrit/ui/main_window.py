@@ -90,6 +90,7 @@ class TabProxy(QObject):
 
         self._setActiveIndex(tab_widget.currentIndex())
         tab_widget.currentChanged.connect(self._setActiveIndex)
+        tab_widget.tabCloseRequested.connect(self._maybeRequestClosing)
 
     def _index(self) -> int:
         """
@@ -155,6 +156,23 @@ class TabProxy(QObject):
             self._active = active
             self.active.emit(active)
 
+    @Slot(int)
+    def _maybeRequestClosing(self, index: int) -> None:
+        """
+        Request closing this tab if the given index is that of this tab.
+
+        Args:
+            index: The index of the tab to be closed.
+        """
+
+        if index == self._index():
+            # Note that we don't execute the closing immediately. If we did then
+            # the index of next tabs would change before the processing of the
+            # signal that triggered this slot is complete, which may cause other
+            # tabs to be unexpectedly closed.
+
+            QTimer.singleShot(0, self.closeRequested.emit)  # type: ignore
+
 
 class TabWidget(QTabWidget):
     """
@@ -170,12 +188,8 @@ class TabWidget(QTabWidget):
 
     tabCountChanged: Signal = Signal(int)  # noqa: N815
 
-    _tab_proxies: weakref.WeakKeyDictionary[QWidget, TabProxy]
-
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-
-        self._tab_proxies = weakref.WeakKeyDictionary()
 
         # Remove the border around the widget.
 
@@ -184,13 +198,14 @@ class TabWidget(QTabWidget):
         # Add a close button to the tabs.
 
         self.setTabsClosable(True)
-        self.tabCloseRequested.connect(self.maybeCloseTab)
 
         # Set the focus explicitly when the current tab changes.
 
         self.currentChanged.connect(self._setTabWidgetFocus)
 
-    def appendTab(self, widget: QWidget, title: str) -> int:
+    def addTab(  # type: ignore  # wrong arg annotation in parent.
+        self, widget: QWidget, title: str
+    ) -> int:
         """
         Appends a tab to the TabWidget, and then switches to it.
 
@@ -207,26 +222,6 @@ class TabWidget(QTabWidget):
         self.setCurrentIndex(index)
         return index
 
-    def tabForWidget(self, widget: QWidget) -> TabProxy:
-        """
-        Returns the TabProxy for the tab that contains this widget.
-
-        This doesn't check whether the given widget genuinely corresponds to a
-        tab on this QTabWidget. If such is not the case, calling methods on the
-        TabProxy will just silently fail.
-
-        Args:
-            widget: The widget for which to return a TabProxy.
-
-        Returns:
-            A TabProxy for the tab containing the given widget.
-        """
-
-        if (tab := self._tab_proxies.get(widget)) is None:
-            tab = self._tab_proxies.setdefault(widget, TabProxy(self, widget))
-
-        return tab
-
     @Slot()
     def maybeCloseCurrentTab(self) -> None:
         """
@@ -234,22 +229,7 @@ class TabWidget(QTabWidget):
         not to.
         """
 
-        self.maybeCloseTab(self.currentIndex())
-
-    @Slot(int)
-    def maybeCloseTab(self, index: int) -> None:
-        """
-        Closes the tab at the given index, if there is no reason not to. In
-        practice this only emits a close request signal. The decision of whether
-        to close is done in the model object for this view.
-
-        Args:
-            index: The index of the tab to close.
-        """
-
-        if (widget := self.widget(index)) is not None:  # type: ignore
-            tab = self.tabForWidget(widget)
-            tab.closeRequested.emit()
+        self.tabCloseRequested.emit(self.currentIndex())
 
     @Slot()
     def switchToPreviousTab(self) -> None:
@@ -464,7 +444,7 @@ class SpyritMainWindow(QMainWindow):
         corner_button.setDefaultAction(new_tab_action)
         corner_button.setText("+")
 
-    def tabs(self) -> TabWidget:
+    def tabs(self) -> QTabWidget:
         """
         Returns a reference to the central TabWidget in this window.
 

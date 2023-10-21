@@ -32,7 +32,7 @@ from PySide6.QtCore import QObject, Slot
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.main_window import SpyritMainWindow
+from spyrit.ui.main_window import SpyritMainWindow, TabProxy
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.welcome_pane import WelcomePane
 
@@ -96,11 +96,8 @@ class SessionWindow(QObject):
 
         # Add the UI to a tab and bind the instance to that tab.
 
-        self._window.tabs().appendTab(widget, instance.title())
-        tab_proxy = self._window.tabs().tabForWidget(widget)
-        tab_proxy.active.connect(instance.setActive)
-
-        instance.setTab(tab_proxy)
+        self._window.tabs().addTab(widget, instance.title())
+        instance.setTab(TabProxy(self._window.tabs(), widget))
 
     @Slot()
     def close(self) -> None:

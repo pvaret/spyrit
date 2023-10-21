@@ -50,6 +50,7 @@ class SessionInstance(QObject):
 
         self._tab = tab
 
+        tab.active.connect(self.setActive)
         tab.closeRequested.connect(self.maybeCloseTab)
 
     def title(self) -> str:

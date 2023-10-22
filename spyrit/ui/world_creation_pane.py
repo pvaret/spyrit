@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 from spyrit import constants
-from spyrit.session.session import SessionInstance
+from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import VBar

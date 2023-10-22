@@ -31,7 +31,7 @@ from spyrit.network.processors import (
     UserPatternProcessor,
     bind_processor_to_connection,
 )
-from spyrit.session.session import SessionInstance
+from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting

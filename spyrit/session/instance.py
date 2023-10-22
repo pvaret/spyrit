@@ -21,10 +21,17 @@ import logging
 from typing import Iterable, Sequence
 
 from PySide6.QtCore import Qt, QObject, Slot
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
 
 from spyrit.network.connection import Status
-from spyrit.network.fragments import Fragment, FragmentList, NetworkFragment
+from spyrit.network.fragments import (
+    FlowControlCode,
+    FlowControlFragment,
+    Fragment,
+    FragmentList,
+    NetworkFragment,
+)
 from spyrit.ui.main_window import TabProxy
 
 
@@ -84,8 +91,9 @@ class SessionInstance(QObject):
     """
 
     _title: str = ""
-    _active: bool = False
+    _active: bool = True
     _connected: bool = False
+    _pending_lines: int = 0
     _tab: TabProxy | None = None
 
     def setTab(self, tab: TabProxy) -> None:
@@ -136,6 +144,10 @@ class SessionInstance(QObject):
         """
 
         self._active = active
+        if active:
+            self._pending_lines = 0
+
+        self._updateTabTitle()
 
     @Slot(FragmentList)
     def updateStateFromFragments(self, fragments: Iterable[Fragment]) -> None:
@@ -152,6 +164,12 @@ class SessionInstance(QObject):
             match fragment:
                 case NetworkFragment(event):
                     self._connected = event == Status.CONNECTED
+
+                case FlowControlFragment(code=FlowControlCode.LF):
+                    if not self._active:
+                        self._pending_lines += 1
+                        self._updateTabTitle()
+
                 case _:
                     pass
 
@@ -177,6 +195,29 @@ class SessionInstance(QObject):
 
         if not self._connected or askUserIfReadyToClose(tab.window(), [self]):
             tab.close()
+
+    def _updateTabTitle(self) -> None:
+        """
+        Updates the tab's title and text color based on the instance title and
+        the number of unread lines, if any.
+        """
+
+        if self._tab is None:
+            return
+
+        new_title = (
+            f"({self._pending_lines}) {self._title}"
+            if self._pending_lines
+            else self._title
+        )
+
+        new_color = Qt.GlobalColor.red if self._pending_lines else QColor()
+
+        if self._tab.title() != new_title:
+            self._tab.setTitle(new_title)
+
+        if new_color != self._tab.textColor():
+            self._tab.setTextColor(new_color)
 
     def __del__(self) -> None:
         logging.debug(

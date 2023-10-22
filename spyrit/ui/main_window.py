@@ -19,7 +19,7 @@ import logging
 import weakref
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QResizeEvent
+from PySide6.QtGui import QCloseEvent, QColor, QResizeEvent
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QMainWindow,
@@ -117,6 +117,36 @@ class TabProxy(QObject):
 
         if (index := self._index()) >= 0:
             self._tab_widget.setTabText(index, title)
+
+    def title(self) -> str:
+        """
+        Returns the current title of this tab.
+
+        Returns:
+            The tab's title.
+        """
+
+        return self._tab_widget.tabText(self._index())
+
+    def setTextColor(self, color: QColor | Qt.GlobalColor) -> None:
+        """
+        Sets the color for the text of the tab's title.
+
+        Args:
+            color: The color to use.
+        """
+
+        self._tab_widget.tabBar().setTabTextColor(self._index(), color)
+
+    def textColor(self) -> QColor:
+        """
+        Returns the color of the text in the tab's title.
+
+        Returns:
+            The text color in question.
+        """
+
+        return self._tab_widget.tabBar().tabTextColor(self._index())
 
     def window(self) -> QWidget | None:
         """

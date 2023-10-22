@@ -17,9 +17,12 @@ A class that implements the main window of the application.
 
 import logging
 
+from typing import cast
+
 from PySide6.QtCore import Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QResizeEvent
 from PySide6.QtWidgets import (
+    QApplication,
     QHBoxLayout,
     QMainWindow,
     QTabWidget,
@@ -334,6 +337,13 @@ class SpyritMainWindow(QMainWindow):
         """
 
         return self._tab_widget
+
+    def alert(self) -> None:
+        """
+        Makes the window call for user attention.
+        """
+        if (app := QApplication.instance()) is not None:
+            cast(QApplication, app).alert(self, 0)
 
     @Slot(int)
     def _closeIfEmpty(self, tab_count: int) -> None:

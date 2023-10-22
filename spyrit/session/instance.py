@@ -20,7 +20,7 @@ import logging
 
 from typing import Iterable, Sequence
 
-from PySide6.QtCore import Qt, QObject, Slot
+from PySide6.QtCore import Qt, QObject, Signal, Slot
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
 
@@ -90,10 +90,15 @@ class SessionInstance(QObject):
     an SessionInstance is its associated model.
     """
 
+    # This signal is emitted when the number of unread lines in this instance
+    # changes, one way or another.
+
+    unreadLinesChanged: Signal = Signal()  # noqa: N815
+
     _title: str = ""
     _active: bool = True
     _connected: bool = False
-    _pending_lines: int = 0
+    _unread_lines: int = 0
     _tab: TabProxy | None = None
 
     def setTab(self, tab: TabProxy) -> None:
@@ -145,9 +150,20 @@ class SessionInstance(QObject):
 
         self._active = active
         if active:
-            self._pending_lines = 0
+            self._unread_lines = 0
+            self.unreadLinesChanged.emit()
 
         self._updateTabTitle()
+
+    def unreadLines(self) -> int:
+        """
+        Returns the number of unread lines of game text in this instance.
+
+        Returns:
+            A number of lines.
+        """
+
+        return self._unread_lines
 
     @Slot(FragmentList)
     def updateStateFromFragments(self, fragments: Iterable[Fragment]) -> None:
@@ -167,7 +183,8 @@ class SessionInstance(QObject):
 
                 case FlowControlFragment(code=FlowControlCode.LF):
                     if not self._active:
-                        self._pending_lines += 1
+                        self._unread_lines += 1
+                        self.unreadLinesChanged.emit()
                         self._updateTabTitle()
 
                 case _:
@@ -206,12 +223,12 @@ class SessionInstance(QObject):
             return
 
         new_title = (
-            f"({self._pending_lines}) {self._title}"
-            if self._pending_lines
+            f"({self._unread_lines}) {self._title}"
+            if self._unread_lines
             else self._title
         )
 
-        new_color = Qt.GlobalColor.red if self._pending_lines else QColor()
+        new_color = Qt.GlobalColor.red if self._unread_lines else QColor()
 
         if self._tab.title() != new_title:
             self._tab.setTitle(new_title)

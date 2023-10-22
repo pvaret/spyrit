@@ -94,7 +94,11 @@ class SessionWindow(QObject):
         the window and the instance to this SessionWindow.
         """
 
+        # Create and set up the instance.
+
         self._instances.add(instance := SessionInstance())
+
+        instance.unreadLinesChanged.connect(self._maybeHighlightWindow)
 
         # Create the UI for a game.
 
@@ -105,6 +109,18 @@ class SessionWindow(QObject):
 
         self._window.tabs().addTab(widget, instance.title())
         instance.setTab(TabProxy(self._window.tabs(), widget))
+
+    @Slot()
+    def _maybeHighlightWindow(self) -> None:
+        """
+        Makes the window call for attention if there are unread lines of text in
+        one of its instances.
+        """
+
+        unread = sum(instance.unreadLines() for instance in self._instances)
+
+        if unread:
+            self._window.alert()
 
     @Slot()
     def maybeClose(self) -> None:

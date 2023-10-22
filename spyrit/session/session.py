@@ -18,7 +18,7 @@ where a session is made of windows, and a window is made of game instances.
 Essentially, sessions are the model counterpart to the UI's view/controller. The
 fact that the UI is both view and controller makes things a little finicky, but
 broadly here's the design we're going for:
-  - Session, SessionWindow and Instance are models for respectively, the
+  - Session, SessionWindow and SessionInstance are models for respectively, the
     application, one window, and one tab.
   - View update mechanisms are implemented as methods on UI elements.
   - User interactions, so the controller part, are reported by UI elements with
@@ -33,8 +33,9 @@ from PySide6.QtCore import QObject, Slot
 from spyrit.session.instance import SessionInstance, askUserIfReadyToClose
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.main_window import SpyritMainWindow, TabProxy
+from spyrit.ui.main_window import SpyritMainWindow
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
+from spyrit.ui.tab_proxy import TabProxy
 from spyrit.ui.welcome_pane import WelcomePane
 
 

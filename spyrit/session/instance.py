@@ -32,7 +32,7 @@ from spyrit.network.fragments import (
     FragmentList,
     NetworkFragment,
 )
-from spyrit.ui.main_window import TabProxy
+from spyrit.ui.tab_proxy import TabProxy
 
 
 def askUserIfReadyToClose(

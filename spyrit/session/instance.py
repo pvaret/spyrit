@@ -97,6 +97,7 @@ class SessionInstance(QObject):
 
     _title: str = ""
     _active: bool = True
+    _focused: bool = True
     _connected: bool = False
     _unread_lines: int = 0
     _tab: TabProxy | None = None
@@ -133,10 +134,8 @@ class SessionInstance(QObject):
             title: The title to be set.
         """
 
-        if title != self._title:
-            self._title = title
-            if self._tab is not None:
-                self._tab.setTitle(self._title)
+        self._title = title
+        self._updateTabTitle()
 
     @Slot(bool)
     def setActive(self, active: bool) -> None:
@@ -149,11 +148,20 @@ class SessionInstance(QObject):
         """
 
         self._active = active
-        if active:
-            self._unread_lines = 0
-            self.unreadLinesChanged.emit()
+        self._updateUnreadLineCount()
 
-        self._updateTabTitle()
+    @Slot(bool)
+    def setFocused(self, focused: bool) -> None:
+        """
+        Records whether the window this instance is in currently has the desktop
+        focus.
+
+        Args:
+            focused: Whether the window is focused.
+        """
+
+        self._focused = focused
+        self._updateUnreadLineCount()
 
     def unreadLines(self) -> int:
         """
@@ -164,6 +172,28 @@ class SessionInstance(QObject):
         """
 
         return self._unread_lines
+
+    def _updateUnreadLineCount(self, delta: int = 0) -> None:
+        """
+        Updates the current count of unread lines in this instance.
+
+        If the instance is the active tab in a focused window, then the current
+        count is set to 0.
+
+        Else the given delta is added to the current unread line count.
+
+        Args:
+            delta: The number of new unread lines.
+        """
+
+        if self._active and self._focused:
+            self._unread_lines = 0
+        else:
+            self._unread_lines += delta
+
+        self._updateTabTitle()
+
+        self.unreadLinesChanged.emit()
 
     @Slot(FragmentList)
     def updateStateFromFragments(self, fragments: Iterable[Fragment]) -> None:
@@ -182,10 +212,7 @@ class SessionInstance(QObject):
                     self._connected = event == Status.CONNECTED
 
                 case FlowControlFragment(code=FlowControlCode.LF):
-                    if not self._active:
-                        self._unread_lines += 1
-                        self.unreadLinesChanged.emit()
-                        self._updateTabTitle()
+                    self._updateUnreadLineCount(delta=1)
 
                 case _:
                     pass

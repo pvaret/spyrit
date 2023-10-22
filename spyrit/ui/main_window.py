@@ -19,8 +19,8 @@ import logging
 
 from typing import cast
 
-from PySide6.QtCore import Qt, QTimer, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QResizeEvent
+from PySide6.QtCore import Qt, QEvent, QTimer, Signal, Slot
+from PySide6.QtGui import QCloseEvent, QEnterEvent, QResizeEvent
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -240,6 +240,11 @@ class SpyritMainWindow(QMainWindow):
 
     newTabRequested: Signal = Signal()  # noqa: N815
 
+    # We fire this signal when the window's desktop focus status has changed.
+    # Its parameter is True if the window now has focus, else False.
+
+    focusChanged: Signal = Signal(bool)  # noqa: N815
+
     _settings: SpyritSettings
     _state: SpyritState
     _tab_widget: TabWidget
@@ -380,7 +385,8 @@ class SpyritMainWindow(QMainWindow):
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         """
-        Overrides the default resize event to store the new size in the state.
+        Overrides the default resize event handler to store the new size in the
+        state.
 
         Args:
             event: The resize event being processed.
@@ -391,6 +397,24 @@ class SpyritMainWindow(QMainWindow):
         self._state.ui.window_size.set(event.size())
 
         return super().resizeEvent(event)
+
+    def enterEvent(self, event: QEnterEvent) -> None:
+        """
+        Overrides the default enter event handler to raise a signal that the
+        window now has focus.
+        """
+
+        self.focusChanged.emit(True)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event: QEvent) -> None:
+        """
+        Overrides the default leave event handler to raise a signal that the
+        window no longer has focus.
+        """
+
+        self.focusChanged.emit(False)
+        super().leaveEvent(event)
 
     def __del__(self) -> None:
         logging.debug(

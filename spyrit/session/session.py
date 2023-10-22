@@ -108,6 +108,8 @@ class SessionWindow(QObject):
         # Add the UI to a tab and bind the instance to that tab.
 
         self._window.tabs().addTab(widget, instance.title())
+        self._window.focusChanged.connect(instance.setFocused)
+
         instance.setTab(TabProxy(self._window.tabs(), widget))
 
     @Slot()

@@ -52,11 +52,11 @@ class Connection(QObject):
     _socket: QTcpSocket
     _is_connected: bool
 
-    # This signal is emited when data is received from the socket.
+    # This signal is emitted when data is received from the socket.
 
     dataReceived: Signal = Signal(bytes)  # noqa: N815
 
-    # This signal is emited when the status of the connection changed.
+    # This signal is emitted when the status of the connection changed.
 
     statusChanged: Signal = Signal(Status, str)  # noqa: N815
 

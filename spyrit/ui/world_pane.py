@@ -41,9 +41,17 @@ from spyrit.ui.input_history import Historian
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
+from spyrit.ui.search_bar import SearchBar
 
 
 class Splitter(QSplitter):
+    """
+    A specialized splitter that saves its status in settings.
+
+    Args:
+        state: The state settings object to use to save the splitter status.
+    """
+
     _state: SpyritState.UI
 
     def __init__(self, state: SpyritState.UI) -> None:
@@ -55,10 +63,29 @@ class Splitter(QSplitter):
 
     @Slot()
     def _saveSplitterSizes(self) -> None:
+        """
+        Saves the splitter's status to the splitter's setting object.
+        """
+
         self._state.splitter_sizes.set(self.sizes())
 
 
 class WorldPane(Pane):
+    """
+    The main game pane.
+
+    Here is where we put together the UI to display game output and let the user
+    enter their input. This is where many of the components that make up the
+    behavior of the app are put together.
+
+    Args:
+        settings: The specific settings object for this game.
+
+        state: The specific state object for this game.
+
+        instance: The instance object to bind to this game.
+    """
+
     _settings: SpyritSettings
     _state: SpyritState
     _instance: SessionInstance
@@ -127,6 +154,11 @@ class WorldPane(Pane):
         connection.start()
 
     def onActive(self) -> None:
+        """
+        Overrides the parent method to set the instance's title when this pane
+        becomes active.
+        """
+
         # Update the instance title with this world's name.
 
         self._instance.setTitle(self._settings.name.get())
@@ -134,9 +166,21 @@ class WorldPane(Pane):
     def _addGameWidgets(
         self, splitter: QSplitter
     ) -> tuple[OutputView, InputBox, InputBox]:
+        """
+        Creates the widgets of the game's UI and adds them to the given splitter
+        widget.
+
+        Args:
+            splitter: The splitter to which to add the widgets.
+
+        Returns:
+            The widgets that were created.
+        """
+
         # Add and set up the widgets of the game UI.
 
         splitter.addWidget(view := OutputView(self._settings.ui.output))
+        splitter.addWidget(search_bar := SearchBar(view.document()))
         splitter.addWidget(second_inputbox := InputBox())
         splitter.addWidget(inputbox := InputBox())
 
@@ -145,6 +189,8 @@ class WorldPane(Pane):
         # Install up the user-friendly scrollbar helper.
 
         scroller = Scroller(view.verticalScrollBar())
+
+        view.requestScrollToPosition.connect(scroller.smoothScrollToPosition)
 
         # Set up view-related shortcuts. Those need to be on the WorldPane
         # itself because the view never has focus.
@@ -168,6 +214,16 @@ class WorldPane(Pane):
                 )
             )
 
+        self.addAction(
+            find := ActionWithKeySetting(
+                parent=self,
+                text="Find",
+                key=shortcuts.find,
+                slot=search_bar.toggle,
+            )
+        )
+        find.setCheckable(True)
+
         # Set up the focus logic for the game UI. TL;DR: both the pane and the
         # view forward to the main input, and the second input comes after the
         # main input in the tab order.
@@ -176,10 +232,22 @@ class WorldPane(Pane):
         view.setFocusProxy(inputbox)
         self.setTabOrder(inputbox, second_inputbox)
 
+        # Plug search results into the output view.
+
+        search_bar.searchResultReady.connect(view.displaySearchResults)
+
         # The second input transfers its focus to the main input when the second
         # input no longer wants it.
 
         second_inputbox.expelFocus.connect(inputbox.setFocus)
+
+        # And so does the search bar.
+
+        search_bar.expelFocus.connect(inputbox.setFocus)
+
+        # Search bar is hidden by default.
+
+        search_bar.hide()
 
         # Plug in the second input toggling logic.
 
@@ -200,6 +268,19 @@ class WorldPane(Pane):
         return view, inputbox, second_inputbox
 
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
+        """
+        Configures the given input box against the given connection. I.e. makes
+        it so the input box can be used to send its input in the connection.
+
+        Also installs the text history helper on the input box.
+
+        Args:
+            connection: The network connection to which to send user input.
+
+            inputbox: The text box from which to read the input to send on the
+                network.
+        """
+
         # Plug the input into the network connection.
 
         postman = Postman(inputbox, connection)
@@ -230,6 +311,18 @@ class WorldPane(Pane):
         )
 
     def _createGameDataProcessor(self, connection: Connection) -> BaseProcessor:
+        """
+        Constructs and returns the processor to parse the network output from
+        the game.
+
+        Args:
+            connection: The connection whose output to feed into the processor.
+
+        Returns:
+            A processor, configured to parse game output, and bound to the given
+            connection.
+        """
+
         processor = ChainProcessor(
             PacketSplitterProcessor(),
             ANSIProcessor(self._settings.ui.output.ansi_bold_effect),

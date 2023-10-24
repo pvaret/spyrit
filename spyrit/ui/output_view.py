@@ -18,14 +18,28 @@ Implements a widget to display the text of a game.
 
 from typing import Any
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QFontMetrics
+from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtGui import QFont, QFontMetrics, QTextCursor
 from PySide6.QtWidgets import QTextEdit
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 class OutputView(QTextEdit):
+    """
+    A widget that displays the output of a game.
+
+    Args:
+        settings: The settings object for this specific widget.
+    """
+
+    # This signal fires when the view wishes to scroll to the given position. As
+    # it currently stands, scrolling is managed by the Scroller, so the view
+    # can't just update its own scrollbar. Instead it needs to use this signal
+    # to communicate.
+
+    requestScrollToPosition: Signal = Signal(int)  # noqa: N815
+
     _settings: SpyritSettings.UI.Output
 
     def __init__(self, settings: SpyritSettings.UI.Output) -> None:
@@ -47,6 +61,14 @@ class OutputView(QTextEdit):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
 
     def setFixedPitchFont(self, font: QFont) -> None:
+        """
+        Configures the given font to behave with a fixed pitch, and uses it to
+        render this widget's contents.
+
+        Args:
+            font: The font to use for this widget's contents.
+        """
+
         # Forced the pitch of the font to be fixed.
 
         font.setFixedPitch(True)
@@ -68,7 +90,45 @@ class OutputView(QTextEdit):
         step = QFontMetrics(font).lineSpacing() - 1
         self.verticalScrollBar().setSingleStep(step)
 
-    def _applyStyleSheet(self, _: Any = None) -> None:
+    @Slot(QTextCursor)
+    def displaySearchResults(self, cursor: QTextCursor) -> None:
+        """
+        Makes the given cursor visible and scrolls the view so that the cursor
+        is approximately centered.
+
+        Args:
+            cursor: The cursor to make visible.
+        """
+
+        self.setTextCursor(cursor)
+
+        if cursor.isNull():
+            self.requestScrollToPosition.emit(
+                self.verticalScrollBar().maximum()
+            )
+
+        else:
+            # This scrolls the view so that the given cursor is a bit above the
+            # middle of the view. Works well aesthetically.
+
+            self.requestScrollToPosition.emit(
+                self.verticalScrollBar().value()
+                + self.cursorRect().y()
+                - self.viewport().height() // 2
+                + self.verticalScrollBar().singleStep()
+            )
+
+    def _applyStyleSheet(self, *args: Any) -> None:
+        """
+        Creates and applies a stylesheet that uses the configured settings for
+        this view as its properties.
+
+        Args:
+            Ignored.
+        """
+
+        del args
+
         background_color = self._settings.canvas_color.get().asHex()
         self.setStyleSheet(
             f"""

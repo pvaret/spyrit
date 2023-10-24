@@ -135,6 +135,7 @@ class SpyritSettings(Settings):
         toggle_second_input: Key[Shortcut] = _shortcut_key("Ctrl+M")
         history_previous: Key[Shortcut] = _shortcut_key("Ctrl+Up")
         history_next: Key[Shortcut] = _shortcut_key("Ctrl+Down")
+        find: Key[Shortcut] = _shortcut_key("Ctrl+F")
 
     class Network(Bunch):
         """

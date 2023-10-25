@@ -37,7 +37,7 @@ class Button(QPushButton):
     def __init__(self, label: str) -> None:
         super().__init__(label)
 
-        self.setStyleSheet(f"padding: {_UNIT}")
+        self.setStyleSheet(f"padding: {_UNIT/1.5} {_UNIT} {_UNIT/1.5} {_UNIT}")
 
 
 class WorldButton(Button):

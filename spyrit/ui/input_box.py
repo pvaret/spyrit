@@ -16,8 +16,8 @@ Implements an input box for the user to type text in.
 
 
 from PySide6.QtCore import QObject, Qt, Signal, Slot
-from PySide6.QtGui import QKeyEvent
-from PySide6.QtWidgets import QTextEdit, QWidget
+from PySide6.QtGui import QFontMetrics, QKeyEvent
+from PySide6.QtWidgets import QPlainTextEdit, QWidget
 
 from spyrit.network.connection import Connection
 
@@ -25,7 +25,14 @@ from spyrit.network.connection import Connection
 _CRLF = "\r\n"
 
 
-class InputBox(QTextEdit):
+class InputBox(QPlainTextEdit):
+    """
+    A text entry widget dedicated to letting a user send text to a game.
+
+    Args:
+        parent: The parent widget of this widget.
+    """
+
     # This signal fires when the user presses Enter in the input box.
 
     returnPressed: Signal = Signal()  # noqa: N815
@@ -37,16 +44,39 @@ class InputBox(QTextEdit):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
+        # Update the minimum height of the box. Unlike default QPlainTextEdit,
+        # we want to allow the box to be just high enough for one row of text.
+        # Plus margins and frame, of course.
+
+        margins = self.contentsMargins()
+        doc_margins = self.document().documentMargin()
+        frame_width = self.frameWidth()
+        line_height = QFontMetrics(self.font()).height()
+
+        self.setMinimumHeight(
+            int(
+                line_height
+                + margins.top()
+                + margins.bottom()
+                + doc_margins * 2
+                + frame_width * 2
+            )
+        )
+
         # Use tabs to change the focus instead of entering them as character in
         # the input box.
 
         self.setTabChangesFocus(True)
 
-        # Use plain text only.
-
-        self.setAcceptRichText(False)
-
     def keyPressEvent(self, e: QKeyEvent) -> None:
+        """
+        Overrides the key press event from the parent to emit a signal when
+        Enter is pressed without modifiers.
+
+        Args:
+            e: The key event to process.
+        """
+
         # Handle the Enter/Return special case.
 
         if (
@@ -63,20 +93,33 @@ class InputBox(QTextEdit):
 
     @Slot(bool)
     def toggleVisibility(self, visible: bool) -> None:
-        has_focus = self.hasFocus()
+        """
+        Switches the widget between visible and not, and acquires or expels the
+        focus accordingly.
+
+        Args:
+            visible: Whether to now make the widget visible.
+        """
+
+        had_focus = self.hasFocus()
 
         self.setVisible(visible)
         self.setEnabled(visible)  # Note that this may clear the focus.
 
         if visible:
             self.setFocus()
-        elif has_focus:
+        elif had_focus:
             self.expelFocus.emit()
 
 
 class Postman(QObject):
     """
     Manages posting from an InputBox to a Connection.
+
+    Args:
+        inputbox: The InputBox to be managed by this Postman.
+
+        connection: The connection where to send the user's input.
     """
 
     # This signal fires when we successfully sent an input to the connection.
@@ -96,6 +139,11 @@ class Postman(QObject):
 
     @Slot()
     def _sendInput(self) -> None:
+        """
+        Attempts to send the input box's contents to the connection and clears
+        it if successful.
+        """
+
         text = self._inputbox.toPlainText()
         if self._connection.send(text + _CRLF):
             self._inputbox.clear()

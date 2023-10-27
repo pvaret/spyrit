@@ -16,7 +16,7 @@ Implements history for input boxes.
 
 
 from PySide6.QtCore import QObject, Slot
-from PySide6.QtWidgets import QTextEdit
+from PySide6.QtWidgets import QPlainTextEdit
 
 from spyrit.settings.spyrit_state import SpyritState
 
@@ -26,7 +26,7 @@ class Historian(QObject):
     Provides logic to search up and down an input box's history.
     """
 
-    _inputbox: QTextEdit
+    _inputbox: QPlainTextEdit
     _state: SpyritState.History
 
     _current_history: list[str] | None
@@ -34,7 +34,7 @@ class Historian(QObject):
 
     def __init__(
         self,
-        inputbox: QTextEdit,
+        inputbox: QPlainTextEdit,
         state: SpyritState.History,
         parent: QObject | None = None,
     ) -> None:
@@ -94,7 +94,7 @@ class Historian(QObject):
 
         self._current_index += delta
         self._inputbox.clear()
-        self._inputbox.append(history[self._current_index])
+        self._inputbox.appendPlainText(history[self._current_index])
 
     @Slot()
     def historyNext(self) -> None:

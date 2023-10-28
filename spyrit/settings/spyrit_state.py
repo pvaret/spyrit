@@ -40,19 +40,26 @@ class ToggleKey(Key[bool]):
 
 class SpyritState(Settings):
     class UI(Bunch):
-        window_size = Key(
+        window_size: Key[QSize] = Key(
             _default_size, serializer=Size(), validator=_size_validator
         )
 
-        splitter_sizes = Key(default=[1000, 100, 100], serializer=IntList())
-        second_input_visible = ToggleKey(default=False)
+        output_splitter_sizes: Key[list[int]] = Key(
+            default=[800, 200], serializer=IntList()
+        )
+        input_splitter_sizes: Key[list[int]] = Key(
+            default=[800, 200], serializer=IntList()
+        )
+        extra_input_visible: ToggleKey = ToggleKey(default=False)
 
     class History(Bunch):
-        max_history_length = Key(default=100, validator=lambda value: value > 0)
-        history = List(Key(default=""))
+        max_history_length: Key[int] = Key(
+            default=100, validator=lambda value: value > 0
+        )
+        history: List[Key[str]] = List(Key(default=""))
 
-    ui = UI()
-    history = History()
+    ui: UI = UI()
+    history: History = History()
 
     # Here follows a helper method to match settings hierarchy and state
     # hierarchy.

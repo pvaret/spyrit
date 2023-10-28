@@ -19,15 +19,37 @@ import logging
 
 from typing import Callable
 
-from PySide6.QtCore import QObject, Qt, SignalInstance, Slot
-from PySide6.QtGui import QAction
-
 from sunset import Key
+
+from PySide6.QtCore import QObject, Qt, SignalInstance, Slot
+from PySide6.QtGui import QAction, QIcon
 
 from spyrit.settings.key_shortcut import Shortcut
 
 
 class ActionWithKeySetting(QAction):
+    """
+    A QAction wrapper class that uses a SunsetSettings Key to store its keyboard
+    shortcut.
+
+    Args:
+        parent: The object to use as this action's parent, for lifetime duration
+            purposes.
+
+        text: The user-facing name to give this action.
+
+        key: The SunsetSettings Key containing the keyboard shortcut to use for
+            this action.
+
+        slot: The callable to trigger when this action is invoked.
+
+        checkable: Whether this action is a check, i.e. togglable.
+            Default: False.
+
+        icon: The icon to use for this action when added to a toolbar or menu.
+            Default: None.
+    """
+
     _key: Shortcut
 
     def __init__(
@@ -36,6 +58,8 @@ class ActionWithKeySetting(QAction):
         text: str,
         key: Key[Shortcut],
         slot: Slot | SignalInstance | Callable[[], None],
+        checkable: bool = False,
+        icon: QIcon | None = None,
     ) -> None:
         super().__init__(parent=parent)
 
@@ -44,15 +68,32 @@ class ActionWithKeySetting(QAction):
         key.onValueChangeCall(self.updateShortcut)
         self.updateShortcut(key.get())
 
+        self.setCheckable(checkable)
+
+        if icon is not None:
+            self.setIcon(icon)
+
         self.triggered.connect(self._debug)
         self.triggered.connect(slot)
 
     def updateShortcut(self, key: Shortcut) -> None:
+        """
+        Sets up the given keyboard shortcut to be used for this action.
+
+        Args:
+            key: The keyboard shortcut.
+        """
+
         self._key = key
         self.setShortcut(key)
+        self.setToolTip(f"{self.text()} ({key.toString()})")
 
     @Slot()
     def _debug(self) -> None:
+        """
+        Logs debug information when this action is invoked.
+        """
+
         if self.isCheckable():
             logging.debug(
                 "Action '%s' (%s) toggled to %s.",

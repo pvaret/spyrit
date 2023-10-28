@@ -5,4 +5,8 @@
     <qresource prefix="/logos/">
         <file>spyrit-logo.svg</file>
     </qresource>
+    <qresource prefix="/icons/">
+        <file>input-field.svg</file>
+        <file>search.svg</file>
+    </qresource>
 </RCC>

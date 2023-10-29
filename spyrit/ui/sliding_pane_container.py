@@ -31,6 +31,9 @@ class SlidingPaneContainer(QScrollArea):
     """
     A horizontal container for widgets that will take up the full view port and
     can be switched between with a smooth sliding animation.
+
+    Args:
+        parent: The widget to use as this widget's parent.
     """
 
     # How long should the slide animation last, in milliseconds.
@@ -99,6 +102,9 @@ class SlidingPaneContainer(QScrollArea):
     def addPaneLeft(self, pane: Pane) -> None:
         """
         Adds the given pane to the left of the current pane, if any.
+
+        Args:
+            pane: The new pane to be added to this container.
         """
 
         index = self._active_pane_index
@@ -108,6 +114,9 @@ class SlidingPaneContainer(QScrollArea):
     def addPaneRight(self, pane: Pane) -> None:
         """
         Adds the given pane to the right of the current pane, if any.
+
+        Args:
+            pane: The new pane to be added to this container.
         """
 
         index = self._active_pane_index + 1
@@ -128,7 +137,12 @@ class SlidingPaneContainer(QScrollArea):
 
     def insertPane(self, index: int, pane: Pane) -> None:
         """
-        Insert the given pane into the viewport at the given index.
+        Inserts the given pane into the viewport at the given index.
+
+        Args:
+            index: The index in the pane list at which to insert the new pane.
+
+            pane: The new pane to be added to this container.
         """
 
         index = max(index, 0)
@@ -179,8 +193,12 @@ class SlidingPaneContainer(QScrollArea):
 
     def switchToPane(self, index: int) -> None:
         """
-        Make the pane at the given index the active one, with a sliding animated
-        transition.
+        Makes the pane at the given index the active one, with a sliding
+        animated transition.
+
+        Args:
+            index: The index in the pane list that the container should switch
+            to.
         """
 
         index = max(index, 0)
@@ -189,11 +207,15 @@ class SlidingPaneContainer(QScrollArea):
         if index == self._active_pane_index:
             return
 
-        # Make the current pane inactive. The destination pane will be made
-        # active when the animation completes.
+        # Make the current pane inactive. The target pane will be made active
+        # when the scroll animation completes, but we inform it right away that
+        # it's about to become active.
 
         if (pane_from := self._currentActivePane()) is not None:
             self._makePaneInactive(pane_from)
+
+        if (pane_to := self[index]) is not None:
+            pane_to.onActive()
 
         # If the animation is currently running already, then use its current
         # position as the starting position for a new animation.
@@ -216,33 +238,43 @@ class SlidingPaneContainer(QScrollArea):
     def _currentActivePane(self) -> Pane | None:
         """
         Returns the widget of the current active pane, if any.
+
+        Returns:
+            A pane if one is currently active. If an animation is in progress,
+            the target pane is considered the active one even if it's not
+            visible yet.
         """
-        try:
-            return self._panes[self._active_pane_index]
-        except IndexError:
-            return None
+        return self[self._active_pane_index]
 
     def _makePaneActive(self, pane: Pane) -> None:
         """
-        Set the necessary properties on a pane that is becoming active.
+        Enables and sets the necessary properties (such as focus) on a pane that
+        has become active.
+
+        Args:
+            pane: The pane to make active.
         """
 
         pane.setEnabled(True)
         pane.setFocus()
         self.setFocusProxy(pane)
 
-        pane.onActive()
-
     def _makePaneInactive(self, pane: Pane) -> None:
         """
-        Set the necessary properties on a pane that is becoming inactive.
+        Disables a pane that has become inactive.
+
+        Args:
+            pane: The pane to make active.
         """
 
         pane.setEnabled(False)
 
     def _deletePane(self, pane: Pane) -> None:
         """
-        Detach a Pane object from this container and set it up to be deleted.
+        Detaches a Pane object from this container and set it up to be deleted.
+
+        Args:
+            pane: The pane to remove from this container.
         """
 
         pane.hide()
@@ -258,6 +290,9 @@ class SlidingPaneContainer(QScrollArea):
     def _isInMotion(self) -> bool:
         """
         Returns whether a sliding animation is in progress.
+
+        Returns:
+            True if and only if the container is currently in active motion.
         """
 
         return self._slide_animation.state() == QVariantAnimation.State.Running
@@ -265,7 +300,7 @@ class SlidingPaneContainer(QScrollArea):
     @Slot()
     def _onAnimationMaybeComplete(self) -> None:
         """
-        Check if the animation just completed. If so, clean up transient,
+        Checks if the animation just completed. If so, clean up transient,
         inactive panes.
         """
 
@@ -282,7 +317,7 @@ class SlidingPaneContainer(QScrollArea):
     @Slot()
     def _enforceXScrollPosition(self) -> None:
         """
-        Force the horizontal scroll position to be whatever this widget thinks
+        Forces the horizontal scroll position to be whatever this widget thinks
         it should be. Prevents spurious scrolling.
         """
 
@@ -292,7 +327,7 @@ class SlidingPaneContainer(QScrollArea):
     @Slot()
     def _enforceYScrollPosition(self) -> None:
         """
-        Force the vertical scroll position to be whatever this widget thinks
+        Forces the vertical scroll position to be whatever this widget thinks
         it should be. Prevents spurious scrolling.
         """
 
@@ -302,9 +337,13 @@ class SlidingPaneContainer(QScrollArea):
     @Slot(float)
     def _enforceXScrollPositionForValue(self, value: float) -> None:
         """
-        Compute and update the horizontal scroll position based on the given
+        Computes and updates the horizontal scroll position based on the given
         value, where the value is a possibly non-integer index into the pane
         list.
+
+        Args:
+            value: A non-integer index into the pane list that represents the
+                current position in that list.
         """
 
         width = self.viewport().size().width()
@@ -323,7 +362,7 @@ class SlidingPaneContainer(QScrollArea):
 
     def _garbageCollectPanes(self) -> None:
         """
-        Delete the transient panes in this container that are not currently
+        Deletes the transient panes in this container that are not currently
         active.
         """
 
@@ -366,10 +405,13 @@ class SlidingPaneContainer(QScrollArea):
             pane.move(size.width() * i, 0)
             pane.resize(size.width(), size.height())
 
-    def resizeEvent(self, arg__1: QResizeEvent) -> None:
+    def resizeEvent(self, event: QResizeEvent) -> None:  # type: ignore
         """
-        Propagate resize events to the child panes and update the scrollbar
+        Propagates resize events to the child panes and updates the scrollbar
         position to stay fixed relative to the panes.
+
+        Args:
+            event: The resize event to process.
         """
 
         self._resizeContainer()
@@ -385,22 +427,53 @@ class SlidingPaneContainer(QScrollArea):
 
             QTimer.singleShot(0, self._enforceXScrollPosition)  # type: ignore
 
-        super().resizeEvent(arg__1)
+        super().resizeEvent(event)
 
-    def wheelEvent(self, arg__1: QWheelEvent) -> None:
+    def wheelEvent(self, event: QWheelEvent) -> None:  # type: ignore
         """
-        Override QScrollArea's mouse wheel handling. We never want to scroll
+        Overrides QScrollArea's mouse wheel handling. We never want to scroll
         this widget from mouse events. Instead, pass down the mouse event to the
         current pane.
+
+        Args:
+            event: The wheel event to process.
         """
 
         if (current_pane := self._currentActivePane()) is not None:
-            current_pane.wheelEvent(arg__1)
+            current_pane.wheelEvent(event)
 
     def __len__(self) -> int:
+        """
+        Returns the number of panes in this container.
+
+        Returns:
+            The number of panes.
+        """
+
         return len(self._panes)
 
+    def __getitem__(self, index: int) -> Pane | None:
+        """
+        Returns the pane at the given index. If the index is out of bounds,
+        return None without raising an exception.
+
+        Args:
+            index: The index of the desired pane.
+
+        Returns:
+            A pane, if one is found at the given index, else None.
+        """
+
+        try:
+            return self._panes[index]
+        except IndexError:
+            return None
+
     def __del__(self) -> None:
+        """
+        Logs a debug message on deletion.
+        """
+
         logging.debug(
             "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
         )

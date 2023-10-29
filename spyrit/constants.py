@@ -54,7 +54,7 @@ BUTTON_WRAP_CHARACTER: int = 30  # characters
 LOGO_WIDTH_UNITS: int = 20  # UI units
 FORM_WIDTH_UNITS: int = 20  # UI units
 
-PANE_ANIMATION_DURATION_MS: int = 550  # milliseconds
+PANE_ANIMATION_DURATION_MS: int = 400  # milliseconds
 SCROLL_ANIMATION_DURATION_MS: int = 250  # milliseconds
 
 DEFAULT_FONT_FAMILY: list[str] = ["Noto Sans Mono", "monospace"]

@@ -27,6 +27,7 @@ from spyrit import constants, platform, resources
 from spyrit.default_paths_base import DefaultPathsBase
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.gc_stats import GCStats
+from spyrit.resources.resources import Font
 from spyrit.session.session import Session
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
@@ -89,7 +90,7 @@ def _load_resources() -> bool:
         logging.error("Resources failed to load.")
         return False
 
-    if QFontDatabase.addApplicationFont(":/fonts/NotoSansMono.ttf") == -1:
+    if QFontDatabase.addApplicationFont(Font.NOTO_SANS_MONO_TTF) == -1:
         logging.error("Default game font not found in resources.")
         return False
 

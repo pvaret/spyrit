@@ -22,6 +22,7 @@ from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from spyrit import constants
+from spyrit.resources.resources import Logo
 from spyrit.ui.sizer import Sizer
 
 
@@ -40,7 +41,7 @@ class SpyritLogo(QWidget):
         logo_width = constants.LOGO_WIDTH_UNITS * unit
 
         spyrit_label = QSvgWidget()
-        spyrit_label.load(":/logos/spyrit-logo.svg")
+        spyrit_label.load(Logo.SPYRIT_SVG)
         spyrit_label.renderer().setAspectRatioMode(
             Qt.AspectRatioMode.KeepAspectRatio
         )

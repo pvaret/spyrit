@@ -1,6 +1,7 @@
 from PySide6.QtCore import QFile
 
 from spyrit.resources.loader import load
+from spyrit.resources.resources import Resources
 
 
 class TestResources:
@@ -8,11 +9,6 @@ class TestResources:
         assert load()
 
     def test_all_resources_present(self) -> None:
-        load()
-        for filename in (
-            ":/fonts/NotoSansMono.ttf",
-            ":/logos/spyrit-logo.svg",
-            ":/icons/input-field.svg",
-            ":/icons/search.svg",
-        ):
-            assert QFile(filename).exists()
+        for resource_type in Resources:
+            for filename in resource_type:
+                assert QFile(filename).exists()

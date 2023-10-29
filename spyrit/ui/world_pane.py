@@ -40,6 +40,7 @@ from spyrit.network.processors import (
     UserPatternProcessor,
     bind_processor_to_connection,
 )
+from spyrit.resources.resources import Icon
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
@@ -342,7 +343,7 @@ class WorldPane(Pane):
                 key=shortcuts.find,
                 slot=search_bar.toggle,
                 checkable=True,
-                icon=QIcon(":/icons/search.svg"),
+                icon=QIcon(Icon.SEARCH_SVG),
             )
         )
 
@@ -390,7 +391,7 @@ class WorldPane(Pane):
                 self._settings.shortcuts.toggle_second_input,
                 input_visible_key.toggle,
                 checkable=True,
-                icon=QIcon(":/icons/input-field.svg"),
+                icon=QIcon(Icon.INPUT_FIELD_SVG),
             )
         )
 

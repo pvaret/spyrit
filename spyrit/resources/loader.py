@@ -24,7 +24,7 @@ _resources_loaded: bool = False
 
 def load() -> bool:
     """
-    Attempt to load the compiled Qt resources.
+    Attempts to load the application's compiled Qt resources.
 
     Returns:
         True if the attempt succeeded, else False.
@@ -33,9 +33,6 @@ def load() -> bool:
     global _resources_loaded
 
     if not _resources_loaded:
-        this_file = pathlib.Path(__file__)
-        this_dir: str = this_file.parent.absolute().as_posix()
-
         try:
             # pylint: disable-next=import-outside-toplevel
             import spyrit.resources.___compiled as compiled  # noqa: F401
@@ -44,6 +41,9 @@ def load() -> bool:
             del compiled
 
         except ImportError:
+            this_file = pathlib.Path(__file__)
+            this_dir: str = this_file.parent.absolute().as_posix()
+
             logging.error(
                 "Resources not compiled. In order to compile them, run:\n"
                 " pyside6-rcc --generator python"

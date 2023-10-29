@@ -18,20 +18,22 @@ Implements custom widgets to be used in configuration forms.
 
 from PySide6.QtGui import QIntValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy
+
 from sunset import Key
 
 from spyrit import constants
 from spyrit.settings.widget_connector import Connector
-
-# TODO: make this a function of the font size.
-_UNIT = 16
-_PORT_EDIT_WIDTH = 4 * _UNIT
+from spyrit.ui.sizer import Sizer
 
 
 # LineEdits.
 
 
 class LineEdit(QLineEdit):
+    """
+    A line edit widget with a custom size policy.
+    """
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -41,9 +43,22 @@ class LineEdit(QLineEdit):
 
 
 class TextLineEdit(LineEdit):
+    """
+    A line edit widget bound to a SunsetSettings string Key. The widget's
+    contents is populated from the Key's value on creation, and updates the Key
+    when the user edits the widget's contents.
+    """
+
     _connector: Connector[str]
 
     def setKey(self, key: Key[str]) -> None:
+        """
+        Binds this widget to the given SunsetSettings Key.
+
+        Args:
+            key: The SunsetSettings Key to bind to this widget.
+        """
+
         self._connector = Connector[str](
             key,
             widget_value_getter=self.text,
@@ -55,6 +70,11 @@ class TextLineEdit(LineEdit):
 
 
 class ServerLineEdit(TextLineEdit):
+    """
+    A TextLineEdit that specifically validates that the input looks like a valid
+    server address.
+    """
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -64,17 +84,29 @@ class ServerLineEdit(TextLineEdit):
 
 
 class PortLineEdit(LineEdit):
+    """
+    A LineEdit that specifically validates that the input looks like a valid
+    port number.
+    """
+
     _connector: Connector[int]
 
     def __init__(self) -> None:
         super().__init__()
 
-        self.setFixedWidth(_PORT_EDIT_WIDTH)
+        self.setFixedWidth(4 * Sizer(self).unitSize())
         self.setValidator(
             QIntValidator(constants.MIN_TCP_PORT, constants.MAX_TCP_PORT)
         )
 
     def setKey(self, key: Key[int]) -> None:
+        """
+        Binds this widget to the given SunsetSettings Key.
+
+        Args:
+            key: The SunsetSettings Key to bind to this widget.
+        """
+
         self._connector = Connector[int](
             key,
             widget_value_getter=self.text,
@@ -89,6 +121,13 @@ class PortLineEdit(LineEdit):
 
 
 class FixedSizeLabel(QLabel):
+    """
+    A QLabel with a fixed size.
+
+    Args:
+        text: The text to use as this label's contents.
+    """
+
     def __init__(self, text: str) -> None:
         super().__init__(text)
 

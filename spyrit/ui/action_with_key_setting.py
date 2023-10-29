@@ -19,10 +19,10 @@ import logging
 
 from typing import Callable
 
-from sunset import Key
-
 from PySide6.QtCore import QObject, Qt, SignalInstance, Slot
 from PySide6.QtGui import QAction, QIcon
+
+from sunset import Key
 
 from spyrit.settings.key_shortcut import Shortcut
 

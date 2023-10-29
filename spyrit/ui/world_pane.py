@@ -15,8 +15,6 @@
 Implements a UI to play in a world.
 """
 
-from sunset import Key
-
 from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -27,6 +25,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from sunset import Key
 
 from spyrit.network.connection import Connection
 from spyrit.network.keepalive import Keepalive
@@ -51,9 +51,7 @@ from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
-
-
-_UNIT = 16
+from spyrit.ui.sizer import Sizer
 
 
 class Box(QWidget):
@@ -248,6 +246,8 @@ class WorldPane(Pane):
             extra_input: A secondary text entry box.
         """
 
+        unit = Sizer(self).unitSize()
+
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -258,7 +258,7 @@ class WorldPane(Pane):
         inputs = HBox()
         toolbar.setOrientation(Qt.Orientation.Vertical)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        toolbar.setIconSize(QSize(_UNIT, _UNIT))
+        toolbar.setIconSize(QSize(unit, unit))
         inputs.addWidget(toolbar)
 
         inputs.addWidget(

@@ -48,6 +48,11 @@ STATE_SAVE_DELAY_MS: int = 10_000  # milliseconds
 DEFAULT_WINDOW_WIDTH: int = 1000
 DEFAULT_WINDOW_HEIGHT: int = 800
 
+UI_UNIT_SIZE_PX: int = 16  # pixels
+BUTTON_WRAP_CHARACTER: int = 30  # characters
+LOGO_WIDTH_UNITS: int = 20  # UI units
+FORM_WIDTH_UNITS: int = 20  # UI units
+
 PANE_ANIMATION_DURATION_MS: int = 550  # milliseconds
 SCROLL_ANIMATION_DURATION_MS: int = 250  # milliseconds
 

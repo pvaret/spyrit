@@ -26,18 +26,25 @@ from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.buttons import Button, WorldButton
+from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 from spyrit.ui.world_creation_pane import WorldCreationPane
 from spyrit.ui.world_pane import WorldPane
-
-# TODO: make this a function of the font size.
-_UNIT = 16
 
 
 class WelcomePane(Pane):
     """
     Implements the UI entry point from where the users can start using the
     software.
+
+    Args:
+        settings: The global application settings object. It will be used to
+            create or look up a world-specific settings subset when the user
+            creates or picks a world to play.
+
+        state: The global application state object. Ditto.
+
+        instance: The session model object for the tab that contains this pane.
     """
 
     # This pane is never garbage collected.
@@ -60,6 +67,8 @@ class WelcomePane(Pane):
         self._state = state
         self._instance = instance
 
+        unit = Sizer(self).unitSize()
+
         # Create the main layout.
 
         self.setLayout(pane_layout := QHBoxLayout())
@@ -74,14 +83,14 @@ class WelcomePane(Pane):
 
         menu_layout.addWidget(HBar())
 
-        menu_layout.addSpacing(_UNIT)
+        menu_layout.addSpacing(unit)
 
         # New world button!
 
         menu_layout.addWidget(new_world_button := Button("New world..."))
         new_world_button.clicked.connect(self._openWorldCreationPane)
 
-        menu_layout.addSpacing(_UNIT)
+        menu_layout.addSpacing(unit)
 
         # All world buttons!
 
@@ -97,12 +106,12 @@ class WelcomePane(Pane):
                 menu_layout.addWidget(world_button := WorldButton(world))
                 world_button.clicked.connect(self._openWorldPane)
 
-            menu_layout.addSpacing(_UNIT)
+            menu_layout.addSpacing(unit)
 
         # Important application buttons (settings and about)!
 
         menu_layout.addWidget(HBar())
-        menu_layout.addSpacing(_UNIT)
+        menu_layout.addSpacing(unit)
 
         menu_layout.addLayout(button_layout := QHBoxLayout())
 
@@ -124,17 +133,28 @@ class WelcomePane(Pane):
         pane_layout.addStretch()
 
     def onActive(self) -> None:
-        # Set the title of the instance when this pane becomes visible.
+        """
+        Overrides the parent handler to set the instance title when this pane
+        becomes visible.
+        """
 
         self._instance.setTitle(f"Welcome to {constants.APPLICATION_NAME}!")
 
     @Slot()
     def _openWorldCreationPane(self) -> None:
+        """
+        Creates a world creation pane and switches to it.
+        """
+
         pane = WorldCreationPane(self._settings, self._state, self._instance)
         self.addPaneRight(pane)
 
     @Slot()
     def _openWorldPane(self) -> None:
+        """
+        Creates a game pane for an existing world and switches to it.
+        """
+
         button = self.sender()
         if not isinstance(button, WorldButton):
             return

@@ -38,15 +38,19 @@ from spyrit.ui.form_widgets import (
     ServerLineEdit,
     TextLineEdit,
 )
+from spyrit.ui.sizer import Sizer
 from spyrit.ui.world_pane import WorldPane
 
 
-# TODO: make this a function of the font size.
-_UNIT = 16
-_FORM_WIDTH = _UNIT * 20
-
-
 class WorldCreationForm(QWidget):
+    """
+    Implements the UI to configure a new game world.
+
+    Args:
+        settings: The specific settings section to be used for the new game
+            world, as opposed to the global settings object.
+    """
+
     # This signal fires when any field in the form is updated.
 
     updated: Signal = Signal()  # noqa: N815
@@ -54,17 +58,19 @@ class WorldCreationForm(QWidget):
     def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()
 
+        unit = Sizer(self).unitSize()
+
         # Lay out the form.
 
         self.setLayout(layout := QHBoxLayout())
 
         layout.addLayout(form_layout := QVBoxLayout())
 
-        form_layout.addStrut(_FORM_WIDTH)
+        form_layout.addStrut(constants.FORM_WIDTH_UNITS * unit)
 
         form_layout.addWidget(QLabel("Name"))
         form_layout.addWidget(name_edit := TextLineEdit())
-        form_layout.addSpacing(_UNIT)
+        form_layout.addSpacing(unit)
 
         form_layout.addLayout(server_port_layout := QGridLayout())
 
@@ -93,6 +99,17 @@ class WorldCreationForm(QWidget):
 
 
 class WorldCreationPane(BaseDialogPane):
+    """
+    Implements a pane that contains the new world creation form.
+
+    Args:
+        settings: The global application settings object.
+
+        state: The global application state object.
+
+        instance: The session model object for the tab that contains this pane.
+    """
+
     _world_settings: SpyritSettings
     _state: SpyritState
     _instance: SessionInstance
@@ -124,6 +141,10 @@ class WorldCreationPane(BaseDialogPane):
 
     @Slot()
     def _openWorld(self) -> None:
+        """
+        Creates a game pane for the newly configured world, and switches to it.
+        """
+
         if not self._areSettingsValid():
             return
 
@@ -137,9 +158,21 @@ class WorldCreationPane(BaseDialogPane):
 
     @Slot()
     def _maybeEnableConnectButton(self) -> None:
+        """
+        Enables the connect button if the current world settings are valid.
+        """
+
         self._connect_button.setEnabled(self._areSettingsValid())
 
     def _areSettingsValid(self) -> bool:
+        """
+        Validates the settings currently entered in the form.
+
+        Returns:
+            Whether the current world settings can be used to connect to a
+            world.
+        """
+
         return (
             self._world_settings.name.isSet()
             and self._world_settings.name.get().strip() != ""
@@ -152,4 +185,9 @@ class WorldCreationPane(BaseDialogPane):
         )
 
     def onActive(self) -> None:
+        """
+        Overrides the parent handler to set the title of the tab that contains
+        this pane when this pane becomes visible.
+        """
+
         self._instance.setTitle("New world...")

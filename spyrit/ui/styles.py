@@ -20,10 +20,22 @@ import logging
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication, QStyleFactory
+
 from sunset import Key
 
 
 class StyleManager(QObject):
+    """
+    A helper that applies the Qt style configured in settings to the given
+    application.
+
+    Args:
+        app: The application on which to apply the style.
+
+        style_key: The SunsetSettings Key that contains the name of the style to
+            apply.
+    """
+
     _app: QApplication
 
     def __init__(self, app: QApplication, style_key: Key[str]) -> None:
@@ -39,6 +51,14 @@ class StyleManager(QObject):
         self._updateStyle(style_key.get())
 
     def _updateStyle(self, style: str) -> None:
+        """
+        Looks up the style of the given name, and applies it to the Qt
+        application, if it exists.
+
+        Args:
+            style: The name of the Qt style to apply.
+        """
+
         style = style.strip().lower()
 
         if not style:

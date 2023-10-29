@@ -22,18 +22,22 @@ from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 from spyrit import constants
-
-# TODO: make this a function of the font size.
-_UNIT = 16
-_WIDTH = 20 * _UNIT
+from spyrit.ui.sizer import Sizer
 
 
 class SpyritLogo(QWidget):
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
+    """
+    Implements a visually pleasant application logo.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
 
         layout = QVBoxLayout()
         self.setLayout(layout)
+
+        unit = Sizer(self).unitSize()
+        logo_width = constants.LOGO_WIDTH_UNITS * unit
 
         spyrit_label = QSvgWidget()
         spyrit_label.load(":/logos/spyrit-logo.svg")
@@ -43,11 +47,11 @@ class SpyritLogo(QWidget):
 
         svg_size = spyrit_label.renderer().defaultSize()
         aspect_ratio = svg_size.height() / svg_size.width()
-        spyrit_label.setMinimumWidth(_WIDTH)
-        spyrit_label.setMinimumHeight(int(ceil(_WIDTH * aspect_ratio)))
+        spyrit_label.setMinimumWidth(logo_width)
+        spyrit_label.setMinimumHeight(int(ceil(logo_width * aspect_ratio)))
 
         layout.addWidget(spyrit_label)
-        layout.addSpacing(_UNIT)
+        layout.addSpacing(unit)
 
         version_label = QLabel()
         version_label.setText(f"v{constants.SPYRIT_VERSION}")

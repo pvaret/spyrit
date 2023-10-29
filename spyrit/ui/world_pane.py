@@ -247,7 +247,9 @@ class WorldPane(Pane):
             extra_input: A secondary text entry box.
         """
 
-        unit = Sizer(self).unitSize()
+        sizer = Sizer(self)
+        unit = sizer.unitSize()
+        margin = sizer.marginSize()
 
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
@@ -263,10 +265,11 @@ class WorldPane(Pane):
         inputs.addWidget(toolbar)
 
         inputs.addWidget(
-            Splitter(
+            input_splitter := Splitter(
                 self._state.ui.input_splitter_sizes, inputbox, extra_inputbox
             )
         )
+        input_splitter.setContentsMargins(0, 0, margin, margin)
 
         self.layout().addWidget(
             Splitter(self._state.ui.output_splitter_sizes, outputs, inputs)

@@ -7,6 +7,7 @@
     </qresource>
     <qresource prefix="/icons/">
         <file>input-field.svg</file>
+        <file>new-tab.svg</file>
         <file>search.svg</file>
     </qresource>
 </RCC>

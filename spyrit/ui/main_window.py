@@ -20,7 +20,7 @@ import logging
 from typing import cast
 
 from PySide6.QtCore import Qt, QEvent, QTimer, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QEnterEvent, QResizeEvent
+from PySide6.QtGui import QCloseEvent, QEnterEvent, QIcon, QResizeEvent
 from PySide6.QtWidgets import (
     QApplication,
     QHBoxLayout,
@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
 )
 
 from spyrit import constants
+from spyrit.resources.resources import Icon
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
@@ -289,7 +290,11 @@ class SpyritMainWindow(QMainWindow):
                 self.closeRequested.emit,
             ),
             new_tab_action := ActionWithKeySetting(
-                self, "New tab", shortcuts.new_tab, self.newTabRequested.emit
+                self,
+                "New tab",
+                shortcuts.new_tab,
+                self.newTabRequested.emit,
+                icon=QIcon(Icon.NEW_TAB_SVG),
             ),
             ActionWithKeySetting(
                 self,
@@ -330,8 +335,8 @@ class SpyritMainWindow(QMainWindow):
         self._tab_widget.setCornerWidget(
             CornerWidgetWrapper(corner_button), Qt.Corner.TopLeftCorner
         )
+        corner_button.setAutoRaise(True)  # Only draw raised edge on mouseover
         corner_button.setDefaultAction(new_tab_action)
-        corner_button.setText("+")
 
     def tabs(self) -> QTabWidget:
         """

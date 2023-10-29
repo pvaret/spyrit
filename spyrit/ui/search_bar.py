@@ -15,8 +15,8 @@
 Implements a text search function.
 """
 
-from PySide6.QtCore import Signal
-from PySide6.QtGui import QTextCursor, QTextDocument
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeyEvent, QTextCursor, QTextDocument
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -49,6 +49,11 @@ class SearchBar(QWidget):
 
     expelFocus: Signal = Signal()  # noqa: N815
 
+    # This signal fires when the search bar becomes visible (True) or,
+    # respectively, hidden (False).
+
+    visibilityChanged: Signal = Signal(bool)  # noqa: N815
+
     _document: QTextDocument
     _search_cursor: QTextCursor
     _textbox: QLineEdit
@@ -63,7 +68,7 @@ class SearchBar(QWidget):
         self.setSizePolicy(
             QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
         )
-        self.layout().setContentsMargins(4, 0, 4, 0)
+        self.layout().setContentsMargins(4, 4, 4, 0)
 
         self.layout().addWidget(QLabel("Find:"))
         self.layout().addWidget(textbox := QLineEdit())
@@ -79,8 +84,13 @@ class SearchBar(QWidget):
         search_up.clicked.connect(self.findPrevious)
         search_down.clicked.connect(self.findNext)
 
+        search_up.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        search_down.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         self._textbox = textbox
         self._textbox.returnPressed.connect(self.findPrevious)
+
+        self.setFocusProxy(self._textbox)
 
     def show(self) -> None:
         """
@@ -89,6 +99,7 @@ class SearchBar(QWidget):
 
         super().show()
         self._textbox.setFocus()
+        self.visibilityChanged.emit(True)
 
     def hide(self) -> None:
         """
@@ -97,7 +108,13 @@ class SearchBar(QWidget):
 
         if self.hasFocus():
             self.expelFocus.emit()
+
         super().hide()
+        self.visibilityChanged.emit(False)
+
+        # When hiding the search bar, reset the search cursor position.
+
+        self._search_cursor = QTextCursor()
 
     def toggle(self) -> None:
         """
@@ -147,3 +164,17 @@ class SearchBar(QWidget):
             text, self._search_cursor, flags
         )
         self.searchResultReady.emit(self._search_cursor)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """
+        Overrides the default key handler to handle the Escape key explicitly.
+        The Escape key closes the search bar.
+
+        Args:
+            event: The key event to handle.
+        """
+
+        if event.key() == Qt.Key.Key_Escape:
+            self.hide()
+
+        super().keyPressEvent(event)

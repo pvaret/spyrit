@@ -118,6 +118,7 @@ class Splitter(QSplitter):
 
         self.setChildrenCollapsible(False)
         self.setOrientation(Qt.Orientation.Vertical)
+        self.setHandleWidth(Sizer(self).marginSize())
 
         for widget in widgets:
             self.addWidget(widget)

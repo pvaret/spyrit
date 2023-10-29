@@ -73,6 +73,7 @@ class SearchBar(QWidget):
             QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
         )
         self.layout().setContentsMargins(margin, margin, margin, 0)
+        self.layout().setSpacing(margin)
 
         self.layout().addWidget(QLabel("Find:"))
         self.layout().addWidget(textbox := QLineEdit())

@@ -26,6 +26,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from spyrit.ui.sizer import Sizer
+
 
 class SearchBar(QWidget):
     """
@@ -64,11 +66,13 @@ class SearchBar(QWidget):
         self._document = document
         self._search_cursor = QTextCursor()
 
+        margin = Sizer(self).marginSize()
+
         self.setLayout(QHBoxLayout())
         self.setSizePolicy(
             QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
         )
-        self.layout().setContentsMargins(4, 4, 4, 0)
+        self.layout().setContentsMargins(margin, margin, margin, 0)
 
         self.layout().addWidget(QLabel("Find:"))
         self.layout().addWidget(textbox := QLineEdit())

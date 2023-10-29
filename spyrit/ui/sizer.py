@@ -56,3 +56,13 @@ class Sizer:
         """
 
         return round(constants.UI_UNIT_SIZE_PX * self._pixelRatio())
+
+    def marginSize(self) -> int:
+        """
+        Returns the default size for the margins around widgets that have those.
+
+        Returns:
+            A size, in pixels.
+        """
+
+        return round(constants.UI_MARGIN_SIZE_PX * self._pixelRatio())

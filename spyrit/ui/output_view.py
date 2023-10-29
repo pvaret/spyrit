@@ -45,6 +45,7 @@ class OutputView(QTextEdit):
     def __init__(self, settings: SpyritSettings.UI.Output) -> None:
         super().__init__()
         self.setReadOnly(True)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._settings = settings
 

@@ -17,7 +17,8 @@ Implements a UI to play in a world.
 
 from sunset import Key
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLayout,
@@ -52,6 +53,9 @@ from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
 
 
+_UNIT = 16
+
+
 class Box(QWidget):
     """
     Helper class to contain widgets in a given layout.
@@ -65,6 +69,7 @@ class Box(QWidget):
 
         self.setLayout(layout)
         self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
 
     def addWidget(self, widget: QWidget) -> None:
         """
@@ -181,7 +186,9 @@ class WorldPane(Pane):
 
         # Set up the interconnections between the widgets.
 
-        self._setupGameWidgets(view, search_bar, inputbox, extra_inputbox)
+        self._setupGameWidgets(
+            view, search_bar, toolbar, inputbox, extra_inputbox
+        )
 
         # Set up the network connection.
 
@@ -250,6 +257,8 @@ class WorldPane(Pane):
 
         inputs = HBox()
         toolbar.setOrientation(Qt.Orientation.Vertical)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        toolbar.setIconSize(QSize(_UNIT, _UNIT))
         inputs.addWidget(toolbar)
 
         inputs.addWidget(
@@ -276,6 +285,7 @@ class WorldPane(Pane):
         self,
         view: OutputView,
         search_bar: SearchBar,
+        toolbar: QToolBar,
         inputbox: InputBox,
         extra_inputbox: InputBox,
     ) -> None:
@@ -287,6 +297,8 @@ class WorldPane(Pane):
             view: The output view that displays contents from the game.
 
             search_bar: The text search UI.
+
+            toolbar: The icon toolbar for this UI.
 
             inputbox: The main user text entry box.
 
@@ -329,17 +341,24 @@ class WorldPane(Pane):
                 text="Find",
                 key=shortcuts.find,
                 slot=search_bar.toggle,
+                checkable=True,
+                icon=QIcon(":/icons/search.svg"),
             )
         )
-        find.setCheckable(True)
 
-        # Set up the focus logic for the game UI. TL;DR: both the pane and the
-        # view forward to the main input, and the second input comes after the
-        # main input in the tab order.
+        # Let the find button status reflect the visibility status of the search
+        # bar.
+
+        search_bar.visibilityChanged.connect(find.setChecked)
+
+        # Add the find button to the toolbar.
+
+        toolbar.addAction(find)
+
+        # Set up the focus logic for the game UI. TL;DR: the pane just forwards
+        # its focus to the main input.
 
         self.setFocusProxy(inputbox)
-        view.setFocusProxy(inputbox)
-        self.setTabOrder(inputbox, extra_inputbox)
 
         # Plug search results into the output view.
 
@@ -370,9 +389,18 @@ class WorldPane(Pane):
                 "Toggle second input",
                 self._settings.shortcuts.toggle_second_input,
                 input_visible_key.toggle,
+                checkable=True,
+                icon=QIcon(":/icons/input-field.svg"),
             )
         )
-        extra_input_toggle.setCheckable(True)
+
+        # Set the action's initial status from the stored visibility value.
+
+        extra_input_toggle.setChecked(input_visible_key.get())
+
+        # And add the button to the toolbar.
+
+        toolbar.addAction(extra_input_toggle)
 
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
         """

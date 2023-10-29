@@ -104,7 +104,6 @@ class InputBox(QPlainTextEdit):
         had_focus = self.hasFocus()
 
         self.setVisible(visible)
-        self.setEnabled(visible)  # Note that this may clear the focus.
 
         if visible:
             self.setFocus()

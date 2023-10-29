@@ -183,6 +183,7 @@ class SlidingPaneContainer(QScrollArea):
 
         if len(self._panes) == 1:
             self._makePaneActive(pane)
+            pane.onActive()
 
         else:
             self._makePaneInactive(pane)

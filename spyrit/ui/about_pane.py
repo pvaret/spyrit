@@ -15,9 +15,14 @@
 Implements a pane that shows basic information about the application.
 """
 
+import sys
+
 from textwrap import dedent
 
-from PySide6.QtCore import Qt
+import sunset
+
+from PySide6 import __version__
+from PySide6.QtCore import Qt, qVersion
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from spyrit import constants
@@ -40,6 +45,29 @@ class AboutPane(BaseDialogPane):
 
         text = f"""
             <b>{constants.APPLICATION_NAME}</b>: a MUD/MUSH/MUCK/MOO client.<br>
+            <br>
+            Running with:<br>
+            — Python {sys.version}<br>
+            — Qt {qVersion()}<br>
+            — PySide6 {__version__}<br>
+            — SunsetSettings {sunset.__version__}<br>
+            <br>
+            Source code is available on
+            <a href="https://github.com/pvaret/spyrit">Github</a>.<br>
+            Please report bugs, issues and feature requests in our
+            <a href="https://github.com/pvaret/spyrit/issues">issue
+            tracker</a>.<br>
+            <br>
+            Copyright 2023 P.Varet.<br>
+            <br>
+            <b>{constants.APPLICATION_NAME}</b> is licensed to you under the
+            <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3 license</a>.<br>
+            <br>
+            Icons are by the <a href="https://github.com/iconoir-icons/iconoir/">
+            Iconoir</a> project, and used under the
+            <a href="https://github.com/iconoir-icons/iconoir/blob/main/LICENSE">
+            MIT license</a>.
+            <br>
             """
 
         text = dedent(text.strip())

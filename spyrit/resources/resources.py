@@ -36,9 +36,12 @@ class Font(enum.StrEnum):
 
 
 class Icon(enum.StrEnum):
+    CLOSE_SVG = ":/icons/close.svg"
+    CONNECTION_SVG = ":/icons/connection.svg"
     INPUT_FIELD_SVG = ":/icons/input-field.svg"
     NEW_TAB_SVG = ":/icons/new-tab.svg"
     SEARCH_SVG = ":/icons/search.svg"
+    SETTINGS_SVG = ":/icons/settings.svg"
 
 
 Resources: Sequence[type[enum.StrEnum]] = (Logo, Font, Icon)

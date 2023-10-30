@@ -15,7 +15,7 @@
 Implements a UI to play in a world.
 """
 
-from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QHBoxLayout,
@@ -44,6 +44,7 @@ from spyrit.resources.resources import Icon
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.input_box import InputBox, Postman
@@ -53,87 +54,6 @@ from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
 from spyrit.ui.sizer import Sizer
-
-
-class Box(QWidget):
-    """
-    Helper class to contain widgets in a given layout.
-
-    Args:
-        layout: The layout to use for adding widgets in this box.
-    """
-
-    def __init__(self, layout: QLayout) -> None:
-        super().__init__()
-
-        self.setLayout(layout)
-        self.layout().setContentsMargins(0, 0, 0, 0)
-        self.layout().setSpacing(0)
-
-    def addWidget(self, widget: QWidget) -> None:
-        """
-        Adds a widget to this box's layout.
-
-        Args:
-            widget: The widget to add.
-        """
-
-        self.layout().addWidget(widget)
-
-
-class VBox(Box):
-    """
-    Helper class to lay out widgets vertically.
-    """
-
-    def __init__(self) -> None:
-        super().__init__(QVBoxLayout())
-
-
-class HBox(Box):
-    """
-    Helper class to lay out widgets vertically.
-    """
-
-    def __init__(self) -> None:
-        super().__init__(QHBoxLayout())
-
-
-class Splitter(QSplitter):
-    """
-    A specialized splitter that saves its status in settings.
-
-    Args:
-        sizes: The settings key to use to save the splitter's sizes.
-
-        widgets: The list of widgets to add to this splitter, in order.
-    """
-
-    _sizes: Key[list[int]]
-
-    def __init__(self, sizes: Key[list[int]], *widgets: QWidget) -> None:
-        super().__init__()
-
-        self._sizes = sizes
-
-        self.setChildrenCollapsible(False)
-        self.setOrientation(Qt.Orientation.Vertical)
-        self.setHandleWidth(Sizer(self).marginSize())
-
-        for widget in widgets:
-            self.addWidget(widget)
-
-        self.setSizes(sizes.get())
-
-        self.splitterMoved.connect(self._saveSplitterSizes)
-
-    @Slot()
-    def _saveSplitterSizes(self) -> None:
-        """
-        Saves the splitter's status to the splitter's setting object.
-        """
-
-        self._sizes.set(self.sizes())
 
 
 class WorldPane(Pane):

@@ -23,9 +23,11 @@ from spyrit import constants
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.about_pane import AboutPane
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.buttons import Button, WorldButton
+from spyrit.ui.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 from spyrit.ui.world_creation_pane import WorldCreationPane
@@ -116,12 +118,12 @@ class WelcomePane(Pane):
         menu_layout.addLayout(button_layout := QHBoxLayout())
 
         button_layout.addWidget(settings_button := Button("Settings"))
-        settings_button.setEnabled(False)  # TODO: Implement.
+        settings_button.clicked.connect(self._showSettings)
 
         button_layout.addWidget(
             about_button := Button(f"About {constants.APPLICATION_NAME}...")
         )
-        about_button.setEnabled(False)  # TODO: Implement.
+        about_button.clicked.connect(self._showAbout)
 
         # Fill out the remaining space.
 
@@ -163,3 +165,19 @@ class WelcomePane(Pane):
         state = self._state.getStateSectionForSettingsSection(world)
 
         self.addPaneRight(WorldPane(world, state, self._instance))
+
+    @Slot()
+    def _showSettings(self) -> None:
+        """
+        Shows the settings pane.
+        """
+
+        self.addPaneRight(SettingsPane(self._settings))
+
+    @Slot()
+    def _showAbout(self) -> None:
+        """
+        Shows the application about pane.
+        """
+
+        self.addPaneRight(AboutPane())

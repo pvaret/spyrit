@@ -119,6 +119,17 @@ class Connection(QObject):
 
         return True
 
+    def isConnected(self) -> bool:
+        """
+        Returns whether the connection is connected, i.e. the connection was
+        successfully established and is currently live.
+
+        Returns:
+            Whether the connection is live.
+        """
+
+        return self._is_connected
+
     @Slot()
     def _readFromSocket(self) -> None:
         """
@@ -148,23 +159,33 @@ class Connection(QObject):
             status: The new status that the socket is in.
         """
 
-        if status == QTcpSocket.SocketState.UnconnectedState:
-            # Only report the disconnection if we were connected in the first
-            # place.
+        match status:
+            case QTcpSocket.SocketState.UnconnectedState:
+                # Only report the disconnection if we were connected in the first
+                # place.
 
-            if self._is_connected:
-                self._is_connected = False
-                self.statusChanged.emit(Status.DISCONNECTED, "")
+                if self._is_connected:
+                    self._is_connected = False
+                    self.statusChanged.emit(Status.DISCONNECTED, "")
 
-        elif status == QTcpSocket.SocketState.HostLookupState:
-            self.statusChanged.emit(Status.RESOLVING, self._socket.peerName())
+            case QTcpSocket.SocketState.HostLookupState:
+                self.statusChanged.emit(
+                    Status.RESOLVING, self._socket.peerName()
+                )
 
-        elif status == QTcpSocket.SocketState.ConnectingState:
-            self.statusChanged.emit(Status.CONNECTING, "")
+            case QTcpSocket.SocketState.ConnectingState:
+                self.statusChanged.emit(Status.CONNECTING, "")
 
-        elif status == QTcpSocket.SocketState.ConnectedState:
-            self._is_connected = True
-            self.statusChanged.emit(Status.CONNECTED, "")
+            case QTcpSocket.SocketState.ConnectedState:
+                self._is_connected = True
+                self.statusChanged.emit(Status.CONNECTED, "")
+
+            case (
+                QTcpSocket.SocketState.BoundState
+                | QTcpSocket.SocketState.ListeningState
+                | QTcpSocket.SocketState.ClosingState
+            ):
+                pass
 
     @Slot()
     def _reportErrorOccurred(self) -> None:

@@ -17,6 +17,7 @@ independantly of any UI consideration.
 """
 
 import logging
+import weakref
 
 from typing import Iterable, Sequence
 
@@ -24,13 +25,12 @@ from PySide6.QtCore import Qt, QObject, Signal, Slot
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
 
-from spyrit.network.connection import Status
+from spyrit.network.connection import Connection
 from spyrit.network.fragments import (
     FlowControlCode,
     FlowControlFragment,
     Fragment,
     FragmentList,
-    NetworkFragment,
 )
 from spyrit.ui.tab_proxy import TabProxy
 
@@ -98,9 +98,9 @@ class SessionInstance(QObject):
     _title: str = ""
     _active: bool = True
     _focused: bool = True
-    _connected: bool = False
     _unread_lines: int = 0
     _tab: TabProxy | None = None
+    _connection: weakref.ref[Connection] | None = None
 
     def setTab(self, tab: TabProxy) -> None:
         """
@@ -115,6 +115,19 @@ class SessionInstance(QObject):
 
         tab.active.connect(self.setActive)
         tab.closeRequested.connect(self.maybeCloseTab)
+
+    def setConnection(self, connection: Connection) -> None:
+        """
+        Informs this SessionInstance about the connection object used by this
+        game session.
+
+        Args:
+            connection: The connection object for the game running in this
+                instance's tab. The instance will not increase the reference
+                count of the connection object.
+        """
+
+        self._connection = weakref.ref(connection)
 
     def title(self) -> str:
         """
@@ -208,9 +221,6 @@ class SessionInstance(QObject):
 
         for fragment in fragments:
             match fragment:
-                case NetworkFragment(event):
-                    self._connected = event == Status.CONNECTED
-
                 case FlowControlFragment(code=FlowControlCode.LF):
                     self._updateUnreadLineCount(delta=1)
 
@@ -225,7 +235,13 @@ class SessionInstance(QObject):
             Whether this instance is connected.
         """
 
-        return self._connected
+        if (
+            self._connection is None
+            or (connection := self._connection()) is None
+        ):
+            return False
+
+        return connection.isConnected()
 
     @Slot()
     def maybeCloseTab(self) -> None:
@@ -237,7 +253,7 @@ class SessionInstance(QObject):
         if (tab := self._tab) is None:
             return
 
-        if not self._connected or askUserIfReadyToClose(tab.window(), [self]):
+        if not self.connected() or askUserIfReadyToClose(tab.window(), [self]):
             tab.close()
 
     def _updateTabTitle(self) -> None:

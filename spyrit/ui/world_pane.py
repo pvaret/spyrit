@@ -114,6 +114,11 @@ class WorldPane(Pane):
 
         connection = Connection(settings.net, parent=self)
 
+        # Inform the instance about this connection so it can keep track of its
+        # status.
+
+        instance.setConnection(connection)
+
         # Set up keepalives for the connection.
 
         Keepalive(connection, settings.net.keepalive)

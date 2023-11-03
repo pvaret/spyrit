@@ -406,7 +406,7 @@ class TestScribe:
         scribe = Scribe(cursor, settings)
 
         scribe.inscribe([NetworkFragment(Status.ERROR, "(test)")])
-        assert cursor.get() == ("[italic ; fg: 55,55,55]‼ Error: (test)!")
+        assert cursor.get() == ("[italic ; fg: 55,55,55]‼ (test)!")
 
         cursor = MockCursor()
         scribe = Scribe(cursor, settings)

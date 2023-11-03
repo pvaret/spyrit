@@ -204,7 +204,7 @@ class Scribe(QObject):
                         case Status.CONNECTED:
                             message = "Connected!"
                         case Status.ERROR:
-                            message = f"Error: {text}!"
+                            message = f"{text}!"
                             level = _MessageLevel.ERROR
                     self._insertStatusText(message, level)
 

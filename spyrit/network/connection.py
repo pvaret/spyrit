@@ -50,7 +50,6 @@ class Connection(QObject):
 
     _settings: SpyritSettings.Network
     _socket: QTcpSocket
-    _is_connected: bool
 
     # This signal is emitted when data is received from the socket.
 
@@ -65,7 +64,6 @@ class Connection(QObject):
     ) -> None:
         super().__init__(parent)
 
-        self._is_connected = False
         self._settings = settings
         self._socket = QTcpSocket(self)
         self._socket.readyRead.connect(self._readFromSocket)
@@ -77,10 +75,9 @@ class Connection(QObject):
         Initiates the process of connecting to the configured server.
         """
 
-        if self._is_connected:
+        if self.isConnecting():
             return
 
-        self._socket.abort()
         self._socket.connectToHost(
             self._settings.server.get(), self._settings.port.get()
         )
@@ -89,8 +86,8 @@ class Connection(QObject):
         """
         Disconnects from the configured server.
         """
-
-        self._socket.disconnectFromHost()
+        if self.isConnecting():
+            self._socket.abort()
 
     def send(self, data: str | bytes) -> bool:
         """
@@ -119,6 +116,19 @@ class Connection(QObject):
 
         return True
 
+    def isConnecting(self) -> bool:
+        """
+        Returns whether the connection is in the process of attempting to
+        connect, i.e. the connection was started and either succeeded, or has
+        not (yet) failed.
+
+        Returns:
+            Whether the connection is in the process of, or has already
+            succeeded in, getting established.
+        """
+
+        return self._socket.state() != QTcpSocket.SocketState.UnconnectedState
+
     def isConnected(self) -> bool:
         """
         Returns whether the connection is connected, i.e. the connection was
@@ -128,7 +138,7 @@ class Connection(QObject):
             Whether the connection is live.
         """
 
-        return self._is_connected
+        return self._socket.state() == QTcpSocket.SocketState.ConnectedState
 
     @Slot()
     def _readFromSocket(self) -> None:
@@ -161,12 +171,7 @@ class Connection(QObject):
 
         match status:
             case QTcpSocket.SocketState.UnconnectedState:
-                # Only report the disconnection if we were connected in the first
-                # place.
-
-                if self._is_connected:
-                    self._is_connected = False
-                    self.statusChanged.emit(Status.DISCONNECTED, "")
+                self.statusChanged.emit(Status.DISCONNECTED, "")
 
             case QTcpSocket.SocketState.HostLookupState:
                 self.statusChanged.emit(
@@ -177,7 +182,6 @@ class Connection(QObject):
                 self.statusChanged.emit(Status.CONNECTING, "")
 
             case QTcpSocket.SocketState.ConnectedState:
-                self._is_connected = True
                 self.statusChanged.emit(Status.CONNECTED, "")
 
             case (
@@ -193,12 +197,24 @@ class Connection(QObject):
         Emits a signal to report the error that took place, if any.
         """
 
-        error = self._socket.error()
+        match self._socket.error():
+            case QTcpSocket.SocketError.RemoteHostClosedError:
+                # Server closed the connection. That's okay.
 
-        if error == QTcpSocket.SocketError.RemoteHostClosedError:
-            # Server closed the connection. That's okay.
+                return
 
-            return
+            case QTcpSocket.SocketError.UnknownSocketError:
+                # An unknown error occurred. This typically means that this
+                # function was called while there was no actual error. Just
+                # silently drop it after logging.
 
-        error_text = self._socket.errorString()
-        self.statusChanged.emit(Status.ERROR, error_text)
+                logging.debug(
+                    "Unknown socket error found. This likely means that"
+                    " the socket error handling code was invoked while no"
+                    " error in fact occurred."
+                )
+                return
+
+            case _:
+                error_text = self._socket.errorString()
+                self.statusChanged.emit(Status.ERROR, error_text)

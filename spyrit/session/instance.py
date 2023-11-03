@@ -35,8 +35,55 @@ from spyrit.network.fragments import (
 from spyrit.ui.tab_proxy import TabProxy
 
 
+def _confirmationDialog(
+    widget: QWidget | None,
+    title: str,
+    message: str,
+    confirm_label: str,
+    cancel_label: str = "Cancel",
+) -> bool:
+    """
+    Shows a confirmation dialog with the given parameters, and returns the
+    user's decision to confirm or not.
+
+    Args:
+        widget: The widget whose window to use as the dialog's parent.
+
+        title: The dialog's title.
+
+        message: The dialog's text, formatted as HTML.
+
+        confirm_label: The text of the confirmation button.
+
+        cancel_label: The text of the cancel button.
+
+    Returns:
+        True if the user confirmed the action, else False.
+    """
+
+    dialog = QMessageBox(widget.window() if widget else None)
+    dialog.setIcon(QMessageBox.Icon.Question)
+    dialog.setWindowTitle(title)
+    dialog.setTextFormat(Qt.TextFormat.RichText)
+    dialog.setText(message)
+
+    dialog.addButton(
+        confirm := QPushButton(confirm_label),
+        QMessageBox.ButtonRole.AcceptRole,
+    )
+    dialog.addButton(
+        cancel := QPushButton(cancel_label),
+        QMessageBox.ButtonRole.RejectRole,
+    )
+    dialog.setDefaultButton(cancel)
+
+    dialog.exec()
+
+    return dialog.clickedButton() is confirm
+
+
 def askUserIfReadyToClose(
-    window: QWidget | None, instances: Sequence["SessionInstance"]
+    widget: QWidget | None, instances: Sequence["SessionInstance"]
 ) -> bool:
     """
     Asks the user to confirm they are really ready to close still connected
@@ -51,18 +98,16 @@ def askUserIfReadyToClose(
         Whether the user accepted to close the connected games.
     """
 
-    dialog = QMessageBox(window)
-    dialog.setIcon(QMessageBox.Icon.Question)
-    dialog.setWindowTitle("Really close?")
-    dialog.setTextFormat(Qt.TextFormat.RichText)
+    title = "Really close?"
 
     if len(instances) == 1:
-        dialog.setText(
+        message = (
             f"You are still connected to <b>{instances[0].title()}</b>."
             " Really close?"
         )
+
     else:
-        dialog.setText(
+        message = (
             "You are still connected to the following games:<br>"
             + "".join(
                 f"<b> • {instance.title()}</b><br>" for instance in instances
@@ -71,17 +116,29 @@ def askUserIfReadyToClose(
             + "Really close?"
         )
 
-    dialog.addButton(
-        close := QPushButton("Close"), QMessageBox.ButtonRole.AcceptRole
-    )
-    dialog.addButton(
-        cancel := QPushButton("Cancel"), QMessageBox.ButtonRole.RejectRole
-    )
-    dialog.setDefaultButton(cancel)
+    return _confirmationDialog(widget, title, message, "Close")
 
-    dialog.exec()
 
-    return dialog.clickedButton() is close
+def askUserIfReadyToDisconnect(
+    widget: QWidget | None, instance: "SessionInstance"
+) -> bool:
+    """
+    Asks the user to confirm they are really ready to disconnect from the
+    current game server.
+
+    Args:
+        window: The widget to use as the message box's parent.
+
+        instance: The game instance to ask the user about.
+
+    Returns:
+        Whether the user accepted to close the connected games.
+    """
+
+    title = "Really disconnect?"
+    message = f"You are still connected to <b>{instance.title()}</b>. Really disconnect?"
+
+    return _confirmationDialog(widget, title, message, "Disconnect")
 
 
 class SessionInstance(QObject):
@@ -128,6 +185,16 @@ class SessionInstance(QObject):
         """
 
         self._connection = weakref.ref(connection)
+
+    def connection(self) -> Connection | None:
+        """
+        Returns the connection object used by this game session, if any.
+
+        Returns:
+            The connection in question, or None if there isn't one.
+        """
+
+        return None if self._connection is None else self._connection()
 
     def title(self) -> str:
         """
@@ -255,6 +322,33 @@ class SessionInstance(QObject):
 
         if not self.connected() or askUserIfReadyToClose(tab.window(), [self]):
             tab.close()
+
+    @Slot()
+    def doConnect(self) -> None:
+        """
+        Initiates the connection to the game server for this session, if a
+        connection object exists.
+        """
+
+        if (connection := self.connection()) is not None:
+            connection.start()
+
+    @Slot()
+    def maybeDisconnect(self) -> None:
+        """
+        Terminates the connection to the game server for this session, if a
+        connection object exists, and if the user confirms.
+        """
+
+        if (connection := self.connection()) is None or (
+            tab := self._tab
+        ) is None:
+            return
+
+        if not connection.isConnected() or askUserIfReadyToDisconnect(
+            tab.window(), self
+        ):
+            connection.stop()
 
     def _updateTabTitle(self) -> None:
         """

@@ -15,18 +15,11 @@
 Implements a UI to play in a world.
 """
 
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QLayout,
-    QSplitter,
-    QToolBar,
-    QVBoxLayout,
-    QWidget,
-)
+import threading
 
-from sunset import Key
+from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
+from PySide6.QtGui import QAction, QIcon
+from PySide6.QtWidgets import QHBoxLayout, QToolBar
 
 from spyrit.network.connection import Connection
 from spyrit.network.keepalive import Keepalive
@@ -54,6 +47,103 @@ from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
 from spyrit.ui.sizer import Sizer
+
+
+class ConnectionToggleAction(QAction):
+    """
+    A QAction whose visual checked status reflects whether its attached
+    Connection is connected, and whose toggling can request for the connection
+    to be started or stopped.
+
+    Args:
+        parent: This object's parent. Used for lifetime management purposes.
+
+        connection: The Connection whose status is reflected by, and can be
+            changed through, this action.
+
+        icon: The icon to use in UIs that show this action.
+    """
+
+    _CONNECTED_TOOLTIP = "Disconnect"
+    _DISCONNECTED_TOOLTIP = "Connect"
+
+    _connection: Connection
+    _prevent_connection_changes: threading.Lock
+
+    # This signal fires when a user interaction with this action requests that a
+    # connection be initiated.
+
+    connectRequested: Signal = Signal()
+
+    # This signal fires when a user interaction with this action requests that a
+    # connection be terminated.
+
+    disconnectRequested: Signal = Signal()
+
+    def __init__(
+        self, parent: QObject, connection: Connection, icon: QIcon
+    ) -> None:
+        super().__init__(parent)
+
+        self._connection = connection
+        self._prevent_connection_changes = threading.Lock()
+
+        self.setCheckable(True)
+        self.setIcon(icon)
+
+        self.toggled.connect(self._toggleConnection)
+        self._connection.statusChanged.connect(self._updateVisualCheckedness)
+
+        self._updateVisualCheckedness()
+
+    @Slot(bool)
+    def _toggleConnection(self, connect: bool) -> None:
+        """
+        Signals that the user requested a change to the connection state, that
+        being either to initiate the connection or to terminate it.
+
+        Args:
+            connect: Whether the user interaction is requesting a connection. If
+                not, it's a disconnection.
+        """
+
+        if self._prevent_connection_changes.locked():
+            return
+
+        (self.connectRequested if connect else self.disconnectRequested).emit()
+
+        # Update the appearance of the action after processing it. It should
+        # still reflect the connection's state.
+
+        self._updateVisualCheckedness()
+
+    @Slot()
+    def _updateVisualCheckedness(self) -> None:
+        """
+        Updates the visual checked status of the action based on the state of
+        the connection.
+
+        The action is checked if and only if the connection is active, whether
+        that means fully established or in the process of coming up.
+        """
+
+        is_connecting = self._connection.isConnecting()
+
+        self.setToolTip(
+            self._DISCONNECTED_TOOLTIP
+            if not is_connecting
+            else self._CONNECTED_TOOLTIP
+        )
+
+        if is_connecting != self.isChecked():
+            with self._prevent_connection_changes:
+                # Note the use of the lock. Calling setChecked() unfortunately
+                # triggers the same signal handler as user actions. There is no
+                # way to only update the visual aspect of the action. So we use
+                # a lock to prevent the handler from taking actions when we call
+                # setChecked() here.
+
+                self.setChecked(is_connecting)
 
 
 class WorldPane(Pane):
@@ -106,9 +196,7 @@ class WorldPane(Pane):
 
         # Set up the interconnections between the widgets.
 
-        self._setupGameWidgets(
-            view, search_bar, toolbar, inputbox, extra_inputbox
-        )
+        self._setupGameWidgets(view, search_bar, inputbox, extra_inputbox)
 
         # Set up the network connection.
 
@@ -122,6 +210,12 @@ class WorldPane(Pane):
         # Set up keepalives for the connection.
 
         Keepalive(connection, settings.net.keepalive)
+
+        # Set up the tool bar icons and related shortcuts.
+
+        self._setUpToolbarActions(
+            instance, toolbar, search_bar, extra_inputbox, connection
+        )
 
         # Set up the inputs' behavior and plug them into the connection.
 
@@ -187,7 +281,7 @@ class WorldPane(Pane):
         inputs = HBox()
         toolbar.setOrientation(Qt.Orientation.Vertical)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        toolbar.setIconSize(QSize(unit, unit))
+        toolbar.setIconSize(QSize(unit + margin, unit + margin))
         inputs.addWidget(toolbar)
 
         inputs.addWidget(
@@ -215,7 +309,6 @@ class WorldPane(Pane):
         self,
         view: OutputView,
         search_bar: SearchBar,
-        toolbar: QToolBar,
         inputbox: InputBox,
         extra_inputbox: InputBox,
     ) -> None:
@@ -227,8 +320,6 @@ class WorldPane(Pane):
             view: The output view that displays contents from the game.
 
             search_bar: The text search UI.
-
-            toolbar: The icon toolbar for this UI.
 
             inputbox: The main user text entry box.
 
@@ -263,28 +354,6 @@ class WorldPane(Pane):
                 )
             )
 
-        # Set up the search bar toggle.
-
-        self.addAction(
-            find := ActionWithKeySetting(
-                parent=self,
-                text="Find",
-                key=shortcuts.find,
-                slot=search_bar.toggle,
-                checkable=True,
-                icon=QIcon(Icon.SEARCH_SVG),
-            )
-        )
-
-        # Let the find button status reflect the visibility status of the search
-        # bar.
-
-        search_bar.visibilityChanged.connect(find.setChecked)
-
-        # Add the find button to the toolbar.
-
-        toolbar.addAction(find)
-
         # Set up the focus logic for the game UI. TL;DR: the pane just forwards
         # its focus to the main input.
 
@@ -307,18 +376,78 @@ class WorldPane(Pane):
 
         search_bar.hide()
 
-        # Plug in the second input toggling logic.
+    def _setUpToolbarActions(
+        self,
+        instance: SessionInstance,
+        toolbar: QToolBar,
+        search_bar: SearchBar,
+        extra_inputbox: InputBox,
+        connection: Connection,
+    ) -> None:
+        """
+        Sets up the user interactions that have icons in the toolbar.
 
-        input_visible_key = self._state.ui.extra_input_visible
-        extra_inputbox.toggleVisibility(input_visible_key.get())
-        input_visible_key.onValueChangeCall(extra_inputbox.toggleVisibility)
+        Args:
+            instance: the session instance on which to trigger user-requested
+                actions.
+
+            toolbar: The toolbar in which to add the interaction icons.
+
+            search_bar: The SearchBar for which to add a toggle button.
+
+            extra_inputbox: The InputBox to make visible/hidden with a toggle
+                button.
+
+            connection: The connection object used for this game, so it can be
+               controlled from a toggle button.
+        """
+
+        shortcuts = self._settings.shortcuts
+
+        # Set up the connection toggle.
+
+        toolbar.addAction(
+            connection_toggle := ConnectionToggleAction(
+                self, connection, icon=QIcon(Icon.CONNECTION_SVG)
+            )
+        )
+        connection_toggle.connectRequested.connect(instance.doConnect)
+        connection_toggle.disconnectRequested.connect(instance.maybeDisconnect)
+
+        # Set up the search bar toggle.
+
+        self.addAction(
+            find := ActionWithKeySetting(
+                parent=self,
+                text="Find",
+                key=shortcuts.find,
+                slot=search_bar.toggle,
+                checkable=True,
+                icon=QIcon(Icon.SEARCH_SVG),
+            )
+        )
+
+        # Let the find button status reflect the visibility status of the search
+        # bar.
+
+        search_bar.visibilityChanged.connect(find.setChecked)
+
+        # Add the find button to the toolbar.
+
+        toolbar.addAction(find)
+
+        # Add the extra input toggle.
+
+        input_visible = self._state.ui.extra_input_visible
+        extra_inputbox.toggleVisibility(input_visible.get())
+        input_visible.onValueChangeCall(extra_inputbox.toggleVisibility)
 
         self.addAction(
             extra_input_toggle := ActionWithKeySetting(
                 self,
                 "Toggle second input",
                 self._settings.shortcuts.toggle_second_input,
-                input_visible_key.toggle,
+                input_visible.toggle,
                 checkable=True,
                 icon=QIcon(Icon.INPUT_FIELD_SVG),
             )
@@ -326,7 +455,7 @@ class WorldPane(Pane):
 
         # Set the action's initial status from the stored visibility value.
 
-        extra_input_toggle.setChecked(input_visible_key.get())
+        extra_input_toggle.setChecked(input_visible.get())
 
         # And add the button to the toolbar.
 

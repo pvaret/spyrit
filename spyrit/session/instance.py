@@ -13,13 +13,13 @@
 
 """
 A class that keeps track of the current status of an individual game session,
-independantly of any UI consideration.
+and maintains its state, independantly of any UI consideration.
 """
 
 import logging
 import weakref
 
-from typing import Iterable, Sequence
+from typing import Iterable, Protocol, Sequence, runtime_checkable
 
 from PySide6.QtCore import Qt, QObject, Signal, Slot
 from PySide6.QtGui import QColor
@@ -139,6 +139,18 @@ def askUserIfReadyToDisconnect(
     message = f"You are still connected to <b>{instance.title()}</b>. Really disconnect?"
 
     return _confirmationDialog(widget, title, message, "Disconnect")
+
+
+@runtime_checkable
+class ClosableProtocol(Protocol):
+    """
+    A protocol describing an object that can be closed.
+    """
+
+    def doClose(self) -> None:
+        """
+        A method to call on a closable object in order to close it.
+        """
 
 
 class SessionInstance(QObject):
@@ -322,6 +334,28 @@ class SessionInstance(QObject):
 
         if not self.connected() or askUserIfReadyToClose(tab.window(), [self]):
             tab.close()
+
+    @Slot()
+    def maybeClosePane(self) -> None:
+        """
+        Closes the game pane, if no connection is active, or if the user
+        gives confirmation.
+        """
+
+        if (connection := self.connection()) is None or (
+            tab := self._tab
+        ) is None:
+            return
+
+        sender = self.sender()
+
+        if not isinstance(sender, ClosableProtocol):
+            return
+
+        if not connection.isConnected() or askUserIfReadyToClose(
+            tab.window(), [self]
+        ):
+            sender.doClose()
 
     @Slot()
     def doConnect(self) -> None:

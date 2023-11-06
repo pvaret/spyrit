@@ -46,6 +46,7 @@ from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
+from spyrit.ui.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 
 
@@ -67,9 +68,6 @@ class ConnectionToggleAction(QAction):
     _CONNECTED_TOOLTIP = "Disconnect"
     _DISCONNECTED_TOOLTIP = "Connect"
 
-    _connection: Connection
-    _prevent_connection_changes: threading.Lock
-
     # This signal fires when a user interaction with this action requests that a
     # connection be initiated.
 
@@ -79,6 +77,9 @@ class ConnectionToggleAction(QAction):
     # connection be terminated.
 
     disconnectRequested: Signal = Signal()
+
+    _connection: Connection
+    _prevent_connection_changes: threading.Lock
 
     def __init__(
         self, parent: QObject, connection: Connection, icon: QIcon
@@ -161,6 +162,11 @@ class WorldPane(Pane):
 
         instance: The instance object to bind to this game.
     """
+
+    # This signal fires when a user action requests for the pane to be closed in
+    # order to return to the main menu.
+
+    returnToMenuRequested: Signal = Signal()
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -461,6 +467,34 @@ class WorldPane(Pane):
 
         toolbar.addAction(extra_input_toggle)
 
+        # Set up the settings button.
+
+        self.addAction(
+            settings := ActionWithKeySetting(
+                self,
+                "Settings",
+                shortcuts.open_settings,
+                self._showSettings,
+                icon=QIcon(Icon.SETTINGS_SVG),
+            )
+        )
+        toolbar.addAction(settings)
+
+        # Set up the close button.
+
+        self.addAction(
+            close := ActionWithKeySetting(
+                self,
+                "Return to menu",
+                shortcuts.return_to_menu,
+                self.returnToMenuRequested.emit,
+                icon=QIcon(Icon.CLOSE_SVG),
+            )
+        )
+        toolbar.addAction(close)
+
+        self.returnToMenuRequested.connect(instance.maybeClosePane)
+
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
         """
         Configures the given input box against the given connection. I.e. makes
@@ -529,3 +563,19 @@ class WorldPane(Pane):
         bind_processor_to_connection(processor, connection)
 
         return processor
+
+    def doClose(self) -> None:
+        """
+        Closes this pane and returns to the menu.
+        """
+
+        self.pane_is_persistent = False
+        self.slideLeft()
+
+    @Slot()
+    def _showSettings(self) -> None:
+        """
+        Opens the settings pane for this world.
+        """
+
+        self.addPaneRight(SettingsPane(self._settings))

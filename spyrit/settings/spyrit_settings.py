@@ -136,6 +136,8 @@ class SpyritSettings(Settings):
         history_previous: Key[Shortcut] = _shortcut_key("Ctrl+Up")
         history_next: Key[Shortcut] = _shortcut_key("Ctrl+Down")
         find: Key[Shortcut] = _shortcut_key("Ctrl+F")
+        open_settings: Key[Shortcut] = _shortcut_key("Ctrl+Shift+S")
+        return_to_menu: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Q")
 
     class Network(Bunch):
         """

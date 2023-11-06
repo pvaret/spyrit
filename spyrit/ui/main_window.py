@@ -19,7 +19,7 @@ import logging
 
 from typing import cast
 
-from PySide6.QtCore import Qt, QEvent, QTimer, Signal, Slot
+from PySide6.QtCore import Qt, QEvent, QSize, QTimer, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QEnterEvent, QIcon, QResizeEvent
 from PySide6.QtWidgets import (
     QApplication,
@@ -35,6 +35,7 @@ from spyrit.resources.resources import Icon
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
+from spyrit.ui.sizer import Sizer
 
 
 class CornerWidgetWrapper(QWidget):
@@ -331,12 +332,20 @@ class SpyritMainWindow(QMainWindow):
 
         # Bind the "new tab" action above to the tab widget's corner button.
 
+        sizer = Sizer(self)
+        icon_size = sizer.unitSize() + sizer.marginSize()
+
         corner_button = QToolButton()
+        corner_button.setIconSize(QSize(icon_size, icon_size))
         self._tab_widget.setCornerWidget(
-            CornerWidgetWrapper(corner_button), Qt.Corner.TopLeftCorner
+            CornerWidgetWrapper(corner_button), Qt.Corner.TopRightCorner
         )
         corner_button.setAutoRaise(True)  # Only draw raised edge on mouseover
         corner_button.setDefaultAction(new_tab_action)
+
+        # Also bind the action to tab bar double-clicks.
+
+        self._tab_widget.tabBarDoubleClicked.connect(new_tab_action.trigger)
 
     def tabs(self) -> QTabWidget:
         """

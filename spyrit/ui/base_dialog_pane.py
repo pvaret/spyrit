@@ -24,6 +24,20 @@ from spyrit.ui.base_pane import Pane
 
 
 class BaseDialogPane(Pane):
+    """
+    The base class for dialog panes to be used in a container. Set the dialog's
+    main widget with setWidget() and pass the dialog's buttons as constructor
+    arguments.
+
+    Args:
+        ok_button: A push button that the user should click to accept the
+            dialog's content. If None, a default button will be created with the
+            text "Ok".
+
+        cancel_button: A push button that the user should click to decline the
+            dialog's content.
+    """
+
     # Signal emitted when the user clicks the dialog acceptance button.
 
     okClicked: Signal = Signal()  # noqa: N815
@@ -71,6 +85,24 @@ class BaseDialogPane(Pane):
         ok_button.setDefault(True)
         button_layout.addWidget(ok_button)
 
+    def widget(self) -> QWidget:
+        """
+        Returns the widget currently set as this dialog's central widget.
+
+        Returns:
+            A widget. This widget will still be parented to this dialog.
+        """
+
+        return self._widget
+
     def setWidget(self, widget: QWidget) -> None:
+        """
+        Sets a widget to be the central widget of this dialog.
+
+        Args:
+            widget: The widget to use as this dialog's central widget. It will
+                be reparented to this dialog.
+        """
+
         self.layout().replaceWidget(self._widget, widget)
         self._widget = widget

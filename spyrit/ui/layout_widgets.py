@@ -15,8 +15,11 @@
 Implements widgets to help lay out a UI.
 """
 
+from typing import cast
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
+    QBoxLayout,
     QHBoxLayout,
     QLayout,
     QSplitter,
@@ -53,6 +56,16 @@ class Box(QWidget):
         """
 
         self.layout().addWidget(widget)
+
+    def layout(self) -> QBoxLayout:
+        """
+        Returns the layout used for the widgets in this box.
+
+        Returns:
+            The layout, properly typed.
+        """
+
+        return cast(QBoxLayout, super().layout())
 
 
 class VBox(Box):

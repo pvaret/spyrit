@@ -19,8 +19,10 @@ import argparse
 import enum
 import logging
 import logging.handlers
+import sys
 
 from signal import Signals
+from types import TracebackType
 
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
@@ -137,6 +139,25 @@ def _build_logger(
     return logger
 
 
+def _setup_excepthook(logger: logging.Logger) -> None:
+    """
+    Configures sys.excepthook with a function that just logs the exception to
+    the given logger.
+
+    Args:
+        logger: The logger on which to log the exception.
+    """
+
+    def _log_exception(
+        _exc_type_unused: type[BaseException],
+        exc_value: BaseException,
+        _traceback_unused: TracebackType,
+    ) -> None:
+        logger.critical("Exception occurred:", exc_info=exc_value)
+
+    sys.excepthook = _log_exception
+
+
 def _load_resources() -> bool:
     """
     Attempts to load and apply the embedded resources for the application.
@@ -195,7 +216,9 @@ def bootstrap(args: list[str]) -> int:
 
     # Set up logging based on args.
 
-    _build_logger(default_paths, flags.debug, flags.log_target)
+    logger = _build_logger(default_paths, flags.debug, flags.log_target)
+    _setup_excepthook(logger)
+
     logging.debug("Debug logging on.")
 
     # Load resources.

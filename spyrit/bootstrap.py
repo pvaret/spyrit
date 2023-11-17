@@ -16,7 +16,9 @@ Function to initialize the program and launch it.
 """
 
 import argparse
+import enum
 import logging
+import logging.handlers
 
 from signal import Signals
 
@@ -34,6 +36,16 @@ from spyrit.settings.spyrit_state import SpyritState
 from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
 from spyrit.ui.styles import StyleManager
+
+
+class LogTarget(enum.StrEnum):
+    """
+    Where to send debug logs.
+    """
+
+    STDERR = "stderr"
+    FILE = "file"
+    BOTH = "both"
 
 
 def _make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
@@ -66,6 +78,14 @@ def _make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
         action="store_true",
         help="Enable debugging features",
     )
+    parser.add_argument(
+        "--log-target",
+        choices=list(LogTarget),
+        default=LogTarget.STDERR,
+        action="store",
+        help="Where to log debug output: to the terminal's stderr, to the"
+        " debug.log file in the configuration folder, or both",
+    )
 
     # Add this pre-boostrap argument too so that it appears in the help text.
 
@@ -76,6 +96,45 @@ def _make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
     )
 
     return parser
+
+
+def _build_logger(
+    paths: DefaultPathsBase,
+    debug: bool = False,
+    log_target: LogTarget = LogTarget.STDERR,
+) -> logging.Logger:
+    """
+    Configures and returns the default logger for the application.
+
+    Args:
+        paths: The source of truth object for the application's paths.
+
+        debug: Whether to turn on debug logs.
+
+        log_target: Whether to send logs from the standard error, to the
+            application's debug log file, or both.
+
+    Returns:
+        The default logger, configured.
+    """
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    logger.handlers.clear()
+    formatter = logging.Formatter(fmt="%(asctime)s %(levelname)s %(message)s")
+    if log_target in (LogTarget.STDERR, LogTarget.BOTH):
+        logger.addHandler(handler := logging.StreamHandler())
+        handler.setFormatter(formatter)
+    if log_target in (LogTarget.FILE, LogTarget.BOTH):
+        logger.addHandler(
+            handler := logging.handlers.TimedRotatingFileHandler(
+                filename=paths.getDebugLogFilePath(),
+                when="midnight",
+                backupCount=10,
+            )
+        )
+        handler.setFormatter(formatter)
+    return logger
 
 
 def _load_resources() -> bool:
@@ -136,10 +195,7 @@ def bootstrap(args: list[str]) -> int:
 
     # Set up logging based on args.
 
-    logging.basicConfig(
-        level=logging.DEBUG if flags.debug else logging.INFO,
-        format="%(asctime)s %(levelname)s %(message)s",
-    )
+    _build_logger(default_paths, flags.debug, flags.log_target)
     logging.debug("Debug logging on.")
 
     # Load resources.

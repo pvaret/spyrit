@@ -26,9 +26,10 @@ REQUIRED_QT_VERSION: tuple[int, int] = (6, 5)
 APPLICATION_NAME: str = "SpyritNG"
 SPYRIT_VERSION: str = "0.6-dev"
 
-# PID file
+# Special named files
 
-PID_FILE_NAME = "spyrit.pid"
+PID_FILE_NAME: str = "spyrit.pid"
+DEBUG_LOG_FILE_NAME: str = "debug.log"
 
 # Settings
 
@@ -62,13 +63,13 @@ DEFAULT_FONT_POINT_SIZE: int = 12
 
 # Network
 
-MIN_TCP_PORT = 1
-MAX_TCP_PORT = 65535
+MIN_TCP_PORT: int = 1
+MAX_TCP_PORT: int = 65535
 
 # Game data processing
 
-PROCESSOR_BLOCK_SIZE_BYTES = 128
+PROCESSOR_BLOCK_SIZE_BYTES: int = 128
 
 # Internals and debugging
 
-GC_STATS_DUMP_PERIOD = 60  # seconds
+GC_STATS_DUMP_PERIOD: int = 60  # seconds

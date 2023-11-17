@@ -29,6 +29,7 @@ class DefaultPathsBase(ABC):
     """
 
     PID_FILE_NAME = constants.PID_FILE_NAME
+    DEBUG_LOG_FILE_NAME = constants.DEBUG_LOG_FILE_NAME
 
     _config_folder_path: pathlib.Path | None = None
 
@@ -131,3 +132,14 @@ class DefaultPathsBase(ABC):
         """
 
         return self.getConfigFolderPath() / self.PID_FILE_NAME
+
+    def getDebugLogFilePath(self) -> pathlib.Path:
+        """
+        Returns the full path to the debug log file, using the configured
+        configuration folder if any.
+
+        Returns:
+            The full path to the debug log file.
+        """
+
+        return self.getConfigFolderPath() / self.DEBUG_LOG_FILE_NAME

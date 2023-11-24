@@ -51,7 +51,6 @@ class SpyritState(Settings):
         input_splitter_sizes: Key[list[int]] = Key(
             default=[800, 200], serializer=IntList()
         )
-        extra_input_visible: ToggleKey = ToggleKey(default=False)
 
     class History(Bunch):
         max_history_length: Key[int] = Key(

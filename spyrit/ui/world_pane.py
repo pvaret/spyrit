@@ -444,24 +444,17 @@ class WorldPane(Pane):
 
         # Add the extra input toggle.
 
-        input_visible = self._state.ui.extra_input_visible
-        extra_inputbox.toggleVisibility(input_visible.get())
-        input_visible.onValueChangeCall(extra_inputbox.toggleVisibility)
-
         self.addAction(
             extra_input_toggle := ActionWithKeySetting(
                 self,
                 "Toggle second input",
                 self._settings.shortcuts.toggle_second_input,
-                input_visible.toggle,
+                extra_inputbox.toggleVisibility,
                 checkable=True,
                 icon=QIcon(Icon.INPUT_FIELD_SVG),
             )
         )
-
-        # Set the action's initial status from the stored visibility value.
-
-        extra_input_toggle.setChecked(input_visible.get())
+        extra_inputbox.toggleVisibility(False)
 
         # And add the button to the toolbar.
 

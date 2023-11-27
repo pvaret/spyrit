@@ -45,16 +45,16 @@ class SearchBar(QWidget):
     # contains the found text as its selection, or a null cursor if there was no
     # or no further result.
 
-    searchResultReady: Signal = Signal(QTextCursor)  # noqa: N815
+    searchResultReady: Signal = Signal(QTextCursor)
 
     # This signal fires when this search bar no longer wants to have the focus.
 
-    expelFocus: Signal = Signal()  # noqa: N815
+    expelFocus: Signal = Signal()
 
     # This signal fires when the search bar becomes visible (True) or,
     # respectively, hidden (False).
 
-    visibilityChanged: Signal = Signal(bool)  # noqa: N815
+    visibilityChanged: Signal = Signal(bool)
 
     _document: QTextDocument
     _search_cursor: QTextCursor

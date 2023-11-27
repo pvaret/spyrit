@@ -162,7 +162,7 @@ class SessionInstance(QObject):
     # This signal is emitted when the number of unread lines in this instance
     # changes, one way or another.
 
-    unreadLinesChanged: Signal = Signal()  # noqa: N815
+    unreadLinesChanged: Signal = Signal()
 
     _title: str = ""
     _active: bool = True

@@ -182,7 +182,7 @@ class Singletonizer(QObject):
     # Signal that is emitted when another process instance of this program
     # notified this one that it started.
 
-    newInstanceStarted: Signal = Signal()  # noqa: N815
+    newInstanceStarted: Signal = Signal()
 
     _path: Path
     _pid: int

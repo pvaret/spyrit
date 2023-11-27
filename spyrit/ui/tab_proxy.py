@@ -44,7 +44,7 @@ class TabProxy(QObject):
     # This signal is emitted when a user action is requesting that this tab be
     # closed.
 
-    closeRequested: Signal = Signal()  # noqa: N815
+    closeRequested: Signal = Signal()
 
     _tab_widget: QTabWidget
     _widget: weakref.ref[QWidget]

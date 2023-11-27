@@ -35,11 +35,11 @@ class InputBox(QPlainTextEdit):
 
     # This signal fires when the user presses Enter in the input box.
 
-    returnPressed: Signal = Signal()  # noqa: N815
+    returnPressed: Signal = Signal()
 
     # This signal fires when this input box no longer wants to have the focus.
 
-    expelFocus: Signal = Signal()  # noqa: N815
+    expelFocus: Signal = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -123,7 +123,7 @@ class Postman(QObject):
 
     # This signal fires when we successfully sent an input to the connection.
 
-    inputSent: Signal = Signal(str)  # noqa: N815
+    inputSent: Signal = Signal(str)
 
     _inputbox: InputBox
     _connection: Connection

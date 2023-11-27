@@ -38,7 +38,7 @@ class OutputView(QTextEdit):
     # can't just update its own scrollbar. Instead it needs to use this signal
     # to communicate.
 
-    requestScrollToPosition: Signal = Signal(int)  # noqa: N815
+    requestScrollToPosition: Signal = Signal(int)
 
     _settings: SpyritSettings.UI.Output
 

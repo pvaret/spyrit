@@ -53,11 +53,11 @@ class Connection(QObject):
 
     # This signal is emitted when data is received from the socket.
 
-    dataReceived: Signal = Signal(bytes)  # noqa: N815
+    dataReceived: Signal = Signal(bytes)
 
     # This signal is emitted when the status of the connection changed.
 
-    statusChanged: Signal = Signal(Status, str)  # noqa: N815
+    statusChanged: Signal = Signal(Status, str)
 
     def __init__(
         self, settings: SpyritSettings.Network, parent: QObject | None = None

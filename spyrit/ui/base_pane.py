@@ -30,15 +30,15 @@ class Pane(QWidget):
     # parent container, respectively to the left and to the right of this
     # container.
 
-    addPaneLeftRequested: Signal = Signal(QWidget)  # noqa: N815
-    addPaneRightRequested: Signal = Signal(QWidget)  # noqa: N815
+    addPaneLeftRequested: Signal = Signal(QWidget)
+    addPaneRightRequested: Signal = Signal(QWidget)
 
     # These signals allow this pane to request that the container makes the
     # pane to the left or, respectively, to the right of this one, the
     # currently visible pane.
 
-    slideLeftRequested: Signal = Signal()  # noqa: N815
-    slideRightRequested: Signal = Signal()  # noqa: N815
+    slideLeftRequested: Signal = Signal()
+    slideRightRequested: Signal = Signal()
 
     # Whether the Pane will be garbage-collected when out of view.
 

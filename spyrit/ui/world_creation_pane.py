@@ -53,7 +53,7 @@ class WorldCreationForm(QWidget):
 
     # This signal fires when any field in the form is updated.
 
-    updated: Signal = Signal()  # noqa: N815
+    updated: Signal = Signal()
 
     def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()

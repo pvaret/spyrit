@@ -66,7 +66,7 @@ class TabWidget(QTabWidget):
     # This signal fires whenever a tab is added or removed. Its argument is the
     # new number of tabs.
 
-    tabCountChanged: Signal = Signal(int)  # noqa: N815
+    tabCountChanged: Signal = Signal(int)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -230,22 +230,22 @@ class SpyritMainWindow(QMainWindow):
     # We fire this signal when the window is being asked to close by a user
     # action.
 
-    closeRequested: Signal = Signal()  # noqa: N815
+    closeRequested: Signal = Signal()
 
     # We fire this signal when the user triggered an action requesting that a
     # new window is opened.
 
-    newWindowRequested: Signal = Signal()  # noqa: N815
+    newWindowRequested: Signal = Signal()
 
     # We fire this signal when the user triggered an action requesting that a
     # new tab is opened in this window.
 
-    newTabRequested: Signal = Signal()  # noqa: N815
+    newTabRequested: Signal = Signal()
 
     # We fire this signal when the window's desktop focus status has changed.
     # Its parameter is True if the window now has focus, else False.
 
-    focusChanged: Signal = Signal(bool)  # noqa: N815
+    focusChanged: Signal = Signal(bool)
 
     _settings: SpyritSettings
     _state: SpyritState

@@ -19,11 +19,10 @@ and maintains its state, independantly of any UI consideration.
 import logging
 import weakref
 
-from typing import Iterable, Protocol, Sequence, runtime_checkable
+from typing import Iterable, Protocol, runtime_checkable
 
 from PySide6.QtCore import Qt, QObject, Signal, Slot
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
 
 from spyrit.network.connection import Connection
 from spyrit.network.fragments import (
@@ -32,113 +31,8 @@ from spyrit.network.fragments import (
     Fragment,
     FragmentList,
 )
+from spyrit.ui.dialogs import askUserIfReadyToClose, askUserIfReadyToDisconnect
 from spyrit.ui.tab_proxy import TabProxy
-
-
-def _confirmationDialog(
-    widget: QWidget | None,
-    title: str,
-    message: str,
-    confirm_label: str,
-    cancel_label: str = "Cancel",
-) -> bool:
-    """
-    Shows a confirmation dialog with the given parameters, and returns the
-    user's decision to confirm or not.
-
-    Args:
-        widget: The widget whose window to use as the dialog's parent.
-
-        title: The dialog's title.
-
-        message: The dialog's text, formatted as HTML.
-
-        confirm_label: The text of the confirmation button.
-
-        cancel_label: The text of the cancel button.
-
-    Returns:
-        True if the user confirmed the action, else False.
-    """
-
-    dialog = QMessageBox(widget.window() if widget else None)
-    dialog.setIcon(QMessageBox.Icon.Question)
-    dialog.setWindowTitle(title)
-    dialog.setTextFormat(Qt.TextFormat.RichText)
-    dialog.setText(message)
-
-    dialog.addButton(
-        confirm := QPushButton(confirm_label),
-        QMessageBox.ButtonRole.AcceptRole,
-    )
-    dialog.addButton(
-        cancel := QPushButton(cancel_label),
-        QMessageBox.ButtonRole.RejectRole,
-    )
-    dialog.setDefaultButton(cancel)
-
-    dialog.exec()
-
-    return dialog.clickedButton() is confirm
-
-
-def askUserIfReadyToClose(
-    widget: QWidget | None, instances: Sequence["SessionInstance"]
-) -> bool:
-    """
-    Asks the user to confirm they are really ready to close still connected
-    games.
-
-    Args:
-        window: The widget to use as the message box's parent.
-
-        instances: The game instances to ask the user about.
-
-    Returns:
-        Whether the user accepted to close the connected games.
-    """
-
-    title = "Really close?"
-
-    if len(instances) == 1:
-        message = (
-            f"You are still connected to <b>{instances[0].title()}</b>."
-            " Really close?"
-        )
-
-    else:
-        message = (
-            "You are still connected to the following games:<br>"
-            + "".join(
-                f"<b> • {instance.title()}</b><br>" for instance in instances
-            )
-            + "<br>"
-            + "Really close?"
-        )
-
-    return _confirmationDialog(widget, title, message, "Close")
-
-
-def askUserIfReadyToDisconnect(
-    widget: QWidget | None, instance: "SessionInstance"
-) -> bool:
-    """
-    Asks the user to confirm they are really ready to disconnect from the
-    current game server.
-
-    Args:
-        window: The widget to use as the message box's parent.
-
-        instance: The game instance to ask the user about.
-
-    Returns:
-        Whether the user accepted to close the connected games.
-    """
-
-    title = "Really disconnect?"
-    message = f"You are still connected to <b>{instance.title()}</b>. Really disconnect?"
-
-    return _confirmationDialog(widget, title, message, "Disconnect")
 
 
 @runtime_checkable

@@ -16,7 +16,7 @@ Implements the UI that is first displayed when opening a new window.
 """
 
 
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
 
 from spyrit import constants
@@ -53,6 +53,10 @@ class WelcomePane(Pane):
 
     pane_is_persistent = True
 
+    # This signal fires when the user requests to quit the application.
+
+    quitRequested: Signal = Signal()
+
     _settings: SpyritSettings
     _state: SpyritState
     _instance: SessionInstance
@@ -78,6 +82,7 @@ class WelcomePane(Pane):
         # Create and set up the menu layout.
 
         pane_layout.addLayout(menu_layout := QVBoxLayout())
+        menu_layout.setContentsMargins(0, 0, 0, 0)
 
         # Logo!
 
@@ -124,6 +129,9 @@ class WelcomePane(Pane):
             about_button := Button(f"About {constants.APPLICATION_NAME}...")
         )
         about_button.clicked.connect(self._showAbout)
+
+        menu_layout.addWidget(quit_button := Button("Quit"))
+        quit_button.clicked.connect(self.quitRequested)
 
         # Fill out the remaining space.
 

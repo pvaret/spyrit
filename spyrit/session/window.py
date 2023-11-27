@@ -20,11 +20,14 @@ reacts to changes to this status.
 import logging
 import weakref
 
+from typing import Iterator
+
 from PySide6.QtCore import QObject, Slot
 
-from spyrit.session.instance import SessionInstance, askUserIfReadyToClose
+from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.dialogs import askUserIfReadyToClose
 from spyrit.ui.main_window import SpyritMainWindow
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.tab_proxy import TabProxy
@@ -95,7 +98,13 @@ class SessionWindow(QObject):
         # Create the UI for a game.
 
         widget = SlidingPaneContainer(self._window)
-        widget.addPaneRight(WelcomePane(self._settings, self._state, instance))
+        widget.addPaneRight(
+            pane := WelcomePane(self._settings, self._state, instance)
+        )
+
+        # Plug quit requests from the welcome pane to the window.
+
+        pane.quitRequested.connect(self._window.quitRequested)
 
         # Add the UI to a tab and bind the instance to that tab.
 
@@ -123,9 +132,7 @@ class SessionWindow(QObject):
         if they're fine closing them.
         """
 
-        connected = [
-            instance for instance in self._instances if instance.connected()
-        ]
+        connected = list(self.connectedInstances())
 
         if not connected or askUserIfReadyToClose(self._window, connected):
             self.close()
@@ -137,6 +144,19 @@ class SessionWindow(QObject):
         """
 
         self.setParent(None)  # type: ignore
+
+    def connectedInstances(self) -> Iterator[SessionInstance]:
+        """
+        Returns an iterator on the session instances held in this window that
+        have an active connection to a game world.
+
+        Returns:
+            The session instances in this window that are currently connected.
+        """
+
+        yield from (
+            instance for instance in self._instances if instance.connected()
+        )
 
     def __del__(self) -> None:
         logging.debug(

@@ -117,7 +117,7 @@ class SpyritSettings(Settings):
         """
 
         new_window: Key[Shortcut] = _shortcut_key("Ctrl+Shift+N")
-        close_window: Key[Shortcut] = _shortcut_key("Ctrl+Q")
+        close_window: Key[Shortcut] = _shortcut_key("Alt+F4")
         new_tab: Key[Shortcut] = _shortcut_key("Ctrl+T")
         close_current_tab: Key[Shortcut] = _shortcut_key("Ctrl+W")
         switch_to_previous_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgUp")
@@ -138,6 +138,7 @@ class SpyritSettings(Settings):
         find: Key[Shortcut] = _shortcut_key("Ctrl+F")
         open_settings: Key[Shortcut] = _shortcut_key("Ctrl+Shift+S")
         return_to_menu: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Q")
+        quit: Key[Shortcut] = _shortcut_key("Ctrl+Q")
 
     class Network(Bunch):
         """

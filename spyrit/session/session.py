@@ -25,12 +25,18 @@ broadly here's the design we're going for:
     signals.
 """
 
+import weakref
 
-from PySide6.QtCore import QObject
+from typing import cast, Iterator
 
+from PySide6.QtCore import QObject, Slot
+from PySide6.QtWidgets import QApplication
+
+from spyrit.session.instance import SessionInstance
 from spyrit.session.window import SessionWindow
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.dialogs import askUserIfReadyToQuit
 from spyrit.ui.main_window import SpyritMainWindow
 
 
@@ -47,12 +53,14 @@ class Session(QObject):
 
     _settings: SpyritSettings
     _state: SpyritState
+    _windows: weakref.WeakSet[SessionWindow]
 
     def __init__(self, settings: SpyritSettings, state: SpyritState) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
+        self._windows = weakref.WeakSet()
 
     def newWindow(self) -> None:
         """
@@ -63,6 +71,7 @@ class Session(QObject):
 
         window = SpyritMainWindow(self._settings, self._state)
         window.newWindowRequested.connect(self.newWindow)
+        window.quitRequested.connect(self.maybeQuit)
 
         # Create the session to go with the window, and create a new instance in
         # it so it's not empty.
@@ -71,7 +80,45 @@ class Session(QObject):
             self, self._settings, self._state, window
         )
         session_window.newInstance()
+        self._windows.add(session_window)
 
         # And show the window.
 
         window.show()
+
+    @Slot()
+    def maybeQuit(self) -> None:
+        """
+        Quits the application if no window contains connected games, else asks
+        the user if they're fine closing them and quitting.
+        """
+
+        app = cast(QApplication | None, QApplication.instance())
+        window = app and app.activeWindow()
+        connected_instances = list(self.connectedInstances())
+
+        if not connected_instances or askUserIfReadyToQuit(
+            window, connected_instances
+        ):
+            self.quit()
+
+    def quit(self) -> None:
+        """
+        Closes all the session windows. This will cause the application to
+        terminate.
+        """
+
+        for window in self._windows:
+            window.close()
+
+    def connectedInstances(self) -> Iterator[SessionInstance]:
+        """
+        Returns an iterator on the session instances in every window that have
+        an active connection to a game world.
+
+        Returns:
+            All the session instances that are currently connected.
+        """
+
+        for window in self._windows:
+            yield from window.connectedInstances()

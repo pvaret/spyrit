@@ -227,6 +227,10 @@ class SpyritMainWindow(QMainWindow):
         state: The application-wide state object.
     """
 
+    # We fire this signal when the user asked to quit the application.
+
+    quitRequested: Signal = Signal()
+
     # We fire this signal when the window is being asked to close by a user
     # action.
 
@@ -326,6 +330,12 @@ class SpyritMainWindow(QMainWindow):
                 "Move tab left",
                 shortcuts.move_current_tab_left,
                 self._tab_widget.moveCurrentTabLeft,
+            ),
+            ActionWithKeySetting(
+                self,
+                "Quit",
+                shortcuts.quit,
+                self.quitRequested.emit,
             ),
         ):
             self.addAction(action)

@@ -51,7 +51,6 @@ DEFAULT_WINDOW_HEIGHT: int = 800
 
 UI_UNIT_SIZE_PX: int = 16  # pixels
 UI_MARGIN_SIZE_PX: int = 2  # pixels
-BUTTON_WRAP_CHARACTER: int = 30  # characters
 LOGO_WIDTH_UNITS: int = 20  # UI units
 FORM_WIDTH_UNITS: int = 20  # UI units
 

@@ -16,8 +16,18 @@ Implements the UI that is first displayed when opening a new window.
 """
 
 
+from typing import Callable, ParamSpec
+
 from PySide6.QtCore import Signal, Slot
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout
+from PySide6.QtWidgets import (
+    QAbstractButton,
+    QHBoxLayout,
+    QMenu,
+    QPushButton,
+    QSizePolicy,
+    QToolButton,
+    QVBoxLayout,
+)
 
 from spyrit import constants
 from spyrit.session.instance import SessionInstance
@@ -26,12 +36,94 @@ from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.about_pane import AboutPane
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
-from spyrit.ui.buttons import Button, WorldButton
 from spyrit.ui.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 from spyrit.ui.world_creation_pane import WorldCreationPane
 from spyrit.ui.world_pane import WorldPane
+
+
+_P = ParamSpec("_P")
+
+
+class CallWithArgs:
+    """
+    Creates a callable that applies the given arguments to the given callable.
+
+    Args:
+        callable: The callable to invoke with the given arguments.
+
+        args, kwargs: The arguments to pass to the callable when invoked.
+    """
+
+    def __init__(
+        self, callable: Callable[_P, None], *args: _P.args, **kwargs: _P.kwargs
+    ) -> None:
+        self._callable = callable
+        self._args = args
+        self._kwargs = kwargs
+
+    def __call__(self) -> None:
+        """
+        Invokes the given callable with the given arguments.
+        """
+
+        self._callable(*self._args, **self._kwargs)
+
+
+def _set_button_size_properties(button: QAbstractButton) -> None:
+    """
+    Configures a Qt button with the desired size properties for the welcome
+    pane.
+
+    Args:
+        button: A Qt button.
+    """
+
+    unit = Sizer(button).unitSize()
+    button.setSizePolicy(
+        QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred
+    )
+    button.setStyleSheet(
+        f"QAbstractButton {{ padding: {unit/1.5} {unit} {unit/1.5} {unit} }}"
+    )
+
+
+class MenuButton(QToolButton):
+    """
+    A button that displays a menu when clicked.
+
+    If the menu is empty, the button will be disabled.
+
+    Args:
+        label: The button's label.
+
+        menu: The menu to display when the button is clicked.
+    """
+
+    def __init__(self, label: str, menu: QMenu) -> None:
+        super().__init__()
+        _set_button_size_properties(self)
+        self.setText(label)
+        self.setCheckable(True)
+        self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+
+        self.setMenu(menu)
+        if menu.isEmpty():
+            self.setEnabled(False)
+
+
+class Button(QPushButton):
+    """
+    A QPushButton with a standardized size.
+
+    Args:
+        label: The text to use for the button.
+    """
+
+    def __init__(self, label: str) -> None:
+        super().__init__(label)
+        _set_button_size_properties(self)
 
 
 class WelcomePane(Pane):
@@ -99,21 +191,12 @@ class WelcomePane(Pane):
 
         menu_layout.addSpacing(unit)
 
-        # All world buttons!
+        # "Connect to..." button.
 
-        worlds = [
-            world for world in settings.sections() if not world.isPrivate()
-        ]
-        worlds.sort(key=lambda w: w.name.get().strip().lower())
+        menu = self._buildWorldMenu()
+        menu_layout.addWidget(MenuButton("Connect to...", menu))
 
-        if worlds:
-            menu_layout.addWidget(QLabel("Return to..."))
-
-            for world in worlds:
-                menu_layout.addWidget(world_button := WorldButton(world))
-                world_button.clicked.connect(self._openWorldPane)
-
-            menu_layout.addSpacing(unit)
+        menu_layout.addSpacing(unit)
 
         # Important application buttons (settings and about)!
 
@@ -150,6 +233,31 @@ class WelcomePane(Pane):
 
         self._instance.setTitle(f"Welcome to {constants.APPLICATION_NAME}!")
 
+    def _buildWorldMenu(self) -> QMenu:
+        """
+        Constructs a menu with the currently configured worlds.
+
+        Each entry in the menu comes with an action that opens the corresponding
+        world when selected.
+
+        Returns:
+            A QMenu listing the currently configured worlds.
+        """
+
+        def _world_sort_key(world: SpyritSettings) -> str:
+            return world.name.get().strip().lower()
+
+        worlds_menu = QMenu(self)
+
+        for world in sorted(self._settings.sections(), key=_world_sort_key):
+            if world.isPrivate():
+                continue
+
+            action = worlds_menu.addAction(world.name.get())  # type: ignore
+            action.triggered.connect(CallWithArgs(self._openWorld, world))
+
+        return worlds_menu
+
     @Slot()
     def _openWorldCreationPane(self) -> None:
         """
@@ -160,16 +268,14 @@ class WelcomePane(Pane):
         self.addPaneRight(pane)
 
     @Slot()
-    def _openWorldPane(self) -> None:
+    def _openWorld(self, world: SpyritSettings) -> None:
         """
-        Creates a game pane for an existing world and switches to it.
+        Creates a game pane for the given world and switches to it.
+
+        Args:
+            world: The settings that represent a game world.
         """
 
-        button = self.sender()
-        if not isinstance(button, WorldButton):
-            return
-
-        world = button.settings()
         state = self._state.getStateSectionForSettingsSection(world)
 
         self.addPaneRight(WorldPane(world, state, self._instance))

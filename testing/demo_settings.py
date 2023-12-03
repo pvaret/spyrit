@@ -18,9 +18,19 @@ if __name__ == "__main__":
     app = QApplication()
 
     settings = SpyritSettings()
-    (test1 := settings.getOrCreateSection("Test 1")).name.set("Test 1")
-    (test2 := settings.getOrCreateSection("Test 2")).name.set("Test 2")
-    pane = SettingsPane(random.choice([settings, test1, test2]))
+    (test1 := settings.getOrCreateSection("")).name.set("Test 1")
+    (test2 := settings.getOrCreateSection("")).name.set("Test 2")
+    (test3 := settings.getOrCreateSection("")).name.set(
+        "Test 3: Example with a super long name to exhibit the behavior of the UI"
+        " in this case"
+    )
+    (test4 := settings.getOrCreateSection("")).name.set(
+        "Test 4: AlsoVeryLongButWithoutAnywhereToSplitTheLabelBetweenWorldsOhMy"
+    )
+
+    pane = SettingsPane(random.choice([settings, test1, test2, test3, test4]))
     pane.show()
+
+    pane.okClicked.connect(pane.close)
 
     app.exec()

@@ -60,6 +60,8 @@ SCROLL_ANIMATION_DURATION_MS: int = 250  # milliseconds
 DEFAULT_FONT_FAMILY: list[str] = ["Noto Sans Mono", "monospace"]
 DEFAULT_FONT_POINT_SIZE: int = 12
 
+TAB_TEXT_WIDTH_CHARS: int = 30
+
 # Network
 
 MIN_TCP_PORT: int = 1

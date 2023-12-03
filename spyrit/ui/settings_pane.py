@@ -15,23 +15,25 @@
 Implements an application settings pane.
 """
 
-from typing import Sequence, TypeVar
+from textwrap import TextWrapper
+from typing import TypeVar, cast
 
-from PySide6.QtCore import Signal, Slot, Qt
+from PySide6.QtCore import QRect, QSize, Qt
+from PySide6.QtGui import QFontMetrics, QPainter, QPaintEvent
 from PySide6.QtWidgets import (
-    QComboBox,
     QLabel,
+    QTabBar,
     QTabWidget,
-    QSizePolicy,
+    QStyle,
+    QStyleOptionTab,
     QWidget,
 )
 
 from sunset import List, Settings
 
+from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
-from spyrit.ui.bars import HBar
 from spyrit.ui.base_dialog_pane import BaseDialogPane
-from spyrit.ui.layout_widgets import HBox, VBox
 from spyrit.ui.sizer import Sizer
 
 
@@ -54,78 +56,121 @@ def _root(settings: _SettingsT) -> _SettingsT:
     return _root(parent)
 
 
-def _is_root(settings: Settings) -> bool:
+def linewrap(
+    text: str, line_length: int = constants.TAB_TEXT_WIDTH_CHARS
+) -> str:
     """
-    Returns whether the settings object is the topmost one.
+    Wraps the given text to the given length.
 
     Args:
-        settings: The settings object to check.
+        text: The text to wrap.
+
+        line_length: The length (in character counts) to which to wrap the text.
 
     Returns:
-        Whether the given settings is the topmost one.
+        The input text, wrapped.
     """
 
-    return settings.parent() is None
+    wrapper = TextWrapper()
+    wrapper.width = line_length
+
+    return "\n".join(wrapper.wrap(text))
 
 
-def _name_for_settings(settings: SpyritSettings) -> str:
+class _SideTabBar(QTabBar):
     """
-    Creates a human-friendly name for the given settings.
-
-    Args:
-        settings: The settings instance for which to create a human-friendly
-            name.
-
-    Returns:
-        A human-friendly name that identifies the given settings.
+    A QTabBar where the tabs are rotated 90 degrees.
     """
 
-    return "All worlds" if _is_root(settings) else settings.name.get()
-
-
-class SettingsComboBox(QComboBox):
-    """
-    This class is a combo box specialization that lets the user pick which world
-    to update settings for.
-
-    Args:
-        settings_choices: A sequence of settings objects for the user to pick
-            from.
-
-        current_settings: The settings object that is currently selected.
-    """
-
-    # This signal fires when the user chooses a setting from the combo box.
-
-    settingsSelected: Signal = Signal(SpyritSettings)
-
-    def __init__(
-        self,
-        settings_choices: Sequence[SpyritSettings],
-        current_settings: SpyritSettings,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
 
-        for i, settings in enumerate(settings_choices):
-            label = _name_for_settings(settings)
-            if not _is_root(settings):
-                label = f"  {label}"
-            self.addItem(label, settings)
-            if settings is current_settings:
-                self.setCurrentIndex(i)
+        unit = Sizer(self).unitSize()
 
-        self.currentIndexChanged.connect(self._emitSettingsSelected)
+        self.setStyleSheet(
+            f"QTabBar::tab {{ padding: {unit} {unit/1.5} {unit} {unit/1.5} }}"
+        )
 
-    @Slot()
-    def _emitSettingsSelected(self) -> None:
+    def tabSizeHint(self, index: int) -> QSize:
         """
-        Emits the settingsSelected signal with the currently selected settings
-        object as its parameter.
+        Overrides the default tab size hint to rotate it 90 degrees, and account
+        for labels that take multiple lines.
+
+        Args:
+            index: The index of the tab for which to produce a size hint.
+
+        Returns:
+            A size hint for the tab, rotated 90 degrees.
         """
 
-        data = self.currentData()
-        if isinstance(data, SpyritSettings):
-            self.settingsSelected.emit(data)
+        opt = QStyleOptionTab()
+        self.initStyleOption(opt, index)
+
+        metrics = cast(QFontMetrics, opt.fontMetrics)  # type: ignore
+        label = cast(str, opt.text)  # type: ignore
+
+        line_height = metrics.boundingRect(label).height()
+        line_count = len(label.split("\n"))
+
+        size = super().tabSizeHint(index).transposed()
+        size.setHeight(size.height() + line_height * (line_count - 1))
+        return size
+
+    def paintEvent(self, arg__1: QPaintEvent) -> None:
+        """
+        Overrides the default paint event handler to render tabs rotated 90
+        degrees.
+        """
+
+        del arg__1  # Unused.
+
+        style = self.style()
+        opt = QStyleOptionTab()
+        painter = QPainter(self)
+
+        for i in range(self.count()):
+            self.initStyleOption(opt, i)
+
+            # Draw the tab's frame.
+
+            style.drawControl(
+                QStyle.ControlElement.CE_TabBarTabShape, opt, painter
+            )
+
+            # Transpose the painter.
+
+            painter.save()
+            center = self.tabRect(i).center()
+            painter.translate(center)
+            painter.rotate(90)
+            painter.translate(-center)
+
+            # Transpose the text element's rect.
+            # Ignore all the type errors because PySide6 types incorrectly omit
+            # QStyleOptionTab.rect.
+
+            rect = QRect()
+            rect.setSize(opt.rect.size().transposed())  # type: ignore
+            rect.moveCenter(opt.rect.center())  # type: ignore
+            opt.rect = rect  # type: ignore
+
+            # And render the text element.
+
+            style.drawControl(
+                QStyle.ControlElement.CE_TabBarTabLabel, opt, painter
+            )
+            painter.restore()
+
+
+class SideTabWidget(QTabWidget):
+    """
+    A QTabWidget where the tabs are on the left side, and horizontal.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setTabBar(_SideTabBar())
+        self.setTabPosition(QTabWidget.TabPosition.West)
 
 
 class SettingsPane(BaseDialogPane):
@@ -146,8 +191,6 @@ class SettingsPane(BaseDialogPane):
     ) -> None:
         super().__init__()
 
-        margin = Sizer(self).marginSize()
-
         # Close the pane when the user clicks the "Ok" button.
 
         self.okClicked.connect(self.slideLeft)
@@ -157,106 +200,115 @@ class SettingsPane(BaseDialogPane):
 
         toplevel = _root(settings)
 
-        all_settings = [toplevel]
-        all_settings += sorted(
+        worlds = sorted(
             toplevel.sections(),
-            key=lambda settings: settings.name.get().lower(),
+            key=lambda settings: settings.name.get().strip().lower(),
         )
 
-        # Create the main pane for the settings UI. It will contain a combo box
-        # to select which world whose settings to edit (can be the toplevel
-        # all-worlds settings), and a settings pane for the selected world.
+        # Create the main pane for the settings UI.
 
-        pane_widget = VBox()
-        pane_widget.layout().setSpacing(margin)
-        pane_widget.addWidget(menu_box := HBox())
+        pane_widget = SideTabWidget()
 
-        menu_box.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
+        # Global settings go here.
+
+        pane_widget.addTab(
+            self._appearanceSettingsUI(toplevel.ui), "Appearance"
         )
-        menu_box.addWidget(QLabel("Settings for:"))
-        menu_box.layout().addSpacing(margin)
-        menu_box.addWidget(
-            settings_menu := SettingsComboBox(all_settings, settings)
+        pane_widget.addTab(
+            self._shortcutsSettingsUI(toplevel.shortcuts), "Shortcuts"
         )
-        menu_box.layout().addStretch()
 
-        settings_menu.settingsSelected.connect(self._updateUIForSettings)
+        # Per-world settings go here.
 
-        pane_widget.layout().addWidget(HBar())
-
-        self._settings_ui = self._uiForSettings(settings)
-        pane_widget.layout().addWidget(self._settings_ui)
+        for world in worlds:
+            i = pane_widget.addTab(
+                self._worldSettingsUi(world),
+                linewrap("World: " + world.name.get().strip()),
+            )
+            if settings is world:
+                pane_widget.setCurrentIndex(i)
 
         self.setWidget(pane_widget)
 
-    @Slot(SpyritSettings)
-    def _updateUIForSettings(self, settings: SpyritSettings) -> None:
+    def _appearanceSettingsUI(self, settings: SpyritSettings.UI) -> QWidget:
         """
-        Constructs the UI to let the user edit the contents of the given
-        settings object. Sets this UI as the current one.
+        Constructs and returns a UI to manage appearance-related
+        settings.
 
         Args:
-            settings: The settings object for which to build and display a UI.
-        """
-
-        ui = self._uiForSettings(settings)
-        self.widget().layout().replaceWidget(self._settings_ui, ui)
-        self._settings_ui.setParent(None)
-        self._settings_ui = ui
-
-    def _uiForSettings(self, settings: SpyritSettings) -> QWidget:
-        """
-        Constructs and returns a UI for the given settings object.
-
-        Args:
-            settings: The settings object for which to build a UI.
+            settings: The settings object to be managed from this UI.
 
         Returns:
-            A widget set up to let a user edit the contents of the given
-            settings object.
+            A UI to manage the given settings.
         """
 
-        ui = QTabWidget()
-
-        if not _is_root(settings):
-            ui.addTab(
-                self._serverSettingsUI(settings.net),
-                f"Server: {settings.name.get()}",
-            )
-            ui.addTab(
-                self._triggersSettingsUI(settings.patterns),
-                f"Triggers: {settings.name.get()}",
-            )
-
-        ui.addTab(self._appearanceSettingsUI(_root(settings).ui), "Appearance")
-        ui.addTab(
-            self._shortcutsSettingsUI(_root(settings).shortcuts),
-            "Shortcuts",
-        )
-
-        return ui
-
-    def _serverSettingsUI(self, settings: SpyritSettings.Network) -> QWidget:
-        label = QLabel("Not implemented!")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        return label
-
-    def _appearanceSettingsUI(self, settings: SpyritSettings.UI) -> QWidget:
-        label = QLabel("Not implemented!")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        return label
-
-    def _triggersSettingsUI(
-        self, settings: List[SpyritSettings.Pattern]
-    ) -> QWidget:
-        label = QLabel("Not implemented!")
+        label = QLabel("Not implemented yet!")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label
 
     def _shortcutsSettingsUI(
         self, settings: SpyritSettings.KeyShortcuts
     ) -> QWidget:
-        label = QLabel("Not implemented!")
+        """
+        Constructs and returns a UI to manage the application's key shortcuts.
+
+        Args:
+            settings: The settings object to be managed from this UI.
+
+        Returns:
+            A UI to manage the application shortcuts.
+        """
+
+        label = QLabel("Not implemented yet!")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        return label
+
+    def _worldSettingsUi(self, settings: SpyritSettings) -> QWidget:
+        """
+        Constructs and returns a UI to manage the settings specific to a given
+        world.
+
+        Args:
+            settings: The settings object to be managed from this UI.
+
+        Returns:
+            A UI to manage the given world's settings.
+        """
+
+        ui = QTabWidget()
+        ui.setDocumentMode(True)
+        ui.addTab(self._serverSettingsUI(settings.net), "Server")
+        ui.addTab(self._triggersSettingsUI(settings.patterns), "Triggers")
+        return ui
+
+    def _serverSettingsUI(self, settings: SpyritSettings.Network) -> QWidget:
+        """
+        Constructs and returns a UI to manage a world's server settings.
+
+        Args:
+            settings: The settings object to be managed from this UI.
+
+        Returns:
+            A UI to manage the given settings.
+        """
+
+        label = QLabel("Not implemented yet!")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        return label
+
+    def _triggersSettingsUI(
+        self, settings: List[SpyritSettings.Pattern]
+    ) -> QWidget:
+        """
+        Constructs and returns a UI to manage a world's triggers.
+
+        Args:
+            settings: The settings object to be managed from this UI.
+
+        Returns:
+            A UI to manage the given settings.
+        """
+
+        label = QLabel("Not implemented yet!")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label

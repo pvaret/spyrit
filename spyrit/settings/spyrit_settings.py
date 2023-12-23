@@ -182,6 +182,12 @@ class SpyritSettings(Settings):
                 constants.DEFAULT_FONT_FAMILY, constants.DEFAULT_FONT_POINT_SIZE
             )
 
+            # How many characters to display in a line before wrapping to the
+            # next line. If 0, wrapping occurs at the width of the output view.
+            word_wrap_column: Key[int] = Key(
+                constants.OUTPUT_VIEW_WORD_WRAP_COLUMN
+            )
+
             # The color of the UI canvas onto which game text is rendered.
             canvas_color: Key[Color] = _color_key(ANSIColorCodes.Black)
 

@@ -19,7 +19,7 @@ Implements a widget to display the text of a game.
 from typing import Any
 
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QFont, QFontMetrics, QTextCursor
+from PySide6.QtGui import QFont, QFontMetrics, QTextCursor, QTextOption
 from PySide6.QtWidgets import QTextEdit
 
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -56,6 +56,10 @@ class OutputView(QTextEdit):
 
         self._settings.canvas_color.onValueChangeCall(self._applyStyleSheet)
         self._applyStyleSheet()
+
+        self.setLineWrapMode(QTextEdit.LineWrapMode.FixedColumnWidth)
+        self._settings.word_wrap_column.onValueChangeCall(self._setWrapColumn)
+        self._setWrapColumn(self._settings.word_wrap_column.get())
 
         # Set up the scrollbar.
 
@@ -136,3 +140,18 @@ class OutputView(QTextEdit):
             QTextEdit{{ background-color: {background_color} }};
             """
         )
+
+    def _setWrapColumn(self, column: int) -> None:
+        """
+        Sets up word wrapping at the given character column.
+
+        Args:
+            column: The character column at which to word-wrap. If 0, text will
+                be wrapped at the widget's border.
+        """
+
+        if not column > 0:
+            self.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+        else:
+            self.setWordWrapMode(QTextOption.WrapMode.WordWrap)
+            self.setLineWrapColumnOrWidth(column)

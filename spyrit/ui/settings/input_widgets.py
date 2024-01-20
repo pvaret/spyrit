@@ -22,7 +22,7 @@ from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy
 from sunset import Key
 
 from spyrit import constants
-from spyrit.settings.widget_connector import Connector
+from spyrit.ui.settings.connector import Connector
 from spyrit.ui.sizer import Sizer
 
 

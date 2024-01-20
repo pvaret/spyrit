@@ -32,7 +32,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import VBar
 from spyrit.ui.base_dialog_pane import BaseDialogPane
-from spyrit.ui.form_widgets import (
+from spyrit.ui.settings.input_widgets import (
     FixedSizeLabel,
     PortLineEdit,
     ServerLineEdit,

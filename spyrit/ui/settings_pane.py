@@ -221,6 +221,9 @@ class SettingsPane(BaseDialogPane):
         # Per-world settings go here.
 
         for world in worlds:
+            if not world.sectionName():
+                continue
+
             i = pane_widget.addTab(
                 self._worldSettingsUi(world),
                 linewrap("World: " + world.name.get().strip()),

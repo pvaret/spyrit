@@ -90,6 +90,11 @@ class Connector(Generic[_T]):
         """
 
         text_value = self._widget_value_getter()
+
+        if not text_value:
+            self._key.clear()
+            return
+
         value = self._to_value_converter(text_value)
 
         if value != self._key.get():

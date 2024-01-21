@@ -68,32 +68,30 @@ class WorldCreationForm(QWidget):
 
         form_layout.addStrut(constants.FORM_WIDTH_UNITS * unit)
 
-        form_layout.addWidget(QLabel("Name"))
-        form_layout.addWidget(name_edit := TextLineEdit())
+        form_layout.addWidget(QLabel("<b>World name</b>"))
+        form_layout.addWidget(world_name_edit := TextLineEdit(settings.name))
         form_layout.addSpacing(unit)
 
         form_layout.addLayout(server_port_layout := QGridLayout())
 
-        server_port_layout.addWidget(QLabel("Server"), 0, 0)
-        server_port_layout.addWidget(QLabel("Port"), 0, 2)
-        server_port_layout.addWidget(server_edit := ServerLineEdit(), 1, 0)
+        server_port_layout.addWidget(QLabel("<b>Server</b>"), 0, 0)
+        server_port_layout.addWidget(QLabel("<b>Port</b>"), 0, 2)
+        server_port_layout.addWidget(
+            server_edit := ServerLineEdit(settings.net.server), 1, 0
+        )
         server_port_layout.addWidget(FixedSizeLabel(":"), 1, 1)
-        server_port_layout.addWidget(port_edit := PortLineEdit(), 1, 2)
+        server_port_layout.addWidget(
+            port_edit := PortLineEdit(settings.net.port), 1, 2
+        )
 
         form_layout.addStretch()
 
         layout.addWidget(VBar())
         layout.addStretch()
 
-        # Connect the input widgets with the relevant settings.
-
-        name_edit.setKey(settings.name)
-        server_edit.setKey(settings.net.server)
-        port_edit.setKey(settings.net.port)
-
         # Report updates of the form contents.
 
-        name_edit.textEdited.connect(self.updated)
+        world_name_edit.textEdited.connect(self.updated)
         server_edit.textEdited.connect(self.updated)
         port_edit.textEdited.connect(self.updated)
 

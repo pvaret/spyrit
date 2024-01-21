@@ -47,9 +47,18 @@ class TextLineEdit(LineEdit):
     A line edit widget bound to a SunsetSettings string Key. The widget's
     contents is populated from the Key's value on creation, and updates the Key
     when the user edits the widget's contents.
+
+    Args:
+        key: A SunsetSettings Key to bind to this widget.
     """
 
     _connector: Connector[str]
+
+    def __init__(self, key: Key[str] | None = None) -> None:
+        super().__init__()
+
+        if key is not None:
+            self.setKey(key)
 
     def setKey(self, key: Key[str]) -> None:
         """
@@ -73,10 +82,13 @@ class ServerLineEdit(TextLineEdit):
     """
     A TextLineEdit that specifically validates that the input looks like a valid
     server address.
+
+    Args:
+        key: A SunsetSettings Key to bind to this widget.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, key: Key[str] | None = None) -> None:
+        super().__init__(key)
 
         self.setValidator(
             QRegularExpressionValidator(r"[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*")
@@ -87,12 +99,18 @@ class PortLineEdit(LineEdit):
     """
     A LineEdit that specifically validates that the input looks like a valid
     port number.
+
+    Args:
+        key: A SunsetSettings Key to bind to this widget.
     """
 
     _connector: Connector[int]
 
-    def __init__(self) -> None:
+    def __init__(self, key: Key[int] | None = None) -> None:
         super().__init__()
+
+        if key is not None:
+            self.setKey(key)
 
         self.setFixedWidth(4 * Sizer(self).unitSize())
         self.setValidator(

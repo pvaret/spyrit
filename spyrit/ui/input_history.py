@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2024 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #

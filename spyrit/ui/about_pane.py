@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2023 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2024 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -58,7 +58,7 @@ class AboutPane(BaseDialogPane):
             <a href="https://github.com/pvaret/spyrit/issues">issue
             tracker</a>.<br>
             <br>
-            Copyright 2023 P.Varet.<br>
+            Copyright 2024 P.Varet.<br>
             <br>
             <b>{constants.APPLICATION_NAME}</b> is licensed to you under the
             <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3 license</a>.<br>

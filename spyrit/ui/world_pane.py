@@ -46,7 +46,7 @@ from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
-from spyrit.ui.settings_pane import SettingsPane
+from spyrit.ui.settings.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 
 

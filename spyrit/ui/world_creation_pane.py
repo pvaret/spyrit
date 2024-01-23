@@ -18,7 +18,6 @@ Implements a UI to set up a new world.
 
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import (
-    QGridLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -32,12 +31,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import VBar
 from spyrit.ui.base_dialog_pane import BaseDialogPane
-from spyrit.ui.settings.input_widgets import (
-    FixedSizeLabel,
-    PortLineEdit,
-    ServerLineEdit,
-    TextLineEdit,
-)
+from spyrit.ui.settings.input_widgets import ServerPortEdit, TextLineEdit
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.world_pane import WorldPane
 
@@ -51,9 +45,9 @@ class WorldCreationForm(QWidget):
             world, as opposed to the global settings object.
     """
 
-    # This signal fires when any field in the form is updated.
+    # This signal fires when any field in the form is edited.
 
-    updated: Signal = Signal()
+    contentsEdited: Signal = Signal()
 
     def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()
@@ -64,6 +58,7 @@ class WorldCreationForm(QWidget):
 
         self.setLayout(layout := QHBoxLayout())
 
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(form_layout := QVBoxLayout())
 
         form_layout.addStrut(constants.FORM_WIDTH_UNITS * unit)
@@ -72,16 +67,10 @@ class WorldCreationForm(QWidget):
         form_layout.addWidget(world_name_edit := TextLineEdit(settings.name))
         form_layout.addSpacing(unit)
 
-        form_layout.addLayout(server_port_layout := QGridLayout())
-
-        server_port_layout.addWidget(QLabel("<b>Server</b>"), 0, 0)
-        server_port_layout.addWidget(QLabel("<b>Port</b>"), 0, 2)
-        server_port_layout.addWidget(
-            server_edit := ServerLineEdit(settings.net.server), 1, 0
-        )
-        server_port_layout.addWidget(FixedSizeLabel(":"), 1, 1)
-        server_port_layout.addWidget(
-            port_edit := PortLineEdit(settings.net.port), 1, 2
+        form_layout.addWidget(
+            server_port_edit := ServerPortEdit(
+                server_key=settings.net.server, port_key=settings.net.port
+            )
         )
 
         form_layout.addStretch()
@@ -91,9 +80,8 @@ class WorldCreationForm(QWidget):
 
         # Report updates of the form contents.
 
-        world_name_edit.textEdited.connect(self.updated)
-        server_edit.textEdited.connect(self.updated)
-        port_edit.textEdited.connect(self.updated)
+        world_name_edit.textEdited.connect(self.contentsEdited)
+        server_port_edit.contentsEdited.connect(self.contentsEdited)
 
 
 class WorldCreationPane(BaseDialogPane):
@@ -131,7 +119,7 @@ class WorldCreationPane(BaseDialogPane):
 
         self.setWidget(form := WorldCreationForm(self._world_settings))
 
-        form.updated.connect(self._maybeEnableConnectButton)
+        form.contentsEdited.connect(self._maybeEnableConnectButton)
         self._maybeEnableConnectButton()
 
         self.okClicked.connect(self._openWorld)

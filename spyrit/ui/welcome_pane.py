@@ -36,7 +36,7 @@ from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.about_pane import AboutPane
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
-from spyrit.ui.settings_pane import SettingsPane
+from spyrit.ui.settings.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 from spyrit.ui.world_creation_pane import WorldCreationPane

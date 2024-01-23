@@ -34,6 +34,7 @@ from sunset import List, Settings
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
+from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 from spyrit.ui.sizer import Sizer
 
 
@@ -279,25 +280,9 @@ class SettingsPane(BaseDialogPane):
         """
 
         ui = QTabWidget()
-        ui.setDocumentMode(True)
-        ui.addTab(self._serverSettingsUI(settings.net), "Server")
+        ui.addTab(ServerSettingsUI(settings), "Server")
         ui.addTab(self._triggersSettingsUI(settings.patterns), "Triggers")
         return ui
-
-    def _serverSettingsUI(self, settings: SpyritSettings.Network) -> QWidget:
-        """
-        Constructs and returns a UI to manage a world's server settings.
-
-        Args:
-            settings: The settings object to be managed from this UI.
-
-        Returns:
-            A UI to manage the given settings.
-        """
-
-        label = QLabel("Not implemented yet!")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        return label
 
     def _triggersSettingsUI(
         self, settings: List[SpyritSettings.Pattern]

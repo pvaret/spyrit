@@ -250,4 +250,4 @@ class SpyritSettings(Settings):
     ui: UI = UI()
 
     # The display name of the game.
-    name: Key[str] = Key(default="")
+    name: Key[str] = Key(default="Unnamed world")

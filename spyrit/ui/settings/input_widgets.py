@@ -16,8 +16,15 @@ Implements custom widgets to be used in configuration forms.
 """
 
 
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QIntValidator, QRegularExpressionValidator
-from PySide6.QtWidgets import QLabel, QLineEdit, QSizePolicy
+from PySide6.QtWidgets import (
+    QGridLayout,
+    QLabel,
+    QLineEdit,
+    QSizePolicy,
+    QWidget,
+)
 
 from sunset import Key
 
@@ -133,6 +140,42 @@ class PortLineEdit(LineEdit):
             to_value_converter=lambda text: int(text) if text.isdigit() else 0,
             from_value_converter=str,
         )
+
+
+class ServerPortEdit(QWidget):
+    """
+    A widget that lays out a ServerLineEdit and a PortLineEdit in a pleasant
+    fashion.
+
+    Args:
+        server_key: A SunsetSettings Key to bind to the ServerLineEdit widget.
+
+        port_key: A SunsetSettings Key to bind to the PortLineEdit widget.
+    """
+
+    # This signal fires when the contents of any of this widget's fields is
+    # edited.
+
+    contentsEdited: Signal = Signal()
+
+    def __init__(
+        self,
+        server_key: Key[str] | None = None,
+        port_key: Key[int] | None = None,
+    ) -> None:
+        super().__init__()
+        self.setLayout(layout := QGridLayout())
+
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        layout.addWidget(QLabel("<b>Server</b>"), 0, 0)
+        layout.addWidget(QLabel("<b>Port</b>"), 0, 2)
+        layout.addWidget(server_edit := ServerLineEdit(server_key), 1, 0)
+        layout.addWidget(FixedSizeLabel(":"), 1, 1)
+        layout.addWidget(port_edit := PortLineEdit(port_key), 1, 2)
+
+        server_edit.textEdited.connect(self.contentsEdited)
+        port_edit.textEdited.connect(self.contentsEdited)
 
 
 # Labels.

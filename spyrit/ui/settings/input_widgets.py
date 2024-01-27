@@ -59,23 +59,11 @@ class TextLineEdit(LineEdit):
         key: A SunsetSettings Key to bind to this widget.
     """
 
-    _connector: Connector[str]
-
-    def __init__(self, key: Key[str] | None = None) -> None:
+    def __init__(self, key: Key[str]) -> None:
         super().__init__()
 
-        if key is not None:
-            self.setKey(key)
-
-    def setKey(self, key: Key[str]) -> None:
-        """
-        Binds this widget to the given SunsetSettings Key.
-
-        Args:
-            key: The SunsetSettings Key to bind to this widget.
-        """
-
-        self._connector = Connector[str](
+        Connector[str](
+            self,
             key,
             widget_value_getter=self.text,
             widget_value_setter=self.setText,
@@ -94,7 +82,7 @@ class ServerLineEdit(TextLineEdit):
         key: A SunsetSettings Key to bind to this widget.
     """
 
-    def __init__(self, key: Key[str] | None = None) -> None:
+    def __init__(self, key: Key[str]) -> None:
         super().__init__(key)
 
         self.setValidator(
@@ -111,28 +99,16 @@ class PortLineEdit(LineEdit):
         key: A SunsetSettings Key to bind to this widget.
     """
 
-    _connector: Connector[int]
-
-    def __init__(self, key: Key[int] | None = None) -> None:
+    def __init__(self, key: Key[int]) -> None:
         super().__init__()
-
-        if key is not None:
-            self.setKey(key)
 
         self.setFixedWidth(4 * Sizer(self).unitSize())
         self.setValidator(
             QIntValidator(constants.MIN_TCP_PORT, constants.MAX_TCP_PORT)
         )
 
-    def setKey(self, key: Key[int]) -> None:
-        """
-        Binds this widget to the given SunsetSettings Key.
-
-        Args:
-            key: The SunsetSettings Key to bind to this widget.
-        """
-
-        self._connector = Connector[int](
+        Connector[int](
+            self,
             key,
             widget_value_getter=self.text,
             widget_value_setter=self.setText,
@@ -158,11 +134,7 @@ class ServerPortEdit(QWidget):
 
     contentsEdited: Signal = Signal()
 
-    def __init__(
-        self,
-        server_key: Key[str] | None = None,
-        port_key: Key[int] | None = None,
-    ) -> None:
+    def __init__(self, server_key: Key[str], port_key: Key[int]) -> None:
         super().__init__()
         self.setLayout(layout := QGridLayout())
 

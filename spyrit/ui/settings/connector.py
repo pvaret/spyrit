@@ -19,7 +19,8 @@ SunsetSettings Key.
 
 from typing import Callable, Generic, TypeVar
 
-from PySide6.QtCore import SignalInstance, Slot
+from PySide6.QtCore import QObject, SignalInstance, Slot
+from PySide6.QtWidgets import QWidget
 
 from sunset import Key
 
@@ -27,13 +28,16 @@ from sunset import Key
 _T = TypeVar("_T", bound=int | str)
 
 
-class Connector(Generic[_T]):
+class Connector(Generic[_T], QObject):
     """
     Generic helper that takes a SunsetSettings Key and setters / getters /
     converters for a Qt widget, and binds the widget to the Key so that their
     values remain sync'ed.
 
     Args:
+        parent: The widget to which the connector applies. Used for lifetime
+            management.
+
         key: The SunsetSettings Key to keep sync'ed with the widget.
 
         widget_value_getter: A callable that returns the current contents of the
@@ -60,6 +64,7 @@ class Connector(Generic[_T]):
     # pylint: disable-next=too-many-arguments
     def __init__(
         self,
+        parent: QWidget,
         key: Key[_T],
         widget_value_getter: Callable[[], str],
         widget_value_setter: Callable[[str], None],
@@ -67,6 +72,8 @@ class Connector(Generic[_T]):
         to_value_converter: Callable[[str], _T],
         from_value_converter: Callable[[_T], str],
     ) -> None:
+        super().__init__(parent)
+
         self._key = key
         self._widget_value_getter = widget_value_getter
         self._widget_value_setter = widget_value_setter

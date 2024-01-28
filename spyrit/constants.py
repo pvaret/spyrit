@@ -66,6 +66,7 @@ OUTPUT_VIEW_WORD_WRAP_COLUMN: int = 100
 
 # Network
 
+UNNAMED_WORLD_NAME: str = "Unnamed world"
 MIN_TCP_PORT: int = 1
 MAX_TCP_PORT: int = 65535
 

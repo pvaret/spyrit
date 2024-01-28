@@ -110,6 +110,14 @@ def _format_key(
     return Key(default=format_, serializer=serializers.FormatSerializer())
 
 
+def _valid_port_number(port: int) -> bool:
+    """
+    Checks whether a given number represents a valid TCP port.
+    """
+
+    return constants.MIN_TCP_PORT <= port <= constants.MAX_TCP_PORT
+
+
 class SpyritSettings(Settings):
     class KeyShortcuts(Bunch):
         """
@@ -159,7 +167,7 @@ class SpyritSettings(Settings):
         # Server address and port for the game. Server can be an IPv4, IPv6 or a
         # resolvable DNS address.
         server: Key[str] = Key(default="")
-        port: Key[int] = Key(default=0)
+        port: Key[int] = Key(default=0, validator=_valid_port_number)
 
         # Stores a game's expected text encoding. It most cases it will be
         # ASCII, but some games get fancy with extended characters.
@@ -250,4 +258,43 @@ class SpyritSettings(Settings):
     ui: UI = UI()
 
     # The display name of the game.
-    name: Key[str] = Key(default="Unnamed world")
+    name: Key[str] = Key(default=constants.UNNAMED_WORLD_NAME)
+
+    def __post_init__(self) -> None:
+        """
+        Sets up application-specific behavior.
+        """
+
+        super().__post_init__()
+
+        self.name.onUpdateCall(self._updateSectionName)
+
+    def _updateSectionName(self, name_key: Key[str]) -> None:
+        """
+        Sets a new name for the section based on a name key, if set. Else sets
+        the section name to the empty string, which makes it so this section
+        won't be saved.
+
+        Args:
+            name_key: A SunsetSettings Key containing the world's name.
+        """
+
+        self.setSectionName(name_key.get() if name_key.isSet() else "")
+
+    def title(self) -> str:
+        """
+        Returns a name that can be used to represent the world to a human.
+
+        Returns:
+            A name for the world.
+        """
+
+        name = self.name.get().strip()
+
+        if self.name.isSet():
+            return name
+
+        if self.net.server.isSet() and self.net.port.isSet():
+            return f"{name} ({self.net.server.get()}:{self.net.port.get()})"
+
+        return name

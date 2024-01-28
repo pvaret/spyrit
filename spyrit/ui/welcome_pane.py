@@ -244,16 +244,13 @@ class WelcomePane(Pane):
             A QMenu listing the currently configured worlds.
         """
 
-        def _world_sort_key(world: SpyritSettings) -> str:
-            return world.name.get().strip().lower()
-
         worlds_menu = QMenu(self)
 
-        for world in sorted(self._settings.sections(), key=_world_sort_key):
-            if world.isPrivate():
-                continue
-
-            action = worlds_menu.addAction(world.name.get())  # type: ignore
+        for world in sorted(
+            self._settings.sections(),
+            key=lambda world: world.title().lower(),
+        ):
+            action = worlds_menu.addAction(world.title())  # type: ignore
             action.triggered.connect(CallWithArgs(self._openWorld, world))
 
         return worlds_menu

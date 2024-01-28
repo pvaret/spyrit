@@ -28,9 +28,13 @@ from spyrit.ui.sizer import Sizer
 
 
 _WORLD_NAME_HELP = """
-**World name** is the name you want to use for this world.
-For instance, *Discworld MUD* or *Harper's Tale MOO*.
+**World name** is the name you want to use for this world. For instance,
+*Discworld MUD* or *Harper's Tale MOO*.
+
+If you leave it unnamed, the world won't be saved, and will be forgotten when
+you close the application.
 """
+
 _SERVER_PORT_HELP = f"""
 **Server** and **port** together are the network address that tells programs
 like {constants.APPLICATION_NAME} how to connect to this world. For instance:

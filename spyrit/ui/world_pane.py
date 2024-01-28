@@ -309,7 +309,7 @@ class WorldPane(Pane):
 
         # Update the instance title with this world's name.
 
-        self._instance.setTitle(self._settings.name.get())
+        self._instance.setTitle(self._settings.title())
 
     def _setupGameWidgets(
         self,

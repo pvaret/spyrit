@@ -203,7 +203,7 @@ class SettingsPane(BaseDialogPane):
 
         worlds = sorted(
             toplevel.sections(),
-            key=lambda settings: settings.name.get().strip().lower(),
+            key=lambda settings: settings.title().lower(),
         )
 
         # Create the main pane for the settings UI.
@@ -222,12 +222,9 @@ class SettingsPane(BaseDialogPane):
         # Per-world settings go here.
 
         for world in worlds:
-            if not world.sectionName():
-                continue
-
             i = pane_widget.addTab(
                 self._worldSettingsUi(world),
-                linewrap("World: " + world.name.get().strip()),
+                linewrap("World: " + world.title()),
             )
             if settings is world:
                 pane_widget.setCurrentIndex(i)

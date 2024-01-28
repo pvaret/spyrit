@@ -134,8 +134,6 @@ class WorldCreationPane(BaseDialogPane):
         if not self._areSettingsValid():
             return
 
-        self._world_settings.setSectionName(self._world_settings.name.get())
-
         state = self._state.getStateSectionForSettingsSection(
             self._world_settings
         )
@@ -160,14 +158,8 @@ class WorldCreationPane(BaseDialogPane):
         """
 
         return (
-            self._world_settings.name.isSet()
-            and self._world_settings.name.get().strip() != ""
-            and self._world_settings.net.port.isSet()
-            and constants.MIN_TCP_PORT
-            <= self._world_settings.net.port.get()
-            <= constants.MAX_TCP_PORT
+            self._world_settings.net.port.isSet()
             and self._world_settings.net.server.isSet()
-            and self._world_settings.net.server.get() != ""
         )
 
     def onActive(self) -> None:

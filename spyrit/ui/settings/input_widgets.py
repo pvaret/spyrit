@@ -70,6 +70,7 @@ class TextLineEdit(LineEdit):
             widget_value_changed_signal=self.textEdited,
             to_value_converter=lambda text: text,
             from_value_converter=lambda text: text,
+            widget_placeholder_setter=self.setPlaceholderText,
         )
 
 
@@ -115,6 +116,7 @@ class PortLineEdit(LineEdit):
             widget_value_changed_signal=self.textEdited,
             to_value_converter=lambda text: int(text) if text.isdigit() else 0,
             from_value_converter=str,
+            widget_placeholder_setter=self.setPlaceholderText,
         )
 
 

@@ -71,6 +71,7 @@ class Connector(Generic[_T], QObject):
         widget_value_changed_signal: SignalInstance,
         to_value_converter: Callable[[str], _T],
         from_value_converter: Callable[[_T], str],
+        widget_placeholder_setter: Callable[[str], None] = lambda _: None,
     ) -> None:
         super().__init__(parent)
 
@@ -88,6 +89,9 @@ class Connector(Generic[_T], QObject):
 
         key.onUpdateCall(self._updateWidgetValueFromKey)
         self._updateWidgetValueFromKey(key)
+
+        if (parent_key := key.parent()) is not None:
+            widget_placeholder_setter(from_value_converter(parent_key.get()))
 
     @Slot()
     def _updateKeyValueFromWidget(self) -> None:

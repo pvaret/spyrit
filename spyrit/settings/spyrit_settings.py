@@ -166,8 +166,10 @@ class SpyritSettings(Settings):
 
         # Server address and port for the game. Server can be an IPv4, IPv6 or a
         # resolvable DNS address.
-        server: Key[str] = Key(default="")
-        port: Key[int] = Key(default=0, validator=_valid_port_number)
+        server: Key[str] = Key(default=constants.EXAMPLE_SERVER)
+        port: Key[int] = Key(
+            default=constants.EXAMPLE_PORT, validator=_valid_port_number
+        )
 
         # Stores a game's expected text encoding. It most cases it will be
         # ASCII, but some games get fancy with extended characters.

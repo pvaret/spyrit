@@ -148,6 +148,10 @@ class ServerPortEdit(QWidget):
         layout.addWidget(FixedSizeLabel(":"), 1, 1)
         layout.addWidget(port_edit := PortLineEdit(port_key), 1, 2)
 
+        # TODO: Instead check when the settings object changes. This will avoid
+        # a race condition where these signals could fire before the settings
+        # are updated.
+
         server_edit.textEdited.connect(self.contentsEdited)
         port_edit.textEdited.connect(self.contentsEdited)
 

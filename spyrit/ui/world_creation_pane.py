@@ -113,7 +113,8 @@ class WorldCreationPane(BaseDialogPane):
         )
 
         self._connect_button = ok_button
-        self._world_settings = settings.newSection()
+        self._root_settings = settings
+        self._world_settings = SpyritSettings()
         self._instance = instance
         self._state = state
 
@@ -134,6 +135,7 @@ class WorldCreationPane(BaseDialogPane):
         if not self._areSettingsValid():
             return
 
+        self._world_settings.setParent(self._root_settings)
         state = self._state.getStateSectionForSettingsSection(
             self._world_settings
         )

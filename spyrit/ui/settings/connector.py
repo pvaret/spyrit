@@ -53,6 +53,9 @@ class Connector(Generic[_T], QObject):
 
         from_value_converter: A callable that can convert to a string from the
             type held in the Key this connector is bound to.
+
+        widget_placeholder_setter: A callable to set a placeholder text in the
+            widget when it's empy.
     """
 
     _key: Key[_T]
@@ -90,8 +93,7 @@ class Connector(Generic[_T], QObject):
         key.onUpdateCall(self._updateWidgetValueFromKey)
         self._updateWidgetValueFromKey(key)
 
-        if (parent_key := key.parent()) is not None:
-            widget_placeholder_setter(from_value_converter(parent_key.get()))
+        widget_placeholder_setter(from_value_converter(key.fallback()))
 
     @Slot()
     def _updateKeyValueFromWidget(self) -> None:

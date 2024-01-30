@@ -16,7 +16,7 @@ Implements the UI that is first displayed when opening a new window.
 """
 
 
-from typing import Callable, ParamSpec
+from typing import Any, Callable, ParamSpec, cast
 
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import (
@@ -27,7 +27,10 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QToolButton,
     QVBoxLayout,
+    QWidget,
 )
+
+from sunset import Key
 
 from spyrit import constants
 from spyrit.session.instance import SessionInstance
@@ -89,6 +92,100 @@ def _set_button_size_properties(button: QAbstractButton) -> None:
     )
 
 
+def _is_ancestor(possible_ancestor: Key[Any], key: Key[Any]) -> bool:
+    """
+    Determines whether the given key transitively inherits from the given
+    possible ancestor.
+
+    Args:
+        possible_ancestor: The key that may be the ancestor.
+
+        key: The key that may inherit directly or indirectly from the ancestor.
+
+    Returns:
+        True if and only if the key is the same object as the ancestor, or one
+        of the key's transitive parents is.
+    """
+
+    if key is possible_ancestor:
+        return True
+
+    if (parent := key.parent()) is None:
+        return False
+
+    return _is_ancestor(possible_ancestor, parent)
+
+
+class WorldsMenu(QMenu):
+    """
+    A QMenu that contains a list of configured worlds.
+
+    Automatically refreshes itself when worlds are added or modified.
+
+    Args:
+        parent: The widget on which to attach the menu, for lifetime management
+            purposes.
+
+        settings: The root settings object on which to look up the world list.
+    """
+
+    # This signal fires when a world is selected in the menu.
+
+    worldSelected: Signal = Signal(SpyritSettings)
+
+    # This signal fires when the item count of the menu changed.
+
+    itemCountChanged: Signal = Signal(int)
+
+    _settings: SpyritSettings
+    _count: int = 0
+
+    def __init__(self, parent: QWidget, settings: SpyritSettings) -> None:
+        super().__init__(parent=parent)
+        self._settings = settings
+        self._settings.onUpdateCall(self._refreshMenu)
+        self._refreshMenu()
+
+    def _refreshMenu(self, entity: Any = None) -> None:
+        """
+        Refreshes the menu if the entity that triggers the update means that
+        either the world list or a world name changed.
+
+        Args:
+            entity: The entity whose update triggered the call to this function.
+        """
+
+        if (
+            entity is None
+            or isinstance(entity, SpyritSettings)
+            or (
+                isinstance(entity, Key)
+                and _is_ancestor(self._settings.name, cast(Key[Any], entity))
+            )
+        ):
+            self.clear()
+            self._count = 0
+
+            for world in self._settings.worlds():
+                action = self.addAction(world.title())  # type: ignore
+                action.triggered.connect(
+                    CallWithArgs(self.worldSelected.emit, world)
+                )
+                self._count += 1
+
+            self.itemCountChanged.emit(self._count)
+
+    def count(self) -> int:
+        """
+        Returns how many items there currently are in the menu. May be 0.
+
+        Returns:
+            An item count.
+        """
+
+        return self._count
+
+
 class MenuButton(QToolButton):
     """
     A button that displays a menu when clicked.
@@ -101,7 +198,7 @@ class MenuButton(QToolButton):
         menu: The menu to display when the button is clicked.
     """
 
-    def __init__(self, label: str, menu: QMenu) -> None:
+    def __init__(self, label: str, menu: WorldsMenu) -> None:
         super().__init__()
         _set_button_size_properties(self)
         self.setText(label)
@@ -109,8 +206,19 @@ class MenuButton(QToolButton):
         self.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
 
         self.setMenu(menu)
-        if menu.isEmpty():
-            self.setEnabled(False)
+        menu.itemCountChanged.connect(self.setEnableStatus)
+        self.setEnableStatus(menu.count())
+
+    @Slot(int)
+    def setEnableStatus(self, item_count: int) -> None:
+        """
+        Enables or disables this widget based on the item count.
+
+        Args:
+            item_count: How many items are in the menu attached to this widget.
+        """
+
+        self.setEnabled(item_count > 0)
 
 
 class Button(QPushButton):
@@ -193,8 +301,12 @@ class WelcomePane(Pane):
 
         # "Connect to..." button.
 
-        menu = self._buildWorldMenu()
-        menu_layout.addWidget(MenuButton("Connect to...", menu))
+        menu_layout.addWidget(
+            MenuButton(
+                "Connect to...", menu := WorldsMenu(self, self._settings)
+            )
+        )
+        menu.worldSelected.connect(self._openWorld)
 
         menu_layout.addSpacing(unit)
 

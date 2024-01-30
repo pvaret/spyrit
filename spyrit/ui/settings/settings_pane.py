@@ -196,15 +196,9 @@ class SettingsPane(BaseDialogPane):
 
         self.okClicked.connect(self.slideLeft)
 
-        # Computes the list of all world settings, in alphabetical order,
-        # starting with the toplevel, "All worlds" settings object.
+        # Retrieve the root settings object.
 
-        toplevel = _root(settings)
-
-        worlds = sorted(
-            toplevel.sections(),
-            key=lambda settings: settings.title().lower(),
-        )
+        root_settings = _root(settings)
 
         # Create the main pane for the settings UI.
 
@@ -213,15 +207,15 @@ class SettingsPane(BaseDialogPane):
         # Global settings go here.
 
         pane_widget.addTab(
-            self._appearanceSettingsUI(toplevel.ui), "Appearance"
+            self._appearanceSettingsUI(root_settings.ui), "Appearance"
         )
         pane_widget.addTab(
-            self._shortcutsSettingsUI(toplevel.shortcuts), "Shortcuts"
+            self._shortcutsSettingsUI(root_settings.shortcuts), "Shortcuts"
         )
 
         # Per-world settings go here.
 
-        for world in worlds:
+        for world in root_settings.worlds():
             i = pane_widget.addTab(
                 self._worldSettingsUi(world),
                 linewrap("World: " + world.title()),

@@ -300,3 +300,27 @@ class SpyritSettings(Settings):
             return f"{name} ({self.net.server.get()}:{self.net.port.get()})"
 
         return name
+
+    def isRoot(self) -> bool:
+        """
+        Checks whether this settings instance is the root instance.
+
+        Returns:
+            Whether that's the case.
+        """
+
+        return self.parent() is None
+
+    def worlds(self) -> "list[SpyritSettings]":
+        """
+        Looks up and returns the worlds configured on this settings object, if
+        it's the root settings object.
+
+        Returns:
+            A sorted list of settings that each corresponds to a worlds.
+        """
+
+        if not self.isRoot():
+            return []
+
+        return list(self.sections())

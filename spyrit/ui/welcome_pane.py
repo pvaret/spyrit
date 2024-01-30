@@ -246,10 +246,7 @@ class WelcomePane(Pane):
 
         worlds_menu = QMenu(self)
 
-        for world in sorted(
-            self._settings.sections(),
-            key=lambda world: world.title().lower(),
-        ):
+        for world in self._settings.worlds():
             action = worlds_menu.addAction(world.title())  # type: ignore
             action.triggered.connect(CallWithArgs(self._openWorld, world))
 

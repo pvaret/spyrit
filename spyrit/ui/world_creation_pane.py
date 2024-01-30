@@ -16,72 +16,17 @@ Implements a UI to set up a new world.
 """
 
 
-from PySide6.QtCore import Signal, Slot
-from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
+from typing import Any
 
-from spyrit import constants
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QPushButton
+
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.bars import VBar
 from spyrit.ui.base_dialog_pane import BaseDialogPane
-from spyrit.ui.settings.input_widgets import ServerPortEdit, TextLineEdit
-from spyrit.ui.sizer import Sizer
+from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 from spyrit.ui.world_pane import WorldPane
-
-
-class WorldCreationForm(QWidget):
-    """
-    Implements the UI to configure a new game world.
-
-    Args:
-        settings: The specific settings section to be used for the new game
-            world, as opposed to the global settings object.
-    """
-
-    # This signal fires when any field in the form is edited.
-
-    contentsEdited: Signal = Signal()
-
-    def __init__(self, settings: SpyritSettings) -> None:
-        super().__init__()
-
-        unit = Sizer(self).unitSize()
-
-        # Lay out the form.
-
-        self.setLayout(layout := QHBoxLayout())
-
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addLayout(form_layout := QVBoxLayout())
-
-        form_layout.addStrut(constants.FORM_WIDTH_UNITS * unit)
-
-        form_layout.addWidget(QLabel("<b>World name</b>"))
-        form_layout.addWidget(world_name_edit := TextLineEdit(settings.name))
-        form_layout.addSpacing(unit)
-
-        form_layout.addWidget(
-            server_port_edit := ServerPortEdit(
-                server_key=settings.net.server, port_key=settings.net.port
-            )
-        )
-
-        form_layout.addStretch()
-
-        layout.addWidget(VBar())
-        layout.addStretch()
-
-        # Report updates of the form contents.
-
-        world_name_edit.textEdited.connect(self.contentsEdited)
-        server_port_edit.contentsEdited.connect(self.contentsEdited)
 
 
 class WorldCreationPane(BaseDialogPane):
@@ -118,9 +63,9 @@ class WorldCreationPane(BaseDialogPane):
         self._instance = instance
         self._state = state
 
-        self.setWidget(form := WorldCreationForm(self._world_settings))
+        self.setWidget(ServerSettingsUI(self._world_settings))
 
-        form.contentsEdited.connect(self._maybeEnableConnectButton)
+        self._world_settings.onUpdateCall(self._maybeEnableConnectButton)
         self._maybeEnableConnectButton()
 
         self.okClicked.connect(self._openWorld)
@@ -143,9 +88,13 @@ class WorldCreationPane(BaseDialogPane):
         self.addPaneRight(world_pane)
 
     @Slot()
-    def _maybeEnableConnectButton(self) -> None:
+    def _maybeEnableConnectButton(self, entity: Any = None) -> None:
         """
         Enables the connect button if the current world settings are valid.
+
+        Args:
+            entity: Which settings entity was updated, that triggered the call
+                to this function. Unused.
         """
 
         self._connect_button.setEnabled(self._areSettingsValid())

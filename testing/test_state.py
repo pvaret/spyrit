@@ -15,7 +15,7 @@ def test_state_hierarchy_copy() -> None:
 
     state = state.getStateSectionForSettingsSection(settings)
 
-    assert state.fieldPath() == settings.fieldPath()
+    assert state.meta().path() == settings.meta().path()
     assert state.sectionName() == "depth_2"
     assert (parent := state.parent()) is not None
     assert parent.sectionName() == "depth_1"

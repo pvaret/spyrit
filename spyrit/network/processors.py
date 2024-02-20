@@ -21,7 +21,7 @@ import codecs
 import logging
 
 from collections import deque
-from typing import Iterable, Iterator
+from typing import Iterable, Iterator, cast
 
 import regex
 
@@ -210,13 +210,16 @@ class ANSIProcessor(BaseProcessor):
 
     def fragmentFromSGRCodes(self, codes: list[int]) -> ANSIFragment:
         if not codes:  # An empty SGR sequence should be treated as a reset.
-            codes = [0]
+            codes.append(0)
 
         ansi_bold_effect = self._ansi_bold_effect.get()
 
         format_update = FormatUpdate()
 
         while codes:
+            # This cast shouldn't be necessary, but the pattern matching below
+            # confuses some version of Pylance without it.
+            codes = cast(list[int], codes)
             match code := codes.pop(0):
                 case 0:
                     format_update.resetAll()

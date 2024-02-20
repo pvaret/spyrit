@@ -83,6 +83,12 @@ class TabWidget(QTabWidget):
 
         self.currentChanged.connect(self._setTabWidgetFocus)
 
+        # Make the tabs larger by default.
+
+        height = Sizer(self).unitSize() * 3
+
+        self.setStyleSheet(f"QTabBar::tab {{ min-height: {height} px ; }}")
+
     def addTab(  # type: ignore  # wrong arg annotation in parent.
         self, widget: QWidget, title: str
     ) -> int:
@@ -343,7 +349,7 @@ class SpyritMainWindow(QMainWindow):
         # Bind the "new tab" action above to the tab widget's corner button.
 
         sizer = Sizer(self)
-        icon_size = sizer.unitSize() + sizer.marginSize()
+        icon_size = sizer.unitSize() * 2 + sizer.marginSize()
 
         corner_button = QToolButton()
         corner_button.setIconSize(QSize(icon_size, icon_size))

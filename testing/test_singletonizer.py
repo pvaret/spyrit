@@ -95,7 +95,7 @@ class TestSingletonizer:
         assert singletonizer.isMainInstance()
         assert singletonizer._server is not None  # type: ignore
 
-        stub_server.listen.assert_called_once_with(  # type: ignore
+        stub_server.listen.assert_called_once_with(
             "test-socket-name"
         )
 
@@ -118,7 +118,7 @@ class TestSingletonizer:
         assert not singletonizer.isMainInstance()
         assert singletonizer._server is None  # type: ignore
 
-        stub_server.listen.assert_not_called()  # type: ignore
+        stub_server.listen.assert_not_called()
 
     def test_socket_path(self, tmp_path: Path, mocker: MockerFixture) -> None:
         stub_pidfile = mocker.Mock(spec=PIDFile)
@@ -192,6 +192,9 @@ class TestSingletonizer:
         stub_socket = mocker.Mock(spec=QLocalSocket)
         stub_server = mocker.Mock(spec=QLocalServer)
 
+        stub_socket.readAll = mocker.Mock(
+            return_value=QByteArray(str(_TEST_PID_REMOTE).encode("ascii"))
+        )
         stub_pidfile.tryLock = mocker.Mock(return_value=True)
         stub_server.listen = mocker.Mock(return_value=True)
         stub_server.hasPendingConnections = mocker.Mock(
@@ -214,8 +217,8 @@ class TestSingletonizer:
 
         singletonizer._onNewConnectionReceived()  # type: ignore
 
-        stub_socket.readAll.assert_called_once()  # type: ignore
-        stub_socket.write.assert_called_once_with(  # type: ignore
+        stub_socket.readAll.assert_called_once()
+        stub_socket.write.assert_called_once_with(
             str(_TEST_PID).encode("ascii")
         )
         stub_slot.assert_called_once()
@@ -248,9 +251,9 @@ class TestSingletonizer:
         remote_pid = singletonizer.notifyNewInstanceStarted()
         assert remote_pid == str(_TEST_PID_REMOTE)
 
-        stub_socket.connectToServer.assert_called_once_with(  # type: ignore
+        stub_socket.connectToServer.assert_called_once_with(
             "test-socket-name"
         )
-        stub_socket.write.assert_called_once_with(  # type: ignore
+        stub_socket.write.assert_called_once_with(
             str(_TEST_PID).encode("ascii")
         )

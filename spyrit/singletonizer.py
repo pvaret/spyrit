@@ -298,7 +298,7 @@ class Singletonizer(QObject):
         conn.write(pid.encode("ascii", errors="ignore"))
         conn.waitForBytesWritten(msecs=_TIMEOUT_MS)
         conn.waitForReadyRead(msecs=_TIMEOUT_MS)
-        remote_pid = conn.readAll().data().decode("ascii", errors="ignore")
+        remote_pid = bytes(conn.readAll().data()).decode("ascii", errors="ignore")
         conn.close()
         conn.deleteLater()
 
@@ -336,7 +336,7 @@ class Singletonizer(QObject):
         while server.hasPendingConnections():
             conn = server.nextPendingConnection()
             conn.waitForReadyRead(msecs=_TIMEOUT_MS)
-            pid = conn.readAll().data().decode("ascii", errors="ignore")
+            pid = bytes(conn.readAll().data()).decode("ascii", errors="ignore")
             conn.write(str(self._pid).encode("ascii", errors="ignore"))
             conn.waitForBytesWritten(msecs=_TIMEOUT_MS)
             conn.close()

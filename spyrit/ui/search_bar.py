@@ -93,7 +93,6 @@ class SearchBar(QWidget):
         search_down.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self._textbox = textbox
-        self._textbox.returnPressed.connect(self.findPrevious)
 
         self.setFocusProxy(self._textbox)
 
@@ -136,8 +135,9 @@ class SearchBar(QWidget):
         Finds the next occurrence of the search text, moving upward.
         """
 
-        # WORKAROUND: Backwards search does not work if the cursor is unset. So
-        # we set it to the end of the document.
+        # When searching backwards, start from the end of the document if no
+        # search is currently in progress.
+
         if self._search_cursor.isNull():
             self._search_cursor = QTextCursor(self._document)
             self._search_cursor.movePosition(QTextCursor.MoveOperation.End)
@@ -172,8 +172,12 @@ class SearchBar(QWidget):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """
-        Overrides the default key handler to handle the Escape key explicitly.
-        The Escape key closes the search bar.
+        Overrides the default key handler to handle the Return and Escape keys
+        explicitly.
+        
+        Return searches for the current text from bottom to top. Shift+Return
+        searches for the current text from top to bottom. Escape closes the
+        search bar.
 
         Args:
             event: The key event to handle.
@@ -181,5 +185,12 @@ class SearchBar(QWidget):
 
         if event.key() == Qt.Key.Key_Escape:
             self.hide()
+        
+        elif event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if event.modifiers() == Qt.KeyboardModifier.NoModifier:
+                self.findPrevious()
+
+            elif event.modifiers() == Qt.KeyboardModifier.ShiftModifier:
+                self.findNext()
 
         super().keyPressEvent(event)

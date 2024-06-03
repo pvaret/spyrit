@@ -105,23 +105,25 @@ class OutputView(QTextEdit):
             cursor: The cursor to make visible.
         """
 
+        if cursor.isNull():
+            
+            # A null cursor means that the text was not found. Scroll back to
+            # the end of the document.
+
+            cursor = QTextCursor(self.document())
+            cursor.movePosition(QTextCursor.MoveOperation.End)
+
         self.setTextCursor(cursor)
 
-        if cursor.isNull():
-            self.requestScrollToPosition.emit(
-                self.verticalScrollBar().maximum()
-            )
+        # This scrolls the view so that the given cursor is a bit above the
+        # middle of the view. Works well aesthetically.
 
-        else:
-            # This scrolls the view so that the given cursor is a bit above the
-            # middle of the view. Works well aesthetically.
-
-            self.requestScrollToPosition.emit(
-                self.verticalScrollBar().value()
-                + self.cursorRect().y()
-                - self.viewport().height() // 2
-                + self.verticalScrollBar().singleStep()
-            )
+        self.requestScrollToPosition.emit(
+            self.verticalScrollBar().value()
+            + self.cursorRect().y()
+            - self.viewport().height() // 2
+            + self.verticalScrollBar().singleStep()
+        )
 
     def _applyStyleSheet(self, *args: Any) -> None:
         """

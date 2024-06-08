@@ -22,20 +22,28 @@ from typing import Sequence
 
 from spyrit.resources.loader import load
 
+
 # Ensure the resources are loaded when this file is imported.
 
 load()
 
 
-class Logo(enum.StrEnum):
+class _Resource(enum.StrEnum):
+    """
+    This class serves as a marker to identify our resource enums, as opposed to
+    generic enums that may not contain valid resource names.
+    """
+
+
+class Logo(_Resource):
     SPYRIT_SVG = ":/logos/spyrit-logo.svg"
 
 
-class Font(enum.StrEnum):
+class Font(_Resource):
     NOTO_SANS_MONO_TTF = ":/fonts/NotoSansMono.ttf"
 
 
-class Icon(enum.StrEnum):
+class Icon(_Resource):
     CLOSE_SVG = ":/icons/close.svg"
     CONNECTION_SVG = ":/icons/connection.svg"
     INPUT_FIELD_SVG = ":/icons/input-field.svg"
@@ -44,4 +52,9 @@ class Icon(enum.StrEnum):
     SETTINGS_SVG = ":/icons/settings.svg"
 
 
-Resources: Sequence[type[enum.StrEnum]] = (Logo, Font, Icon)
+class Misc(_Resource):
+    WORDLIST_TZT_GZ = ":/misc/wordlist.txt.gz"
+    TEST_TXT = ":/misc/test.txt"
+
+
+RESOURCES: Sequence[type[_Resource]] = (Logo, Font, Icon, Misc)

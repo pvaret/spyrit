@@ -13,4 +13,8 @@
         <file>search.svg</file>
         <file>settings.svg</file>
     </qresource>
+    <qresource prefix="/misc/">
+        <file>wordlist.txt.gz</file>
+        <file>test.txt</file>
+    </qresource>
 </RCC>

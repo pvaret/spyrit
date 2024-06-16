@@ -3,9 +3,19 @@ from typing import Iterator
 from pytest import MonkeyPatch, FixtureDef, fixture
 from pytest_mock import MockerFixture
 
+from spyrit.network.fragments import (
+    FlowControlCode,
+    FlowControlFragment,
+    TextFragment,
+)
 from spyrit.resources.file import ResourceFile
 from spyrit.resources.resources import Misc
-from spyrit.ui.autocompleter import Case, CompletionModel, StaticWordList
+from spyrit.ui.autocompleter import (
+    Case,
+    CompletionModel,
+    StaticWordList,
+    Tokenizer,
+)
 from spyrit.ui.autocompleter import _apply_case, _compute_case  # type: ignore
 
 StaticWordListFixture = FixtureDef[None]
@@ -90,6 +100,83 @@ class TestStaticWordList:
         readall.assert_not_called()
 
 
+class TestTokenizer:
+    def test_tokenize(self) -> None:
+        output: list[str] = []
+        t = Tokenizer()
+        t.tokenFound.connect(output.append)
+        CRLF = FlowControlFragment(FlowControlCode.LF)
+
+        t.processFragments([TextFragment("test"), CRLF])
+        assert output == ["test"]
+
+        output.clear()
+        t.processFragments([TextFragment("te"), TextFragment("st"), CRLF])
+        assert output == ["test"]
+
+        output.clear()
+        t.processFragments([TextFragment("test test"), CRLF])
+        assert output == ["test", "test"]
+
+        output.clear()
+        t.processFragments([TextFragment("testé"), CRLF])
+        assert output == ["testé"]
+
+        output.clear()
+        t.processFragments([TextFragment("'test'"), CRLF])
+        assert output == ["test"]
+
+        output.clear()
+        t.processFragments([TextFragment("don't"), CRLF])
+        assert output == ["don't"]
+
+        output.clear()
+        text = '''And then he said, "I've got a bad feeling about this!"'''
+        t.processFragments([TextFragment(text), CRLF])
+        assert output == [
+            "And",
+            "then",
+            "he",
+            "said",
+            "I've",
+            "got",
+            "a",
+            "bad",
+            "feeling",
+            "about",
+            "this",
+        ]
+
+    def test_only_letters_and_single_inner_apostrophes_tokenized(self) -> None:
+        output: list[str] = []
+        t = Tokenizer()
+        t.tokenFound.connect(output.append)
+        CRLF = FlowControlFragment(FlowControlCode.LF)
+
+        t.processFragments([TextFragment("1234"), CRLF])
+        assert output == []
+
+        output.clear()
+        t.processFragments([TextFragment("1test2test3"), CRLF])
+        assert output == ["test", "test"]
+
+        output.clear()
+        t.processFragments([TextFragment("test-test"), CRLF])
+        assert output == ["test", "test"]
+
+        output.clear()
+        t.processFragments([TextFragment("test_test"), CRLF])
+        assert output == ["test", "test"]
+
+        output.clear()
+        t.processFragments([TextFragment("'"), CRLF])
+        assert output == []
+
+        output.clear()
+        t.processFragments([TextFragment("test''test"), CRLF])
+        assert output == ["test", "test"]
+
+
 class TestCompletionModel:
     def test_found_single_match_case_insensitive(self) -> None:
         model = CompletionModel(["Po-TAH-to", "Po-TAY-to"])
@@ -119,3 +206,33 @@ class TestCompletionModel:
         assert model.findMatches("Po-ta") == ["Po-TAH-to", "Po-TAY-to"]
         assert model.findMatches("PO-TA") == ["PO-TAH-TO", "PO-TAY-TO"]
         assert model.findMatches("FIA") == ["FIANCÉ"]
+
+    def test_extra_words_get_matched(self) -> None:
+        model = CompletionModel(["Po-TAH-to", "Po-TAY-to"])
+        assert model.findMatches("po-") == ["Po-TAH-to", "Po-TAY-to"]
+
+        model.addExtraWord("Po-TAY-ter")
+        assert model.findMatches("po-") == [
+            "Po-TAH-to",
+            "Po-TAY-ter",
+            "Po-TAY-to",
+        ]
+
+        # Adding the same word should not result in more matches, regardless of case.
+
+        model.addExtraWord("po-tay-ter")
+        assert model.findMatches("po-") == [
+            "Po-TAH-to",
+            "Po-TAY-ter",
+            "Po-TAY-to",
+        ]
+
+        # Adding a word already in the static list should not result in more
+        # matches.
+
+        model.addExtraWord("Po-TAH-to")
+        assert model.findMatches("po-") == [
+            "Po-TAH-to",
+            "Po-TAY-ter",
+            "Po-TAY-to",
+        ]

@@ -21,7 +21,7 @@ import logging
 import threading
 import zlib
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from typing import overload
 
 from PySide6.QtCore import (
@@ -29,6 +29,7 @@ from PySide6.QtCore import (
     QObject,
     QStringListModel,
     Qt,
+    Signal,
     Slot,
 )
 from PySide6.QtGui import QKeyEvent, QTextCursor
@@ -36,6 +37,12 @@ from PySide6.QtWidgets import QCompleter, QPlainTextEdit, QTextEdit
 
 from sunset import Key
 
+from spyrit.network.fragments import (
+    FlowControlFragment,
+    Fragment,
+    NetworkFragment,
+    TextFragment,
+)
 from spyrit.resources.file import _Resource  # type: ignore
 from spyrit.resources.file import ResourceFile
 from spyrit.resources.resources import Misc
@@ -119,7 +126,22 @@ def _sort_key(string: str) -> str:
     Returns:
         The string, normalized.
     """
-    return string.lower()
+    return string.casefold()
+
+
+class CaseInsensitiveSet(set[str]):
+    def add(self, element: str) -> None:
+        return super().add(_sort_key(element))
+
+    def update(self, *s: Iterable[str]) -> None:
+        for iterable in s:
+            super().update(map(_sort_key, iterable))
+
+    def remove(self, element: str) -> None:
+        return super().remove(_sort_key(element))
+
+    def __contains__(self, o: object) -> bool:
+        return isinstance(o, str) and super().__contains__(_sort_key(o))
 
 
 class StaticWordList(Sequence[str]):
@@ -137,7 +159,7 @@ class StaticWordList(Sequence[str]):
     # These are *class* attributes. The static word list is shared between
     # instances of this class.
     _words: list[str] = []
-    _wordset: set[str] = set()
+    _word_set: set[str] = CaseInsensitiveSet()
     _lock: threading.Lock = threading.Lock()
 
     def __init__(self, resource: _Resource = Misc.WORDLIST_TXT_GZ) -> None:
@@ -169,7 +191,7 @@ class StaticWordList(Sequence[str]):
             lines.sort(key=_sort_key)
 
             cls._words = lines
-            cls._wordset = set(map(_sort_key, lines))
+            cls._word_set.update(lines)
 
             logging.debug("Done loading auto-completion static word list.")
 
@@ -186,10 +208,7 @@ class StaticWordList(Sequence[str]):
         return StaticWordList._words[index]
 
     def __contains__(self, value: object) -> bool:
-        return (
-            isinstance(value, str)
-            and _sort_key(value) in StaticWordList._wordset
-        )
+        return value in StaticWordList._word_set
 
     @classmethod
     def reset(cls) -> None:
@@ -199,10 +218,85 @@ class StaticWordList(Sequence[str]):
 
         with cls._lock:
             cls._words.clear()
-            cls._wordset.clear()
+            cls._word_set.clear()
 
 
-class CompletionModel:
+class Tokenizer(QObject):
+    """
+    Consumes a Fragment stream from a world and extracts text tokens.
+
+    Args:
+        parent: The QObject to attach this object to for lifetime management
+            purposes.
+    """
+
+    # This signal is emitted whenever the tokenizer has found a complete token
+    # in its input.
+
+    tokenFound: Signal = Signal(str)
+
+    _text_so_far: str
+
+    def __init__(self, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+
+        self._text_so_far = ""
+
+    def processFragments(self, fragments: Iterable[Fragment]) -> None:
+        """
+        Ingests the given Fragment stream and emits the tokenFound signal for
+        each valid text token found.
+
+        Args:
+            fragments: A stream of fragments coming from a world.
+        """
+
+        for fragment in fragments:
+            match fragment:
+                case TextFragment(text):
+                    self._text_so_far += text
+
+                case FlowControlFragment() | NetworkFragment():
+                    if self._text_so_far:
+                        for token in self._tokenize(self._text_so_far):
+                            self.tokenFound.emit(token)
+                        self._text_so_far = ""
+
+                case _:
+                    pass
+
+    def _tokenize(self, text: str) -> Iterator[str]:
+        """
+        A dumb tokenizer function that extracts tokens made of letters and
+        apostrophes only. The apostrophes must be inside the word, and
+        surrounded by letters.
+
+        Args:
+            text: The string to extract tokens from.
+
+        Returns:
+            An iterator over the found tokens.
+        """
+
+        word = ""
+        for c in text:
+            if c.isalpha():
+                word += c
+                continue
+
+            if c == "'" and word and word[-1] != "'":
+                word += c
+                continue
+
+            if word := word.strip("'"):
+                yield word
+                word = ""
+
+        if word := word.strip("'"):
+            yield word
+
+
+class CompletionModel(QObject):
     """
     Holds the source of truth for existing completion candidates, and performs
     the matching for a given prefix.
@@ -210,18 +304,47 @@ class CompletionModel:
     Args:
         static_word_list: A sequence of strings, assumed sorted, in which to look
             up matches by prefix.
+
+        parent: The QObject to attach this object to for lifetime management
+            purposes.
     """
 
     # The minimal length of a match prefix, below which we don't look for matches.
 
     _MINIMUM_PREFIX_LEN = 3
 
-    _words: Sequence[str]
+    _static_words: Sequence[str]
+    _extra_words: list[str]
+    _extra_word_set: set[str]
 
-    def __init__(self, static_word_list: Sequence[str] | None = None) -> None:
+    def __init__(
+        self,
+        static_word_list: Sequence[str] | None = None,
+        parent: QObject | None = None,
+    ) -> None:
+        super().__init__(parent)
+
         if static_word_list is None:
             static_word_list = StaticWordList()
-        self._words = static_word_list
+        self._static_words = static_word_list
+        self._extra_words = []
+        self._extra_word_set = CaseInsensitiveSet()
+
+    @Slot(str)
+    def addExtraWord(self, word: str) -> None:
+        """
+        Records a new word into the completion model.
+
+        If the word is (case-insensitively) already present in the static word
+        list or in the extra word list, it will be skipped.
+
+        Args:
+            word: The word to be considered for addition to the model.
+        """
+
+        if word not in self._static_words and word not in self._extra_word_set:
+            bisect.insort_left(self._extra_words, word, key=_sort_key)
+            self._extra_word_set.add(word)
 
     def findMatches(self, prefix: str) -> Sequence[str]:
         """
@@ -241,19 +364,26 @@ class CompletionModel:
         prefix_case = _compute_case(prefix)
         prefix = _sort_key(prefix)
 
+        matches: list[str] = []
+
         if len(prefix) < self._MINIMUM_PREFIX_LEN:
-            return []
+            return matches
 
-        index_left = bisect.bisect_left(self._words, prefix, key=_sort_key)
-        index_right = index_left
+        for source in (self._static_words, self._extra_words):
+            index_left = bisect.bisect_left(source, prefix, key=_sort_key)
+            index_right = index_left
 
-        while index_right < len(self._words) and _sort_key(
-            self._words[index_right]
-        ).startswith(prefix):
-            index_right += 1
+            while index_right < len(source) and _sort_key(
+                source[index_right]
+            ).startswith(prefix):
+                index_right += 1
 
-        matches = self._words[index_left:index_right]
-        return [_apply_case(prefix_case, word) for word in matches]
+            for match in source[index_left:index_right]:
+                bisect.insort_left(
+                    matches, _apply_case(prefix_case, match), key=_sort_key
+                )
+
+        return matches
 
 
 class Autocompleter(QCompleter):

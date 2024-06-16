@@ -37,7 +37,7 @@ from spyrit.resources.resources import Icon
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.autocompleter import Autocompleter, CompletionModel
+from spyrit.ui.autocompleter import Autocompleter, CompletionModel, Tokenizer
 from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.base_pane import Pane
@@ -231,10 +231,10 @@ class WorldPane(Pane):
 
         # Set up autocompletion for the input widgets.
 
-        model = CompletionModel()
-        Autocompleter(inputbox, model, self._settings.shortcuts.autocomplete)
+        completion_model = CompletionModel()
+        Autocompleter(inputbox, completion_model, self._settings.shortcuts.autocomplete)
         Autocompleter(
-            extra_inputbox, model, self._settings.shortcuts.autocomplete
+            extra_inputbox, completion_model, self._settings.shortcuts.autocomplete
         )
 
         # Plug the connection into the data parsing logic.
@@ -250,6 +250,12 @@ class WorldPane(Pane):
         # Plug the parsing logic into the game view update logic.
 
         processor.fragmentsReady.connect(scribe.inscribe)
+
+        # Ingest world-specific vocabulary into the completion model.
+
+        tokenizer = Tokenizer(parent=completion_model)
+        tokenizer.tokenFound.connect(completion_model.addExtraWord)
+        processor.fragmentsReady.connect(tokenizer.processFragments)
 
         # Update the instance's state from the processed fragment stream.
 

@@ -5,8 +5,8 @@ from pytest_mock import MockerFixture
 
 from spyrit.resources.file import ResourceFile
 from spyrit.resources.resources import Misc
-from spyrit.ui.autocompleter import CompletionModel, StaticWordList
-
+from spyrit.ui.autocompleter import Case, CompletionModel, StaticWordList
+from spyrit.ui.autocompleter import _apply_case, _compute_case  # type: ignore
 
 StaticWordListFixture = FixtureDef[None]
 
@@ -18,6 +18,31 @@ def reset_static_word_list() -> Iterator[None]:
     """
     yield
     StaticWordList.reset()
+
+
+class TestCase:
+    def test_compute_case(self) -> None:
+        assert _compute_case("") == Case.UNSPECIFIED
+        assert _compute_case("a") == Case.UNSPECIFIED
+        assert _compute_case("A") == Case.CAPITALIZED
+        assert _compute_case("-") == Case.UNSPECIFIED
+        assert _compute_case("WHEE") == Case.ALL_CAPS
+        assert _compute_case("Whee") == Case.CAPITALIZED
+        assert _compute_case("whee") == Case.UNSPECIFIED
+        assert _compute_case("whEe") == Case.UNSPECIFIED
+        assert _compute_case("Élan") == Case.CAPITALIZED
+
+    def test_apply_case(self) -> None:
+        assert _apply_case(Case.UNSPECIFIED, "example") == "example"
+        assert _apply_case(Case.UNSPECIFIED, "exaMPLE") == "exaMPLE"
+        assert _apply_case(Case.UNSPECIFIED, "ExaMPLE") == "ExaMPLE"
+
+        assert _apply_case(Case.CAPITALIZED, "example") == "Example"
+        assert _apply_case(Case.CAPITALIZED, "ExamPLE") == "ExamPLE"
+
+        assert _apply_case(Case.ALL_CAPS, "example") == "EXAMPLE"
+        assert _apply_case(Case.ALL_CAPS, "ExamPLE") == "EXAMPLE"
+        assert _apply_case(Case.ALL_CAPS, "é") == "É"
 
 
 class TestStaticWordList:
@@ -84,3 +109,13 @@ class TestCompletionModel:
         assert model.findMatches("") == []
         assert model.findMatches("po") == []
         assert model.findMatches("po-") != []
+
+    def test_prefix_case_becomes_match_case(self) -> None:
+        model = CompletionModel(["fiancé", "lower", "Po-TAH-to", "Po-TAY-to"])
+        assert model.findMatches("low") == ["lower"]
+        assert model.findMatches("Low") == ["Lower"]
+        assert model.findMatches("LOW") == ["LOWER"]
+        assert model.findMatches("po-ta") == ["Po-TAH-to", "Po-TAY-to"]
+        assert model.findMatches("Po-ta") == ["Po-TAH-to", "Po-TAY-to"]
+        assert model.findMatches("PO-TA") == ["PO-TAH-TO", "PO-TAY-TO"]
+        assert model.findMatches("FIA") == ["FIANCÉ"]

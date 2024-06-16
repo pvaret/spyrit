@@ -16,6 +16,7 @@ Implements the autocompletion feature for input boxes.
 """
 
 import bisect
+import enum
 import logging
 import threading
 import zlib
@@ -40,6 +41,72 @@ from spyrit.resources.file import ResourceFile
 from spyrit.resources.resources import Misc
 from spyrit.settings.key_shortcut import Shortcut
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
+
+
+class Case(enum.Enum):
+    UNSPECIFIED = enum.auto()
+    CAPITALIZED = enum.auto()
+    ALL_CAPS = enum.auto()
+
+
+def _compute_case(text: str) -> Case:
+    """
+    Determines the case of the given text using a simple heuristic.
+
+    "TEXT" is ALL_CAPS.
+    "Text" is CAPITALIZED.
+    "text" is UNSPECIFIED.
+
+    Args:
+        text: The text whose case is to be determined.
+
+    Returns:
+        A best guess as to the text's case.
+    """
+
+    if not text:
+        return Case.UNSPECIFIED
+
+    # Special case: if the text is one letter only, we can't tell if the intent
+    # is ALL_CAPS or CAPITALIZED. We arbitrarily pick CAPITALIZED.
+    # Note: this assumes the text starts with a letter.
+
+    if len(text) == 1:
+        return Case.CAPITALIZED if text.isupper() else Case.UNSPECIFIED
+
+    if text.isupper():
+        return Case.ALL_CAPS
+
+    if text[0].isupper():
+        return Case.CAPITALIZED
+
+    return Case.UNSPECIFIED
+
+
+def _apply_case(case: Case, text: str) -> str:
+    """
+    Applies the given case to the given text.
+
+    UNSPECIFIED leaves the text unmodified.
+    CAPITALIZED turns e.g. "banana" into "Banana".
+    ALL_CAPS turns e.g. "banana" into "BANANA".
+
+    Args:
+        case: The case to be applied to the text.
+
+        text: The text whose case is to be updated.
+
+    Returns:
+        The input text, with its case updated.
+    """
+
+    match case:
+        case Case.UNSPECIFIED:
+            return text
+        case Case.ALL_CAPS:
+            return text.upper()
+        case Case.CAPITALIZED:
+            return text[0].upper() + text[1:]
 
 
 def _sort_key(string: str) -> str:
@@ -160,6 +227,9 @@ class CompletionModel:
         """
         Returns the list of known words that match the given prefix, in order.
 
+        If the prefix is capitalized or all-caps, the matches will
+        correspondingly be capitalized or turned to all-caps.
+
         Args:
             prefix: The lookup prefix for which to find matches. If it's too
                 short (currently less than 3 characters) no matches are returned.
@@ -168,7 +238,9 @@ class CompletionModel:
             A sequence of words from the word list starting with the given prefix.
         """
 
+        prefix_case = _compute_case(prefix)
         prefix = _sort_key(prefix)
+
         if len(prefix) < self._MINIMUM_PREFIX_LEN:
             return []
 
@@ -180,7 +252,8 @@ class CompletionModel:
         ).startswith(prefix):
             index_right += 1
 
-        return self._words[index_left:index_right]
+        matches = self._words[index_left:index_right]
+        return [_apply_case(prefix_case, word) for word in matches]
 
 
 class Autocompleter(QCompleter):

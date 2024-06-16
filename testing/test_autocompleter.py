@@ -40,6 +40,8 @@ class TestStaticWordList:
         words = StaticWordList(Misc.TEST_TXT_GZ)
         assert "Po-TAH-to" in words
         assert "Po-TAY-to" in words
+        assert "PO-TAY-TO" in words
+        assert "po-tay-to" in words
         assert "turnip" not in words
 
     def test_costly_functions_only_called_once(

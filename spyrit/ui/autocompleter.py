@@ -60,6 +60,8 @@ class StaticWordList(Sequence[str]):
     Stores a static list of words, read from a gzip'ed resource file, sorted,
     and shared across instances of this class.
 
+    Membership tests are O(1) and case-insensitive.
+
     Args:
         resource: The resource file name from which to read the compressed list
             of strings.
@@ -100,7 +102,7 @@ class StaticWordList(Sequence[str]):
             lines.sort(key=_sort_key)
 
             cls._words = lines
-            cls._wordset = set(lines)
+            cls._wordset = set(map(_sort_key, lines))
 
             logging.debug("Done loading auto-completion static word list.")
 
@@ -117,7 +119,10 @@ class StaticWordList(Sequence[str]):
         return StaticWordList._words[index]
 
     def __contains__(self, value: object) -> bool:
-        return value in StaticWordList._wordset
+        return (
+            isinstance(value, str)
+            and _sort_key(value) in StaticWordList._wordset
+        )
 
     @classmethod
     def reset(cls) -> None:

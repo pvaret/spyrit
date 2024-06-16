@@ -19,6 +19,7 @@ Declaration of the Spyrit settings.
 import enum
 
 from PySide6.QtGui import QFont
+
 from sunset import Bunch, Key, List, Settings
 
 from spyrit import constants
@@ -140,6 +141,7 @@ class SpyritSettings(Settings):
         line_down: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Down")
         scroll_to_top: Key[Shortcut] = _shortcut_key("Ctrl+Home")
         scroll_to_bottom: Key[Shortcut] = _shortcut_key("Ctrl+End")
+        autocomplete: Key[Shortcut] = _shortcut_key("Ctrl+Space")
         toggle_second_input: Key[Shortcut] = _shortcut_key("Ctrl+M")
         history_previous: Key[Shortcut] = _shortcut_key("Ctrl+Up")
         history_next: Key[Shortcut] = _shortcut_key("Ctrl+Down")

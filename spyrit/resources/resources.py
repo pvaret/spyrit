@@ -53,8 +53,9 @@ class Icon(_Resource):
 
 
 class Misc(_Resource):
-    WORDLIST_TZT_GZ = ":/misc/wordlist.txt.gz"
+    WORDLIST_TXT_GZ = ":/misc/wordlist.txt.gz"
     TEST_TXT = ":/misc/test.txt"
+    TEST_TXT_GZ = ":/misc/test.txt.gz"
 
 
 RESOURCES: Sequence[type[_Resource]] = (Logo, Font, Icon, Misc)

@@ -16,5 +16,6 @@
     <qresource prefix="/misc/">
         <file>wordlist.txt.gz</file>
         <file>test.txt</file>
+        <file>test.txt.gz</file>
     </qresource>
 </RCC>

@@ -37,6 +37,7 @@ from spyrit.resources.resources import Icon
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.ui.autocompleter import Autocompleter, CompletionModel
 from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.base_pane import Pane
@@ -227,6 +228,14 @@ class WorldPane(Pane):
 
         self._setUpInput(connection, inputbox)
         self._setUpInput(connection, extra_inputbox)
+
+        # Set up autocompletion for the input widgets.
+
+        model = CompletionModel()
+        Autocompleter(inputbox, model, self._settings.shortcuts.autocomplete)
+        Autocompleter(
+            extra_inputbox, model, self._settings.shortcuts.autocomplete
+        )
 
         # Plug the connection into the data parsing logic.
 

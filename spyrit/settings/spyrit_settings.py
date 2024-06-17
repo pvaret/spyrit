@@ -17,6 +17,9 @@ Declaration of the Spyrit settings.
 
 
 import enum
+import uuid
+
+from typing import Self
 
 from PySide6.QtGui import QFont
 
@@ -264,14 +267,31 @@ class SpyritSettings(Settings):
     # The display name of the game.
     name: Key[str] = Key(default=constants.UNNAMED_WORLD_NAME)
 
-    def __post_init__(self) -> None:
-        """
-        Sets up application-specific behavior.
-        """
+    # A unique id to represent a particular world. This allows us to bind a
+    # state to the corresponding settings without losing this binding if the
+    # user renames the world.
 
-        super().__post_init__()
+    id: Key[str] = Key(default="")
+
+    def _onCreation(self) -> None:
+        """
+        Sets up application-specific behavior when a section is created.
+        """
 
         self.name.onUpdateCall(self._updateSectionName)
+
+        if not self.id.isSet() and not self.isRoot():
+            self.id.set(uuid.uuid4().hex)
+
+    def newSection(self, name: str = "") -> Self:
+        """
+        Overrides new section creation logic to plug in some
+        application-specific initialization logic.
+        """
+
+        section = super().newSection(name)
+        section._onCreation()
+        return section
 
     def _updateSectionName(self, name_key: Key[str]) -> None:
         """

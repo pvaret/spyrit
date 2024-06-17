@@ -23,6 +23,7 @@ from sunset import Bunch, Key, List, Settings
 
 from spyrit import constants
 from spyrit.settings.serializers import IntList, Size
+from spyrit.settings.spyrit_settings import SpyritSettings
 
 _default_size = QSize(
     constants.DEFAULT_WINDOW_WIDTH,
@@ -65,12 +66,12 @@ class SpyritState(Settings):
     # hierarchy.
 
     def getStateSectionForSettingsSection(
-        self, settings: Settings
+        self, settings: SpyritSettings
     ) -> "SpyritState":
         hierarchy: list[str] = []
 
         while (parent := settings.parent()) is not None:
-            hierarchy.append(settings.sectionName())
+            hierarchy.append(settings.id.get())
             settings = parent
 
         # Go up the state tree to find the root.

@@ -5,19 +5,20 @@ from spyrit.settings.spyrit_state import SpyritState
 def test_state_hierarchy_copy() -> None:
     state = SpyritState()
     settings = SpyritSettings()
-
-    refs = [settings, state]
+    assert settings.id.get() == ""
 
     state = state.getOrCreateSection("dummy")
 
-    settings = settings.getOrCreateSection("depth_1")
-    settings = settings.getOrCreateSection("depth_2")
+    level1 = settings.getOrCreateSection("depth_1")
+    assert level1.id.get() != ""
 
-    state = state.getStateSectionForSettingsSection(settings)
+    level2 = level1.getOrCreateSection("depth_2")
+    assert level2.id.get() != ""
 
-    assert state.meta().path() == settings.meta().path()
-    assert state.sectionName() == "depth_2"
-    assert (parent := state.parent()) is not None
-    assert parent.sectionName() == "depth_1"
+    level2_state = state.getStateSectionForSettingsSection(level2)
 
-    del refs
+    assert level2_state.sectionName() == level2.id.get()
+    assert (level1_state := level2_state.parent()) is not None
+    assert level1_state.parent() is state
+    assert level1_state.sectionName() == level1.id.get()
+    assert state.getStateSectionForSettingsSection(level2) is level2_state

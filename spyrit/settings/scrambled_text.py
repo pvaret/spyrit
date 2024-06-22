@@ -68,6 +68,10 @@ class ScrambledText:
         salt: The salt with which to scramble the text. If None, a random salt
             will be generated. It's an error to pass a salt of a length other
             than ScrambleText.SALT_LENGTH.
+
+    Raises:
+        ValueError: If plaintext or salt do not meet the requirements mentioned
+            above.
     """
 
     SALT_LENGTH: int = 16
@@ -78,8 +82,21 @@ class ScrambledText:
     _cipher: bytes
 
     def __init__(self, plaintext: str, salt: bytes | None = None) -> None:
-        self._salt = salt or random.randbytes(self.SALT_LENGTH)
-        assert len(self._salt) == self.SALT_LENGTH
+        if "\0" in plaintext:
+            raise ValueError("Plaintext may not contain the NULL character.")
+
+        if plaintext:
+            self._salt = (
+                random.randbytes(self.SALT_LENGTH) if salt is None else salt
+            )
+        else:
+            self._salt = b"\0" * self.SALT_LENGTH
+
+        if len(self._salt) != self.SALT_LENGTH:
+            raise ValueError(
+                f"Invalid salt length: got {len(self._salt)},"
+                f" wanted {self.SALT_LENGTH}."
+            )
 
         self._cipher = self._scramble(
             self._salt, plaintext.encode(self.TEXT_ENCODING)
@@ -110,7 +127,9 @@ class ScrambledText:
             An opaque string usable only by fromStr().
         """
 
-        payload = self._salt + self._cipher
+        payload = self._cipher
+        if payload:
+            payload = self._salt + payload
 
         return base64.b64encode(payload).decode(self.B64_ENCODING)
 
@@ -126,6 +145,9 @@ class ScrambledText:
             A ScrambleText instance identical to the one used to create the
             scrambled string. None if the input is invalid.
         """
+
+        if not text:
+            return cls("")
 
         try:
             payload = base64.b64decode(

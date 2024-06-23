@@ -21,6 +21,7 @@ from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QHBoxLayout, QToolBar
 
+from spyrit.network.autologin import Autologin
 from spyrit.network.connection import Connection
 from spyrit.network.keepalive import Keepalive
 from spyrit.network.processors import (
@@ -232,9 +233,13 @@ class WorldPane(Pane):
         # Set up autocompletion for the input widgets.
 
         completion_model = CompletionModel()
-        Autocompleter(inputbox, completion_model, self._settings.shortcuts.autocomplete)
         Autocompleter(
-            extra_inputbox, completion_model, self._settings.shortcuts.autocomplete
+            inputbox, completion_model, self._settings.shortcuts.autocomplete
+        )
+        Autocompleter(
+            extra_inputbox,
+            completion_model,
+            self._settings.shortcuts.autocomplete,
         )
 
         # Plug the connection into the data parsing logic.
@@ -260,6 +265,13 @@ class WorldPane(Pane):
         # Update the instance's state from the processed fragment stream.
 
         processor.fragmentsReady.connect(instance.updateStateFromFragments)
+
+        # Set up automatic login if the world's settings are bound to a specific
+        # character.
+
+        if settings.isCharacter():
+            autologin = Autologin(settings.login, connection.send, self)
+            processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
 
         # And start the connection.
 

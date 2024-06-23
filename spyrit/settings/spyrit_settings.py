@@ -28,6 +28,7 @@ from sunset import Bunch, Key, List, Settings
 from spyrit import constants
 from spyrit.settings import serializers
 from spyrit.settings.key_shortcut import shortcut_from_default, Shortcut
+from spyrit.settings.scrambled_text import ScrambledText
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, Color
 from spyrit.ui.format import FormatUpdate
 
@@ -41,6 +42,11 @@ class Encoding(enum.StrEnum):
 
 class KeepaliveMessage(enum.Enum):
     CARRIAGE_RETURN = b"\n"
+
+
+class LoginStyle(enum.Enum):
+    # TODO: Identify and add more login patterns.
+    CONNECT_NAME_PASSWORD_CR = enum.auto()
 
 
 class ANSIBoldEffect(enum.Flag):
@@ -182,6 +188,19 @@ class SpyritSettings(Settings):
 
         keepalive: Keepalive = Keepalive()
 
+    class Login(Bunch):
+        """
+        Records the identifiers used to connect a character to a game.
+        """
+
+        name: Key[str] = Key(default="")
+        password: Key[ScrambledText] = Key(default=ScrambledText(""))
+
+        # Stores the login string pattern to use when logging into this world.
+        login_style: Key[LoginStyle] = Key(
+            default=LoginStyle.CONNECT_NAME_PASSWORD_CR
+        )
+
     class UI(Bunch):
         """
         Records the visual properties of the UI.
@@ -261,6 +280,7 @@ class SpyritSettings(Settings):
 
     shortcuts: KeyShortcuts = KeyShortcuts()
     net: Network = Network()
+    login: Login = Login()
     patterns: List[Pattern] = List(Pattern())
     ui: UI = UI()
 
@@ -278,7 +298,10 @@ class SpyritSettings(Settings):
         Sets up application-specific behavior when a section is created.
         """
 
-        self.name.onUpdateCall(self._updateSectionName)
+        if self.isWorld():
+            self.name.onUpdateCall(self._updateSectionName)
+        elif self.isCharacter():
+            self.login.name.onUpdateCall(self._updateSectionName)
 
         if not self.id.isSet() and not self.isRoot():
             self.id.set(uuid.uuid4().hex)
@@ -333,16 +356,43 @@ class SpyritSettings(Settings):
 
         return self.parent() is None
 
+    def isWorld(self) -> bool:
+        """
+        Determines whether these settings are bound to a specific game world, as
+        opposed to a specific character or the entire app.
+        """
+
+        return (parent := self.parent()) is not None and parent.isRoot()
+
+    def isCharacter(self) -> bool:
+        """
+        Determines whether these settings are bound to a specific character of a
+        game world.
+        """
+
+        return (parent := self.parent()) is not None and parent.isWorld()
+
     def worlds(self) -> "list[SpyritSettings]":
         """
         Looks up and returns the worlds configured on this settings object, if
         it's the root settings object.
 
         Returns:
-            A sorted list of settings that each corresponds to a worlds.
+            A sorted list of settings that each corresponds to a world.
         """
 
-        if not self.isRoot():
-            return []
+        if self.isRoot():
+            return list(self.sections())
+        return []
 
-        return list(self.sections())
+    def characters(self) -> "list[SpyritSettings]":
+        """
+        Looks up and returns the characters configured on this settings object,
+        if it's bound to a specific game world.
+
+        Returns:
+            A sorted list of settings that each corresponds to a character.
+        """
+        if self.isWorld():
+            return list(self.sections())
+        return []

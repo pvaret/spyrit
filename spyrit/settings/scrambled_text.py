@@ -199,3 +199,6 @@ class ScrambledText:
             scrambled += bytes(b ^ p for b, p in zip(block, pad))
 
         return scrambled
+
+    def __bool__(self) -> bool:
+        return bool(self._cipher)

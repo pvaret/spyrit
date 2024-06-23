@@ -110,3 +110,10 @@ class TestScrambledText:
             ScrambledText("\0xxxxx")
         with pytest.raises(ValueError):
             ScrambledText("xxxxx\0xxxxx")
+
+    @hypothesis.given(text=_text_hypothesis(non_empty=True))
+    def test_truth_value_true(self, text: str) -> None:
+        assert bool(ScrambledText(text))
+
+    def test_truth_value_false(self) -> None:
+        assert not ScrambledText("")

@@ -208,10 +208,7 @@ class SessionInstance(QObject):
             Whether this instance is connected.
         """
 
-        if (
-            self._connection is None
-            or (connection := self._connection()) is None
-        ):
+        if (connection := self.connection()) is None:
             return False
 
         return connection.isConnected()

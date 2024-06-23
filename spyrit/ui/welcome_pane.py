@@ -173,6 +173,15 @@ class WorldsMenu(QMenu):
                 )
                 self._count += 1
 
+                for character in world.characters():
+                    name = character.login.name.get()
+                    if name:
+                        action = self.addAction(f"    … as {name}")  # type: ignore
+                        action.triggered.connect(
+                            CallWithArgs(self.worldSelected.emit, character)
+                        )
+                        self._count += 1
+
             self.itemCountChanged.emit(self._count)
 
     def count(self) -> int:

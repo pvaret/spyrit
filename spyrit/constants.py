@@ -76,6 +76,10 @@ MAX_TCP_PORT: int = 65535
 
 PROCESSOR_BLOCK_SIZE_BYTES: int = 128
 
+# Text processing
+
+VALID_INNER_CHARS: set[str] = set("'-_")
+
 # Internals and debugging
 
 GC_STATS_DUMP_PERIOD: int = 60  # seconds

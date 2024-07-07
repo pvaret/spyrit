@@ -3,6 +3,8 @@ from typing import Iterator
 from pytest import MonkeyPatch, FixtureDef, fixture
 from pytest_mock import MockerFixture
 
+from PySide6.QtGui import QTextCursor, QTextDocument
+
 from spyrit.network.fragments import (
     FlowControlCode,
     FlowControlFragment,
@@ -11,6 +13,7 @@ from spyrit.network.fragments import (
 from spyrit.resources.file import ResourceFile
 from spyrit.resources.resources import Misc
 from spyrit.ui.autocompleter import (
+    Autocompleter,
     Case,
     CompletionModel,
     StaticWordList,
@@ -127,6 +130,10 @@ class TestTokenizer:
         assert output == ["test"]
 
         output.clear()
+        t.processFragments([TextFragment(" test 'test' "), CRLF])
+        assert output == ["test", "test"]
+
+        output.clear()
         t.processFragments([TextFragment("don't"), CRLF])
         assert output == ["don't"]
 
@@ -147,34 +154,45 @@ class TestTokenizer:
             "this",
         ]
 
-    def test_only_letters_and_single_inner_apostrophes_tokenized(self) -> None:
+    def test_only_alnum_and_single_valid_inner_chars_tokenized(self) -> None:
         output: list[str] = []
         t = Tokenizer()
         t.tokenFound.connect(output.append)
         CRLF = FlowControlFragment(FlowControlCode.LF)
 
-        t.processFragments([TextFragment("1234"), CRLF])
+        t.processFragments([TextFragment(""), CRLF])
+        assert output == []
+
+        t.processFragments([TextFragment("!?"), CRLF])
         assert output == []
 
         output.clear()
-        t.processFragments([TextFragment("1test2test3"), CRLF])
+        t.processFragments([TextFragment(" test test "), CRLF])
         assert output == ["test", "test"]
 
         output.clear()
-        t.processFragments([TextFragment("test-test"), CRLF])
+        t.processFragments([TextFragment("$test!test?"), CRLF])
         assert output == ["test", "test"]
+
+        output.clear()
+        t.processFragments([TextFragment("test1/test2"), CRLF])
+        assert output == ["test1", "test2"]
 
         output.clear()
         t.processFragments([TextFragment("test_test"), CRLF])
-        assert output == ["test", "test"]
+        assert output == ["test_test"]
+
+        output.clear()
+        t.processFragments([TextFragment("_test_test_"), CRLF])
+        assert output == ["test_test"]
 
         output.clear()
         t.processFragments([TextFragment("'"), CRLF])
         assert output == []
 
         output.clear()
-        t.processFragments([TextFragment("test''test"), CRLF])
-        assert output == ["test", "test"]
+        t.processFragments([TextFragment("test'test test''test"), CRLF])
+        assert output == ["test'test", "test", "test"]
 
 
 class TestCompletionModel:
@@ -236,3 +254,67 @@ class TestCompletionModel:
             "Po-TAY-ter",
             "Po-TAY-to",
         ]
+
+
+class TestCompleter:
+    def _select_completable_word(self, text: str, *, pos: int) -> str:
+        doc = QTextDocument(text)
+        cursor = QTextCursor(doc)
+        cursor.setPosition(pos)
+
+        Autocompleter.selectCompletableWord(cursor)
+
+        return cursor.selectedText()
+
+    def test_selection(self) -> None:
+        assert self._select_completable_word("", pos=0) == ""
+        assert self._select_completable_word("test", pos=0) == "test"
+        assert self._select_completable_word("test ", pos=4) == "test"
+        assert self._select_completable_word(" test ", pos=5) == "test"
+        assert self._select_completable_word(" test", pos=5) == "test"
+        assert self._select_completable_word("test1 test2", pos=2) == "test1"
+        assert self._select_completable_word("test1 test2", pos=6) == "test2"
+        assert self._select_completable_word("'test", pos=0) == ""
+        assert self._select_completable_word("'test", pos=1) == "test"
+        assert self._select_completable_word(" 'test", pos=1) == ""
+        assert self._select_completable_word(" 'test", pos=2) == "test"
+        assert self._select_completable_word("test'", pos=0) == "test'"
+        assert self._select_completable_word("test'", pos=4) == "test'"
+        assert self._select_completable_word("test'", pos=5) == "test'"
+        assert self._select_completable_word("test' ", pos=0) == "test'"
+        assert self._select_completable_word("test' ", pos=4) == "test'"
+        assert self._select_completable_word("test' ", pos=5) == "test'"
+        assert self._select_completable_word("test'test", pos=0) == "test'test"
+        assert self._select_completable_word("test'test", pos=3) == "test'test"
+        assert self._select_completable_word("test'test", pos=4) == "test'test"
+        assert self._select_completable_word("test'test", pos=5) == "test'test"
+        assert self._select_completable_word("test'test", pos=6) == "test'test"
+        assert self._select_completable_word("test1''test2", pos=5) == "test1'"
+        assert self._select_completable_word("test1''test2", pos=6) == "test1'"
+        assert self._select_completable_word("test1''test2", pos=7) == "test2"
+        assert self._select_completable_word("test1''test2", pos=8) == "test2"
+        assert self._select_completable_word("test 'test", pos=8) == "test"
+        assert (
+            self._select_completable_word(
+                '"Well then, this is awkward!"', pos=0
+            )
+            == ""
+        )
+        assert (
+            self._select_completable_word(
+                '"Well then, this is awkward!"', pos=1
+            )
+            == "Well"
+        )
+        assert (
+            self._select_completable_word(
+                '"Well then, this is awkward!"', pos=6
+            )
+            == "then"
+        )
+        assert (
+            self._select_completable_word(
+                '"Well then, this is awkward!"', pos=21
+            )
+            == "awkward"
+        )

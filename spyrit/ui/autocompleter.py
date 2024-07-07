@@ -37,6 +37,7 @@ from PySide6.QtWidgets import QCompleter, QPlainTextEdit, QTextEdit
 
 from sunset import Key
 
+from spyrit import constants
 from spyrit.network.fragments import (
     FlowControlFragment,
     Fragment,
@@ -265,11 +266,13 @@ class Tokenizer(QObject):
                 case _:
                     pass
 
-    def _tokenize(self, text: str) -> Iterator[str]:
+    @staticmethod
+    def _tokenize(text: str) -> Iterator[str]:
         """
-        A dumb tokenizer function that extracts tokens made of letters and
-        apostrophes only. The apostrophes must be inside the word, and
-        surrounded by letters.
+        A dumb tokenizer function that extracts tokens made of letters, digits,
+        and inner punctuation (such as apostrophes as in d'oh or dashes as in
+        uh-oh) only. The inner punctuation must be inside the word, and
+        surrounded by letters/digits.
 
         Args:
             text: The string to extract tokens from.
@@ -278,22 +281,28 @@ class Tokenizer(QObject):
             An iterator over the found tokens.
         """
 
-        word = ""
-        for c in text:
-            if c.isalpha():
-                word += c
+        word_start = 0
+        previous_pos_is_valid = False
+
+        for i, c in enumerate(text):
+            if c.isalnum():
+                previous_pos_is_valid = True
                 continue
 
-            if c == "'" and word and word[-1] != "'":
-                word += c
+            if c in constants.VALID_INNER_CHARS and previous_pos_is_valid:
+                previous_pos_is_valid = False
                 continue
 
-            if word := word.strip("'"):
-                yield word
-                word = ""
+            end = i if previous_pos_is_valid else i - 1
+            if end > word_start:
+                yield text[word_start:end]
 
-        if word := word.strip("'"):
-            yield word
+            word_start = i + 1
+            previous_pos_is_valid = False
+
+        end = len(text) if previous_pos_is_valid else len(text) - 1
+        if end > word_start:
+            yield text[word_start:end]
 
 
 class CompletionModel(QObject):
@@ -455,16 +464,15 @@ class Autocompleter(QCompleter):
         Initiates the completion process.
         """
 
-        self._completion_cursor = QTextCursor(self._widget.textCursor())
+        self._completion_cursor = cursor = QTextCursor(
+            self._widget.textCursor()
+        )
 
-        if not self._completion_cursor.hasSelection():
-            # TODO: Use a better selection algorithm, that accounts for words
-            # that legitimately contain punctuation such as apostrophes.
-            self._completion_cursor.select(
-                QTextCursor.SelectionType.WordUnderCursor
-            )
+        if not cursor.hasSelection():
+            self.selectCompletableWord(cursor)
 
-        prefix = self._completion_cursor.selectedText()
+        prefix = cursor.selectedText()
+        logging.debug(f'Selected text for completion: "{prefix}"')
 
         if not prefix:
             return
@@ -487,6 +495,58 @@ class Autocompleter(QCompleter):
         # our custom event handler below can take over.
 
         self.complete()
+
+    @staticmethod
+    def selectCompletableWord(cursor: QTextCursor) -> None:
+        """
+        Selects the (potentially incomplete) word under the cursor, where word
+        is defined using the same rules as in the tokenizer.
+
+        Updates the cursor's position and anchor in-place.
+
+        Args:
+            cursor: The cursor under which to select a word.
+        """
+
+        start = valid_start = end = cursor.position()
+        cursor.select(QTextCursor.SelectionType.Document)
+        text = cursor.selectedText()
+        previous_pos_is_valid = True
+
+        while start > 0:
+            start -= 1
+            c = text[start : start + 1]
+
+            if c.isalnum():
+                valid_start = start
+                previous_pos_is_valid = True
+                continue
+
+            if c in constants.VALID_INNER_CHARS and previous_pos_is_valid:
+                previous_pos_is_valid = False
+                continue
+
+            break
+
+        previous_pos_is_valid = text[end - 1 : end].isalnum()
+
+        while end < len(text):
+            end += 1
+            c = text[end - 1 : end]
+
+            if c.isalnum():
+                previous_pos_is_valid = True
+                continue
+
+            if c in constants.VALID_INNER_CHARS and previous_pos_is_valid:
+                previous_pos_is_valid = False
+                continue
+
+            end -= 1
+            break
+
+        cursor.setPosition(valid_start, QTextCursor.MoveMode.MoveAnchor)
+        cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
 
     def eventFilter(self, o: QObject, e: QEvent) -> bool:
         """

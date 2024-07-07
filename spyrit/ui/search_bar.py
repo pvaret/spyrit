@@ -103,6 +103,7 @@ class SearchBar(QWidget):
 
         super().show()
         self._textbox.setFocus()
+        self._textbox.selectAll()
         self.visibilityChanged.emit(True)
 
     def hide(self) -> None:
@@ -174,7 +175,7 @@ class SearchBar(QWidget):
         """
         Overrides the default key handler to handle the Return and Escape keys
         explicitly.
-        
+
         Return searches for the current text from bottom to top. Shift+Return
         searches for the current text from top to bottom. Escape closes the
         search bar.
@@ -185,7 +186,7 @@ class SearchBar(QWidget):
 
         if event.key() == Qt.Key.Key_Escape:
             self.hide()
-        
+
         elif event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             if event.modifiers() == Qt.KeyboardModifier.NoModifier:
                 self.findPrevious()

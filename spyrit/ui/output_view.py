@@ -19,7 +19,13 @@ Implements a widget to display the text of a game.
 from typing import Any
 
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QFont, QFontMetrics, QTextCursor, QTextOption
+from PySide6.QtGui import (
+    QFont,
+    QFontMetrics,
+    QTextCharFormat,
+    QTextCursor,
+    QTextOption,
+)
 from PySide6.QtWidgets import QTextEdit
 
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -46,6 +52,7 @@ class OutputView(QTextEdit):
         super().__init__()
         self.setReadOnly(True)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.document().setUndoRedoEnabled(False)
 
         self._settings = settings
 
@@ -98,29 +105,43 @@ class OutputView(QTextEdit):
     @Slot(QTextCursor)
     def displaySearchResults(self, cursor: QTextCursor) -> None:
         """
-        Makes the given cursor visible and scrolls the view so that the cursor
-        is approximately centered.
+        Makes the given cursor visible as a selection and scrolls the view so
+        that the cursor is approximately centered. If the cursor is null, scroll
+        to the bottom instead.
 
         Args:
             cursor: The cursor to make visible.
         """
 
         if cursor.isNull():
-            
-            # A null cursor means that the text was not found. Scroll back to
-            # the end of the document.
 
-            cursor = QTextCursor(self.document())
-            cursor.movePosition(QTextCursor.MoveOperation.End)
+            # A null cursor means that we're resetting the search. Clear all the
+            # selections, and scroll to the bottom.
 
-        self.setTextCursor(cursor)
+            self.setExtraSelections([])
+            self.requestScrollToPosition.emit(
+                self.verticalScrollBar().maximum()
+            )
+            return
+
+        cursor.setKeepPositionOnInsert(True)
+
+        search_result_format = QTextCharFormat()
+        search_result_format.setForeground(self.palette().highlightedText())
+        search_result_format.setBackground(self.palette().highlight())
+
+        search_result = QTextEdit.ExtraSelection()
+        search_result.cursor = cursor  # type: ignore
+        search_result.format = search_result_format  # type: ignore
+
+        self.setExtraSelections([search_result])
 
         # This scrolls the view so that the given cursor is a bit above the
         # middle of the view. Works well aesthetically.
 
         self.requestScrollToPosition.emit(
             self.verticalScrollBar().value()
-            + self.cursorRect().y()
+            + self.cursorRect(cursor).y()
             - self.viewport().height() // 2
             + self.verticalScrollBar().singleStep()
         )

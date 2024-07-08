@@ -18,7 +18,7 @@ Implements a UI to play in a world.
 import threading
 
 from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction, QIcon, QTextCursor
 from PySide6.QtWidgets import QHBoxLayout, QToolBar
 
 from spyrit.network.autologin import Autologin
@@ -249,7 +249,9 @@ class WorldPane(Pane):
         # Create the game view update helper.
 
         scribe = Scribe(
-            view.textCursor(), settings=settings.ui.output, parent=self
+            QTextCursor(view.document()),
+            settings=settings.ui.output,
+            parent=self,
         )
 
         # Plug the parsing logic into the game view update logic.

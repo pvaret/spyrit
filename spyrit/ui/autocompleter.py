@@ -423,9 +423,7 @@ class Autocompleter(QCompleter):
         self._model = model
         self._completion_cursor = QTextCursor()
 
-        self.setCompletionMode(
-            QCompleter.CompletionMode.UnfilteredPopupCompletion
-        )
+        self.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.setModelSorting(
             QCompleter.ModelSorting.CaseInsensitivelySortedModel

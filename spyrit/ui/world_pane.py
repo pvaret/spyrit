@@ -336,9 +336,15 @@ class WorldPane(Pane):
         becomes active.
         """
 
-        # Update the instance title with this world's name.
+        # Update the instance title with this world's name and, if relevant, the
+        # current character's name.
 
-        self._instance.setTitle(self._settings.title())
+        title = self._settings.title()
+        if self._settings.isCharacter() and (
+            name := self._settings.login.name.get()
+        ):
+            title = name + "\n" + title
+        self._instance.setTitle(title)
 
     def _setupGameWidgets(
         self,

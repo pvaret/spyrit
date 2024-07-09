@@ -22,12 +22,14 @@ from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import (
     QFont,
     QFontMetrics,
+    QMouseEvent,
     QTextCharFormat,
     QTextCursor,
     QTextOption,
 )
 from PySide6.QtWidgets import QTextEdit
 
+from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
 
 
@@ -178,3 +180,18 @@ class OutputView(QTextEdit):
         else:
             self.setWordWrapMode(QTextOption.WrapMode.WordWrap)
             self.setLineWrapColumnOrWidth(column)
+
+    def mouseMoveEvent(self, e: QMouseEvent) -> None:
+        """
+        Update the mouse cursor and show a tooltip when hovering a clickable
+        link.
+        """
+
+        if anchor := self.anchorAt(e.pos()):
+            self.viewport().setCursor(Qt.CursorShape.PointingHandCursor)
+            self.setToolTip(anchor)
+        else:
+            self.viewport().setCursor(Qt.CursorShape.IBeamCursor)
+            self.setToolTip("")
+
+        return super().mouseMoveEvent(e)

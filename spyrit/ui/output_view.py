@@ -55,6 +55,8 @@ class OutputView(QTextEdit):
         self.setReadOnly(True)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.document().setUndoRedoEnabled(False)
+        self.setCursor(Qt.CursorShape.IBeamCursor)
+        self.setToolTipDuration(constants.OUTPUT_VIEW_LINK_TOOLTIP_DURATION_MS)
 
         self._settings = settings
 

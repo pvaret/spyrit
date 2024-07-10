@@ -65,6 +65,8 @@ TAB_TEXT_WIDTH_CHARS: int = 30
 OUTPUT_VIEW_WORD_WRAP_COLUMN: int = 100  # characters
 OUTPUT_VIEW_LINK_TOOLTIP_DURATION_MS: int = 5000  # milliseconds
 
+CLICK_DISTANCE_THRESHOLD: int = 3  # pixels
+
 # Network
 
 UNNAMED_WORLD_NAME: str = "Unnamed world"

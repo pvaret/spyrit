@@ -18,8 +18,9 @@ Implements a widget to display the text of a game.
 
 from typing import Any
 
-from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtCore import QEvent, QObject, QPoint, Qt, Signal, Slot
 from PySide6.QtGui import (
+    QDesktopServices,
     QFont,
     QFontMetrics,
     QMouseEvent,
@@ -27,7 +28,7 @@ from PySide6.QtGui import (
     QTextCursor,
     QTextOption,
 )
-from PySide6.QtWidgets import QTextEdit
+from PySide6.QtWidgets import QTextEdit, QWidget
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -75,6 +76,10 @@ class OutputView(QTextEdit):
         # Set up the scrollbar.
 
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+
+        # Detect clicks.
+
+        ClickDetector(self.viewport()).mouseClick.connect(self.onClick)
 
     def setFixedPitchFont(self, font: QFont) -> None:
         """
@@ -183,6 +188,17 @@ class OutputView(QTextEdit):
             self.setWordWrapMode(QTextOption.WrapMode.WordWrap)
             self.setLineWrapColumnOrWidth(column)
 
+    @Slot(QPoint, Qt.MouseButton)
+    def onClick(self, pos: QPoint, button: Qt.MouseButton) -> None:
+        """
+        Opens the URL at the clicked position, if there is one, and if it's the
+        left button that was clicked.
+        """
+
+        if button == Qt.MouseButton.LeftButton:
+            if anchor := self.anchorAt(pos):
+                QDesktopServices.openUrl(anchor)
+
     def mouseMoveEvent(self, e: QMouseEvent) -> None:
         """
         Update the mouse cursor and show a tooltip when hovering a clickable
@@ -197,3 +213,58 @@ class OutputView(QTextEdit):
             self.setToolTip("")
 
         return super().mouseMoveEvent(e)
+
+
+class ClickDetector(QObject):
+    """
+    Filters events on the target widget to detect single clicks.
+
+    Emits mouseClick(QPoint, Qt.MouseButton) when a click is detected.
+
+    Args:
+        target: The widget on which to detect clicks.
+    """
+
+    # This signal fires when a proper click is detected on the target widget.
+
+    mouseClick: Signal = Signal(QPoint, Qt.MouseButton)
+
+    _click_pos: QPoint | None = None
+    _click_button: Qt.MouseButton | None = None
+
+    def __init__(self, target: QWidget) -> None:
+        super().__init__(parent=target)
+        target.installEventFilter(self)
+
+    def eventFilter(self, watched: QObject, event: QEvent) -> bool:
+        """
+        Detects single clicks on this ClickDetector's target widget.
+        """
+
+        if watched is self.parent():
+            match event:
+                case (
+                    QMouseEvent()
+                ) if event.type() == QEvent.Type.MouseButtonPress:
+                    self._click_pos = event.pos()
+                    self._click_button = event.button()
+
+                case (
+                    QMouseEvent()
+                ) if event.type() == QEvent.Type.MouseButtonRelease:
+                    if (
+                        self._click_pos is not None
+                        and event.button() == self._click_button
+                    ):
+                        if (
+                            self._click_pos - event.pos()
+                        ).manhattanLength() <= constants.CLICK_DISTANCE_THRESHOLD:
+                            self.mouseClick.emit(event.pos(), event.button())
+
+                    self._click_pos = None
+                    self._click_button = None
+
+                case _:
+                    pass
+
+        return super().eventFilter(watched, event)

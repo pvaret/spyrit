@@ -150,6 +150,28 @@ class ANSIProcessor(BaseProcessor):
     ESC = b"\033"
     CSI = ESC + regex.escape(rb"[")
 
+    _SGR_re = regex.compile(
+        CSI
+        + rb"(?P<sgr>"
+        + rb"("  # Start SGR codes
+        + rb"\d+"  # First code
+        + rb"(;\d+)*"  # Extra codes
+        + rb")?"  # End SGR codes
+        + rb")"
+        + rb"m"  # SGR marker
+    )
+
+    _SGR_reset = FormatUpdate(
+        bold=False,
+        bright=False,
+        italic=False,
+        underline=False,
+        reverse=False,
+        strikeout=False,
+        foreground=NoColor(),
+        background=NoColor(),
+    )
+
     _ansi_bold_effect: Key[ANSIBoldEffect]
     _pending_data: bytes
 
@@ -163,17 +185,6 @@ class ANSIProcessor(BaseProcessor):
         self._ansi_bold_effect = ansi_bold_effect
         self._pending_data = b""
 
-        self._re = regex.compile(
-            self.CSI
-            + rb"(?P<sgr>"
-            + rb"("  # Start SGR codes
-            + rb"\d+"  # First code
-            + rb"(;\d+)*"  # Extra codes
-            + rb")?"  # End SGR codes
-            + rb")"
-            + rb"m"  # SGR marker
-        )
-
     def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
         match fragment:
             case ByteFragment(data):
@@ -181,7 +192,7 @@ class ANSIProcessor(BaseProcessor):
                 self._pending_data = b""
 
                 while data:
-                    match = regex.search(self._re, data, partial=True)
+                    match = regex.search(self._SGR_re, data, partial=True)
 
                     if match is None:
                         yield ByteFragment(data)
@@ -217,12 +228,12 @@ class ANSIProcessor(BaseProcessor):
         format_update = FormatUpdate()
 
         while codes:
-            # This cast shouldn't be necessary, but the pattern matching below
-            # confuses some version of Pylance without it.
+            # This cast shouldn't be necessary, but without it the pattern
+            # matching below confuses some versions of Pylance.
             codes = cast(list[int], codes)
             match code := codes.pop(0):
                 case 0:
-                    format_update.resetAll()
+                    format_update.update(self._SGR_reset)
 
                 case 1:
                     if ansi_bold_effect & ANSIBoldEffect.BOLD:

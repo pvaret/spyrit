@@ -1,11 +1,15 @@
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
+import hypothesis
+import hypothesis.strategies
+
 from spyrit.settings.serializers import (
     ColorSerializer,
     Font,
     FormatSerializer,
     IntList,
+    SemiColonJoiner,
     Size,
 )
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, NoColor, RGBColor
@@ -146,3 +150,17 @@ def test_format_serializer() -> None:
     assert FormatSerializer().fromStr("background: #0000zz") is None
     assert FormatSerializer().fromStr("invalid") is None
     assert FormatSerializer().fromStr("bold ; invalid") is None
+
+
+def _text_hypothesis() -> hypothesis.strategies.SearchStrategy[str]:
+    return hypothesis.strategies.text(
+        alphabet=hypothesis.strategies.characters(
+            categories=(), include_characters=" a;"
+        ),
+        min_size=1,
+    ).filter(lambda s: s == s.strip())
+
+
+@hypothesis.given(hypothesis.strategies.lists(_text_hypothesis()))
+def test_semi_colon_joiner(items: list[str]) -> None:
+    assert SemiColonJoiner.split(SemiColonJoiner.join(items)) == items

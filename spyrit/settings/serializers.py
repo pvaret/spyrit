@@ -18,6 +18,8 @@ Custom serializers used in our settings.
 
 import re
 
+from typing import Sequence
+
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
 
@@ -99,6 +101,32 @@ class ColorSerializer:
 
     def toStr(self, value: Color) -> str:
         return value.toStr()
+
+
+class SemiColonJoiner:
+    _SEP = ";"
+
+    @classmethod
+    def _escape(cls, string: str) -> str:
+        return string.replace(cls._SEP, cls._SEP * 2)
+
+    @classmethod
+    def _unescape(cls, string: str) -> str:
+        return string.replace(cls._SEP * 2, cls._SEP)
+
+    @classmethod
+    def join(cls, strings: Sequence[str]) -> str:
+        sep = f" {cls._SEP} "
+        return sep.join(cls._escape(string) for string in strings)
+
+    @classmethod
+    def split(cls, string: str) -> list[str]:
+        splitter = re.compile(f"[^{cls._SEP}]{cls._SEP}[^{cls._SEP}]")
+        return list(
+            filter(
+                None, (cls._unescape(s).strip() for s in splitter.split(string))
+            )
+        )
 
 
 class FormatSerializer:

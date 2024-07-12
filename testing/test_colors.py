@@ -1,6 +1,14 @@
 import pytest
 
-from spyrit.ui.colors import brighten, hsl_to_rgb, rgb_to_hsl
+from spyrit.ui.colors import (
+    ANSIColor,
+    ANSIColorCodes,
+    NoColor,
+    RGBColor,
+    brighten,
+    hsl_to_rgb,
+    rgb_to_hsl,
+)
 
 
 class TestRGB:
@@ -32,3 +40,10 @@ class TestRGB:
         ) == pytest.approx(  # type: ignore
             (0.1, 0.1, 0.1)
         )
+
+
+class TestColor:
+    def test_repr(self) -> None:
+        assert repr(NoColor()) == "NoColor(-)"
+        assert repr(ANSIColor(ANSIColorCodes.DarkGray)) == "ANSIColor(DarkGray)"
+        assert repr(RGBColor(1, 2, 3)) == "RGBColor(#010203)"

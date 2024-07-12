@@ -339,8 +339,7 @@ ExtendedANSIPalette = {
 
 class Color(ABC):
     @abstractmethod
-    def asHex(self) -> str:
-        ...
+    def asHex(self) -> str: ...
 
     def isUnset(self) -> bool:
         return False
@@ -349,8 +348,7 @@ class Color(ABC):
         return self
 
     @abstractmethod
-    def toStr(self) -> str:
-        ...
+    def toStr(self) -> str: ...
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Color):
@@ -359,6 +357,9 @@ class Color(ABC):
         return (
             self.isUnset() and other.isUnset()
         ) or self.asHex().lower() == other.asHex().lower()
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__qualname__}({self.toStr()})"
 
 
 class NoColor(Color):

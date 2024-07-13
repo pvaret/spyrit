@@ -16,6 +16,7 @@ Custom serializers used in our settings.
 """
 
 
+import logging
 import re
 
 from typing import Sequence
@@ -144,6 +145,13 @@ class FormatSerializer:
 
         for item in SemiColonJoiner.split(string):
 
+            value = ""
+            if ":" in item:
+                item, value = item.split(":", 1)
+
+            item = item.strip()
+            value = value.strip()
+
             apply = True
             if item.startswith(("+", "-", "!")):
                 apply = not item.startswith(("-", "!"))
@@ -168,33 +176,37 @@ class FormatSerializer:
                 case "strikeout":
                     format_update.setStrikeout(apply)
 
-                case _ if ":" in item:
-                    attribute, maybe_value = item.split(":", 1)
-                    maybe_value = maybe_value.strip()
+                case "foreground":
+                    color = ColorSerializer.fromStr(value)
+                    if color is None:
+                        logging.warning(
+                            f"Invalid format string value for attribute '{item}': '{value}'"
+                        )
+                        continue
+                    format_update.setForeground(color)
 
-                    match attribute.lower().strip():
-                        case "foreground":
-                            color = ColorSerializer.fromStr(maybe_value)
-                            if color is None:
-                                return None
-                            format_update.setForeground(color)
+                case "background":
+                    color = ColorSerializer.fromStr(value)
+                    if color is None:
+                        logging.warning(
+                            f"Invalid format string value for attribute '{item}': '{value}'"
+                        )
+                        continue
+                    format_update.setBackground(color)
 
-                        case "background":
-                            color = ColorSerializer.fromStr(maybe_value)
-                            if color is None:
-                                return None
-                            format_update.setBackground(color)
-
-                        case "href":
-                            if not maybe_value:
-                                return None
-                            format_update.setHref(maybe_value)
-
-                        case _:
-                            return None
+                case "href":
+                    if not value:
+                        logging.warning(
+                            f"Invalid format string value for attribute '{item}': '{value}'"
+                        )
+                        continue
+                    format_update.setHref(value)
 
                 case _:
-                    return None
+                    logging.warning(
+                        f"Unknown attribute in format string: '{item}'"
+                    )
+                    continue
 
         return format_update
 

@@ -154,13 +154,18 @@ def test_format_serializer() -> None:
         FormatSerializer.toStr(FormatUpdate(href="a;b;c"))
     ) == FormatUpdate(href="a;b;c")
 
-    assert FormatSerializer.fromStr("href:") is None
-    assert FormatSerializer.fromStr("badground: #000000") is None
-    assert FormatSerializer.fromStr("badground: #0000") is None
-    assert FormatSerializer.fromStr("background: #00000000") is None
-    assert FormatSerializer.fromStr("background: #0000zz") is None
-    assert FormatSerializer.fromStr("invalid") is None
-    assert FormatSerializer.fromStr("bold ; invalid") is None
+
+def test_format_serializer_invalid_values() -> None:
+    assert FormatSerializer.fromStr("href:") == FormatUpdate()
+    assert FormatSerializer.fromStr("badground: #000000") == FormatUpdate()
+    assert FormatSerializer.fromStr("badground: #0000") == FormatUpdate()
+    assert FormatSerializer.fromStr("background: #00000000") == FormatUpdate()
+    assert FormatSerializer.fromStr("background: #0000zz") == FormatUpdate()
+    assert FormatSerializer.fromStr("background:") == FormatUpdate()
+    assert FormatSerializer.fromStr("invalid") == FormatUpdate()
+    assert FormatSerializer.fromStr(
+        "bold ; invalid ; -strikeout"
+    ) == FormatUpdate(bold=True, strikeout=False)
 
 
 def _text_hypothesis() -> hypothesis.strategies.SearchStrategy[str]:

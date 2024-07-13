@@ -185,6 +185,11 @@ class FormatSerializer:
                                 return None
                             format_update.setBackground(color)
 
+                        case "href":
+                            if not maybe_value:
+                                return None
+                            format_update.setHref(maybe_value)
+
                         case _:
                             return None
 
@@ -221,5 +226,7 @@ class FormatSerializer:
         if value.background is not None:
             items.append(f"background: {value.background.toStr()}")
 
-        return SemiColonJoiner.join(items)
+        if value.href:
+            items.append(f"href: {value.href}")
 
+        return SemiColonJoiner.join(items)

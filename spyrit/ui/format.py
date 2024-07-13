@@ -33,6 +33,7 @@ class FormatUpdate:
     strikeout: bool | None = None
     background: Color | None = None
     foreground: Color | None = None
+    href: str | None = None
 
     def setBold(self, bold: bool = True) -> None:
         self.bold = bold
@@ -58,23 +59,13 @@ class FormatUpdate:
     def setBackground(self, color: Color) -> None:
         self.background = color
 
+    def setHref(self, href: str) -> None:
+        self.href = href
+
     def update(self, other: "FormatUpdate") -> None:
-        if other.bold is not None:
-            self.bold = other.bold
-        if other.bright is not None:
-            self.bright = other.bright
-        if other.italic is not None:
-            self.italic = other.italic
-        if other.underline is not None:
-            self.underline = other.underline
-        if other.reverse is not None:
-            self.reverse = other.reverse
-        if other.strikeout is not None:
-            self.strikeout = other.strikeout
-        if other.foreground is not None:
-            self.foreground = other.foreground
-        if other.background is not None:
-            self.background = other.background
+        for attribute, value in dataclasses.asdict(other).items():
+            if value is not None:
+                setattr(self, attribute, value)
 
     def empty(self) -> bool:
         return all(attr is None for attr in dataclasses.astuple(self))

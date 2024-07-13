@@ -21,7 +21,7 @@ import enum
 import logging
 
 from functools import reduce
-from typing import Iterable
+from typing import Iterable, TypeVar
 
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
@@ -44,6 +44,8 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.colors import Color, NoColor
 from spyrit.ui.format import FormatUpdate
 
+
+_T = TypeVar("_T")
 
 _INFO_PREFIX = "•"
 _ERROR_PREFIX = "‼"
@@ -81,9 +83,13 @@ class CharFormatUpdater:
             return
 
     def applyFormat(self, char_format: QTextCharFormat) -> None:
-        formats = list(self._format_stack.values())
+        # Note that values are yielded in order from least recently added to
+        # most recently added. Therefore the most recently added format
+        # attributes will be applied last.
 
-        def not_none(this: bool, other: bool | None) -> bool:
+        formats = self._format_stack.values()
+
+        def not_none(this: _T, other: _T | None) -> _T:
             return other if other is not None else this
 
         def valid_color(this: Color, other: Color | None) -> Color:
@@ -101,6 +107,7 @@ class CharFormatUpdater:
         background = reduce(
             valid_color, (f.background for f in formats), NoColor()
         )
+        href = reduce(not_none, (f.href for f in formats), "")
 
         char_format.setFontWeight(
             QFont.Weight.Bold if bold else QFont.Weight.Medium
@@ -125,6 +132,8 @@ class CharFormatUpdater:
             char_format.clearBackground()
         else:
             char_format.setBackground(QColor(actual_background.asHex()))
+
+        char_format.setAnchorHref(href)
 
     def _computeColors(
         self, bright: bool, reverse: bool, foreground: Color, background: Color

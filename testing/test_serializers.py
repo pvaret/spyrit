@@ -96,10 +96,11 @@ def test_format_serializer() -> None:
             strikeout=True,
             foreground=RGBColor(0, 0, 0),
             background=ANSIColor(ANSIColorCodes.White),
+            href="http://python.org/",
         )
     ) == (
         "bold ; bright ; italic ; underline ; reverse ; strikeout ;"
-        " foreground: #000000 ; background: White"
+        " foreground: #000000 ; background: White ; href: http://python.org/"
     )
     assert FormatSerializer.toStr(
         FormatUpdate(
@@ -110,15 +111,16 @@ def test_format_serializer() -> None:
             reverse=False,
             strikeout=False,
             foreground=NoColor(),
+            background=NoColor(),
         )
     ) == (
         "-bold ; -bright ; -italic ; -underline ; -reverse ; -strikeout ;"
-        " foreground: -"
+        " foreground: - ; background: -"
     )
 
     assert FormatSerializer.fromStr(
         "bold ; Bright ; +italic ; UNDERLINE ; + reverse ; strikeout ;"
-        " foreground: #000000 ; background: White"
+        " foreground: #000000 ; background: White ; href: http://python.org/"
     ) == FormatUpdate(
         bold=True,
         bright=True,
@@ -128,6 +130,7 @@ def test_format_serializer() -> None:
         strikeout=True,
         foreground=RGBColor(0, 0, 0),
         background=ANSIColor(ANSIColorCodes.White),
+        href="http://python.org/",
     )
     assert FormatSerializer.fromStr(
         "-bold ; - bright ; -italic ; !underline ; -reverse ; ! strikeout ;"
@@ -144,6 +147,14 @@ def test_format_serializer() -> None:
     assert FormatSerializer.fromStr("background: #000000") == FormatUpdate(
         background=RGBColor(0, 0, 0)
     )
+    assert FormatSerializer.fromStr("href:   test  ") == FormatUpdate(
+        href="test"
+    )
+    assert FormatSerializer.fromStr(
+        FormatSerializer.toStr(FormatUpdate(href="a;b;c"))
+    ) == FormatUpdate(href="a;b;c")
+
+    assert FormatSerializer.fromStr("href:") is None
     assert FormatSerializer.fromStr("badground: #000000") is None
     assert FormatSerializer.fromStr("badground: #0000") is None
     assert FormatSerializer.fromStr("background: #00000000") is None

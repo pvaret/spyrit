@@ -18,8 +18,8 @@ purposes.
 
 # Dependencies
 
-REQUIRED_PYTHON_VERSION: tuple[int, int] = (3, 11)
-REQUIRED_QT_VERSION: tuple[int, int] = (6, 5)
+REQUIRED_PYTHON_VERSION: tuple[int, int] = (3, 12)
+REQUIRED_QT_VERSION: tuple[int, int] = (6, 7)
 
 # Name
 

@@ -142,15 +142,14 @@ class FormatSerializer:
     def fromStr(string: str) -> FormatUpdate | None:
         format_update = FormatUpdate()
 
-        for item in string.split(";"):
-            item = item.strip().lower()
+        for item in SemiColonJoiner.split(string):
 
             apply = True
             if item.startswith(("+", "-", "!")):
                 apply = not item.startswith(("-", "!"))
                 item = item[1:].lstrip()
 
-            match item:
+            match item.lower():
                 case "bold":
                     format_update.setBold(apply)
 
@@ -170,18 +169,24 @@ class FormatSerializer:
                     format_update.setStrikeout(apply)
 
                 case _ if ":" in item:
-                    scope, maybe_color = item.split(":", 1)
-                    color = ColorSerializer.fromStr(maybe_color)
+                    attribute, maybe_value = item.split(":", 1)
+                    maybe_value = maybe_value.strip()
 
-                    if color is None:
-                        return None
+                    match attribute.lower().strip():
+                        case "foreground":
+                            color = ColorSerializer.fromStr(maybe_value)
+                            if color is None:
+                                return None
+                            format_update.setForeground(color)
 
-                    if scope == "foreground":
-                        format_update.setForeground(color)
-                    elif scope == "background":
-                        format_update.setBackground(color)
-                    else:
-                        return None
+                        case "background":
+                            color = ColorSerializer.fromStr(maybe_value)
+                            if color is None:
+                                return None
+                            format_update.setBackground(color)
+
+                        case _:
+                            return None
 
                 case _:
                     return None
@@ -190,4 +195,31 @@ class FormatSerializer:
 
     @staticmethod
     def toStr(value: FormatUpdate) -> str:
-        return value.toStr()
+        items: list[str] = []
+
+        if value.bold is not None:
+            items.append(("-" if not value.bold else "") + "bold")
+
+        if value.bright is not None:
+            items.append(("-" if not value.bright else "") + "bright")
+
+        if value.italic is not None:
+            items.append(("-" if not value.italic else "") + "italic")
+
+        if value.underline is not None:
+            items.append(("-" if not value.underline else "") + "underline")
+
+        if value.reverse is not None:
+            items.append(("-" if not value.reverse else "") + "reverse")
+
+        if value.strikeout is not None:
+            items.append(("-" if not value.strikeout else "") + "strikeout")
+
+        if value.foreground is not None:
+            items.append(f"foreground: {value.foreground.toStr()}")
+
+        if value.background is not None:
+            items.append(f"background: {value.background.toStr()}")
+
+        return SemiColonJoiner.join(items)
+

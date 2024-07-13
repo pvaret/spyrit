@@ -28,7 +28,8 @@ from spyrit.ui.format import FormatUpdate
 
 
 class IntList:
-    def fromStr(self, string: str) -> list[int] | None:
+    @staticmethod
+    def fromStr(string: str) -> list[int] | None:
         ret: list[int] = []
 
         for element in string.split(","):
@@ -43,21 +44,25 @@ class IntList:
 
         return ret
 
-    def toStr(self, value: list[int]) -> str:
+    @staticmethod
+    def toStr(value: list[int]) -> str:
         return ", ".join(str(i) for i in value)
 
 
 class Font:
-    def fromStr(self, string: str) -> QFont | None:
+    @staticmethod
+    def fromStr(string: str) -> QFont | None:
         font = QFont()
         return font if font.fromString(string) else None
 
-    def toStr(self, value: QFont) -> str:
+    @staticmethod
+    def toStr(value: QFont) -> str:
         return value.toString()
 
 
 class Size:
-    def fromStr(self, string: str) -> QSize | None:
+    @staticmethod
+    def fromStr(string: str) -> QSize | None:
         size = string.split(",", 1)
         if len(size) != 2:
             return None
@@ -68,12 +73,14 @@ class Size:
             return QSize(int(w), int(h))
         return None
 
-    def toStr(self, value: QSize) -> str:
+    @staticmethod
+    def toStr(value: QSize) -> str:
         return f"{value.width()}, {value.height()}"
 
 
 class ColorSerializer:
-    def fromStr(self, string: str) -> Color | None:
+    @staticmethod
+    def fromStr(string: str) -> Color | None:
         string = string.strip()
 
         if string == "-":
@@ -99,7 +106,8 @@ class ColorSerializer:
 
         return None
 
-    def toStr(self, value: Color) -> str:
+    @staticmethod
+    def toStr(value: Color) -> str:
         return value.toStr()
 
 
@@ -130,7 +138,8 @@ class SemiColonJoiner:
 
 
 class FormatSerializer:
-    def fromStr(self, string: str) -> FormatUpdate | None:
+    @staticmethod
+    def fromStr(string: str) -> FormatUpdate | None:
         format_update = FormatUpdate()
 
         for item in string.split(";"):
@@ -162,7 +171,7 @@ class FormatSerializer:
 
                 case _ if ":" in item:
                     scope, maybe_color = item.split(":", 1)
-                    color = ColorSerializer().fromStr(maybe_color)
+                    color = ColorSerializer.fromStr(maybe_color)
 
                     if color is None:
                         return None
@@ -179,5 +188,6 @@ class FormatSerializer:
 
         return format_update
 
-    def toStr(self, value: FormatUpdate) -> str:
+    @staticmethod
+    def toStr(value: FormatUpdate) -> str:
         return value.toStr()

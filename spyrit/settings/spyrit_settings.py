@@ -93,14 +93,14 @@ def _shortcut_key(combination: str) -> Key[Shortcut]:
 
 def _font_key(font_family: list[str], font_size: int) -> Key[QFont]:
     return Key(
-        default=QFont(font_family, font_size), serializer=serializers.Font()
+        default=QFont(font_family, font_size), serializer=serializers.Font
     )
 
 
 def _color_key(ansi_color: ANSIColorCodes) -> Key[Color]:
     return Key(
         default=ANSIColor(ansi_color),
-        serializer=serializers.ColorSerializer(),
+        serializer=serializers.ColorSerializer,
         value_type=Color,
     )
 
@@ -117,7 +117,7 @@ def _format_key(
         format_.setItalic(True)
     if bold:
         format_.setBold(True)
-    return Key(default=format_, serializer=serializers.FormatSerializer())
+    return Key(default=format_, serializer=serializers.FormatSerializer)
 
 
 def _valid_port_number(port: int) -> bool:

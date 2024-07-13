@@ -43,14 +43,14 @@ class ToggleKey(Key[bool]):
 class SpyritState(Settings):
     class UI(Bunch):
         window_size: Key[QSize] = Key(
-            _default_size, serializer=Size(), validator=_size_validator
+            _default_size, serializer=Size, validator=_size_validator
         )
 
         output_splitter_sizes: Key[list[int]] = Key(
-            default=[800, 200], serializer=IntList()
+            default=[800, 200], serializer=IntList
         )
         input_splitter_sizes: Key[list[int]] = Key(
-            default=[800, 200], serializer=IntList()
+            default=[800, 200], serializer=IntList
         )
 
     class History(Bunch):

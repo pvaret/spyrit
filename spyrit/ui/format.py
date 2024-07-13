@@ -16,12 +16,15 @@ Implements a class that can encode formatting instructions.
 """
 
 
-from typing import Any
+import dataclasses
 
-from spyrit.ui.colors import Color, NoColor
+from spyrit.ui.colors import Color
 
 
+@dataclasses.dataclass
 class FormatUpdate:
+    _: dataclasses.KW_ONLY
+
     bold: bool | None = None
     bright: bool | None = None
     italic: bool | None = None
@@ -30,36 +33,6 @@ class FormatUpdate:
     strikeout: bool | None = None
     background: Color | None = None
     foreground: Color | None = None
-
-    def __init__(  # pylint: disable=too-many-arguments
-        self,
-        bold: bool | None = None,
-        bright: bool | None = None,
-        italic: bool | None = None,
-        underline: bool | None = None,
-        reverse: bool | None = None,
-        strikeout: bool | None = None,
-        foreground: Color | None = None,
-        background: Color | None = None,
-    ) -> None:
-        self.bold = bold
-        self.bright = bright
-        self.italic = italic
-        self.underline = underline
-        self.reverse = reverse
-        self.strikeout = strikeout
-        self.foreground = foreground
-        self.background = background
-
-    def resetAll(self) -> None:
-        self.setBold(False)
-        self.setBright(False)
-        self.setItalic(False)
-        self.setUnderline(False)
-        self.setReverse(False)
-        self.setStrikeout(False)
-        self.setForeground(NoColor())
-        self.setBackground(NoColor())
 
     def setBold(self, bold: bool = True) -> None:
         self.bold = bold
@@ -104,65 +77,14 @@ class FormatUpdate:
             self.background = other.background
 
     def empty(self) -> bool:
-        return all(
-            attribute is None
-            for attribute in (
-                self.bold,
-                self.bright,
-                self.italic,
-                self.underline,
-                self.reverse,
-                self.strikeout,
-                self.foreground,
-                self.background,
-            )
-        )
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, FormatUpdate):
-            return False
-
-        return all(
-            (
-                self.bold == other.bold,
-                self.bright == other.bright,
-                self.italic == other.italic,
-                self.underline == other.underline,
-                self.reverse == other.reverse,
-                self.strikeout == other.strikeout,
-                self.foreground == other.foreground,
-                self.background == other.background,
-            )
-        )
-
-    def toStr(self) -> str:
-        items: list[str] = []
-
-        if self.bold is not None:
-            items.append(("-" if not self.bold else "") + "bold")
-
-        if self.bright is not None:
-            items.append(("-" if not self.bright else "") + "bright")
-
-        if self.italic is not None:
-            items.append(("-" if not self.italic else "") + "italic")
-
-        if self.underline is not None:
-            items.append(("-" if not self.underline else "") + "underline")
-
-        if self.reverse is not None:
-            items.append(("-" if not self.reverse else "") + "reverse")
-
-        if self.strikeout is not None:
-            items.append(("-" if not self.strikeout else "") + "strikeout")
-
-        if self.foreground is not None:
-            items.append(f"foreground: {self.foreground.toStr()}")
-
-        if self.background is not None:
-            items.append(f"background: {self.background.toStr()}")
-
-        return " ; ".join(items)
+        return all(attr is None for attr in dataclasses.astuple(self))
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.toStr()})"
+        attributes = dataclasses.asdict(self)
+        reprs = [
+            f"{name}={value}"
+            for name, value in attributes.items()
+            if value is not None
+        ]
+        contents = "; ".join(reprs)
+        return f"{self.__class__.__qualname__}({contents})"

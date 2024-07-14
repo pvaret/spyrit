@@ -45,15 +45,10 @@ from spyrit.network.fragments import (
 )
 from spyrit.network.pattern import find_matches
 from spyrit.regex_helpers import any_of, blocks_with_separator, optional
+from spyrit.settings.pattern import Pattern, PatternScope, PatternType
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
-from spyrit.settings.spyrit_settings import (
-    ANSIBoldEffect,
-    Encoding,
-    PatternScope,
-    PatternType,
-    SpyritSettings,
-)
+from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
 
 
 class BaseProcessor(QObject):
@@ -479,10 +474,10 @@ class UserPatternProcessor(BaseProcessor):
     formatting.
     """
 
-    _patterns: List[SpyritSettings.Pattern]
+    _patterns: List[Pattern]
     _fragment_buffer: list[Fragment]
     _line_so_far: str = ""
-    _url_pattern: SpyritSettings.Pattern
+    _url_pattern: Pattern
 
     # TODO: Add support for:
     #   - IPv6 as the hostname.
@@ -506,13 +501,13 @@ class UserPatternProcessor(BaseProcessor):
         )
     )
 
-    def __init__(self, patterns: List[SpyritSettings.Pattern]) -> None:
+    def __init__(self, patterns: List[Pattern]) -> None:
         super().__init__()
 
         self._patterns = patterns
         self._fragment_buffer = []
 
-        self._url_pattern = SpyritSettings.Pattern()
+        self._url_pattern = Pattern()
         self._url_pattern.format.set(
             FormatUpdate(
                 italic=True, underline=True, href=constants.MATCH_PLACEHOLDER
@@ -558,7 +553,7 @@ class UserPatternProcessor(BaseProcessor):
                     matched_text = line[start:end]
                     yield (expand_url(format_, matched_text), start, end)
 
-    def _getPatterns(self) -> Iterator[SpyritSettings.Pattern]:
+    def _getPatterns(self) -> Iterator[Pattern]:
         yield self._url_pattern
         yield from self._patterns.iter(List.PARENT_FIRST)
 

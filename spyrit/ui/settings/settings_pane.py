@@ -32,6 +32,7 @@ from PySide6.QtWidgets import (
 from sunset import List, Settings
 
 from spyrit import constants
+from spyrit.settings.pattern import Pattern
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
@@ -275,9 +276,7 @@ class SettingsPane(BaseDialogPane):
         ui.addTab(self._triggersSettingsUI(settings.patterns), "Triggers")
         return ui
 
-    def _triggersSettingsUI(
-        self, settings: List[SpyritSettings.Pattern]
-    ) -> QWidget:
+    def _triggersSettingsUI(self, settings: List[Pattern]) -> QWidget:
         """
         Constructs and returns a UI to manage a world's triggers.
 

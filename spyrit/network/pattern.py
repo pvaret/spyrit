@@ -20,11 +20,7 @@ from typing import Iterator
 
 import regex
 
-from spyrit.settings.spyrit_settings import (
-    PatternScope,
-    SpyritSettings,
-    PatternType,
-)
+from spyrit.settings.pattern import Pattern, PatternScope, PatternType
 from spyrit.ui.format import FormatUpdate
 
 # A match is made of a start position, an end position, and the format to apply
@@ -41,7 +37,7 @@ def _normalize(text: str) -> str:
 
 
 def match_fragment_to_text(
-    fragment: SpyritSettings.Pattern.Fragment, text: str, start: int
+    fragment: Pattern.Fragment, text: str, start: int
 ) -> Iterator[Match]:
     """
     Returns the possible matches of the given pattern fragment to the given text
@@ -111,7 +107,7 @@ def match_fragment_to_text(
 
 
 def match_pattern_to_text(
-    pattern: SpyritSettings.Pattern, text: str, start: int
+    pattern: Pattern, text: str, start: int
 ) -> Iterator[tuple[list[Match], int]]:
     """
     Takes a complex pattern made of simple consecutive pattern fragments, and a
@@ -126,7 +122,7 @@ def match_pattern_to_text(
             int,
             list[Match],
             Iterator[Match] | None,
-            list[SpyritSettings.Pattern.Fragment],
+            list[Pattern.Fragment],
         ]
     ] = [(start, [], None, list(pattern.fragments))]
 
@@ -178,7 +174,7 @@ def match_pattern_to_text(
         )
 
 
-def find_matches(pattern: SpyritSettings.Pattern, text: str) -> list[Match]:
+def find_matches(pattern: Pattern, text: str) -> list[Match]:
     """
     Matches the given pattern to the given text. Depending on the pattern's
     scope, this may mean matching the pattern to the entire line, or finding the

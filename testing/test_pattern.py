@@ -2,16 +2,12 @@ from spyrit.network.pattern import (
     find_matches,
     match_fragment_to_text,
 )
-from spyrit.settings.spyrit_settings import (
-    PatternScope,
-    SpyritSettings,
-    PatternType,
-)
+from spyrit.settings.pattern import Pattern, PatternScope, PatternType
 from spyrit.ui.format import FormatUpdate
 
 
 def _all_fragment_matches(
-    pattern: SpyritSettings.Pattern.Fragment,
+    pattern: Pattern.Fragment,
     text: str,
     pos: int = 0,
 ) -> list[str]:
@@ -19,16 +15,14 @@ def _all_fragment_matches(
     return [text[m[0] : m[1]] for m in matches]
 
 
-def _all_pattern_matches(
-    pattern: SpyritSettings.Pattern, text: str
-) -> list[str]:
+def _all_pattern_matches(pattern: Pattern, text: str) -> list[str]:
     matches = find_matches(pattern, text)
     return [text[m[0] : m[1]] for m in matches]
 
 
 class TestPattern:
     def test_pattern_anything(self) -> None:
-        pattern = SpyritSettings.Pattern.Fragment()
+        pattern = Pattern.Fragment()
         pattern.type.set(PatternType.ANYTHING)
 
         assert _all_fragment_matches(pattern, "12345") == [
@@ -42,7 +36,7 @@ class TestPattern:
         assert _all_fragment_matches(pattern, "12345", 3) == ["", "4", "45"]
 
     def test_pattern_exact_match(self) -> None:
-        pattern = SpyritSettings.Pattern.Fragment()
+        pattern = Pattern.Fragment()
         pattern.type.set(PatternType.EXACT_MATCH)
         pattern.pattern_text.set("abCde")
 
@@ -53,7 +47,7 @@ class TestPattern:
         assert _all_fragment_matches(pattern, "abcDee") == ["abcDe"]
 
     def test_pattern_any_of(self) -> None:
-        pattern = SpyritSettings.Pattern.Fragment()
+        pattern = Pattern.Fragment()
         pattern.type.set(PatternType.ANY_OF)
         pattern.pattern_text.set("abCde")
 
@@ -73,7 +67,7 @@ class TestPattern:
         assert _all_fragment_matches(pattern, "aAa") == ["aAa", "aA", "a"]
 
     def test_pattern_any_not_of(self) -> None:
-        pattern = SpyritSettings.Pattern.Fragment()
+        pattern = Pattern.Fragment()
         pattern.type.set(PatternType.ANY_NOT_IN)
         pattern.pattern_text.set("abCde")
 
@@ -87,7 +81,7 @@ class TestPattern:
         assert _all_fragment_matches(pattern, "12A") == ["12", "1"]
 
     def test_pattern_regex(self) -> None:
-        pattern = SpyritSettings.Pattern.Fragment()
+        pattern = Pattern.Fragment()
         pattern.type.set(PatternType.REGEX)
         pattern.pattern_text.set("a{4,5}")
 
@@ -104,7 +98,7 @@ class TestPattern:
 
 class TestCompoundPatternEntireLine:
     def test_one_pattern(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         f1 = pattern.fragments.appendOne()
         f1.type.set(PatternType.ANY_OF)
@@ -116,7 +110,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_two_patterns(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         f1 = pattern.fragments.appendOne()
         f1.type.set(PatternType.ANY_OF)
@@ -132,7 +126,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_three_patterns(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         f1 = pattern.fragments.appendOne()
         f1.type.set(PatternType.ANY_OF)
@@ -151,7 +145,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_whole_line_is_matched(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         f1 = pattern.fragments.appendOne()
         f1.type.set(PatternType.ANY_OF)
@@ -161,7 +155,7 @@ class TestCompoundPatternEntireLine:
         assert _all_pattern_matches(pattern, "zaaaaaaa") == []
 
     def test_backtracking_occurs_as_needed(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         f1 = pattern.fragments.appendOne()
         f1.type.set(PatternType.ANYTHING)
@@ -176,7 +170,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_simple_wildcards(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         pattern.fragments.appendOne().type.set(PatternType.ANYTHING)
 
@@ -194,7 +188,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_complex_wildcards(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         pattern.fragments.appendOne().type.set(PatternType.ANYTHING)
         pattern.fragments.appendOne().type.set(PatternType.ANYTHING)
@@ -226,7 +220,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_with_empty_anything(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         f1 = pattern.fragments.appendOne()
         f1.type.set(PatternType.ANY_OF)
@@ -244,7 +238,7 @@ class TestCompoundPatternEntireLine:
         ]
 
     def test_format_line(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ENTIRE_LINE)
         pattern.format.set(match_format := FormatUpdate())
         pattern.fragments.appendOne().type.set(PatternType.ANYTHING)
@@ -259,7 +253,7 @@ class TestCompoundPatternEntireLine:
 
 class TestCompoundPatternAnyWhereInLine:
     def test_pattern_anything(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
 
         pattern.fragments.appendOne().type.set(PatternType.ANYTHING)
@@ -278,7 +272,7 @@ class TestCompoundPatternAnyWhereInLine:
         ]
 
     def test_pattern_anywhere(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
 
         f1 = pattern.fragments.appendOne()
@@ -313,7 +307,7 @@ class TestCompoundPatternAnyWhereInLine:
         ]
 
     def test_with_anything(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
 
         pattern.fragments.appendOne().type.set(PatternType.ANYTHING)
@@ -356,7 +350,7 @@ class TestCompoundPatternAnyWhereInLine:
         ]
 
     def test_with_any_of(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
 
         f1 = pattern.fragments.appendOne()
@@ -397,7 +391,7 @@ class TestCompoundPatternAnyWhereInLine:
         ]
 
     def test_match_at_start_or_end(self) -> None:
-        pattern = SpyritSettings.Pattern()
+        pattern = Pattern()
         pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
 
         f1 = pattern.fragments.appendOne()

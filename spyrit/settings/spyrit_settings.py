@@ -28,6 +28,7 @@ from sunset import Bunch, Key, List, Settings
 from spyrit import constants
 from spyrit.settings import serializers
 from spyrit.settings.key_shortcut import shortcut_from_default, Shortcut
+from spyrit.settings.pattern import Pattern
 from spyrit.settings.scrambled_text import ScrambledText
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, Color
 from spyrit.ui.format import FormatUpdate
@@ -55,38 +56,6 @@ class ANSIBoldEffect(enum.Flag):
     BOTH = BRIGHT | BOLD
 
 
-class PatternScope(enum.Enum):
-    # A pattern with this scope will match if and only it matches the entire
-    # line.
-    ENTIRE_LINE = enum.auto()
-
-    # Every subset of a line of text that matches a pattern with this scope will
-    # be considered an independent match.
-    ANYWHERE_IN_LINE = enum.auto()
-
-
-class PatternType(enum.Enum):
-    # An ANYTHING pattern matches any characters, as *few* as possible,
-    # including none at all.
-    ANYTHING = enum.auto()
-
-    # An EXACT_MATCH pattern matches the pattern string exactly, after
-    # normalisation.
-    EXACT_MATCH = enum.auto()
-
-    # An ANY_OF pattern matches any of the characters in the pattern string in
-    # any order, as many as possible.
-    ANY_OF = enum.auto()
-
-    # An ANY_NOT_IN pattern matches any characters not in the pattern string, as
-    # many as possible.
-    ANY_NOT_IN = enum.auto()
-
-    # A REGEX pattern uses the pattern string as a regex, matching as many
-    # characters as possible.
-    REGEX = enum.auto()
-
-
 def _shortcut_key(combination: str) -> Key[Shortcut]:
     return Key(default=shortcut_from_default(combination))
 
@@ -103,21 +72,6 @@ def _color_key(ansi_color: ANSIColorCodes) -> Key[Color]:
         serializer=serializers.ColorSerializer,
         value_type=Color,
     )
-
-
-def _format_key(
-    color: ANSIColorCodes | None = None,
-    italic: bool = False,
-    bold: bool = False,
-) -> Key[FormatUpdate]:
-    format_ = FormatUpdate()
-    if color is not None:
-        format_.setForeground(ANSIColor(color))
-    if italic:
-        format_.setItalic(True)
-    if bold:
-        format_.setBold(True)
-    return Key(default=format_, serializer=serializers.FormatSerializer)
 
 
 def _valid_port_number(port: int) -> bool:
@@ -232,10 +186,13 @@ class SpyritSettings(Settings):
             )
 
             # Rendering properties of the text used for status messages.
-            status_text_format: Key[FormatUpdate] = _format_key(
-                color=ANSIColorCodes.DarkGray,
-                italic=True,
-                bold=True,
+            status_text_format: Key[FormatUpdate] = Key(
+                default=FormatUpdate(
+                    foreground=ANSIColor(ANSIColorCodes.DarkGray),
+                    bold=True,
+                    italic=True,
+                ),
+                serializer=serializers.FormatSerializer,
             )
 
             # How to interpret the 'bold' ANSI code. There is no clear standard
@@ -250,33 +207,6 @@ class SpyritSettings(Settings):
         # The name of the Qt style to use for the UI. If none, use the default
         # for the platform.
         style: Key[str] = Key(default="")
-
-    class Pattern(Bunch):
-        """
-        Records a compound user-defined pattern, to be matched against game text
-        so e.g. custom formatting can be applied.
-        """
-
-        class Fragment(Bunch):
-            # The type of pattern stored in this fragment.
-            type: Key[PatternType] = Key(default=PatternType.ANYTHING)
-
-            # The text of the pattern in this fragment. Unused if the pattern
-            # type is ANYTHING.
-            pattern_text: Key[str] = Key(default="")
-
-            # Which format to apply to the given fragment.
-            format: Key[FormatUpdate] = _format_key()
-
-        # Whether to match entire lines, or anywhere in lines.
-        scope: Key[PatternScope] = Key(default=PatternScope.ENTIRE_LINE)
-
-        # The sub-pattern fragments that make up this pattern.
-        fragments: List[Fragment] = List(Fragment())
-
-        # The format to apply to the fragment matches that don't have their own
-        # specific format.
-        format: Key[FormatUpdate] = _format_key()
 
     shortcuts: KeyShortcuts = KeyShortcuts()
     net: Network = Network()

@@ -24,13 +24,8 @@ from spyrit.network.processors import (
     UserPatternProcessor,
     inject_fragments_into_buffer,
 )
-from spyrit.settings.spyrit_settings import (
-    ANSIBoldEffect,
-    Encoding,
-    PatternScope,
-    PatternType,
-    SpyritSettings,
-)
+from spyrit.settings.pattern import Pattern, PatternScope, PatternType
+from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
@@ -541,7 +536,7 @@ class TestInjectFragmentsInBuffer:
 
 class TestUserPatternProcessor:
     def test_simple_line_match(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -564,7 +559,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_complex_line_match(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -594,7 +589,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_simple_anywhere_match(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -622,7 +617,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_complex_anywhere_match(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -666,7 +661,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_repeated_anywhere_match(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -709,7 +704,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_match_across_text_fragments(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -752,7 +747,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_fragment_format_overrides_pattern_format(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -792,7 +787,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_fragments_passed_verbatim(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -824,7 +819,7 @@ class TestUserPatternProcessor:
         ]
 
     def test_overlapping_matches(self) -> None:
-        patterns = List(SpyritSettings.Pattern())
+        patterns = List(Pattern())
         processor = UserPatternProcessor(patterns)
         output = OutputCatcher(processor)
 
@@ -864,9 +859,7 @@ class TestUserPatternProcessor:
 
     def test_parent_pattern_matches_first(self) -> None:
         class TestSettings(Settings):
-            patterns: List[SpyritSettings.Pattern] = List(
-                SpyritSettings.Pattern()
-            )
+            patterns: List[Pattern] = List(Pattern())
 
         parent_settings = TestSettings()
         derived_settings = parent_settings.newSection("child")

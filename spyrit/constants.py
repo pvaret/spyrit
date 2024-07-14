@@ -16,6 +16,7 @@ Provides the product-wide constants. This file should remain a leaf for import
 purposes.
 """
 
+
 # Dependencies
 
 REQUIRED_PYTHON_VERSION: tuple[int, int] = (3, 12)
@@ -82,6 +83,10 @@ PROCESSOR_BLOCK_SIZE_BYTES: int = 128
 # Text processing
 
 VALID_INNER_CHARS: set[str] = set("'-_")
+
+# Patterns
+
+MATCH_PLACEHOLDER: str = "@@@"
 
 # Internals and debugging
 

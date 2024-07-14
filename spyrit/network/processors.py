@@ -44,11 +44,14 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.network.pattern import find_matches
+from spyrit.regex_helpers import any_of, blocks_with_separator, optional
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 from spyrit.settings.spyrit_settings import (
     ANSIBoldEffect,
     Encoding,
+    PatternScope,
+    PatternType,
     SpyritSettings,
 )
 
@@ -454,6 +457,21 @@ def inject_fragments_into_buffer(
     return ret
 
 
+def expand_url(format: FormatUpdate, text: str) -> FormatUpdate:
+    """
+    Returns a FormatUpdate where the HREF match placeholder, if any, is
+    replaced with the text that was matched, if any.
+    """
+
+    if format.href is not None and constants.MATCH_PLACEHOLDER in format.href:
+        ret = FormatUpdate()
+        ret.update(format)
+        ret.href = format.href.replace(constants.MATCH_PLACEHOLDER, text)
+        return ret
+
+    return format
+
+
 class UserPatternProcessor(BaseProcessor):
     """
     This processor batches entire lines of text and searches them for
@@ -464,12 +482,46 @@ class UserPatternProcessor(BaseProcessor):
     _patterns: List[SpyritSettings.Pattern]
     _fragment_buffer: list[Fragment]
     _line_so_far: str = ""
+    _url_pattern: SpyritSettings.Pattern
+
+    # TODO: Add support for:
+    #   - IPv6 as the hostname.
+    #   - username/password.
+    URL_MATCH_RE: str = (
+        # scheme
+        any_of(
+            r"https?://",
+            r"www\.",
+        )
+        # hostname
+        + blocks_with_separator(r"[-_a-zA-Z0-9]+", sep=r"\.")
+        # port
+        + optional(r":\d+")
+        # path
+        + optional(
+            r"/"
+            + optional(
+                r"[-a-zA-Z0-9~#/&_=:(){}.!?]*" + r"[-a-zA-Z0-9~#/&_=:)}]"
+            )
+        )
+    )
 
     def __init__(self, patterns: List[SpyritSettings.Pattern]) -> None:
         super().__init__()
 
         self._patterns = patterns
         self._fragment_buffer = []
+
+        self._url_pattern = SpyritSettings.Pattern()
+        self._url_pattern.format.set(
+            FormatUpdate(
+                italic=True, underline=True, href=constants.MATCH_PLACEHOLDER
+            )
+        )
+        self._url_pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
+        url_match = self._url_pattern.fragments.appendOne()
+        url_match.type.set(PatternType.REGEX)
+        url_match.pattern_text.set(self.URL_MATCH_RE)
 
     def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
         self._fragment_buffer.append(fragment)
@@ -500,10 +552,15 @@ class UserPatternProcessor(BaseProcessor):
     def _findUserPatterns(
         self, line: str
     ) -> Iterator[tuple[FormatUpdate, int, int]]:
-        for pattern in self._patterns.iter(List.PARENT_FIRST):
+        for pattern in self._getPatterns():
             for start, end, format_ in find_matches(pattern, line):
                 if start != end and not format_.empty():
-                    yield (format_, start, end)
+                    matched_text = line[start:end]
+                    yield (expand_url(format_, matched_text), start, end)
+
+    def _getPatterns(self) -> Iterator[SpyritSettings.Pattern]:
+        yield self._url_pattern
+        yield from self._patterns.iter(List.PARENT_FIRST)
 
 
 class ChainProcessor(BaseProcessor):

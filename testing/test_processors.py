@@ -1,5 +1,3 @@
-import re
-
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
@@ -929,26 +927,3 @@ class TestChainProcessor:
         p2.feed.assert_called_once()  # type: ignore
         p3.feed.assert_called_once()  # type: ignore
         assert output.get() == [TextFragment("dummy")]
-
-
-def test_url_regex() -> None:
-    pattern = UserPatternProcessor.URL_MATCH_RE
-    assert re.fullmatch(pattern, "www.python.org")
-    assert re.fullmatch(pattern, "http://www.python.org")
-    assert re.fullmatch(pattern, "https://www.python.org/")
-    assert re.fullmatch(pattern, "http://www.python.org:80")
-    assert re.fullmatch(pattern, "http://www.python.org:80/")
-    assert re.fullmatch(pattern, "https://docs.python.org/3/whatsnew/3.12.html")
-    assert re.fullmatch(
-        pattern, "https://docs.python.org/3/search.html?q=regex"
-    )
-
-
-def test_url_no_match() -> None:
-    pattern = UserPatternProcessor.URL_MATCH_RE
-    assert not re.fullmatch(pattern, "python.org")
-    assert not re.fullmatch(pattern, "ftp://www.python.org")
-    assert not re.fullmatch(pattern, "http://www.python?org")
-    assert not re.fullmatch(pattern, "http://www.python   .org")
-    assert not re.fullmatch(pattern, "http://www.python.org/(")
-    assert not re.fullmatch(pattern, "http:/www.python.org")

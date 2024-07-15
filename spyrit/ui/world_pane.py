@@ -36,6 +36,7 @@ from spyrit.network.processors import (
 )
 from spyrit.resources.resources import Icon
 from spyrit.session.instance import SessionInstance
+from spyrit.settings.default_patterns import get_default_patterns
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.autocompleter import Autocompleter, CompletionModel, Tokenizer
@@ -584,7 +585,9 @@ class WorldPane(Pane):
             ANSIProcessor(self._settings.ui.output.ansi_bold_effect),
             UnicodeProcessor(self._settings.net.encoding),
             FlowControlProcessor(),
-            UserPatternProcessor(self._settings.patterns),
+            UserPatternProcessor(
+                self._settings.patterns, get_default_patterns()
+            ),
             parent=self,
         )
 

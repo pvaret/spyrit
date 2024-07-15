@@ -1,6 +1,9 @@
+import re
+
 import hypothesis
 import hypothesis.strategies
 
+from spyrit.settings import default_patterns
 from spyrit.settings.pattern import Pattern, PatternScope, PatternType
 from spyrit.ui.format import FormatUpdate
 
@@ -384,3 +387,26 @@ class TestCompoundPatternAnyWhereInLine:
             "x",  # pattern
             "x",  # fragment
         ]
+
+
+def test_url_regex() -> None:
+    pattern = default_patterns.URL_MATCH_RE
+    assert re.fullmatch(pattern, "www.python.org")
+    assert re.fullmatch(pattern, "http://www.python.org")
+    assert re.fullmatch(pattern, "https://www.python.org/")
+    assert re.fullmatch(pattern, "http://www.python.org:80")
+    assert re.fullmatch(pattern, "http://www.python.org:80/")
+    assert re.fullmatch(pattern, "https://docs.python.org/3/whatsnew/3.12.html")
+    assert re.fullmatch(
+        pattern, "https://docs.python.org/3/search.html?q=regex"
+    )
+
+
+def test_url_no_match() -> None:
+    pattern = default_patterns.URL_MATCH_RE
+    assert not re.fullmatch(pattern, "python.org")
+    assert not re.fullmatch(pattern, "ftp://www.python.org")
+    assert not re.fullmatch(pattern, "http://www.python?org")
+    assert not re.fullmatch(pattern, "http://www.python   .org")
+    assert not re.fullmatch(pattern, "http://www.python.org/(")
+    assert not re.fullmatch(pattern, "http:/www.python.org")

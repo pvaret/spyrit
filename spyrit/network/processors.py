@@ -43,8 +43,7 @@ from spyrit.network.fragments import (
     PatternMatchFragment,
     TextFragment,
 )
-from spyrit.regex_helpers import any_of, blocks_with_separator, optional
-from spyrit.settings.pattern import Pattern, PatternScope, PatternType
+from spyrit.settings.pattern import Pattern
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
@@ -474,48 +473,20 @@ class UserPatternProcessor(BaseProcessor):
     """
 
     _patterns: List[Pattern]
+    _extra_patterns: list[Pattern]
     _fragment_buffer: list[Fragment]
     _line_so_far: str = ""
-    _url_pattern: Pattern
 
-    # TODO: Add support for:
-    #   - IPv6 as the hostname.
-    #   - username/password.
-    URL_MATCH_RE: str = (
-        # scheme
-        any_of(
-            r"https?://",
-            r"www\.",
-        )
-        # hostname
-        + blocks_with_separator(r"[-_a-zA-Z0-9]+", sep=r"\.")
-        # port
-        + optional(r":\d+")
-        # path
-        + optional(
-            r"/"
-            + optional(
-                r"[-a-zA-Z0-9~#/&_=:(){}.!?]*" + r"[-a-zA-Z0-9~#/&_=:)}]"
-            )
-        )
-    )
-
-    def __init__(self, patterns: List[Pattern]) -> None:
+    def __init__(
+        self,
+        patterns: List[Pattern],
+        extra_patterns: list[Pattern] | None = None,
+    ) -> None:
         super().__init__()
 
         self._patterns = patterns
+        self._extra_patterns = extra_patterns or []
         self._fragment_buffer = []
-
-        self._url_pattern = Pattern()
-        self._url_pattern.format.set(
-            FormatUpdate(
-                italic=True, underline=True, href=constants.MATCH_PLACEHOLDER
-            )
-        )
-        self._url_pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)
-        url_match = self._url_pattern.fragments.appendOne()
-        url_match.type.set(PatternType.REGEX)
-        url_match.pattern_text.set(self.URL_MATCH_RE)
 
     def processFragment(self, fragment: Fragment) -> Iterator[Fragment]:
         self._fragment_buffer.append(fragment)
@@ -553,7 +524,7 @@ class UserPatternProcessor(BaseProcessor):
                     yield (expand_url(format_, matched_text), start, end)
 
     def _getPatterns(self) -> Iterator[Pattern]:
-        yield self._url_pattern
+        yield from self._extra_patterns
         yield from self._patterns.iter(List.PARENT_FIRST)
 
 

@@ -180,3 +180,7 @@ def _text_hypothesis() -> hypothesis.strategies.SearchStrategy[str]:
 @hypothesis.given(hypothesis.strategies.lists(_text_hypothesis()))
 def test_semi_colon_joiner(items: list[str]) -> None:
     assert SemiColonJoiner.split(SemiColonJoiner.join(items)) == items
+
+
+def test_semi_colon_joiner_no_space() -> None:
+    assert SemiColonJoiner.split("a;b;c") == ["a", "b", "c"]

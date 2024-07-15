@@ -130,7 +130,7 @@ class SemiColonJoiner:
 
     @classmethod
     def split(cls, string: str) -> list[str]:
-        splitter = re.compile(f"[^{cls._SEP}]{cls._SEP}[^{cls._SEP}]")
+        splitter = re.compile(f"(?<!{cls._SEP}){cls._SEP}(?!{cls._SEP})")
         return list(
             filter(
                 None, (cls._unescape(s).strip() for s in splitter.split(string))

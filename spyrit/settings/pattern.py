@@ -17,6 +17,10 @@ text from game worlds.
 """
 
 import enum
+import logging
+import re
+
+from typing import Any, Iterable
 
 from sunset import Bunch, Key, List
 
@@ -56,6 +60,46 @@ class PatternScope(enum.Enum):
     ANYWHERE_IN_LINE = enum.auto()
 
 
+def _normalize(string: str) -> str:
+    return string.lower()
+
+
+def _fragment_identifier(fragment: Any) -> str:
+    return f"f{id(fragment)}"
+
+
+def _named_group(name: str, pattern: str) -> str:
+    return rf"(?P<{name}>" + pattern + r")" if pattern else ""
+
+
+def _fragment_to_pattern(fragment: "Pattern.Fragment") -> str:
+    """
+    Computes a regex pattern for the given fragment.
+    """
+
+    pattern = fragment.pattern_text.get()
+    name = _fragment_identifier(fragment)
+
+    match fragment.type.get():
+        case PatternType.ANYTHING:
+            # Note that this is a non-greedy match.
+            return _named_group(name, r".*?")
+
+        case PatternType.EXACT_MATCH:
+            return _named_group(name, re.escape(_normalize(pattern)))
+
+        case PatternType.ANY_OF:
+            pattern = re.escape("".join(sorted(set(_normalize(pattern)))))
+            return _named_group(name, r"[" + pattern + r"]+")
+
+        case PatternType.ANY_NOT_IN:
+            pattern = re.escape("".join(sorted(set(_normalize(pattern)))))
+            return _named_group(name, r"[^" + pattern + r"]+")
+
+        case PatternType.REGEX:
+            return _named_group(name, pattern)
+
+
 class Pattern(Bunch):
     """
     Records a compound user-defined pattern, to be matched against game text
@@ -86,3 +130,71 @@ class Pattern(Bunch):
     format: Key[FormatUpdate] = Key(
         default=FormatUpdate(), serializer=serializers.FormatSerializer
     )
+
+    _re: re.Pattern[str]
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+
+        self.fragments.onUpdateCall(self._compile)
+        self.onLoadedCall(self._compile)
+        self._compile()
+
+    def _compile(self, _: Any = None) -> None:
+        pattern = ""
+
+        for fragment in self.fragments:
+            fragment_pattern = _fragment_to_pattern(fragment)
+            if not fragment:
+                continue
+
+            try:
+                re.compile(fragment_pattern)
+            except re.error:
+                logging.warning(
+                    f"Failed to compile pattern fragment: {fragment}"
+                )
+                continue
+
+            pattern += fragment_pattern
+
+        if not pattern:
+            pattern = r"$  ^"  # Never matches anything.
+
+        self._re = re.compile(pattern, flags=re.IGNORECASE)
+
+    def matches(self, line: str) -> list[tuple[int, int, FormatUpdate]]:
+        """
+        Matches this compound pattern to the given line.
+
+        Args:
+            line: A line of text to be matched against this pattern.
+
+        Returns:
+            A list of the start position, end position, and applicable format
+            for each match of this pattern and its individual fragments.
+        """
+
+        ret: list[tuple[int, int, FormatUpdate]] = []
+        matches: Iterable[re.Match[str]] = []
+
+        match self.scope.get():
+            case PatternScope.ENTIRE_LINE:
+                m = self._re.fullmatch(line)
+                matches = [m] if m is not None else []
+
+            case PatternScope.ANYWHERE_IN_LINE:
+                matches = self._re.finditer(line)
+
+        for m in matches:
+            if (end := m.end()) > (start := m.start()):
+                ret.append((start, end, self.format.get()))
+
+            for fragment in self.fragments:
+                name = _fragment_identifier(fragment)
+                if name not in m.groupdict():
+                    continue
+                if (end := m.end(name)) > (start := m.start(name)):
+                    ret.append((start, end, fragment.format.get()))
+
+        return ret

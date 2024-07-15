@@ -43,7 +43,6 @@ from spyrit.network.fragments import (
     PatternMatchFragment,
     TextFragment,
 )
-from spyrit.network.pattern import find_matches
 from spyrit.regex_helpers import any_of, blocks_with_separator, optional
 from spyrit.settings.pattern import Pattern, PatternScope, PatternType
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
@@ -548,8 +547,8 @@ class UserPatternProcessor(BaseProcessor):
         self, line: str
     ) -> Iterator[tuple[FormatUpdate, int, int]]:
         for pattern in self._getPatterns():
-            for start, end, format_ in find_matches(pattern, line):
-                if start != end and not format_.empty():
+            for start, end, format_ in pattern.matches(line):
+                if start < end and not format_.empty():
                     matched_text = line[start:end]
                     yield (expand_url(format_, matched_text), start, end)
 

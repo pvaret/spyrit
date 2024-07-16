@@ -19,7 +19,7 @@ Installation
 Installing from sources
 -----------------------
 
-1. Install Python 3.11 or later. See https://www.python.org/downloads/.
+1. Install Python 3.12 or later. See https://www.python.org/downloads/.
 
 1. Check out the code:
 

@@ -19,6 +19,7 @@ Provides patterns to be used by default for all worlds.
 from spyrit import constants
 from spyrit.regex_helpers import any_of, blocks_with_separator, optional
 from spyrit.settings.pattern import Pattern, PatternScope, PatternType
+from spyrit.ui.colors import ANSIColor, ANSIColorCodes
 from spyrit.ui.format import FormatUpdate
 
 
@@ -55,7 +56,10 @@ def get_default_patterns() -> list[Pattern]:
     url_pattern = Pattern()
     url_pattern.format.set(
         FormatUpdate(
-            italic=True, underline=True, href=constants.MATCH_PLACEHOLDER
+            italic=True,
+            underline=True,
+            underline_color=ANSIColor(ANSIColorCodes.Blue),
+            href=constants.MATCH_PLACEHOLDER,
         )
     )
     url_pattern.scope.set(PatternScope.ANYWHERE_IN_LINE)

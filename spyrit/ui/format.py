@@ -33,6 +33,7 @@ class FormatUpdate:
     strikeout: bool | None = None
     background: Color | None = None
     foreground: Color | None = None
+    underline_color: Color | None = None
     href: str | None = None
 
     def setBold(self, bold: bool = True) -> None:
@@ -58,6 +59,9 @@ class FormatUpdate:
 
     def setBackground(self, color: Color) -> None:
         self.background = color
+
+    def setUnderlineColor(self, color: Color) -> None:
+        self.underline_color = color
 
     def setHref(self, href: str) -> None:
         self.href = href

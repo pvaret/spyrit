@@ -194,6 +194,15 @@ class FormatSerializer:
                         continue
                     format_update.setBackground(color)
 
+                case "underline_color":
+                    color = ColorSerializer.fromStr(value)
+                    if color is None:
+                        logging.warning(
+                            f"Invalid format string value for attribute '{item}': '{value}'"
+                        )
+                        continue
+                    format_update.setUnderlineColor(color)
+
                 case "href":
                     if not value:
                         logging.warning(
@@ -237,6 +246,9 @@ class FormatSerializer:
 
         if value.background is not None:
             items.append(f"background: {value.background.toStr()}")
+
+        if value.underline_color is not None:
+            items.append(f"underline_color: {value.underline_color.toStr()}")
 
         if value.href:
             items.append(f"href: {value.href}")

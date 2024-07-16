@@ -19,8 +19,10 @@ class TestFormat:
         assert not FormatUpdate(strikeout=False).empty()
         assert not FormatUpdate(foreground=RGBColor(10, 20, 30)).empty()
         assert not FormatUpdate(background=RGBColor(10, 20, 30)).empty()
+        assert not FormatUpdate(underline_color=RGBColor(10, 20, 30)).empty()
         assert not FormatUpdate(foreground=NoColor()).empty()
         assert not FormatUpdate(background=NoColor()).empty()
+        assert not FormatUpdate(underline_color=NoColor()).empty()
         assert not FormatUpdate(href="").empty()
         assert not FormatUpdate(href="test").empty()
 
@@ -46,16 +48,20 @@ class TestFormat:
         assert FormatUpdate(
             foreground=RGBColor(10, 50, 100),
             background=ANSIColor(ANSIColorCodes.Black),
+            underline_color=ANSIColor(ANSIColorCodes.Blue),
         ) == FormatUpdate(
             foreground=RGBColor(10, 50, 100),
             background=ANSIColor(ANSIColorCodes.Black),
+            underline_color=ANSIColor(ANSIColorCodes.Blue),
         )
         assert FormatUpdate(
             foreground=NoColor(),
             background=NoColor(),
+            underline_color=NoColor(),
         ) == FormatUpdate(
             foreground=NoColor(),
             background=NoColor(),
+            underline_color=NoColor(),
         )
 
         assert FormatUpdate(href="test") == FormatUpdate(href="test")
@@ -102,6 +108,13 @@ class TestFormat:
         assert format_.background == ANSIColor(ANSIColorCodes.Red)
         format_.update(FormatUpdate(background=NoColor()))
         assert format_.background == NoColor()
+
+        format_.update(
+            FormatUpdate(underline_color=ANSIColor(ANSIColorCodes.Red))
+        )
+        assert format_.underline_color == ANSIColor(ANSIColorCodes.Red)
+        format_.update(FormatUpdate(underline_color=NoColor()))
+        assert format_.underline_color == NoColor()
 
         assert format_.href is None
         format_.update(FormatUpdate(href="test"))

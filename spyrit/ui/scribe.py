@@ -107,6 +107,9 @@ class CharFormatUpdater:
         background = reduce(
             valid_color, (f.background for f in formats), NoColor()
         )
+        underline_color = reduce(
+            valid_color, (f.underline_color for f in formats), NoColor()
+        )
         href = reduce(not_none, (f.href for f in formats), "")
 
         char_format.setFontWeight(
@@ -133,6 +136,7 @@ class CharFormatUpdater:
         else:
             char_format.setBackground(QColor(actual_background.asHex()))
 
+        char_format.setUnderlineColor(QColor(underline_color.asHex()))
         char_format.setAnchorHref(href)
 
     def _computeColors(

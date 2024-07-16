@@ -96,11 +96,13 @@ def test_format_serializer() -> None:
             strikeout=True,
             foreground=RGBColor(0, 0, 0),
             background=ANSIColor(ANSIColorCodes.White),
+            underline_color=ANSIColor(ANSIColorCodes.Blue),
             href="http://python.org/",
         )
     ) == (
         "bold ; bright ; italic ; underline ; reverse ; strikeout ;"
-        " foreground: #000000 ; background: White ; href: http://python.org/"
+        " foreground: #000000 ; background: White ; underline_color: Blue ;"
+        " href: http://python.org/"
     )
     assert FormatSerializer.toStr(
         FormatUpdate(
@@ -112,15 +114,18 @@ def test_format_serializer() -> None:
             strikeout=False,
             foreground=NoColor(),
             background=NoColor(),
+            underline_color=NoColor(),
+            href="",
         )
     ) == (
         "-bold ; -bright ; -italic ; -underline ; -reverse ; -strikeout ;"
-        " foreground: - ; background: -"
+        " foreground: - ; background: - ; underline_color: -"
     )
 
     assert FormatSerializer.fromStr(
-        "bold ; Bright ; +italic ; UNDERLINE ; + reverse ; strikeout ;"
-        " foreground: #000000 ; background: White ; href: http://python.org/"
+        "bold ; Bright ;+italic ; UNDERLINE ; + reverse;strikeout ;"
+        " foreground: #000000 ; background: White ;   UNderLIne_CoLoR :  red;"
+        " href: http://python.org/"
     ) == FormatUpdate(
         bold=True,
         bright=True,
@@ -130,11 +135,12 @@ def test_format_serializer() -> None:
         strikeout=True,
         foreground=RGBColor(0, 0, 0),
         background=ANSIColor(ANSIColorCodes.White),
+        underline_color=ANSIColor(ANSIColorCodes.Red),
         href="http://python.org/",
     )
     assert FormatSerializer.fromStr(
         "-bold ; - bright ; -italic ; !underline ; -reverse ; ! strikeout ;"
-        " foreground: -"
+        " foreground: - ; background: - ; underline_color: - ; href: "
     ) == FormatUpdate(
         bold=False,
         bright=False,
@@ -143,6 +149,9 @@ def test_format_serializer() -> None:
         reverse=False,
         strikeout=False,
         foreground=NoColor(),
+        background=NoColor(),
+        underline_color=NoColor(),
+        href=None,
     )
     assert FormatSerializer.fromStr("background: #000000") == FormatUpdate(
         background=RGBColor(0, 0, 0)

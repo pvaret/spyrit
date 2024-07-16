@@ -19,7 +19,7 @@ import threading
 
 from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon, QTextCursor
-from PySide6.QtWidgets import QHBoxLayout, QToolBar
+from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QToolBar, QWidget
 
 from spyrit.network.autologin import Autologin
 from spyrit.network.connection import Connection
@@ -65,7 +65,11 @@ class ConnectionToggleAction(QAction):
         connection: The Connection whose status is reflected by, and can be
             changed through, this action.
 
-        icon: The icon to use in UIs that show this action.
+        on_icon: The icon to use in UIs that show this action when the
+            connection is on.
+
+        off_icon: The icon to use in UIs that show this action when the
+            connection is off.
     """
 
     _CONNECTED_TOOLTIP = "Disconnect"
@@ -83,17 +87,24 @@ class ConnectionToggleAction(QAction):
 
     _connection: Connection
     _prevent_connection_changes: threading.Lock
+    _on_icon: QIcon
+    _off_icon: QIcon
 
     def __init__(
-        self, parent: QObject, connection: Connection, icon: QIcon
+        self,
+        parent: QObject,
+        connection: Connection,
+        on_icon: QIcon,
+        off_icon: QIcon,
     ) -> None:
         super().__init__(parent)
 
         self._connection = connection
         self._prevent_connection_changes = threading.Lock()
+        self._on_icon = on_icon
+        self._off_icon = off_icon
 
         self.setCheckable(True)
-        self.setIcon(icon)
 
         self.toggled.connect(self._toggleConnection)
         self._connection.statusChanged.connect(self._updateVisualCheckedness)
@@ -116,8 +127,11 @@ class ConnectionToggleAction(QAction):
 
         (self.connectRequested if connect else self.disconnectRequested).emit()
 
-        # Update the appearance of the action after processing it. It should
-        # still reflect the connection's state.
+        # Re-apply the appearance of the action based on the connection status.
+        # By default, Qt updated the appearance whenever the action is toggled;
+        # but in our case, we allow the user to cancel the outcome of the
+        # action, e.g. if they are in fact not ready to disconnect, and in this
+        # case the appearance is not automatically changed back.
 
         self._updateVisualCheckedness()
 
@@ -138,6 +152,7 @@ class ConnectionToggleAction(QAction):
             if not is_connecting
             else self._CONNECTED_TOOLTIP
         )
+        self.setIcon(self._off_icon if not is_connecting else self._on_icon)
 
         if is_connecting != self.isChecked():
             with self._prevent_connection_changes:
@@ -450,7 +465,10 @@ class WorldPane(Pane):
 
         toolbar.addAction(
             connection_toggle := ConnectionToggleAction(
-                self, connection, icon=QIcon(Icon.CONNECTION_SVG)
+                self,
+                connection,
+                on_icon=QIcon(Icon.SWITCH_ON),
+                off_icon=QIcon(Icon.SWITCH_OFF),
             )
         )
         connection_toggle.connectRequested.connect(instance.doConnect)
@@ -508,6 +526,14 @@ class WorldPane(Pane):
             )
         )
         toolbar.addAction(settings)
+
+        # Add space so the close button is isolated at the bottom.
+
+        spacer = QWidget()
+        spacer.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding
+        )
+        toolbar.addWidget(spacer)
 
         # Set up the close button.
 

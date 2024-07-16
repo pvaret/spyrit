@@ -7,11 +7,12 @@
     </qresource>
     <qresource prefix="/icons/">
         <file>close.svg</file>
-        <file>connection.svg</file>
         <file>input-field.svg</file>
         <file>new-tab.svg</file>
         <file>search.svg</file>
         <file>settings.svg</file>
+        <file>switch-off.svg</file>
+        <file>switch-on.svg</file>
     </qresource>
     <qresource prefix="/misc/">
         <file>wordlist.txt.gz</file>

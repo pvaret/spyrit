@@ -45,11 +45,12 @@ class Font(_Resource):
 
 class Icon(_Resource):
     CLOSE_SVG = ":/icons/close.svg"
-    CONNECTION_SVG = ":/icons/connection.svg"
     INPUT_FIELD_SVG = ":/icons/input-field.svg"
     NEW_TAB_SVG = ":/icons/new-tab.svg"
     SEARCH_SVG = ":/icons/search.svg"
     SETTINGS_SVG = ":/icons/settings.svg"
+    SWITCH_OFF = ":/icons/switch-off.svg"
+    SWITCH_ON = ":/icons/switch-on.svg"
 
 
 class Misc(_Resource):

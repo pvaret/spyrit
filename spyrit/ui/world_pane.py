@@ -540,7 +540,7 @@ class WorldPane(Pane):
         self.addAction(
             close := ActionWithKeySetting(
                 self,
-                "Return to menu",
+                "Close and return to menu",
                 shortcuts.return_to_menu,
                 self.returnToMenuRequested.emit,
                 icon=QIcon(Icon.CLOSE_SVG),

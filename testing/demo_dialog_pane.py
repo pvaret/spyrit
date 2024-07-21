@@ -3,7 +3,7 @@
 import pathlib
 import sys
 
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication, QLabel, QPushButton
 
 
 if __name__ == "__main__":
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     app = QApplication()
 
     text = QLabel("This is a dialog!")
-    pane = BaseDialogPane()
+    pane = BaseDialogPane(cancel_button=QPushButton("Cancel"))
     pane.setWidget(text)
     pane.okClicked.connect(lambda: print("OK clicked!"))
     pane.cancelClicked.connect(lambda: print("Cancel clicked!"))

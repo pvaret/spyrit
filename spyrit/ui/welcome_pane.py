@@ -36,14 +36,10 @@ from spyrit import constants
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.about_pane import AboutPane
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
-from spyrit.ui.settings.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
-from spyrit.ui.world_creation_pane import WorldCreationPane
-from spyrit.ui.world_pane import WorldPane
 
 
 _P = ParamSpec("_P")
@@ -129,11 +125,11 @@ class WorldsMenu(QMenu):
         settings: The root settings object on which to look up the world list.
     """
 
-    # This signal fires when a world is selected in the menu.
+    # This signal is sent when a world is selected in the menu.
 
     worldSelected: Signal = Signal(SpyritSettings)
 
-    # This signal fires when the item count of the menu changed.
+    # This signal is sent when the item count of the menu changed.
 
     itemCountChanged: Signal = Signal(int)
 
@@ -262,7 +258,25 @@ class WelcomePane(Pane):
 
     pane_is_persistent = True
 
-    # This signal fires when the user requests to quit the application.
+    # This signal is sent when a user action asks for the world creation UI to
+    # be opened. The arguments are the root settings and state objects.
+
+    openWorldCreationUIRequested: Signal = Signal(SpyritSettings, SpyritState)
+
+    # This signal is sent when a user action asks for a game world to be opened.
+    # The arguments are the *world's* settings and state objects.
+
+    openWorldRequested: Signal = Signal(SpyritSettings, SpyritState)
+
+    # This signal is sent when a user action asks to open the settings panel.
+
+    openSettingsUIRequested: Signal = Signal(SpyritSettings)
+
+    # This signal is sent when a user action asks to open the About... pane.
+
+    openAboutRequested: Signal = Signal()
+
+    # This signal is sent when the user requests to quit the application.
 
     quitRequested: Signal = Signal()
 
@@ -360,8 +374,7 @@ class WelcomePane(Pane):
         Creates a world creation pane and switches to it.
         """
 
-        pane = WorldCreationPane(self._settings, self._state, self._instance)
-        self.addPaneRight(pane)
+        self.openWorldCreationUIRequested.emit(self._settings, self._state)
 
     @Slot()
     def _openWorld(self, world: SpyritSettings) -> None:
@@ -373,8 +386,7 @@ class WelcomePane(Pane):
         """
 
         state = self._state.getStateSectionForSettingsSection(world)
-
-        self.addPaneRight(WorldPane(world, state, self._instance))
+        self.openWorldRequested.emit(world, state)
 
     @Slot()
     def _showSettings(self) -> None:
@@ -382,7 +394,7 @@ class WelcomePane(Pane):
         Shows the settings pane.
         """
 
-        self.addPaneRight(SettingsPane(self._settings))
+        self.openSettingsUIRequested.emit(self._settings)
 
     @Slot()
     def _showAbout(self) -> None:
@@ -390,4 +402,4 @@ class WelcomePane(Pane):
         Shows the application about pane.
         """
 
-        self.addPaneRight(AboutPane())
+        self.openAboutRequested.emit()

@@ -193,10 +193,6 @@ class SettingsPane(BaseDialogPane):
     ) -> None:
         super().__init__()
 
-        # Close the pane when the user clicks the "Ok" button.
-
-        self.okClicked.connect(self.slideLeft)
-
         # Retrieve the root settings object.
 
         root_settings = _root(settings)

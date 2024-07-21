@@ -49,7 +49,6 @@ from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
-from spyrit.ui.settings.settings_pane import SettingsPane
 from spyrit.ui.sizer import Sizer
 
 
@@ -75,13 +74,13 @@ class ConnectionToggleAction(QAction):
     _CONNECTED_TOOLTIP = "Disconnect"
     _DISCONNECTED_TOOLTIP = "Connect"
 
-    # This signal fires when a user interaction with this action requests that a
-    # connection be initiated.
+    # This signal is sent when a user interaction with this action requests that
+    # a connection be initiated.
 
     connectRequested: Signal = Signal()
 
-    # This signal fires when a user interaction with this action requests that a
-    # connection be terminated.
+    # This signal is sent when a user interaction with this action requests that
+    # a connection be terminated.
 
     disconnectRequested: Signal = Signal()
 
@@ -181,10 +180,20 @@ class WorldPane(Pane):
         instance: The instance object to bind to this game.
     """
 
-    # This signal fires when a user action requests for the pane to be closed in
-    # order to return to the main menu.
+    # This signal is sent when a user action requests for the pane to be closed
+    # in order to return to the main menu. The user should be asked for
+    # confirmation first.
 
-    returnToMenuRequested: Signal = Signal()
+    maybeClose: Signal = Signal()
+
+    # This signal is sent when this pane is ready to close.
+
+    closeRequested: Signal = Signal()
+
+    # This signal is sent when a user action requests for the settings pane to
+    # the shown. The argument is this world's settings object.
+
+    settingsUIRequested: Signal = Signal(SpyritSettings)
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -542,13 +551,13 @@ class WorldPane(Pane):
                 self,
                 "Close and return to menu",
                 shortcuts.return_to_menu,
-                self.returnToMenuRequested.emit,
+                self.maybeClose.emit,
                 icon=QIcon(Icon.CLOSE_SVG),
             )
         )
         toolbar.addAction(close)
 
-        self.returnToMenuRequested.connect(instance.maybeClosePane)
+        self.maybeClose.connect(instance.maybeClosePane)
 
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
         """
@@ -627,7 +636,7 @@ class WorldPane(Pane):
         """
 
         self.pane_is_persistent = False
-        self.slideLeft()
+        self.closeRequested.emit()
 
     @Slot()
     def _showSettings(self) -> None:
@@ -635,4 +644,4 @@ class WorldPane(Pane):
         Opens the settings pane for this world.
         """
 
-        self.addPaneRight(SettingsPane(self._settings))
+        self.settingsUIRequested.emit(self._settings)

@@ -18,7 +18,7 @@ Implements a UI to set up a new world.
 
 from typing import Any
 
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import QPushButton
 
 from spyrit.session.instance import SessionInstance
@@ -26,7 +26,6 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
-from spyrit.ui.world_pane import WorldPane
 
 
 class WorldCreationPane(BaseDialogPane):
@@ -40,6 +39,12 @@ class WorldCreationPane(BaseDialogPane):
 
         instance: The session model object for the tab that contains this pane.
     """
+
+    # This signal is sent when the user asks for the world configured in this
+    # pane to be opened. The arguments are the new world's settings and state
+    # objects.
+
+    openWorldRequested: Signal = Signal(SpyritSettings, SpyritState)
 
     _world_settings: SpyritSettings
     _state: SpyritState
@@ -84,8 +89,8 @@ class WorldCreationPane(BaseDialogPane):
         state = self._state.getStateSectionForSettingsSection(
             self._world_settings
         )
-        world_pane = WorldPane(self._world_settings, state, self._instance)
-        self.addPaneRight(world_pane)
+
+        self.openWorldRequested.emit(self._world_settings, state)
 
     @Slot()
     def _maybeEnableConnectButton(self, entity: Any = None) -> None:

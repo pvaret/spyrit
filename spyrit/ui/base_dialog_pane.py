@@ -82,8 +82,9 @@ class BaseDialogPane(Pane):
             ok_button = QPushButton("Ok")
 
         ok_button.clicked.connect(self.okClicked)
-        ok_button.setDefault(True)
         button_layout.addWidget(ok_button)
+
+        ok_button.setDefault(True)
 
     def widget(self) -> QWidget:
         """

@@ -28,10 +28,9 @@ from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.dialogs import askUserIfReadyToClose
+from spyrit.ui.instance_container import InstanceContainer
 from spyrit.ui.main_window import SpyritMainWindow
-from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.tab_proxy import TabProxy
-from spyrit.ui.welcome_pane import WelcomePane
 
 
 class SessionWindow(QObject):
@@ -97,14 +96,13 @@ class SessionWindow(QObject):
 
         # Create the UI for a game.
 
-        widget = SlidingPaneContainer(self._window)
-        widget.addPaneRight(
-            pane := WelcomePane(self._settings, self._state, instance)
+        widget = InstanceContainer(
+            self._settings, self._state, instance, self._window
         )
 
-        # Plug quit requests from the welcome pane to the window.
+        # Plug quit requests from the game UI to the window.
 
-        pane.quitRequested.connect(self._window.quitRequested)
+        widget.quitRequested.connect(self._window.quitRequested)
 
         # Add the UI to a tab and bind the instance to that tab.
 

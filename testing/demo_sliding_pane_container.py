@@ -20,17 +20,20 @@ this_dir = this_file.parent.absolute()
 
 sys.path.insert(0, this_dir.parent.as_posix())
 
-from spyrit.ui.base_pane import Pane  # noqa: E402
-from spyrit.ui.sliding_pane_container import SlidingPaneContainer  # noqa: E402
+from spyrit.ui.base_pane import Pane
+from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 
 _counter: int = 0
 
 
 class TestPane(Pane):
-    def __init__(self, i: int) -> None:
-        super().__init__()
+    _container: SlidingPaneContainer
+
+    def __init__(self, i: int, parent: SlidingPaneContainer) -> None:
+        super().__init__(parent)
 
         self._i = i
+        self._container = container
 
         self.setLayout(layout := QGridLayout())
 
@@ -51,8 +54,10 @@ class TestPane(Pane):
         layout.addWidget(_make_button("Add left!", self.appendLeft), row, 0)
         layout.addWidget(_make_button("Add right!", self.appendRight), row, 1)
         row += 1
-        layout.addWidget(_make_button("Slide left!", self.slideLeft), row, 0)
-        layout.addWidget(_make_button("Slide right!", self.slideRight), row, 1)
+        layout.addWidget(_make_button("Slide left!", parent.slideLeft), row, 0)
+        layout.addWidget(
+            _make_button("Slide right!", parent.slideRight), row, 1
+        )
         row += 1
         button = _make_button("Toggle persistent!", self.togglePersistent)
         layout.addWidget(button, row, 0, 1, 2)
@@ -61,12 +66,12 @@ class TestPane(Pane):
     def appendLeft(self) -> None:
         global _counter
         _counter += 1
-        self.addPaneLeft(TestPane(_counter))
+        self._container.addPaneLeft(TestPane(_counter, self._container))
 
     def appendRight(self) -> None:
         global _counter
         _counter += 1
-        self.addPaneRight(TestPane(_counter))
+        self._container.addPaneRight(TestPane(_counter, self._container))
 
     @Slot(bool)
     def togglePersistent(self, persistent: bool) -> None:
@@ -79,6 +84,6 @@ class TestPane(Pane):
 if __name__ == "__main__":
     app = QApplication()
     container = SlidingPaneContainer()
-    container.addPaneRight(TestPane(0))
+    container.addPaneRight(TestPane(0, container))
     container.show()
     app.exec()

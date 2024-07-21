@@ -41,8 +41,6 @@ class AboutPane(BaseDialogPane):
 
         sizer = Sizer(self)
 
-        self.okClicked.connect(self.slideLeft)
-
         text = f"""
             <b>{constants.APPLICATION_NAME}</b>: a MUD/MUSH/MUCK/MOO client.<br>
             <br>

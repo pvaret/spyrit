@@ -172,13 +172,6 @@ class SlidingPaneContainer(QScrollArea):
         self._resizeContainer()
         self._layoutPanesInViewport()
 
-        # Plug the pane's controls into the container's controls.
-
-        pane.slideLeftRequested.connect(self.slideLeft)
-        pane.slideRightRequested.connect(self.slideRight)
-        pane.addPaneLeftRequested.connect(self.addPaneLeft)
-        pane.addPaneRightRequested.connect(self.addPaneRight)
-
         # If there was no pane before, make the newly added pane active.
 
         if len(self._panes) == 1:

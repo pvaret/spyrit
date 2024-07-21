@@ -74,7 +74,6 @@ class WorldCreationPane(BaseDialogPane):
         self._maybeEnableConnectButton()
 
         self.okClicked.connect(self._openWorld)
-        self.cancelClicked.connect(self.slideLeft)
 
     @Slot()
     def _openWorld(self) -> None:

@@ -354,25 +354,6 @@ class WelcomePane(Pane):
 
         self._instance.setTitle(f"Welcome to {constants.APPLICATION_NAME}!")
 
-    def _buildWorldMenu(self) -> QMenu:
-        """
-        Constructs a menu with the currently configured worlds.
-
-        Each entry in the menu comes with an action that opens the corresponding
-        world when selected.
-
-        Returns:
-            A QMenu listing the currently configured worlds.
-        """
-
-        worlds_menu = QMenu(self)
-
-        for world in self._settings.worlds():
-            action = worlds_menu.addAction(world.title())  # type: ignore
-            action.triggered.connect(CallWithArgs(self._openWorld, world))
-
-        return worlds_menu
-
     @Slot()
     def _openWorldCreationPane(self) -> None:
         """

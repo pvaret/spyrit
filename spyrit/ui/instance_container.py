@@ -40,6 +40,8 @@ class InstanceContainer(SlidingPaneContainer):
 
     quitRequested: Signal = Signal()
 
+    _settings: SpyritSettings
+    _state: SpyritState
     _instance: SessionInstance
 
     def __init__(
@@ -51,9 +53,11 @@ class InstanceContainer(SlidingPaneContainer):
     ) -> None:
         super().__init__(parent)
 
+        self._settings = settings
+        self._state = state
         self._instance = instance
 
-        self.addPaneRight(pane := WelcomePane(settings, state, instance))
+        self.addPaneRight(pane := WelcomePane(settings, instance))
 
         pane.openWorldCreationUIRequested.connect(self._openWorldCreationUI)
         pane.openWorldRequested.connect(self._openWorld)
@@ -61,19 +65,18 @@ class InstanceContainer(SlidingPaneContainer):
         pane.openAboutRequested.connect(self._openAbout)
         pane.quitRequested.connect(self.quitRequested)
 
-    @Slot(SpyritSettings, SpyritState)
-    def _openWorldCreationUI(
-        self, settings: SpyritSettings, state: SpyritState
-    ) -> None:
+    @Slot()
+    def _openWorldCreationUI(self) -> None:
         self.addPaneRight(
-            pane := WorldCreationPane(settings, state, self._instance)
+            pane := WorldCreationPane(self._settings, self._instance)
         )
 
         pane.cancelClicked.connect(self.slideLeft)
         pane.openWorldRequested.connect(self._openWorld)
 
-    @Slot(SpyritSettings, SpyritState)
-    def _openWorld(self, settings: SpyritSettings, state: SpyritState) -> None:
+    @Slot(SpyritSettings)
+    def _openWorld(self, settings: SpyritSettings) -> None:
+        state = self._state.getStateSectionForSettingsSection(settings)
         self.addPaneRight(pane := WorldPane(settings, state, self._instance))
 
         # TODO: Move the logic to seek user confirmation from SessionInstance to

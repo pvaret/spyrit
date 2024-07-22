@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     resources.load()
     app = QApplication(sys.argv)
-    pane = WelcomePane(settings, state, SessionInstance())
+    pane = WelcomePane(settings, SessionInstance())
     pane.show()
 
     app.exec()

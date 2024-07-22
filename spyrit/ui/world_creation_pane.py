@@ -23,7 +23,6 @@ from PySide6.QtWidgets import QPushButton
 
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
-from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 
@@ -35,26 +34,21 @@ class WorldCreationPane(BaseDialogPane):
     Args:
         settings: The global application settings object.
 
-        state: The global application state object.
-
         instance: The session model object for the tab that contains this pane.
     """
 
     # This signal is sent when the user asks for the world configured in this
-    # pane to be opened. The arguments are the new world's settings and state
-    # objects.
+    # pane to be opened. The arguments is the new world's settings object.
 
-    openWorldRequested: Signal = Signal(SpyritSettings, SpyritState)
+    openWorldRequested: Signal = Signal(SpyritSettings)
 
     _world_settings: SpyritSettings
-    _state: SpyritState
     _instance: SessionInstance
     _connect_button: QPushButton
 
     def __init__(
         self,
         settings: SpyritSettings,
-        state: SpyritState,
         instance: SessionInstance,
     ) -> None:
         super().__init__(
@@ -66,7 +60,6 @@ class WorldCreationPane(BaseDialogPane):
         self._root_settings = settings
         self._world_settings = SpyritSettings()
         self._instance = instance
-        self._state = state
 
         self.setWidget(ServerSettingsUI(self._world_settings))
 
@@ -85,11 +78,8 @@ class WorldCreationPane(BaseDialogPane):
             return
 
         self._world_settings.setParent(self._root_settings)
-        state = self._state.getStateSectionForSettingsSection(
-            self._world_settings
-        )
 
-        self.openWorldRequested.emit(self._world_settings, state)
+        self.openWorldRequested.emit(self._world_settings)
 
     @Slot()
     def _maybeEnableConnectButton(self, entity: Any = None) -> None:

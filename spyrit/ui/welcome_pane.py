@@ -35,7 +35,6 @@ from sunset import Key
 from spyrit import constants
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
-from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.sizer import Sizer
@@ -249,8 +248,6 @@ class WelcomePane(Pane):
             create or look up a world-specific settings subset when the user
             creates or picks a world to play.
 
-        state: The global application state object. Ditto.
-
         instance: The session model object for the tab that contains this pane.
     """
 
@@ -259,14 +256,14 @@ class WelcomePane(Pane):
     pane_is_persistent = True
 
     # This signal is sent when a user action asks for the world creation UI to
-    # be opened. The arguments are the root settings and state objects.
+    # be opened.
 
-    openWorldCreationUIRequested: Signal = Signal(SpyritSettings, SpyritState)
+    openWorldCreationUIRequested: Signal = Signal()
 
     # This signal is sent when a user action asks for a game world to be opened.
-    # The arguments are the *world's* settings and state objects.
+    # The argument is the *world's* settings objects.
 
-    openWorldRequested: Signal = Signal(SpyritSettings, SpyritState)
+    openWorldRequested: Signal = Signal(SpyritSettings)
 
     # This signal is sent when a user action asks to open the settings panel.
 
@@ -280,20 +277,15 @@ class WelcomePane(Pane):
 
     quitRequested: Signal = Signal()
 
-    _settings: SpyritSettings
-    _state: SpyritState
     _instance: SessionInstance
 
     def __init__(
         self,
         settings: SpyritSettings,
-        state: SpyritState,
         instance: SessionInstance,
     ) -> None:
         super().__init__()
 
-        self._settings = settings
-        self._state = state
         self._instance = instance
 
         unit = Sizer(self).unitSize()
@@ -318,18 +310,16 @@ class WelcomePane(Pane):
         # New world button!
 
         menu_layout.addWidget(new_world_button := Button("New world..."))
-        new_world_button.clicked.connect(self._openWorldCreationPane)
+        new_world_button.clicked.connect(self.openWorldCreationUIRequested)
 
         menu_layout.addSpacing(unit)
 
         # "Connect to..." button.
 
         menu_layout.addWidget(
-            MenuButton(
-                "Connect to...", menu := WorldsMenu(self, self._settings)
-            )
+            MenuButton("Connect to...", menu := WorldsMenu(self, settings))
         )
-        menu.worldSelected.connect(self._openWorld)
+        menu.worldSelected.connect(self.openWorldRequested)
 
         menu_layout.addSpacing(unit)
 
@@ -341,12 +331,14 @@ class WelcomePane(Pane):
         menu_layout.addLayout(button_layout := QHBoxLayout())
 
         button_layout.addWidget(settings_button := Button("Settings"))
-        settings_button.clicked.connect(self._showSettings)
+        settings_button.clicked.connect(
+            CallWithArgs(self.openSettingsUIRequested.emit, settings)
+        )
 
         button_layout.addWidget(
             about_button := Button(f"About {constants.APPLICATION_NAME}...")
         )
-        about_button.clicked.connect(self._showAbout)
+        about_button.clicked.connect(self.openAboutRequested)
 
         menu_layout.addWidget(quit_button := Button("Quit"))
         quit_button.clicked.connect(self.quitRequested)
@@ -367,39 +359,3 @@ class WelcomePane(Pane):
         """
 
         self._instance.setTitle(f"Welcome to {constants.APPLICATION_NAME}!")
-
-    @Slot()
-    def _openWorldCreationPane(self) -> None:
-        """
-        Creates a world creation pane and switches to it.
-        """
-
-        self.openWorldCreationUIRequested.emit(self._settings, self._state)
-
-    @Slot()
-    def _openWorld(self, world: SpyritSettings) -> None:
-        """
-        Creates a game pane for the given world and switches to it.
-
-        Args:
-            world: The settings that represent a game world.
-        """
-
-        state = self._state.getStateSectionForSettingsSection(world)
-        self.openWorldRequested.emit(world, state)
-
-    @Slot()
-    def _showSettings(self) -> None:
-        """
-        Shows the settings pane.
-        """
-
-        self.openSettingsUIRequested.emit(self._settings)
-
-    @Slot()
-    def _showAbout(self) -> None:
-        """
-        Shows the application about pane.
-        """
-
-        self.openAboutRequested.emit()

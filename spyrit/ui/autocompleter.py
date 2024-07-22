@@ -614,3 +614,14 @@ class Autocompleter(QCompleter):
                 pass
 
         return super().eventFilter(o, e)
+
+
+def build_static_word_list_async() -> None:
+    class Builder(threading.Thread):
+        name = "wordlist-builder"
+        daemon = False
+
+        def run(self) -> None:
+            StaticWordList()
+
+    Builder().start()

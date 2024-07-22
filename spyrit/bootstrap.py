@@ -37,6 +37,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.signal_handlers import save_settings_on_signal
 from spyrit.singletonizer import Singletonizer
+from spyrit.ui.autocompleter import build_static_word_list_async
 from spyrit.ui.styles import StyleManager
 
 
@@ -281,6 +282,10 @@ def _start_app(app: QApplication, paths: DefaultPathsBase, debug: bool) -> int:
 
             if (sighup := getattr(Signals, "SIGHUP", None)) is not None:
                 save_settings_on_signal(sighup, settings_saver, state_saver)
+
+            # Build the word completion structure asynchronously.
+
+            build_static_word_list_async()
 
             # Apply UI style as needed.
 

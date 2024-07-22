@@ -212,6 +212,10 @@ class SettingsPane(BaseDialogPane):
 
         # Per-world settings go here.
 
+        if settings.isCharacter():
+            assert (parent := settings.parent()) is not None
+            settings = parent
+
         for world in root_settings.worlds():
             i = pane_widget.addTab(
                 self._worldSettingsUi(world),

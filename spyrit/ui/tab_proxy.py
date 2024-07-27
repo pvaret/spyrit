@@ -23,6 +23,19 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTabWidget, QWidget
 
 
+class TabUpdate:
+    """
+    Contains the attributes of a desired tab appearance update.
+    """
+
+    title: str
+    color: QColor
+
+    def __init__(self, title: str = "", color: QColor = QColor()) -> None:
+        self.title = title
+        self.color = color
+
+
 class TabProxy(QObject):
     """
     This class provides an interface to directly set properties on a tab
@@ -78,6 +91,17 @@ class TabProxy(QObject):
         if widget is None:
             return -1
         return self._tab_widget.indexOf(widget)
+
+    @Slot(TabUpdate)
+    def updateTab(self, update: TabUpdate) -> None:
+        """
+        Sets the proxied tab's properties based on the contents of the update.
+        """
+
+        if update.title:
+            self.setTitle(update.title)
+
+        self.setTextColor(update.color)
 
     @Slot(str)
     def setTitle(self, title: str) -> None:

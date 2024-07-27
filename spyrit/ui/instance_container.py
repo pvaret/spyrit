@@ -19,12 +19,15 @@ app's UI.
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import QWidget
 
+from spyrit import constants
 from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.about_pane import AboutPane
+from spyrit.ui.base_pane import Pane
 from spyrit.ui.settings.settings_pane import SettingsPane
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
+from spyrit.ui.tab_proxy import TabUpdate
 from spyrit.ui.welcome_pane import WelcomePane
 from spyrit.ui.world_creation_pane import WorldCreationPane
 from spyrit.ui.world_pane import WorldPane
@@ -39,6 +42,10 @@ class InstanceContainer(SlidingPaneContainer):
     # This signal is sent when a user action is asking for the app to terminate.
 
     quitRequested: Signal = Signal()
+
+    # This signal is sent when this container wants its tab's title updated.
+
+    tabUpdateRequested: Signal = Signal(TabUpdate)
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -57,7 +64,14 @@ class InstanceContainer(SlidingPaneContainer):
         self._state = state
         self._instance = instance
 
-        self.addPaneRight(pane := WelcomePane(settings, instance))
+        self.currentPaneChanged.connect(self._updateTabForPane)
+
+    def createWelcomePane(self) -> None:
+        if len(self) > 0:
+            return
+
+        self.addPaneRight(pane := WelcomePane(self._settings))
+        self._updateTabForPane(pane)
 
         pane.openWorldCreationUIRequested.connect(self._openWorldCreationUI)
         pane.openWorldRequested.connect(self._openWorld)
@@ -67,9 +81,7 @@ class InstanceContainer(SlidingPaneContainer):
 
     @Slot()
     def _openWorldCreationUI(self) -> None:
-        self.addPaneRight(
-            pane := WorldCreationPane(self._settings, self._instance)
-        )
+        self.addPaneRight(pane := WorldCreationPane(self._settings))
 
         pane.cancelClicked.connect(self.slideLeft)
         pane.openWorldRequested.connect(self._openWorld)
@@ -95,3 +107,30 @@ class InstanceContainer(SlidingPaneContainer):
         self.addPaneRight(pane := AboutPane())
 
         pane.okClicked.connect(self.slideLeft)
+
+    @Slot(Pane)
+    def _updateTabForPane(self, pane: Pane | None) -> None:
+        match pane:
+            case WelcomePane():
+                self.tabUpdateRequested.emit(
+                    TabUpdate(title=f"Welcome to {constants.APPLICATION_NAME}!")
+                )
+
+            case AboutPane():
+                self.tabUpdateRequested.emit(
+                    TabUpdate(title=f"About {constants.APPLICATION_NAME}...")
+                )
+
+            case WorldCreationPane():
+                self.tabUpdateRequested.emit(TabUpdate(title="New world..."))
+
+            case WorldPane(settings):
+                title = settings.title()
+                if settings.isCharacter() and (
+                    name := settings.login.name.get()
+                ):
+                    title = name + "\n" + title
+                self.tabUpdateRequested.emit(TabUpdate(title=title))
+
+            case _:
+                pass

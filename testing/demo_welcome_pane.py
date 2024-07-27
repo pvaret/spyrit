@@ -13,7 +13,6 @@ if __name__ == "__main__":
     sys.path.insert(0, this_dir.parent.as_posix())
 
     from spyrit import resources
-    from spyrit.session.instance import SessionInstance
     from spyrit.settings.spyrit_settings import SpyritSettings
     from spyrit.settings.spyrit_state import SpyritState
     from spyrit.ui.welcome_pane import WelcomePane
@@ -30,7 +29,7 @@ if __name__ == "__main__":
 
     resources.load()
     app = QApplication(sys.argv)
-    pane = WelcomePane(settings, SessionInstance())
+    pane = WelcomePane(settings)
     pane.show()
 
     app.exec()

@@ -28,10 +28,3 @@ class Pane(QWidget):
     # Whether the Pane will be garbage-collected when out of view.
 
     pane_is_persistent: bool = False
-
-    def onActive(self) -> None:
-        """
-        This method is called by the pane container when this pane becomes
-        active. Override in subclasses that need to take action when that
-        happens.
-        """

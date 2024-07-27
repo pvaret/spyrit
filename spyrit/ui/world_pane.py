@@ -180,6 +180,8 @@ class WorldPane(Pane):
         instance: The instance object to bind to this game.
     """
 
+    __match_args__ = ("_settings",)
+
     # This signal is sent when a user action requests for the pane to be closed
     # in order to return to the main menu. The user should be asked for
     # confirmation first.
@@ -197,7 +199,6 @@ class WorldPane(Pane):
 
     _settings: SpyritSettings
     _state: SpyritState
-    _instance: SessionInstance
 
     # This pane is never garbage collected.
 
@@ -213,7 +214,6 @@ class WorldPane(Pane):
 
         self._settings = settings
         self._state = state
-        self._instance = instance
 
         # Create the game UI's widgets.
 
@@ -354,22 +354,6 @@ class WorldPane(Pane):
         self.layout().addWidget(
             Splitter(self._state.ui.output_splitter_sizes, outputs, inputs)
         )
-
-    def onActive(self) -> None:
-        """
-        Overrides the parent method to set the instance's title when this pane
-        becomes active.
-        """
-
-        # Update the instance title with this world's name and, if relevant, the
-        # current character's name.
-
-        title = self._settings.title()
-        if self._settings.isCharacter() and (
-            name := self._settings.login.name.get()
-        ):
-            title = name + "\n" + title
-        self._instance.setTitle(title)
 
     def _setupGameWidgets(
         self,

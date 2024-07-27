@@ -33,7 +33,6 @@ from PySide6.QtWidgets import (
 from sunset import Key
 
 from spyrit import constants
-from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
@@ -247,8 +246,6 @@ class WelcomePane(Pane):
         settings: The global application settings object. It will be used to
             create or look up a world-specific settings subset when the user
             creates or picks a world to play.
-
-        instance: The session model object for the tab that contains this pane.
     """
 
     # This pane is never garbage collected.
@@ -277,16 +274,8 @@ class WelcomePane(Pane):
 
     quitRequested: Signal = Signal()
 
-    _instance: SessionInstance
-
-    def __init__(
-        self,
-        settings: SpyritSettings,
-        instance: SessionInstance,
-    ) -> None:
+    def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()
-
-        self._instance = instance
 
         unit = Sizer(self).unitSize()
 
@@ -351,11 +340,3 @@ class WelcomePane(Pane):
 
         pane_layout.addWidget(VBar())
         pane_layout.addStretch()
-
-    def onActive(self) -> None:
-        """
-        Overrides the parent handler to set the instance title when this pane
-        becomes visible.
-        """
-
-        self._instance.setTitle(f"Welcome to {constants.APPLICATION_NAME}!")

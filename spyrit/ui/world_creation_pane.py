@@ -21,7 +21,6 @@ from typing import Any
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtWidgets import QPushButton
 
-from spyrit.session.instance import SessionInstance
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
@@ -72,8 +71,6 @@ class WorldCreationPane(BaseDialogPane):
 
     Args:
         settings: The global application settings object.
-
-        instance: The session model object for the tab that contains this pane.
     """
 
     # This signal is sent when the user asks for the world configured in this
@@ -82,15 +79,10 @@ class WorldCreationPane(BaseDialogPane):
     openWorldRequested: Signal = Signal(SpyritSettings)
 
     _world_settings: SpyritSettings
-    _instance: SessionInstance
     _connect_button: QPushButton
     _validator: SettingsValidator
 
-    def __init__(
-        self,
-        settings: SpyritSettings,
-        instance: SessionInstance,
-    ) -> None:
+    def __init__(self, settings: SpyritSettings) -> None:
         super().__init__(
             ok_button := QPushButton("Connect!"),
             cancel_button=QPushButton("Cancel"),
@@ -99,7 +91,6 @@ class WorldCreationPane(BaseDialogPane):
         self._connect_button = ok_button
         self._root_settings = settings
         self._world_settings = SpyritSettings()
-        self._instance = instance
 
         self.setWidget(ServerSettingsUI(self._world_settings))
 
@@ -120,11 +111,3 @@ class WorldCreationPane(BaseDialogPane):
         if self._validator.valid():
             self._world_settings.setParent(self._root_settings)
             self.openWorldRequested.emit(self._world_settings)
-
-    def onActive(self) -> None:
-        """
-        Overrides the parent handler to set the title of the tab that contains
-        this pane when this pane becomes visible.
-        """
-
-        self._instance.setTitle("New world...")

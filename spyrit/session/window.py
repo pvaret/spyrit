@@ -30,7 +30,7 @@ from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.dialogs import askUserIfReadyToClose
 from spyrit.ui.instance_container import InstanceContainer
 from spyrit.ui.main_window import SpyritMainWindow
-from spyrit.ui.tab_proxy import TabProxy
+from spyrit.ui.tab_proxy import TabProxy, TabUpdate
 
 
 class SessionWindow(QObject):
@@ -109,7 +109,20 @@ class SessionWindow(QObject):
         self._window.tabs().addTab(widget, instance.title())
         self._window.focusChanged.connect(instance.setFocused)
 
-        instance.setTab(TabProxy(self._window.tabs(), widget))
+        tab = TabProxy(self._window.tabs(), widget)
+        widget.tabUpdateRequested.connect(tab.updateTab)
+        instance.setTab(tab)
+
+        # TODO: Remove once SessionInstance is no longer in charge of tab titles.
+        def setInstanceTitle(update: TabUpdate) -> None:
+            instance.setTitle(update.title)
+
+        widget.tabUpdateRequested.connect(setInstanceTitle)
+        # End TODO.
+
+        # And create the initial pane.
+
+        widget.createWelcomePane()
 
     @Slot()
     def _maybeHighlightWindow(self) -> None:

@@ -19,7 +19,14 @@ sliding animation.
 
 import logging
 
-from PySide6.QtCore import QEasingCurve, Qt, QTimer, QVariantAnimation, Slot
+from PySide6.QtCore import (
+    QEasingCurve,
+    Qt,
+    QTimer,
+    QVariantAnimation,
+    Signal,
+    Slot,
+)
 from PySide6.QtGui import QResizeEvent, QWheelEvent
 from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
 
@@ -35,6 +42,12 @@ class SlidingPaneContainer(QScrollArea):
     Args:
         parent: The widget to use as this widget's parent.
     """
+
+    # This signal is sent when the currently active pane changes. The parameter
+    # of the signal is the new active pane, or None if the last pane was
+    # removed.
+
+    currentPaneChanged: Signal = Signal(Pane)
 
     # How long should the slide animation last, in milliseconds.
 
@@ -109,7 +122,7 @@ class SlidingPaneContainer(QScrollArea):
 
         index = self._active_pane_index
         self.insertPane(index, pane)
-        self.switchToPane(index)
+        self._switchToPaneIndex(index)
 
     def addPaneRight(self, pane: Pane) -> None:
         """
@@ -121,19 +134,19 @@ class SlidingPaneContainer(QScrollArea):
 
         index = self._active_pane_index + 1
         self.insertPane(index, pane)
-        self.switchToPane(index)
+        self._switchToPaneIndex(index)
 
     def slideLeft(self) -> None:
         """
         Slide the viewport one pane left.
         """
-        self.switchToPane(self._active_pane_index - 1)
+        self._switchToPaneIndex(self._active_pane_index - 1)
 
     def slideRight(self) -> None:
         """
         Slide the viewport one pane right.
         """
-        self.switchToPane(self._active_pane_index + 1)
+        self._switchToPaneIndex(self._active_pane_index + 1)
 
     def insertPane(self, index: int, pane: Pane) -> None:
         """
@@ -176,7 +189,6 @@ class SlidingPaneContainer(QScrollArea):
 
         if len(self._panes) == 1:
             self._makePaneActive(pane)
-            pane.onActive()
 
         else:
             self._makePaneInactive(pane)
@@ -185,14 +197,13 @@ class SlidingPaneContainer(QScrollArea):
 
         pane.show()
 
-    def switchToPane(self, index: int) -> None:
+    def _switchToPaneIndex(self, index: int) -> None:
         """
         Makes the pane at the given index the active one, with a sliding
         animated transition.
 
         Args:
-            index: The index in the pane list that the container should switch
-            to.
+            index: The index in the pane list that the container should switch to.
         """
 
         index = max(index, 0)
@@ -207,9 +218,6 @@ class SlidingPaneContainer(QScrollArea):
 
         if (pane_from := self._currentActivePane()) is not None:
             self._makePaneInactive(pane_from)
-
-        if (pane_to := self[index]) is not None:
-            pane_to.onActive()
 
         # If the animation is currently running already, then use its current
         # position as the starting position for a new animation.
@@ -228,6 +236,7 @@ class SlidingPaneContainer(QScrollArea):
         # Consider the target pane active right away.
 
         self._active_pane_index = index
+        self.currentPaneChanged.emit(self._currentActivePane())
 
     def _currentActivePane(self) -> Pane | None:
         """

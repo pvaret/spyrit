@@ -236,7 +236,6 @@ class SlidingPaneContainer(QScrollArea):
         # Consider the target pane active right away.
 
         self._active_pane_index = index
-        self.currentPaneChanged.emit(self._currentActivePane())
 
     def _currentActivePane(self) -> Pane | None:
         """
@@ -261,6 +260,7 @@ class SlidingPaneContainer(QScrollArea):
         pane.setEnabled(True)
         pane.setFocus()
         self.setFocusProxy(pane)
+        self.currentPaneChanged.emit(pane)
 
     def _makePaneInactive(self, pane: Pane) -> None:
         """

@@ -16,7 +16,7 @@ Implements the UI that is first displayed when opening a new window.
 """
 
 
-from typing import Any, Callable, ParamSpec, cast
+from typing import Any, cast
 
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import (
@@ -34,38 +34,13 @@ from sunset import Key
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
+from spyrit.signals import CallWithArgs
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 
 
-_P = ParamSpec("_P")
-
-
-class CallWithArgs:
-    """
-    Creates a callable that applies the given arguments to the given callable.
-
-    Args:
-        callable: The callable to invoke with the given arguments.
-
-        args, kwargs: The arguments to pass to the callable when invoked.
-    """
-
-    def __init__(
-        self, callable: Callable[_P, None], *args: _P.args, **kwargs: _P.kwargs
-    ) -> None:
-        self._callable = callable
-        self._args = args
-        self._kwargs = kwargs
-
-    def __call__(self) -> None:
-        """
-        Invokes the given callable with the given arguments.
-        """
-
-        self._callable(*self._args, **self._kwargs)
 
 
 def _set_button_size_properties(button: QAbstractButton) -> None:

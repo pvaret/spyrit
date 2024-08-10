@@ -15,22 +15,10 @@
 Various confirmation dialogs.
 """
 
-from typing import Protocol, Sequence
+from typing import Sequence
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget
-
-
-class _Titled(Protocol):
-    """
-    A protocol that describes objects that have a human-friendly title.
-    """
-
-    def title(self) -> str:
-        """
-        Returns the human-friendly title for the object.
-        """
-        ...
 
 
 def _confirmationDialog(
@@ -80,36 +68,34 @@ def _confirmationDialog(
     return dialog.clickedButton() is confirm
 
 
-def askUserIfReadyToClose(
-    widget: QWidget | None, instances: Sequence[_Titled]
+def maybeAskUserIfReadyToClose(
+    widget: QWidget | None, names: Sequence[str]
 ) -> bool:
     """
     Asks the user to confirm they are really ready to close still connected
-    games.
+    games. If the given list of connected instance names is empty, assume yes.
 
     Args:
         window: The widget to use as the message box's parent.
 
-        instances: The game instances to ask the user about.
+        names: The game instance names to ask the user about.
 
     Returns:
         Whether the user accepted to close the connected games.
     """
 
+    if not names:
+        return True
+
     title = "Really close?"
 
-    if len(instances) == 1:
-        message = (
-            f"You are still connected to <b>{instances[0].title()}</b>."
-            " Really close?"
-        )
+    if len(names) == 1:
+        message = f"You are still connected to <b>{names[0]}</b>. Really close?"
 
     else:
         message = (
             "You are still connected to the following games:<br>"
-            + "".join(
-                f"<b> • {instance.title()}</b><br>" for instance in instances
-            )
+            + "".join(f"<b> • {name}</b><br>" for name in names)
             + "<br>"
             + "Really close?"
         )
@@ -117,35 +103,34 @@ def askUserIfReadyToClose(
     return _confirmationDialog(widget, title, message, "Close")
 
 
-def askUserIfReadyToQuit(
-    widget: QWidget | None, instances: Sequence[_Titled]
+def maybeAskUserIfReadyToQuit(
+    widget: QWidget | None, names: Sequence[str]
 ) -> bool:
     """
-    Asks the user to confirm they are really ready to quit the application.
+    Asks the user to confirm they are really ready to quit the application. If
+    the given list of instance names is empty, assume yes without asking.
 
     Args:
         window: The widget to use as the message box's parent.
 
-        instances: The game instances to ask the user about.
+        names: The game instance names to ask the user about.
 
     Returns:
         Whether the user accepted to quit.
     """
 
+    if not names:
+        return True
+
     title = "Really quit?"
 
-    if len(instances) == 1:
-        message = (
-            f"You are still connected to <b>{instances[0].title()}</b>."
-            " Really quit?"
-        )
+    if len(names) == 1:
+        message = f"You are still connected to <b>{names[0]}</b>. Really quit?"
 
     else:
         message = (
             "You are still connected to the following games:<br>"
-            + "".join(
-                f"<b> • {instance.title()}</b><br>" for instance in instances
-            )
+            + "".join(f"<b> • {name}</b><br>" for name in names)
             + "<br>"
             + "Really quit?"
         )
@@ -153,9 +138,7 @@ def askUserIfReadyToQuit(
     return _confirmationDialog(widget, title, message, "Quit")
 
 
-def askUserIfReadyToDisconnect(
-    widget: QWidget | None, instance: _Titled
-) -> bool:
+def askUserIfReadyToDisconnect(widget: QWidget | None) -> bool:
     """
     Asks the user to confirm they are really ready to disconnect from the
     current game server.
@@ -163,13 +146,11 @@ def askUserIfReadyToDisconnect(
     Args:
         window: The widget to use as the message box's parent.
 
-        instance: The game instance to ask the user about.
-
     Returns:
-        Whether the user accepted to close the connected games.
+        Whether the user confirmed they want to disconnect.
     """
 
     title = "Really disconnect?"
-    message = f"You are still connected to <b>{instance.title()}</b>. Really disconnect?"
+    message = f"You are still connected to this world. Really disconnect?"
 
     return _confirmationDialog(widget, title, message, "Disconnect")

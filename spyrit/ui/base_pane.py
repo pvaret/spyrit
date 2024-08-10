@@ -17,6 +17,8 @@ contained in a SlidingPaneContainer.
 """
 
 
+import logging
+
 from PySide6.QtWidgets import QWidget
 
 
@@ -28,3 +30,8 @@ class Pane(QWidget):
     # Whether the Pane will be garbage-collected when out of view.
 
     pane_is_persistent: bool = False
+
+    def __del__(self) -> None:
+        logging.debug(
+            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
+        )

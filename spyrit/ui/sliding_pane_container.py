@@ -281,14 +281,8 @@ class SlidingPaneContainer(QScrollArea):
         """
 
         pane.hide()
-        pane.setParent(None)  # type: ignore  # Actually legal.
+        pane.setParent(None)
         pane.deleteLater()
-
-        logging.debug(
-            "Pane %s (%s) garbage collected.",
-            pane.__class__.__name__,
-            hex(id(pane)),
-        )
 
     def _isInMotion(self) -> bool:
         """
@@ -474,8 +468,13 @@ class SlidingPaneContainer(QScrollArea):
 
     def __del__(self) -> None:
         """
-        Logs a debug message on deletion.
+        Cleans up the pane objects on this container, and logs a debug message
+        on deletion.
         """
+
+        for pane in self._panes:
+            self._deletePane(pane)
+        self._panes.clear()
 
         logging.debug(
             "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))

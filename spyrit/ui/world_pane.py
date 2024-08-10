@@ -22,7 +22,7 @@ from PySide6.QtGui import QAction, QIcon, QTextCursor
 from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QToolBar, QWidget
 
 from spyrit.network.autologin import Autologin
-from spyrit.network.connection import Connection
+from spyrit.network.connection import Connection, Status
 from spyrit.network.keepalive import Keepalive
 from spyrit.network.processors import (
     ANSIProcessor,
@@ -35,11 +35,11 @@ from spyrit.network.processors import (
     bind_processor_to_connection,
 )
 from spyrit.resources.resources import Icon
-from spyrit.session.instance import SessionInstance
 from spyrit.settings.default_patterns import get_default_patterns
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.autocompleter import Autocompleter, CompletionModel, Tokenizer
+from spyrit.ui.dialogs import askUserIfReadyToDisconnect
 from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.base_pane import Pane
@@ -84,7 +84,7 @@ class ConnectionToggleAction(QAction):
 
     disconnectRequested: Signal = Signal()
 
-    _connection: Connection
+    _status: Status = Status.DISCONNECTED
     _prevent_connection_changes: threading.Lock
     _on_icon: QIcon
     _off_icon: QIcon
@@ -98,7 +98,6 @@ class ConnectionToggleAction(QAction):
     ) -> None:
         super().__init__(parent)
 
-        self._connection = connection
         self._prevent_connection_changes = threading.Lock()
         self._on_icon = on_icon
         self._off_icon = off_icon
@@ -106,7 +105,7 @@ class ConnectionToggleAction(QAction):
         self.setCheckable(True)
 
         self.toggled.connect(self._toggleConnection)
-        self._connection.statusChanged.connect(self._updateVisualCheckedness)
+        connection.statusChanged.connect(self._updateVisualCheckedness)
 
         self._updateVisualCheckedness()
 
@@ -124,7 +123,10 @@ class ConnectionToggleAction(QAction):
         if self._prevent_connection_changes.locked():
             return
 
-        (self.connectRequested if connect else self.disconnectRequested).emit()
+        if connect:
+            self.connectRequested.emit()
+        else:
+            self.disconnectRequested.emit()
 
         # Re-apply the appearance of the action based on the connection status.
         # By default, Qt updated the appearance whenever the action is toggled;
@@ -134,8 +136,8 @@ class ConnectionToggleAction(QAction):
 
         self._updateVisualCheckedness()
 
-    @Slot()
-    def _updateVisualCheckedness(self) -> None:
+    @Slot(Status)
+    def _updateVisualCheckedness(self, status: Status | None = None) -> None:
         """
         Updates the visual checked status of the action based on the state of
         the connection.
@@ -144,16 +146,20 @@ class ConnectionToggleAction(QAction):
         that means fully established or in the process of coming up.
         """
 
-        is_connecting = self._connection.isConnecting()
+        if status is not None:
+            self._status = status
+
+        is_disconnected = self._status in (Status.DISCONNECTED, Status.ERROR)
 
         self.setToolTip(
             self._DISCONNECTED_TOOLTIP
-            if not is_connecting
+            if is_disconnected
             else self._CONNECTED_TOOLTIP
         )
-        self.setIcon(self._off_icon if not is_connecting else self._on_icon)
+        self.setIcon(self._off_icon if is_disconnected else self._on_icon)
 
-        if is_connecting != self.isChecked():
+        connecting_or_connected = not is_disconnected
+        if connecting_or_connected != self.isChecked():
             with self._prevent_connection_changes:
                 # Note the use of the lock. Calling setChecked() unfortunately
                 # triggers the same signal handler as user actions. There is no
@@ -161,7 +167,7 @@ class ConnectionToggleAction(QAction):
                 # a lock to prevent the handler from taking actions when we call
                 # setChecked() here.
 
-                self.setChecked(is_connecting)
+                self.setChecked(connecting_or_connected)
 
 
 class WorldPane(Pane):
@@ -177,16 +183,11 @@ class WorldPane(Pane):
 
         state: The specific state object for this game.
 
-        instance: The instance object to bind to this game.
+        connection: The object that implements the network interface with a game
+            server. This pane acquires ownership of the connection object.
     """
 
     __match_args__ = ("_settings",)
-
-    # This signal is sent when a user action requests for the pane to be closed
-    # in order to return to the main menu. The user should be asked for
-    # confirmation first.
-
-    maybeClose: Signal = Signal()
 
     # This signal is sent when this pane is ready to close.
 
@@ -208,12 +209,16 @@ class WorldPane(Pane):
         self,
         settings: SpyritSettings,
         state: SpyritState,
-        instance: SessionInstance,
+        connection: Connection,
     ) -> None:
         super().__init__()
 
         self._settings = settings
         self._state = state
+
+        # Bind the connection's lifetime to that of this pane.
+
+        connection.setParent(self)
 
         # Create the game UI's widgets.
 
@@ -231,15 +236,6 @@ class WorldPane(Pane):
 
         self._setupGameWidgets(view, search_bar, inputbox, extra_inputbox)
 
-        # Set up the network connection.
-
-        connection = Connection(settings.net, parent=self)
-
-        # Inform the instance about this connection so it can keep track of its
-        # status.
-
-        instance.setConnection(connection)
-
         # Set up keepalives for the connection.
 
         Keepalive(connection, settings.net.keepalive)
@@ -247,7 +243,7 @@ class WorldPane(Pane):
         # Set up the tool bar icons and related shortcuts.
 
         self._setUpToolbarActions(
-            instance, toolbar, search_bar, extra_inputbox, connection
+            toolbar, search_bar, extra_inputbox, connection
         )
 
         # Set up the inputs' behavior and plug them into the connection.
@@ -289,20 +285,12 @@ class WorldPane(Pane):
         tokenizer.tokenFound.connect(completion_model.addExtraWord)
         processor.fragmentsReady.connect(tokenizer.processFragments)
 
-        # Update the instance's state from the processed fragment stream.
-
-        processor.fragmentsReady.connect(instance.updateStateFromFragments)
-
         # Set up automatic login if the world's settings are bound to a specific
         # character.
 
         if settings.isCharacter():
             autologin = Autologin(settings.login, connection.send, self)
             processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
-
-        # And start the connection.
-
-        connection.start()
 
     def _layoutWidgets(
         self,
@@ -428,7 +416,6 @@ class WorldPane(Pane):
 
     def _setUpToolbarActions(
         self,
-        instance: SessionInstance,
         toolbar: QToolBar,
         search_bar: SearchBar,
         extra_inputbox: InputBox,
@@ -438,9 +425,6 @@ class WorldPane(Pane):
         Sets up the user interactions that have icons in the toolbar.
 
         Args:
-            instance: the session instance on which to trigger user-requested
-                actions.
-
             toolbar: The toolbar in which to add the interaction icons.
 
             search_bar: The SearchBar for which to add a toggle button.
@@ -464,8 +448,13 @@ class WorldPane(Pane):
                 off_icon=QIcon(Icon.SWITCH_OFF),
             )
         )
-        connection_toggle.connectRequested.connect(instance.doConnect)
-        connection_toggle.disconnectRequested.connect(instance.maybeDisconnect)
+        connection_toggle.connectRequested.connect(connection.start)
+
+        def maybeDisconnect() -> None:
+            if not connection.isConnected() or askUserIfReadyToDisconnect(self):
+                connection.stop()
+
+        connection_toggle.disconnectRequested.connect(maybeDisconnect)
 
         # Set up the search bar toggle.
 
@@ -535,13 +524,11 @@ class WorldPane(Pane):
                 self,
                 "Close and return to menu",
                 shortcuts.return_to_menu,
-                self.maybeClose.emit,
+                self.closeRequested.emit,
                 icon=QIcon(Icon.CLOSE_SVG),
             )
         )
         toolbar.addAction(close)
-
-        self.maybeClose.connect(instance.maybeClosePane)
 
     def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
         """
@@ -613,14 +600,6 @@ class WorldPane(Pane):
         bind_processor_to_connection(processor, connection)
 
         return processor
-
-    def doClose(self) -> None:
-        """
-        Closes this pane and returns to the menu.
-        """
-
-        self.pane_is_persistent = False
-        self.closeRequested.emit()
 
     @Slot()
     def _showSettings(self) -> None:

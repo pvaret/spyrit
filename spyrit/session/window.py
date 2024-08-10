@@ -24,13 +24,15 @@ from typing import Iterator
 
 from PySide6.QtCore import QObject, Slot
 
+from spyrit import constants
 from spyrit.session.instance import SessionInstance
+from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.dialogs import askUserIfReadyToClose
-from spyrit.ui.instance_container import InstanceContainer
+from spyrit.ui.dialogs import maybeAskUserIfReadyToClose
+from spyrit.ui.instance_ui import InstanceUI
 from spyrit.ui.main_window import SpyritMainWindow
-from spyrit.ui.tab_proxy import TabProxy, TabUpdate
+from spyrit.ui.tab_proxy import TabProxy
 
 
 class SessionWindow(QObject):
@@ -60,7 +62,8 @@ class SessionWindow(QObject):
 
     _window: SpyritMainWindow
 
-    # Keep track of this window's instances, without references.
+    # Keep track of this window's instances, without references. Lifetime
+    # management happens through QObject parenting.
 
     _instances: weakref.WeakSet[SessionInstance]
 
@@ -79,7 +82,7 @@ class SessionWindow(QObject):
         self._window = window
 
         window.newTabRequested.connect(self.newInstance)
-        window.closeRequested.connect(self.maybeClose)
+        window.closeRequested.connect(self._maybeCloseWindow)
 
     @Slot()
     def newInstance(self) -> None:
@@ -88,64 +91,39 @@ class SessionWindow(QObject):
         the window and the instance to this SessionWindow.
         """
 
-        # Create and set up the instance.
-
-        self._instances.add(instance := SessionInstance())
-
-        instance.unreadLinesChanged.connect(self._maybeHighlightWindow)
-
         # Create the UI for a game.
 
-        widget = InstanceContainer(
-            self._settings, self._state, instance, self._window
-        )
+        properties = InstanceProperties()
+        ui = InstanceUI(self._window, self._settings, self._state, properties)
+
+        # Create and set up the instance.
+
+        self._instances.add(instance := SessionInstance(self, ui, properties))
 
         # Plug quit requests from the game UI to the window.
 
-        widget.quitRequested.connect(self._window.quitRequested)
+        ui.quitRequested.connect(self._window.quitRequested)
 
         # Add the UI to a tab and bind the instance to that tab.
 
-        self._window.tabs().addTab(widget, instance.title())
-        self._window.focusChanged.connect(instance.setFocused)
+        self._window.tabs().addTab(ui, constants.DEFAULT_TAB_TITLE)
 
-        tab = TabProxy(self._window.tabs(), widget)
-        widget.tabUpdateRequested.connect(tab.updateTab)
-        instance.setTab(tab)
-
-        # TODO: Remove once SessionInstance is no longer in charge of tab titles.
-        def setInstanceTitle(update: TabUpdate) -> None:
-            instance.setTitle(update.title)
-
-        widget.tabUpdateRequested.connect(setInstanceTitle)
-        # End TODO.
-
-        # And create the initial pane.
-
-        widget.createWelcomePane()
+        tab = TabProxy(self._window.tabs(), ui)
+        ui.tabUpdateRequested.connect(tab.updateTab)
+        tab.closeRequested.connect(instance.maybeClose)
 
     @Slot()
-    def _maybeHighlightWindow(self) -> None:
-        """
-        Makes the window call for attention if there are unread lines of text in
-        one of its instances.
-        """
-
-        unread = sum(instance.unreadLines() for instance in self._instances)
-
-        if unread:
-            self._window.alert()
-
-    @Slot()
-    def maybeClose(self) -> None:
+    def _maybeCloseWindow(self) -> None:
         """
         Closes this window if it contains no connected games, or asks the user
         if they're fine closing them.
         """
 
-        connected = list(self.connectedInstances())
+        connected_instances = [
+            instance.title() for instance in self if instance.connected()
+        ]
 
-        if not connected or askUserIfReadyToClose(self._window, connected):
+        if maybeAskUserIfReadyToClose(self._window, connected_instances):
             self.close()
 
     def close(self) -> None:
@@ -154,20 +132,10 @@ class SessionWindow(QObject):
         trigger its garbage collection.
         """
 
-        self.setParent(None)  # type: ignore
+        self.setParent(None)
 
-    def connectedInstances(self) -> Iterator[SessionInstance]:
-        """
-        Returns an iterator on the session instances held in this window that
-        have an active connection to a game world.
-
-        Returns:
-            The session instances in this window that are currently connected.
-        """
-
-        yield from (
-            instance for instance in self._instances if instance.connected()
-        )
+    def __iter__(self) -> Iterator[SessionInstance]:
+        yield from self._instances
 
     def __del__(self) -> None:
         logging.debug(

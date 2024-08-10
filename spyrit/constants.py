@@ -26,6 +26,7 @@ REQUIRED_QT_VERSION: tuple[int, int] = (6, 7)
 
 APPLICATION_NAME: str = "SpyritNG"
 SPYRIT_VERSION: str = "0.6-dev"
+DEFAULT_TAB_TITLE: str = f"Welcome to {APPLICATION_NAME}!"
 
 # Special named files
 

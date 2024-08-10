@@ -20,11 +20,13 @@ from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import QWidget
 
 from spyrit import constants
-from spyrit.session.instance import SessionInstance
+from spyrit.network.connection import Connection
+from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.about_pane import AboutPane
 from spyrit.ui.base_pane import Pane
+from spyrit.ui.dialogs import maybeAskUserIfReadyToClose
 from spyrit.ui.settings.settings_pane import SettingsPane
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.tab_proxy import TabUpdate
@@ -33,7 +35,7 @@ from spyrit.ui.world_creation_pane import WorldCreationPane
 from spyrit.ui.world_pane import WorldPane
 
 
-class InstanceContainer(SlidingPaneContainer):
+class InstanceUI(SlidingPaneContainer):
     """
     Implements a widget that creates, connects, and manages the lifetime of the
     panes that make up the UI of the application.
@@ -49,29 +51,30 @@ class InstanceContainer(SlidingPaneContainer):
 
     _settings: SpyritSettings
     _state: SpyritState
-    _instance: SessionInstance
+    _properties: InstanceProperties
 
     def __init__(
         self,
+        parent: QWidget,
         settings: SpyritSettings,
         state: SpyritState,
-        instance: SessionInstance,
-        parent: QWidget | None = None,
+        properties: InstanceProperties,
     ) -> None:
         super().__init__(parent)
 
         self._settings = settings
         self._state = state
-        self._instance = instance
+        self._properties = properties
 
         self.currentPaneChanged.connect(self._updateTabForPane)
 
-    def createWelcomePane(self) -> None:
+        self._createWelcomePane()
+
+    def _createWelcomePane(self) -> None:
         if len(self) > 0:
             return
 
         self.addPaneRight(pane := WelcomePane(self._settings))
-        self._updateTabForPane(pane)
 
         pane.openWorldCreationUIRequested.connect(self._openWorldCreationUI)
         pane.openWorldRequested.connect(self._openWorld)
@@ -87,14 +90,37 @@ class InstanceContainer(SlidingPaneContainer):
         pane.openWorldRequested.connect(self._openWorld)
 
     @Slot(SpyritSettings)
-    def _openWorld(self, settings: SpyritSettings) -> None:
-        state = self._state.getStateSectionForSettingsSection(settings)
-        self.addPaneRight(pane := WorldPane(settings, state, self._instance))
+    def _openWorld(self, world_settings: SpyritSettings) -> None:
+        self._properties.setPropertiesFromSettings(world_settings)
 
-        # TODO: Move the logic to seek user confirmation from SessionInstance to
-        # a new method called as a slot for this signal.
-        pane.closeRequested.connect(self.slideLeft)
+        world_state = self._state.getStateSectionForSettingsSection(
+            world_settings
+        )
+        connection = Connection(world_settings.net)
+        connection.statusChanged.connect(
+            self._properties.updateConnectionStatus
+        )
+
+        self.addPaneRight(
+            pane := WorldPane(world_settings, world_state, connection)
+        )
+
+        pane.closeRequested.connect(self._maybeCloseWorldPane)
         pane.settingsUIRequested.connect(self._openSettingsUI)
+        pane.destroyed.connect(self._properties.reset)
+
+        connection.start()
+
+    @Slot()
+    def _maybeCloseWorldPane(self) -> None:
+        pane = self.sender()
+        if not isinstance(pane, Pane):
+            return
+        if not self._properties.isConnected() or maybeAskUserIfReadyToClose(
+            self, [self._properties.title()]
+        ):
+            pane.pane_is_persistent = False
+            self.slideLeft()
 
     @Slot(SpyritSettings)
     def _openSettingsUI(self, settings: SpyritSettings) -> None:
@@ -113,7 +139,7 @@ class InstanceContainer(SlidingPaneContainer):
         match pane:
             case WelcomePane():
                 self.tabUpdateRequested.emit(
-                    TabUpdate(title=f"Welcome to {constants.APPLICATION_NAME}!")
+                    TabUpdate(title=constants.DEFAULT_TAB_TITLE)
                 )
 
             case AboutPane():
@@ -124,13 +150,10 @@ class InstanceContainer(SlidingPaneContainer):
             case WorldCreationPane():
                 self.tabUpdateRequested.emit(TabUpdate(title="New world..."))
 
-            case WorldPane(settings):
-                title = settings.title()
-                if settings.isCharacter() and (
-                    name := settings.login.name.get()
-                ):
-                    title = name + "\n" + title
-                self.tabUpdateRequested.emit(TabUpdate(title=title))
+            case WorldPane():
+                self.tabUpdateRequested.emit(
+                    TabUpdate(title=self._properties.blockTitle())
+                )
 
             case _:
                 pass

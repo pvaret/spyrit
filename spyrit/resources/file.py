@@ -16,9 +16,9 @@ Implements a Pythonic file wrapper around Qt resources.
 """
 
 
+from collections.abc import Buffer
 from io import RawIOBase
 from typing import MutableSequence
-from typing_extensions import Buffer
 
 from PySide6.QtCore import QFile
 
@@ -64,9 +64,9 @@ class ResourceFile(RawIOBase):
         if self.closed:
             raise ValueError("File object is closed and cannot be read from.")
 
-        size = len(buffer)
+        size = len(buffer)  # type: ignore
         data = self._file.read(size).data()
-        buffer[:len(data)] = data
+        buffer[: len(data)] = data
         return len(data)
 
     def readall(self) -> bytes:

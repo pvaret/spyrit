@@ -200,6 +200,7 @@ class WorldPane(Pane):
 
     _settings: SpyritSettings
     _state: SpyritState
+    _connection: Connection
 
     # This pane is never garbage collected.
 
@@ -215,6 +216,7 @@ class WorldPane(Pane):
 
         self._settings = settings
         self._state = state
+        self._connection = connection
 
         # Bind the connection's lifetime to that of this pane.
 
@@ -449,12 +451,7 @@ class WorldPane(Pane):
             )
         )
         connection_toggle.connectRequested.connect(connection.start)
-
-        def maybeDisconnect() -> None:
-            if not connection.isConnected() or askUserIfReadyToDisconnect(self):
-                connection.stop()
-
-        connection_toggle.disconnectRequested.connect(maybeDisconnect)
+        connection_toggle.disconnectRequested.connect(self._maybeDisconnect)
 
         # Set up the search bar toggle.
 
@@ -608,3 +605,15 @@ class WorldPane(Pane):
         """
 
         self.settingsUIRequested.emit(self._settings)
+
+    @Slot()
+    def _maybeDisconnect(self) -> None:
+        """
+        Closes the connection, seeking the user's confirmation if the connection
+        is currently established.
+        """
+
+        if not self._connection.isConnected() or askUserIfReadyToDisconnect(
+            self
+        ):
+            self._connection.stop()

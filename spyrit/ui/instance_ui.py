@@ -16,15 +16,18 @@ Implements a container widget that knows how to manage the various panes of the
 app's UI.
 """
 
-from PySide6.QtCore import Signal, Slot
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import Qt, Signal, Slot
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QApplication, QWidget
 
 from spyrit import constants
 from spyrit.network.connection import Connection
 from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
+from spyrit.signals import CallWithArgs
 from spyrit.ui.about_pane import AboutPane
+from spyrit.ui.widget_activity_monitor import ActivityMonitor, AttentionPinger
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.dialogs import maybeAskUserIfReadyToClose
 from spyrit.ui.settings.settings_pane import SettingsPane
@@ -82,6 +85,18 @@ class InstanceUI(SlidingPaneContainer):
         pane.openAboutRequested.connect(self._openAbout)
         pane.quitRequested.connect(self.quitRequested)
 
+    @Slot(SpyritSettings)
+    def _openSettingsUI(self, settings: SpyritSettings) -> None:
+        self.addPaneRight(pane := SettingsPane(settings))
+
+        pane.okClicked.connect(self.slideLeft)
+
+    @Slot()
+    def _openAbout(self) -> None:
+        self.addPaneRight(pane := AboutPane())
+
+        pane.okClicked.connect(self.slideLeft)
+
     @Slot()
     def _openWorldCreationUI(self) -> None:
         self.addPaneRight(pane := WorldCreationPane(self._settings))
@@ -109,6 +124,33 @@ class InstanceUI(SlidingPaneContainer):
         pane.settingsUIRequested.connect(self._openSettingsUI)
         pane.destroyed.connect(self._properties.reset)
 
+        # Highlight the tab and window if the network connection is doing
+        # something in a tab that is not active.
+
+        pinger = AttentionPinger(pane)
+        connection.dataReceived.connect(pinger.maybeCallForAttention)
+        connection.statusChanged.connect(pinger.maybeCallForAttention)
+
+        monitor = ActivityMonitor(pane)
+        monitor.activityChanged.connect(pinger.setActive)
+        pinger.setActive(monitor.active())
+
+        pinger.callForAttention.connect(
+            CallWithArgs(
+                self.tabUpdateRequested.emit,
+                TabUpdate(color=QColor(Qt.GlobalColor.red)),
+            )
+        )
+        pinger.callForAttention.connect(self._highlightWindow)
+        pinger.clearAttentionCall.connect(
+            CallWithArgs(
+                self.tabUpdateRequested.emit,
+                TabUpdate(color=QColor()),
+            )
+        )
+
+        # Initiate the game connection.
+
         connection.start()
 
     @Slot()
@@ -122,17 +164,13 @@ class InstanceUI(SlidingPaneContainer):
             pane.pane_is_persistent = False
             self.slideLeft()
 
-    @Slot(SpyritSettings)
-    def _openSettingsUI(self, settings: SpyritSettings) -> None:
-        self.addPaneRight(pane := SettingsPane(settings))
-
-        pane.okClicked.connect(self.slideLeft)
-
     @Slot()
-    def _openAbout(self) -> None:
-        self.addPaneRight(pane := AboutPane())
-
-        pane.okClicked.connect(self.slideLeft)
+    def _highlightWindow(self) -> None:
+        match app := QApplication.instance():
+            case QApplication():
+                app.alert(self)
+            case _:
+                pass
 
     @Slot(Pane)
     def _updateTabForPane(self, pane: Pane | None) -> None:

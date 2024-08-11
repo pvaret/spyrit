@@ -28,10 +28,12 @@ class TabUpdate:
     Contains the attributes of a desired tab appearance update.
     """
 
-    title: str
-    color: QColor
+    title: str | None
+    color: QColor | None
 
-    def __init__(self, title: str = "", color: QColor = QColor()) -> None:
+    def __init__(
+        self, title: str | None = None, color: QColor | None = None
+    ) -> None:
         self.title = title
         self.color = color
 
@@ -49,11 +51,6 @@ class TabProxy(QObject):
         widget: The widget associated with the tab being proxied.
     """
 
-    # This signal is emitted when the proxied tab becomes active or,
-    # respectively, inactive.
-
-    active: Signal = Signal(bool)
-
     # This signal is emitted when a user action is requesting that this tab be
     # closed.
 
@@ -61,7 +58,6 @@ class TabProxy(QObject):
 
     _tab_widget: QTabWidget
     _widget: weakref.ref[QWidget]
-    _active: bool = False
 
     def __init__(self, tab_widget: QTabWidget, widget: QWidget) -> None:
         # Using the widget itself as the parent here guarantees that this
@@ -74,8 +70,6 @@ class TabProxy(QObject):
         self._tab_widget = tab_widget
         self._widget = weakref.ref(widget)
 
-        self._setActiveIndex(tab_widget.currentIndex())
-        tab_widget.currentChanged.connect(self._setActiveIndex)
         tab_widget.tabCloseRequested.connect(self._maybeRequestClosing)
 
     def _index(self) -> int:
@@ -87,8 +81,7 @@ class TabProxy(QObject):
             being proxied no longer exists.
         """
 
-        widget = self._widget()
-        if widget is None:
+        if (widget := self._widget()) is None:
             return -1
         return self._tab_widget.indexOf(widget)
 
@@ -98,10 +91,11 @@ class TabProxy(QObject):
         Sets the proxied tab's properties based on the contents of the update.
         """
 
-        if update.title:
+        if update.title is not None:
             self.setTitle(update.title)
 
-        self.setTextColor(update.color)
+        if update.color is not None:
+            self.setTextColor(update.color)
 
     @Slot(str)
     def setTitle(self, title: str) -> None:
@@ -112,18 +106,7 @@ class TabProxy(QObject):
             title: The title to give this tab.
         """
 
-        if (index := self._index()) >= 0:
-            self._tab_widget.setTabText(index, title)
-
-    def title(self) -> str:
-        """
-        Returns the current title of this tab.
-
-        Returns:
-            The tab's title.
-        """
-
-        return self._tab_widget.tabText(self._index())
+        self._tab_widget.setTabText(self._index(), title)
 
     def setTextColor(self, color: QColor | Qt.GlobalColor) -> None:
         """
@@ -134,54 +117,6 @@ class TabProxy(QObject):
         """
 
         self._tab_widget.tabBar().setTabTextColor(self._index(), color)
-
-    def textColor(self) -> QColor:
-        """
-        Returns the color of the text in the tab's title.
-
-        Returns:
-            The text color in question.
-        """
-
-        return self._tab_widget.tabBar().tabTextColor(self._index())
-
-    def window(self) -> QWidget | None:
-        """
-        Returns the toplevel window object for this tab's widget, if any.
-
-        Returns:
-            A toplevel widget if one exists for this tab, else None.
-        """
-
-        if (widget := self._widget()) is not None:
-            return widget.window()
-
-        return None
-
-    def close(self) -> None:
-        """
-        Detaches this tab's widget from its parent. Causes the widget -- and
-        therefore this tab -- to be garbage collected, if nothing else is
-        keeping a reference to it. Which it shouldn't.
-        """
-
-        if (widget := self._widget()) is not None:
-            widget.setParent(None)  # type: ignore
-
-    @Slot(int)
-    def _setActiveIndex(self, active_index: int) -> None:
-        """
-        Updates this TabProxy's activity status based on the provided current
-        active tab index and this tab's index.
-
-        Args:
-            active_index: The index of the tab that just became active.
-        """
-
-        active = active_index == self._index()
-        if active != self._active:
-            self._active = active
-            self.active.emit(active)
 
     @Slot(int)
     def _maybeRequestClosing(self, index: int) -> None:

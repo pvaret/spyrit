@@ -23,7 +23,6 @@ from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QToolBar, QWidget
 
 from spyrit.network.autologin import Autologin
 from spyrit.network.connection import Connection, Status
-from spyrit.network.keepalive import Keepalive
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
@@ -181,13 +180,14 @@ class WorldPane(Pane):
     Args:
         settings: The specific settings object for this game.
 
-        state: The specific state object for this game.
+        state: The specific state object for this game's UI.
 
         connection: The object that implements the network interface with a game
             server. This pane acquires ownership of the connection object.
-    """
 
-    __match_args__ = ("_settings",)
+        view, inputbox, extra_inputbox, search_bar, toolbar: The widgets to be
+            used to assemble this UI.
+    """
 
     # This signal is sent when this pane is ready to close.
 
@@ -199,7 +199,6 @@ class WorldPane(Pane):
     settingsUIRequested: Signal = Signal(SpyritSettings)
 
     _settings: SpyritSettings
-    _state: SpyritState
     _connection: Connection
 
     # This pane is never garbage collected.
@@ -209,93 +208,40 @@ class WorldPane(Pane):
     def __init__(
         self,
         settings: SpyritSettings,
-        state: SpyritState,
+        state: SpyritState.UI,
         connection: Connection,
+        view: OutputView,
+        inputbox: InputBox,
+        extra_inputbox: InputBox,
+        search_bar: SearchBar,
+        toolbar: QToolBar,
     ) -> None:
         super().__init__()
 
         self._settings = settings
-        self._state = state
         self._connection = connection
-
-        # Bind the connection's lifetime to that of this pane.
-
-        connection.setParent(self)
-
-        # Create the game UI's widgets.
-
-        view = OutputView(self._settings.ui.output)
-        search_bar = SearchBar(view.document())
-        toolbar = QToolBar()
-        inputbox = InputBox()
-        extra_inputbox = InputBox()
 
         # Assemble the game UI layout.
 
-        self._layoutWidgets(view, search_bar, toolbar, inputbox, extra_inputbox)
+        self._layoutWidgets(
+            state, view, search_bar, toolbar, inputbox, extra_inputbox
+        )
 
         # Set up the interconnections between the widgets.
 
-        self._setupGameWidgets(view, search_bar, inputbox, extra_inputbox)
-
-        # Set up keepalives for the connection.
-
-        Keepalive(connection, settings.net.keepalive)
+        self._setupGameWidgets(
+            view, search_bar, inputbox, extra_inputbox, settings.shortcuts
+        )
 
         # Set up the tool bar icons and related shortcuts.
 
         self._setUpToolbarActions(
-            toolbar, search_bar, extra_inputbox, connection
+            toolbar, search_bar, extra_inputbox, connection, settings.shortcuts
         )
-
-        # Set up the inputs' behavior and plug them into the connection.
-
-        self._setUpInput(connection, inputbox)
-        self._setUpInput(connection, extra_inputbox)
-
-        # Set up autocompletion for the input widgets.
-
-        completion_model = CompletionModel()
-        Autocompleter(
-            inputbox, completion_model, self._settings.shortcuts.autocomplete
-        )
-        Autocompleter(
-            extra_inputbox,
-            completion_model,
-            self._settings.shortcuts.autocomplete,
-        )
-
-        # Plug the connection into the data parsing logic.
-
-        processor = self._createGameDataProcessor(connection)
-
-        # Create the game view update helper.
-
-        scribe = Scribe(
-            QTextCursor(view.document()),
-            settings=settings.ui.output,
-            parent=self,
-        )
-
-        # Plug the parsing logic into the game view update logic.
-
-        processor.fragmentsReady.connect(scribe.inscribe)
-
-        # Ingest world-specific vocabulary into the completion model.
-
-        tokenizer = Tokenizer(parent=completion_model)
-        tokenizer.tokenFound.connect(completion_model.addExtraWord)
-        processor.fragmentsReady.connect(tokenizer.processFragments)
-
-        # Set up automatic login if the world's settings are bound to a specific
-        # character.
-
-        if settings.isCharacter():
-            autologin = Autologin(settings.login, connection.send, self)
-            processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
 
     def _layoutWidgets(
         self,
+        state: SpyritState.UI,
         view: OutputView,
         search_bar: SearchBar,
         toolbar: QToolBar,
@@ -306,6 +252,8 @@ class WorldPane(Pane):
         Lays out the widgets of the game UI.
 
         Args:
+            state: The state holding UI properties to be bound to the widgets.
+
             view: The output view that displays contents from the game.
 
             search_bar: The text search UI.
@@ -336,13 +284,13 @@ class WorldPane(Pane):
 
         inputs.addWidget(
             input_splitter := Splitter(
-                self._state.ui.input_splitter_sizes, inputbox, extra_inputbox
+                state.input_splitter_sizes, inputbox, extra_inputbox
             )
         )
         input_splitter.setContentsMargins(0, 0, margin, margin)
 
         self.layout().addWidget(
-            Splitter(self._state.ui.output_splitter_sizes, outputs, inputs)
+            Splitter(state.output_splitter_sizes, outputs, inputs)
         )
 
     def _setupGameWidgets(
@@ -351,6 +299,7 @@ class WorldPane(Pane):
         search_bar: SearchBar,
         inputbox: InputBox,
         extra_inputbox: InputBox,
+        shortcuts: SpyritSettings.KeyShortcuts,
     ) -> None:
         """
         Sets up the behavior of the game UI widgets and the shortcuts for user
@@ -364,6 +313,8 @@ class WorldPane(Pane):
             inputbox: The main user text entry box.
 
             extra_input: A secondary text entry box.
+
+            shortcuts: The key shortcuts to use for UI actions.
         """
 
         # Install up the user-friendly scrollbar helper.
@@ -375,7 +326,6 @@ class WorldPane(Pane):
         # Set up view-related shortcuts. Those need to be on the WorldPane
         # itself because the view never has focus.
 
-        shortcuts = self._settings.shortcuts
         for text, shortcut, slot in (
             ("Page up", shortcuts.page_up, scroller.scrollOnePageUp),
             ("Page down", shortcuts.page_down, scroller.scrollOnePageDown),
@@ -422,6 +372,7 @@ class WorldPane(Pane):
         search_bar: SearchBar,
         extra_inputbox: InputBox,
         connection: Connection,
+        shortcuts: SpyritSettings.KeyShortcuts,
     ) -> None:
         """
         Sets up the user interactions that have icons in the toolbar.
@@ -436,9 +387,9 @@ class WorldPane(Pane):
 
             connection: The connection object used for this game, so it can be
                controlled from a toggle button.
-        """
 
-        shortcuts = self._settings.shortcuts
+            shortcuts: The key shortcuts to use for UI actions.
+        """
 
         # Set up the connection toggle.
 
@@ -481,7 +432,7 @@ class WorldPane(Pane):
             extra_input_toggle := ActionWithKeySetting(
                 self,
                 "Toggle second input",
-                self._settings.shortcuts.toggle_second_input,
+                shortcuts.toggle_second_input,
                 extra_inputbox.toggleVisibility,
                 checkable=True,
                 icon=QIcon(Icon.INPUT_FIELD_SVG),
@@ -527,77 +478,6 @@ class WorldPane(Pane):
         )
         toolbar.addAction(close)
 
-    def _setUpInput(self, connection: Connection, inputbox: InputBox) -> None:
-        """
-        Configures the given input box against the given connection. I.e. makes
-        it so the input box can be used to send its input in the connection.
-
-        Also installs the text history helper on the input box.
-
-        Args:
-            connection: The network connection to which to send user input.
-
-            inputbox: The text box from which to read the input to send on the
-                network.
-        """
-
-        # Plug the input into the network connection.
-
-        postman = Postman(inputbox, connection)
-
-        # Set up history recording for the input box. Note that the
-        # history state is shared between the boxes.
-
-        historian = Historian(inputbox, self._state.history, parent=inputbox)
-        postman.inputSent.connect(historian.recordNewInput)
-
-        # Set up the key shortcuts for the history search.
-
-        inputbox.addAction(
-            ActionWithKeySetting(
-                inputbox,
-                "History next",
-                self._settings.shortcuts.history_next,
-                historian.historyNext,
-            )
-        )
-        inputbox.addAction(
-            ActionWithKeySetting(
-                inputbox,
-                "History previous",
-                self._settings.shortcuts.history_previous,
-                historian.historyPrevious,
-            )
-        )
-
-    def _createGameDataProcessor(self, connection: Connection) -> BaseProcessor:
-        """
-        Constructs and returns the processor to parse the network output from
-        the game.
-
-        Args:
-            connection: The connection whose output to feed into the processor.
-
-        Returns:
-            A processor, configured to parse game output, and bound to the given
-            connection.
-        """
-
-        processor = ChainProcessor(
-            PacketSplitterProcessor(),
-            ANSIProcessor(self._settings.ui.output.ansi_bold_effect),
-            UnicodeProcessor(self._settings.net.encoding),
-            FlowControlProcessor(),
-            UserPatternProcessor(
-                self._settings.patterns, get_default_patterns()
-            ),
-            parent=self,
-        )
-
-        bind_processor_to_connection(processor, connection)
-
-        return processor
-
     @Slot()
     def _showSettings(self) -> None:
         """
@@ -617,3 +497,166 @@ class WorldPane(Pane):
             self
         ):
             self._connection.stop()
+
+
+def make_processor(
+    connection: Connection, settings: SpyritSettings
+) -> BaseProcessor:
+    """
+    Constructs and returns the processor to parse the network output from the
+    game.
+
+    Args:
+        connection: The connection whose output to feed into the processor.
+
+        settings: The settings object for game world associated with the
+            given connection.
+
+    Returns:
+        A processor, configured to parse game output, and bound to the given
+        connection.
+    """
+
+    processor = ChainProcessor(
+        PacketSplitterProcessor(),
+        ANSIProcessor(settings.ui.output.ansi_bold_effect),
+        UnicodeProcessor(settings.net.encoding),
+        FlowControlProcessor(),
+        UserPatternProcessor(settings.patterns, get_default_patterns()),
+        parent=connection,
+    )
+
+    bind_processor_to_connection(processor, connection)
+
+    return processor
+
+
+def bind_input_to_connection(
+    shortcuts: SpyritSettings.KeyShortcuts,
+    state: SpyritState.History,
+    connection: Connection,
+    inputbox: InputBox,
+) -> None:
+    """
+    Configures the given input box against the given connection. I.e. makes
+    it so the input box can be used to send its input in the connection.
+
+    Also installs the text history helper on the input box.
+
+    Args:
+        shortcuts: The key shortcuts to use for UI actions.
+
+        state: The state history object for the game world.
+
+        connection: The network connection to which to send user input.
+
+        inputbox: The text box from which to read the input to send on the
+            network.
+    """
+
+    # Plug the input into the network connection.
+
+    postman = Postman(inputbox, connection)
+
+    # Set up history recording for the input box. Note that the
+    # history state is shared between the boxes.
+
+    historian = Historian(inputbox, state, parent=inputbox)
+    postman.inputSent.connect(historian.recordNewInput)
+
+    # Set up the key shortcuts for the history search.
+
+    inputbox.addAction(
+        ActionWithKeySetting(
+            inputbox,
+            "History next",
+            shortcuts.history_next,
+            historian.historyNext,
+        )
+    )
+    inputbox.addAction(
+        ActionWithKeySetting(
+            inputbox,
+            "History previous",
+            shortcuts.history_previous,
+            historian.historyPrevious,
+        )
+    )
+
+
+def make_world_pane(
+    settings: SpyritSettings, state: SpyritState, connection: Connection
+) -> WorldPane:
+    """
+    Build the game world pane for the given world settings and state, using the
+    given connection.
+    """
+
+    processor = make_processor(connection, settings)
+
+    # Set up automatic login if the world's settings are bound to a specific
+    # character.
+
+    if settings.isCharacter():
+        autologin = Autologin(
+            settings.login, connection.send, parent=connection
+        )
+        processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
+
+    # Create widgets to be assembled in the world pane.
+
+    view = OutputView(settings.ui.output)
+    inputbox = InputBox()
+    extra_inputbox = InputBox()
+    search_bar = SearchBar(view.document())
+    toolbar = QToolBar()
+
+    # Create the game view update helper.
+
+    scribe = Scribe(
+        QTextCursor(view.document()),
+        settings=settings.ui.output,
+        parent=view,
+    )
+
+    # Plug the parsing logic into the game view update logic.
+
+    processor.fragmentsReady.connect(scribe.inscribe)
+
+    # Connect the inputs to the connection object.
+
+    bind_input_to_connection(
+        settings.shortcuts, state.history, connection, inputbox
+    )
+    bind_input_to_connection(
+        settings.shortcuts, state.history, connection, extra_inputbox
+    )
+
+    # Set up autocompletion for the input widgets.
+
+    completion_model = CompletionModel()
+    Autocompleter(inputbox, completion_model, settings.shortcuts.autocomplete)
+    Autocompleter(
+        extra_inputbox,
+        completion_model,
+        settings.shortcuts.autocomplete,
+    )
+
+    # Ingest world-specific vocabulary into the completion model.
+
+    tokenizer = Tokenizer(parent=completion_model)
+    tokenizer.tokenFound.connect(completion_model.addExtraWord)
+    processor.fragmentsReady.connect(tokenizer.processFragments)
+
+    # And create the world pane.
+
+    return WorldPane(
+        settings,
+        state.ui,
+        connection,
+        view,
+        inputbox,
+        extra_inputbox,
+        search_bar,
+        toolbar,
+    )

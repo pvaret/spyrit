@@ -22,6 +22,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 from spyrit import constants
 from spyrit.network.connection import Connection
+from spyrit.network.keepalive import Keepalive
 from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
@@ -35,7 +36,7 @@ from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.tab_proxy import TabUpdate
 from spyrit.ui.welcome_pane import WelcomePane
 from spyrit.ui.world_creation_pane import WorldCreationPane
-from spyrit.ui.world_pane import WorldPane
+from spyrit.ui.world_pane import WorldPane, make_world_pane
 
 
 class InstanceUI(SlidingPaneContainer):
@@ -111,13 +112,22 @@ class InstanceUI(SlidingPaneContainer):
         world_state = self._state.getStateSectionForSettingsSection(
             world_settings
         )
+
+        # Create the connection.
+
         connection = Connection(world_settings.net)
         connection.statusChanged.connect(
             self._properties.updateConnectionStatus
         )
 
+        # Set up keepalives for the connection.
+
+        Keepalive(connection, world_settings.net.keepalive)
+
+        # Create the UI and plug it in.
+
         self.addPaneRight(
-            pane := WorldPane(world_settings, world_state, connection)
+            pane := make_world_pane(world_settings, world_state, connection)
         )
 
         pane.closeRequested.connect(self._maybeCloseWorldPane)

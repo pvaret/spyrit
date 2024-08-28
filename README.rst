@@ -1,3 +1,11 @@
+Heads up
+--------
+
+Spyrit is undergoing a major redesign. This work is going on in the
+`spyritng-dev <https://github.com/pvaret/spyrit/tree/spyritng-dev>`_ branch.
+
+The branch you are viewing here is deprecated and the development branch will supercede it when ready to merge.
+
 
 ABOUT SPYRIT
 ------------

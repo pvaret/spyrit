@@ -26,12 +26,12 @@ from spyrit.network.connection import Connection, Status
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
+    ConnectionProcessor,
     PacketSplitterProcessor,
     ChainProcessor,
     FlowControlProcessor,
     UnicodeProcessor,
     UserPatternProcessor,
-    bind_processor_to_connection,
 )
 from spyrit.resources.resources import Icon
 from spyrit.settings.default_patterns import get_default_patterns
@@ -517,7 +517,8 @@ def make_processor(
         connection.
     """
 
-    processor = ChainProcessor(
+    return ChainProcessor(
+        ConnectionProcessor(connection),
         PacketSplitterProcessor(),
         ANSIProcessor(settings.ui.output.ansi_bold_effect),
         UnicodeProcessor(settings.net.encoding),
@@ -525,10 +526,6 @@ def make_processor(
         UserPatternProcessor(settings.patterns, get_default_patterns()),
         parent=connection,
     )
-
-    bind_processor_to_connection(processor, connection)
-
-    return processor
 
 
 def bind_input_to_connection(
@@ -598,9 +595,7 @@ def make_world_pane(
     # character.
 
     if settings.isCharacter():
-        autologin = Autologin(
-            settings.login, connection.send, parent=connection
-        )
+        autologin = Autologin(settings.login, connection)
         processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
 
     # Create widgets to be assembled in the world pane.

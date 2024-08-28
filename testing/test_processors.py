@@ -3,6 +3,7 @@ from pytest_mock import MockerFixture
 
 from sunset import Key, List, Settings
 
+from spyrit.network.connection import Connection, Status
 from spyrit.network.fragments import (
     ANSIFragment,
     ByteFragment,
@@ -11,6 +12,7 @@ from spyrit.network.fragments import (
     FlowControlFragment,
     Fragment,
     MatchBoundary,
+    NetworkFragment,
     PatternMatchFragment,
     TextFragment,
 )
@@ -18,12 +20,17 @@ from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
     ChainProcessor,
+    ConnectionProcessor,
     UnicodeProcessor,
     UserPatternProcessor,
     inject_fragments_into_buffer,
 )
 from spyrit.settings.pattern import Pattern, PatternScope, PatternType
-from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
+from spyrit.settings.spyrit_settings import (
+    ANSIBoldEffect,
+    Encoding,
+    SpyritSettings,
+)
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
 
@@ -896,6 +903,21 @@ class TestUserPatternProcessor:
             PatternMatchFragment(derived_format, MatchBoundary.END),
             FlowControlFragment(FlowControlCode.LF),
         ]
+
+
+class TestConnectionProcessor:
+    def test_connection_processor(self) -> None:
+        connection = Connection(SpyritSettings.Network())
+        processor = ConnectionProcessor(connection)
+        output = OutputCatcher(processor)
+
+        connection.statusChanged.emit(Status.CONNECTED, "")
+
+        assert output.get() == [NetworkFragment(Status.CONNECTED, "")]
+
+        connection.dataReceived.emit(b"test")
+
+        assert output.get() == [ByteFragment(b"test")]
 
 
 class TestChainProcessor:

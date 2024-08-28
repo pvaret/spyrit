@@ -43,9 +43,6 @@ class Connection(QObject):
 
     Args:
         settings: The settings to use to configure this connection.
-
-        parent: The object to use as this connection's parent. Used for lifetime
-            management.
     """
 
     _settings: SpyritSettings.Network
@@ -59,10 +56,8 @@ class Connection(QObject):
 
     statusChanged: Signal = Signal(Status, str)
 
-    def __init__(
-        self, settings: SpyritSettings.Network, parent: QObject | None = None
-    ) -> None:
-        super().__init__(parent)
+    def __init__(self, settings: SpyritSettings.Network) -> None:
+        super().__init__()
 
         self._settings = settings
         self._socket = QTcpSocket(self)
@@ -89,20 +84,17 @@ class Connection(QObject):
         if self.isConnecting():
             self._socket.abort()
 
-    def send(self, data: str | bytes) -> bool:
+    @Slot(bytes)
+    def send(self, data: bytes) -> bool:
         """
         Sends the given data to the server, if connected.
 
         Args:
-            data: The piece of data to be sent. If data is a string, it is
-                converted to bytes using the configured encoding.
+            data: The piece of data to be sent.
 
         Returns:
             Whether the data was sent entirely.
         """
-
-        if isinstance(data, str):
-            data = data.encode(self._settings.encoding.get(), "ignore")
 
         if not self._socket.isValid():
             return False
@@ -115,6 +107,21 @@ class Connection(QObject):
             data = data[i:]
 
         return True
+
+    @Slot(str)
+    def sendText(self, text: str) -> bool:
+        """
+        Sends the given text to the server, if connected. The configured
+        encoding is used to transform the text to bytes.
+
+        Args:
+            text: The piece of text to be sent.
+
+        Returns:
+            Whether the text was sent entirely.
+        """
+        data = text.encode(self._settings.encoding.get(), "ignore")
+        return self.send(data)
 
     def isConnecting(self) -> bool:
         """
@@ -213,7 +220,7 @@ class Connection(QObject):
                 # function was called while there was no actual error. Just
                 # silently drop it after logging.
 
-                logging.debug(
+                logging.warning(
                     "Unknown socket error found. This likely means that"
                     " the socket error handling code was invoked while no"
                     " error in fact occurred."
@@ -223,3 +230,8 @@ class Connection(QObject):
             case _:
                 error_text = self._socket.errorString()
                 self.statusChanged.emit(Status.ERROR, error_text)
+
+    def __del__(self) -> None:
+        logging.debug(
+            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
+        )

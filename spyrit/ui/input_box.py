@@ -129,7 +129,7 @@ class Postman(QObject):
     _connection: Connection
 
     def __init__(self, inputbox: InputBox, connection: Connection) -> None:
-        super().__init__(parent=connection)
+        super().__init__(parent=inputbox)
 
         self._inputbox = inputbox
         self._connection = connection
@@ -144,6 +144,6 @@ class Postman(QObject):
         """
 
         text = self._inputbox.toPlainText()
-        if self._connection.send(text + _CRLF):
+        if self._connection.sendText(text + _CRLF):
             self._inputbox.clear()
             self.inputSent.emit(text)

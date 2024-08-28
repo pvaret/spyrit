@@ -18,11 +18,10 @@ Implements logic to automatically log into games after connection.
 import logging
 
 from collections.abc import Sequence
-from typing import Any, Callable
 
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Signal, Slot
 
-from spyrit.network.connection import Status
+from spyrit.network.connection import Connection, Status
 from spyrit.network.fragments import (
     Fragment,
     FragmentList,
@@ -64,32 +63,33 @@ class Autologin(QObject):
     Implements automatically sending a login string when connecting to a world.
 
     Args:
-        settings: The Settings login object that contains the parameters to be
-            used for computing the login string.
+        credentials: The Settings login object that contains the parameters to
+            be used for computing the login string.
 
-        send: A callable to be used to send login strings to the game world.
-
-        parent: A QObject to use as this object's parent. Used for lifetime
-            management.
+        connection: The connection object on which to perform the login.
     """
 
-    _settings: SpyritSettings.Login
-    _send: Callable[[str], Any]
+    # This signal is emitted when the Autologin wants the given login string to
+    # be sent to the game server.
+
+    sendLoginString: Signal = Signal(str)
+
+    _credentials: SpyritSettings.Login
     _login_sent: bool
     _connected: bool
 
     def __init__(
         self,
-        settings: SpyritSettings.Login,
-        send: Callable[[str], Any],
-        parent: QObject | None = None,
+        credentials: SpyritSettings.Login,
+        connection: Connection,
     ) -> None:
-        super().__init__(parent=parent)
+        super().__init__(parent=connection)
 
-        self._settings = settings
-        self._send = send
+        self._credentials = credentials
         self._login_sent = False
         self._connected = False
+
+        self.sendLoginString.connect(connection.sendText)
 
     @Slot(FragmentList)
     def awaitLoginPrecondition(self, fragments: Sequence[Fragment]) -> None:
@@ -101,8 +101,8 @@ class Autologin(QObject):
                 fragment processor.
         """
 
-        if not (name := self._settings.name.get()) or not (
-            password := self._settings.password.get()
+        if not (name := self._credentials.name.get()) or not (
+            password := self._credentials.password.get()
         ):
             return
 
@@ -122,7 +122,7 @@ class Autologin(QObject):
                     # up its login function.
 
                     self._sendLogin(
-                        name, password, self._settings.login_style.get()
+                        name, password, self._credentials.login_style.get()
                     )
                     self._login_sent = True
 
@@ -146,4 +146,4 @@ class Autologin(QObject):
 
         if login_string := _get_login_string(name, password, login_style):
             logging.debug(f"Sending login string for '{name}'.")
-            self._send(login_string)
+            self.sendLoginString.emit(login_string)

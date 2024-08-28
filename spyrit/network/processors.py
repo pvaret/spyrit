@@ -528,6 +528,28 @@ class UserPatternProcessor(BaseProcessor):
         yield from self._patterns.iter(List.PARENT_FIRST)
 
 
+class ConnectionProcessor(BaseProcessor):
+    """
+    This processor does not process chunks as such. It just translates
+    connection status changes and data blocks from the given connection into
+    chunks.
+    """
+
+    def __init__(self, connection: Connection) -> None:
+        super().__init__()
+
+        connection.dataReceived.connect(self._feedDataBlock)
+        connection.statusChanged.connect(self._feedStatusUpdate)
+
+    @Slot(bytes)
+    def _feedDataBlock(self, data: bytes) -> None:
+        self.feed([ByteFragment(data)])
+
+    @Slot(Status, str)
+    def _feedStatusUpdate(self, status: Status, text: str) -> None:
+        self.feed([NetworkFragment(status, text)])
+
+
 class ChainProcessor(BaseProcessor):
     """
     This processor doesn't do any processing of its own, but it assembles its
@@ -561,24 +583,3 @@ class ChainProcessor(BaseProcessor):
 
     def feed(self, fragments: Iterable[Fragment]) -> None:
         self._entry_processor.feed(fragments)
-
-
-def bind_processor_to_connection(
-    processor: BaseProcessor,
-    connection: Connection,
-) -> None:
-    """
-    This helper sets up a feed of the byte data and connection status changes
-    from a connection into a processor.
-    """
-
-    @Slot(bytes)
-    def _feed_data_to_processor(data: bytes) -> None:
-        processor.feed([ByteFragment(data)])
-
-    @Slot(Status, str)
-    def _feed_status_to_processor(status: Status, text: str) -> None:
-        processor.feed([NetworkFragment(status, text)])
-
-    connection.dataReceived.connect(_feed_data_to_processor)
-    connection.statusChanged.connect(_feed_status_to_processor)

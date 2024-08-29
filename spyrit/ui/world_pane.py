@@ -21,8 +21,7 @@ from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon, QTextCursor
 from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QToolBar, QWidget
 
-from spyrit.network.autologin import Autologin
-from spyrit.network.connection import Connection, Status
+from spyrit.network.connection import Connection, ConnectionStatus
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
@@ -42,7 +41,7 @@ from spyrit.ui.dialogs import askUserIfReadyToDisconnect
 from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.base_pane import Pane
-from spyrit.ui.input_box import InputBox, Postman
+from spyrit.ui.input_box import InputBox
 from spyrit.ui.input_history import Historian
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
@@ -60,14 +59,7 @@ class ConnectionToggleAction(QAction):
     Args:
         parent: This object's parent. Used for lifetime management purposes.
 
-        connection: The Connection whose status is reflected by, and can be
-            changed through, this action.
-
-        on_icon: The icon to use in UIs that show this action when the
-            connection is on.
-
-        off_icon: The icon to use in UIs that show this action when the
-            connection is off.
+        status: The ConnectionStatus to be reflected in this action's checked status.
     """
 
     _CONNECTED_TOOLTIP = "Disconnect"
@@ -83,30 +75,25 @@ class ConnectionToggleAction(QAction):
 
     disconnectRequested: Signal = Signal()
 
-    _status: Status = Status.DISCONNECTED
+    _status: ConnectionStatus
     _prevent_connection_changes: threading.Lock
     _on_icon: QIcon
     _off_icon: QIcon
 
-    def __init__(
-        self,
-        parent: QObject,
-        connection: Connection,
-        on_icon: QIcon,
-        off_icon: QIcon,
-    ) -> None:
+    def __init__(self, parent: QObject, status: ConnectionStatus) -> None:
         super().__init__(parent)
 
         self._prevent_connection_changes = threading.Lock()
-        self._on_icon = on_icon
-        self._off_icon = off_icon
+        self._status = status
+        self._on_icon = QIcon(Icon.SWITCH_ON)
+        self._off_icon = QIcon(Icon.SWITCH_OFF)
 
         self.setCheckable(True)
 
         self.toggled.connect(self._toggleConnection)
-        connection.statusChanged.connect(self._updateVisualCheckedness)
+        status.connecting.connect(self._updateVisualCheckedness)
 
-        self._updateVisualCheckedness()
+        self._updateVisualCheckedness(status.isConnecting())
 
     @Slot(bool)
     def _toggleConnection(self, connect: bool) -> None:
@@ -133,10 +120,10 @@ class ConnectionToggleAction(QAction):
         # action, e.g. if they are in fact not ready to disconnect, and in this
         # case the appearance is not automatically changed back.
 
-        self._updateVisualCheckedness()
+        self._updateVisualCheckedness(self._status.isConnecting())
 
-    @Slot(Status)
-    def _updateVisualCheckedness(self, status: Status | None = None) -> None:
+    @Slot(bool)
+    def _updateVisualCheckedness(self, connecting: bool) -> None:
         """
         Updates the visual checked status of the action based on the state of
         the connection.
@@ -145,20 +132,14 @@ class ConnectionToggleAction(QAction):
         that means fully established or in the process of coming up.
         """
 
-        if status is not None:
-            self._status = status
-
-        is_disconnected = self._status in (Status.DISCONNECTED, Status.ERROR)
-
         self.setToolTip(
-            self._DISCONNECTED_TOOLTIP
-            if is_disconnected
-            else self._CONNECTED_TOOLTIP
+            self._CONNECTED_TOOLTIP
+            if connecting
+            else self._DISCONNECTED_TOOLTIP
         )
-        self.setIcon(self._off_icon if is_disconnected else self._on_icon)
+        self.setIcon(self._on_icon if connecting else self._off_icon)
 
-        connecting_or_connected = not is_disconnected
-        if connecting_or_connected != self.isChecked():
+        if self.isChecked() != connecting:
             with self._prevent_connection_changes:
                 # Note the use of the lock. Calling setChecked() unfortunately
                 # triggers the same signal handler as user actions. There is no
@@ -166,7 +147,7 @@ class ConnectionToggleAction(QAction):
                 # a lock to prevent the handler from taking actions when we call
                 # setChecked() here.
 
-                self.setChecked(connecting_or_connected)
+                self.setChecked(connecting)
 
 
 class WorldPane(Pane):
@@ -182,24 +163,37 @@ class WorldPane(Pane):
 
         state: The specific state object for this game's UI.
 
-        connection: The object that implements the network interface with a game
-            server. This pane acquires ownership of the connection object.
+        status: The status of the connection to the game world.
 
         view, inputbox, extra_inputbox, search_bar, toolbar: The widgets to be
             used to assemble this UI.
     """
 
-    # This signal is sent when this pane is ready to close.
+    # This signal is sent when the user wants the given input sent to the game
+    # world.
 
-    closeRequested: Signal = Signal()
+    sendUserInput: Signal = Signal(str)
+
+    # This signal is sent when the user asked for the pane to be closed, pending
+    # confirmation.
+
+    closePaneRequested: Signal = Signal()
+
+    # This signal is sent when this pane wants the connection started.
+
+    startConnection: Signal = Signal()
+
+    # This signal is sent when this pane wants the connection stopped.
+
+    stopConnection: Signal = Signal()
 
     # This signal is sent when a user action requests for the settings pane to
     # the shown. The argument is this world's settings object.
 
-    settingsUIRequested: Signal = Signal(SpyritSettings)
+    showSettingsUI: Signal = Signal(SpyritSettings)
 
     _settings: SpyritSettings
-    _connection: Connection
+    _connection_status: ConnectionStatus
 
     # This pane is never garbage collected.
 
@@ -209,7 +203,7 @@ class WorldPane(Pane):
         self,
         settings: SpyritSettings,
         state: SpyritState.UI,
-        connection: Connection,
+        status: ConnectionStatus,
         view: OutputView,
         inputbox: InputBox,
         extra_inputbox: InputBox,
@@ -219,7 +213,7 @@ class WorldPane(Pane):
         super().__init__()
 
         self._settings = settings
-        self._connection = connection
+        self._connection_status = status
 
         # Assemble the game UI layout.
 
@@ -236,7 +230,7 @@ class WorldPane(Pane):
         # Set up the tool bar icons and related shortcuts.
 
         self._setUpToolbarActions(
-            toolbar, search_bar, extra_inputbox, connection, settings.shortcuts
+            toolbar, search_bar, extra_inputbox, settings.shortcuts
         )
 
     def _layoutWidgets(
@@ -366,12 +360,23 @@ class WorldPane(Pane):
 
         search_bar.hide()
 
+        for box in (inputbox, extra_inputbox):
+
+            # The input boxes are active if and only if a connection to the game
+            # world is active.
+
+            self._connection_status.connected.connect(box.setActive)
+
+            # The input boxes's requests to send their contents to the game
+            # world game are relayed to the pane.
+
+            box.sendText.connect(self.sendUserInput)
+
     def _setUpToolbarActions(
         self,
         toolbar: QToolBar,
         search_bar: SearchBar,
         extra_inputbox: InputBox,
-        connection: Connection,
         shortcuts: SpyritSettings.KeyShortcuts,
     ) -> None:
         """
@@ -385,9 +390,6 @@ class WorldPane(Pane):
             extra_inputbox: The InputBox to make visible/hidden with a toggle
                 button.
 
-            connection: The connection object used for this game, so it can be
-               controlled from a toggle button.
-
             shortcuts: The key shortcuts to use for UI actions.
         """
 
@@ -395,13 +397,10 @@ class WorldPane(Pane):
 
         toolbar.addAction(
             connection_toggle := ConnectionToggleAction(
-                self,
-                connection,
-                on_icon=QIcon(Icon.SWITCH_ON),
-                off_icon=QIcon(Icon.SWITCH_OFF),
+                self, self._connection_status
             )
         )
-        connection_toggle.connectRequested.connect(connection.start)
+        connection_toggle.connectRequested.connect(self.startConnection)
         connection_toggle.disconnectRequested.connect(self._maybeDisconnect)
 
         # Set up the search bar toggle.
@@ -472,7 +471,7 @@ class WorldPane(Pane):
                 self,
                 "Close and return to menu",
                 shortcuts.return_to_menu,
-                self.closeRequested.emit,
+                self.closePaneRequested.emit,
                 icon=QIcon(Icon.CLOSE_SVG),
             )
         )
@@ -484,7 +483,7 @@ class WorldPane(Pane):
         Opens the settings pane for this world.
         """
 
-        self.settingsUIRequested.emit(self._settings)
+        self.showSettingsUI.emit(self._settings)
 
     @Slot()
     def _maybeDisconnect(self) -> None:
@@ -493,10 +492,11 @@ class WorldPane(Pane):
         is currently established.
         """
 
-        if not self._connection.isConnected() or askUserIfReadyToDisconnect(
-            self
+        if (
+            not self._connection_status.isConnected()
+            or askUserIfReadyToDisconnect(self)
         ):
-            self._connection.stop()
+            self.stopConnection.emit()
 
 
 def make_processor(
@@ -528,75 +528,16 @@ def make_processor(
     )
 
 
-def bind_input_to_connection(
-    shortcuts: SpyritSettings.KeyShortcuts,
-    state: SpyritState.History,
-    connection: Connection,
-    inputbox: InputBox,
-) -> None:
-    """
-    Configures the given input box against the given connection. I.e. makes
-    it so the input box can be used to send its input in the connection.
-
-    Also installs the text history helper on the input box.
-
-    Args:
-        shortcuts: The key shortcuts to use for UI actions.
-
-        state: The state history object for the game world.
-
-        connection: The network connection to which to send user input.
-
-        inputbox: The text box from which to read the input to send on the
-            network.
-    """
-
-    # Plug the input into the network connection.
-
-    postman = Postman(inputbox, connection)
-
-    # Set up history recording for the input box. Note that the
-    # history state is shared between the boxes.
-
-    historian = Historian(inputbox, state, parent=inputbox)
-    postman.inputSent.connect(historian.recordNewInput)
-
-    # Set up the key shortcuts for the history search.
-
-    inputbox.addAction(
-        ActionWithKeySetting(
-            inputbox,
-            "History next",
-            shortcuts.history_next,
-            historian.historyNext,
-        )
-    )
-    inputbox.addAction(
-        ActionWithKeySetting(
-            inputbox,
-            "History previous",
-            shortcuts.history_previous,
-            historian.historyPrevious,
-        )
-    )
-
-
 def make_world_pane(
-    settings: SpyritSettings, state: SpyritState, connection: Connection
+    settings: SpyritSettings,
+    state: SpyritState,
+    status: ConnectionStatus,
+    processor: BaseProcessor,
 ) -> WorldPane:
     """
     Build the game world pane for the given world settings and state, using the
-    given connection.
+    given connection status and game data processor.
     """
-
-    processor = make_processor(connection, settings)
-
-    # Set up automatic login if the world's settings are bound to a specific
-    # character.
-
-    if settings.isCharacter():
-        autologin = Autologin(settings.login, connection)
-        processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
 
     # Create widgets to be assembled in the world pane.
 
@@ -618,24 +559,14 @@ def make_world_pane(
 
     processor.fragmentsReady.connect(scribe.inscribe)
 
-    # Connect the inputs to the connection object.
-
-    bind_input_to_connection(
-        settings.shortcuts, state.history, connection, inputbox
-    )
-    bind_input_to_connection(
-        settings.shortcuts, state.history, connection, extra_inputbox
-    )
-
-    # Set up autocompletion for the input widgets.
+    # Setup the inputs.
 
     completion_model = CompletionModel()
-    Autocompleter(inputbox, completion_model, settings.shortcuts.autocomplete)
-    Autocompleter(
-        extra_inputbox,
-        completion_model,
-        settings.shortcuts.autocomplete,
-    )
+
+    for box in (inputbox, extra_inputbox):
+        Autocompleter(box, completion_model, settings.shortcuts.autocomplete)
+        historian = Historian(box, state.history, settings.shortcuts)
+        box.sendText.connect(historian.recordNewInput)
 
     # Ingest world-specific vocabulary into the completion model.
 
@@ -648,7 +579,7 @@ def make_world_pane(
     return WorldPane(
         settings,
         state.ui,
-        connection,
+        status,
         view,
         inputbox,
         extra_inputbox,

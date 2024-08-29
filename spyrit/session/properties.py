@@ -18,14 +18,13 @@ across all the actors involved in the session.
 
 from PySide6.QtCore import QObject, Slot
 
-from spyrit.network.connection import Status
 from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 class InstanceProperties(QObject):
     _world_name: str
     _character_name: str
-    _connection_status: Status
+    _connected: bool
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -62,12 +61,12 @@ class InstanceProperties(QObject):
 
         return world
 
-    @Slot(Status)
-    def updateConnectionStatus(self, status: Status) -> None:
-        self._connection_status = status
+    @Slot(bool)
+    def setConnected(self, connected: bool) -> None:
+        self._connected = connected
 
     def isConnected(self) -> bool:
-        return self._connection_status == Status.CONNECTED
+        return self._connected
 
     def setPropertiesFromSettings(self, settings: SpyritSettings) -> None:
 
@@ -87,4 +86,4 @@ class InstanceProperties(QObject):
     def reset(self) -> None:
         self.setWorldName("")
         self.setCharacterName("")
-        self.updateConnectionStatus(Status.DISCONNECTED)
+        self.setConnected(False)

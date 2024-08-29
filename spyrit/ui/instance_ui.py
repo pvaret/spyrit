@@ -21,7 +21,8 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication, QWidget
 
 from spyrit import constants
-from spyrit.network.connection import Connection
+from spyrit.network.autologin import Autologin
+from spyrit.network.connection import Connection, ConnectionStatus
 from spyrit.network.keepalive import Keepalive
 from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -36,7 +37,7 @@ from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.tab_proxy import TabUpdate
 from spyrit.ui.welcome_pane import WelcomePane
 from spyrit.ui.world_creation_pane import WorldCreationPane
-from spyrit.ui.world_pane import WorldPane, make_world_pane
+from spyrit.ui.world_pane import WorldPane, make_processor, make_world_pane
 
 
 class InstanceUI(SlidingPaneContainer):
@@ -116,9 +117,19 @@ class InstanceUI(SlidingPaneContainer):
         # Create the connection.
 
         connection = Connection(world_settings.net)
-        connection.statusChanged.connect(
-            self._properties.updateConnectionStatus
-        )
+        status = ConnectionStatus(connection)
+        status.connected.connect(self._properties.setConnected)
+
+        # Create the network input processor.
+
+        processor = make_processor(connection, world_settings)
+
+        # Set up automatic login if the world's settings are bound to a specific
+        # character.
+
+        if world_settings.isCharacter():
+            autologin = Autologin(world_settings.login, connection)
+            processor.fragmentsReady.connect(autologin.awaitLoginPrecondition)
 
         # Set up keepalives for the connection.
 
@@ -127,12 +138,25 @@ class InstanceUI(SlidingPaneContainer):
         # Create the UI and plug it in.
 
         self.addPaneRight(
-            pane := make_world_pane(world_settings, world_state, connection)
+            pane := make_world_pane(
+                world_settings, world_state, status, processor
+            )
         )
 
-        pane.closeRequested.connect(self._maybeCloseWorldPane)
-        pane.settingsUIRequested.connect(self._openSettingsUI)
+        pane.closePaneRequested.connect(self._maybeCloseWorldPane)
+        pane.showSettingsUI.connect(self._openSettingsUI)
         pane.destroyed.connect(self._properties.reset)
+
+        # Bind the lifetime of the connection to that of the pane.
+
+        connection.setParent(pane)
+
+        # Plug the connection control signals into the relevant connection
+        # methods.
+
+        pane.sendUserInput.connect(connection.sendText)
+        pane.startConnection.connect(connection.start)
+        pane.stopConnection.connect(connection.stop)
 
         # Highlight the tab and window if the network connection is doing
         # something in a tab that is not active.

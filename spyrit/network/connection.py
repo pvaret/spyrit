@@ -70,18 +70,16 @@ class Connection(QObject):
         Initiates the process of connecting to the configured server.
         """
 
-        if self.isConnecting():
-            return
-
-        self._socket.connectToHost(
-            self._settings.server.get(), self._settings.port.get()
-        )
+        if self._socket.state() == QTcpSocket.SocketState.UnconnectedState:
+            self._socket.connectToHost(
+                self._settings.server.get(), self._settings.port.get()
+            )
 
     def stop(self) -> None:
         """
         Disconnects from the configured server.
         """
-        if self.isConnecting():
+        if self._socket.state() != QTcpSocket.SocketState.UnconnectedState:
             self._socket.abort()
 
     @Slot(bytes)
@@ -122,30 +120,6 @@ class Connection(QObject):
         """
         data = text.encode(self._settings.encoding.get(), "ignore")
         return self.send(data)
-
-    def isConnecting(self) -> bool:
-        """
-        Returns whether the connection is in the process of attempting to
-        connect, i.e. the connection was started and either succeeded, or has
-        not (yet) failed.
-
-        Returns:
-            Whether the connection is in the process of, or has already
-            succeeded in, getting established.
-        """
-
-        return self._socket.state() != QTcpSocket.SocketState.UnconnectedState
-
-    def isConnected(self) -> bool:
-        """
-        Returns whether the connection is connected, i.e. the connection was
-        successfully established and is currently live.
-
-        Returns:
-            Whether the connection is live.
-        """
-
-        return self._socket.state() == QTcpSocket.SocketState.ConnectedState
 
     @Slot()
     def _readFromSocket(self) -> None:
@@ -203,13 +177,13 @@ class Connection(QObject):
                 # an unhandled case for this enum type.
                 pass
 
-    @Slot()
-    def _reportErrorOccurred(self) -> None:
+    @Slot(QTcpSocket.SocketError)
+    def _reportErrorOccurred(self, error: QTcpSocket.SocketError) -> None:
         """
         Emits a signal to report the error that took place, if any.
         """
 
-        match self._socket.error():
+        match error:
             case QTcpSocket.SocketError.RemoteHostClosedError:
                 # Server closed the connection. That's okay.
 
@@ -221,7 +195,7 @@ class Connection(QObject):
                 # silently drop it after logging.
 
                 logging.warning(
-                    "Unknown socket error found. This likely means that"
+                    "Unknown socket error occurred. This likely means that"
                     " the socket error handling code was invoked while no"
                     " error in fact occurred."
                 )
@@ -235,3 +209,43 @@ class Connection(QObject):
         logging.debug(
             "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
         )
+
+
+class ConnectionStatus(QObject):
+    """
+    Keeps track of the status of the given connection object without increasing
+    that object's reference count.
+    """
+
+    # These signals fire when respectively the connection is attempting to
+    # connect, and when it succeeded.
+
+    connecting: Signal = Signal(bool)
+    connected: Signal = Signal(bool)
+
+    _connecting: bool = False
+    _connected: bool = False
+
+    def __init__(self, connection: Connection) -> None:
+        super().__init__(connection)
+
+        connection.statusChanged.connect(self._updateStatus)
+
+    @Slot(Status)
+    def _updateStatus(self, status: Status) -> None:
+        connected = status == Status.CONNECTED
+        connecting = status not in (Status.DISCONNECTED, Status.ERROR)
+
+        if self._connected != connected:
+            self._connected = connected
+            self.connected.emit(connected)
+
+        if self._connecting != connecting:
+            self._connecting = connecting
+            self.connecting.emit(connecting)
+
+    def isConnected(self) -> bool:
+        return self._connected
+
+    def isConnecting(self) -> bool:
+        return self._connecting

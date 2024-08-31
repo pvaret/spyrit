@@ -42,4 +42,13 @@ class CallWithArgs:
         Invokes the given callable with the given arguments.
         """
 
-        self._callable(*self._args, **self._kwargs)
+        try:
+            self._callable(*self._args, **self._kwargs)
+        except RuntimeError:
+            # Sadly, it can happen that the callable is a signal whose
+            # underlying C++ object was deleted, and there is no way to detect
+            # when such is the case. The deletion cannot be handled gracefully
+            # through weakref cleverness either, because signals cannot be
+            # weakref'ed. So we're left with just catching the exception and
+            # discarding it. Sadness.
+            pass

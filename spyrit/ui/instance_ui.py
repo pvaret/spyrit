@@ -17,13 +17,14 @@ app's UI.
 """
 
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import QApplication, QWidget
 
 from spyrit import constants
 from spyrit.network.autologin import Autologin
 from spyrit.network.connection import Connection, ConnectionStatus
 from spyrit.network.keepalive import Keepalive
+from spyrit.resources.resources import Icon
 from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
@@ -178,10 +179,17 @@ class InstanceUI(SlidingPaneContainer):
         pinger.callForAttention.connect(self._highlightWindow)
         pinger.clearAttentionCall.connect(
             CallWithArgs(
-                self.tabUpdateRequested.emit,
-                TabUpdate(color=QColor()),
+                self.tabUpdateRequested.emit, TabUpdate(color=QColor())
             )
         )
+
+        # Update the icon depending on the connection status.
+
+        status.connected.connect(self._updateTabIconForConnection)
+        status.destroyed.connect(
+            CallWithArgs(self.tabUpdateRequested.emit, TabUpdate(icon=QIcon()))
+        )
+        self._updateTabIconForConnection(status.isConnected())
 
         # Initiate the game connection.
 
@@ -205,6 +213,11 @@ class InstanceUI(SlidingPaneContainer):
                 app.alert(self)
             case _:
                 pass
+
+    @Slot(bool)
+    def _updateTabIconForConnection(self, connected: bool) -> None:
+        icon = QIcon(Icon.CONNECTION_ON if connected else Icon.CONNECTION_OFF)
+        self.tabUpdateRequested.emit(TabUpdate(icon=icon))
 
     @Slot(Pane)
     def _updateTabForPane(self, pane: Pane | None) -> None:

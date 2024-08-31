@@ -13,6 +13,8 @@
         <file>settings.svg</file>
         <file>switch-off.svg</file>
         <file>switch-on.svg</file>
+        <file>connection-off.svg</file>
+        <file>connection-on.svg</file>
     </qresource>
     <qresource prefix="/misc/">
         <file>wordlist.txt.gz</file>

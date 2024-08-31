@@ -51,6 +51,8 @@ class Icon(_Resource):
     SETTINGS_SVG = ":/icons/settings.svg"
     SWITCH_OFF = ":/icons/switch-off.svg"
     SWITCH_ON = ":/icons/switch-on.svg"
+    CONNECTION_ON = ":/icons/connection-on.svg"
+    CONNECTION_OFF = ":/icons/connection-off.svg"
 
 
 class Misc(_Resource):

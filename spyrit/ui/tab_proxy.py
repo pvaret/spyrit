@@ -19,7 +19,7 @@ in a QTabWidget.
 import weakref
 
 from PySide6.QtCore import QObject, QTimer, Qt, Signal, Slot
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import QTabWidget, QWidget
 
 
@@ -30,12 +30,17 @@ class TabUpdate:
 
     title: str | None
     color: QColor | None
+    icon: QIcon | None
 
     def __init__(
-        self, title: str | None = None, color: QColor | None = None
+        self,
+        title: str | None = None,
+        color: QColor | None = None,
+        icon: QIcon | None = None,
     ) -> None:
         self.title = title
         self.color = color
+        self.icon = icon
 
 
 class TabProxy(QObject):
@@ -97,6 +102,9 @@ class TabProxy(QObject):
         if update.color is not None:
             self.setTextColor(update.color)
 
+        if update.icon is not None:
+            self.setIcon(update.icon)
+
     @Slot(str)
     def setTitle(self, title: str) -> None:
         """
@@ -117,6 +125,16 @@ class TabProxy(QObject):
         """
 
         self._tab_widget.tabBar().setTabTextColor(self._index(), color)
+
+    def setIcon(self, icon: QIcon) -> None:
+        """
+        Sets the icon for the proxied tab.
+
+        Args:
+            icon: The icon to set. If the icon is empty (isNull() is True), the
+                icon will be removed instead.
+        """
+        self._tab_widget.tabBar().setTabIcon(self._index(), icon)
 
     @Slot(int)
     def _maybeRequestClosing(self, index: int) -> None:

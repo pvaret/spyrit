@@ -41,8 +41,6 @@ from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 
 
-
-
 def _set_button_size_properties(button: QAbstractButton) -> None:
     """
     Configures a Qt button with the desired size properties for the welcome

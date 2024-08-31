@@ -34,9 +34,9 @@ from sunset import Key
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
-from spyrit.signals import CallWithArgs
 from spyrit.ui.bars import HBar, VBar
 from spyrit.ui.base_pane import Pane
+from spyrit.ui.signals import CallWithArgs
 from spyrit.ui.sizer import Sizer
 from spyrit.ui.spyrit_logo import SpyritLogo
 

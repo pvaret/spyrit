@@ -28,8 +28,8 @@ from spyrit.resources.resources import Icon
 from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.signals import CallWithArgs
 from spyrit.ui.about_pane import AboutPane
+from spyrit.ui.signals import CallWithArgs
 from spyrit.ui.widget_activity_monitor import ActivityMonitor, AttentionPinger
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.dialogs import maybeAskUserIfReadyToClose

@@ -17,6 +17,7 @@ Implements a dialog widget that can be used as a container pane.
 
 
 from PySide6.QtCore import Signal
+from PySide6.QtGui import Qt
 from PySide6.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 
 from spyrit.ui.bars import HBar
@@ -86,15 +87,10 @@ class BaseDialogPane(Pane):
 
         ok_button.setDefault(True)
 
-    def widget(self) -> QWidget:
-        """
-        Returns the widget currently set as this dialog's central widget.
-
-        Returns:
-            A widget. This widget will still be parented to this dialog.
-        """
-
-        return self._widget
+        if cancel_button is not None:
+            cancel_button.setShortcut(Qt.Key.Key_Escape)
+        else:
+            ok_button.setShortcut(Qt.Key.Key_Escape)
 
     def setWidget(self, widget: QWidget) -> None:
         """

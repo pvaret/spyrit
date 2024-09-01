@@ -35,6 +35,7 @@ class ActivityMonitor(QObject):
 
     _visible: bool
     _focused: bool
+    _enabled: bool
     _active: bool
 
     def __init__(self, widget: QWidget) -> None:
@@ -42,12 +43,13 @@ class ActivityMonitor(QObject):
 
         self._visible = widget.isVisible()
         self._focused = widget.isActiveWindow()
-        self._active = self._focused and self._visible
+        self._enabled = widget.isEnabled()
+        self._active = self._focused and self._visible and self._enabled
 
         widget.installEventFilter(self)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
-        if watched is self.parent():
+        if watched is self.parent() and isinstance(watched, QWidget):
             match event:
                 case QShowEvent():
                     self._setVisible(True)
@@ -57,6 +59,8 @@ class ActivityMonitor(QObject):
                     self._setFocused(True)
                 case _ if event.type() == QEvent.Type.WindowDeactivate:
                     self._setFocused(False)
+                case _ if event.type() == QEvent.Type.EnabledChange:
+                    self._setEnabled(watched.isEnabled())
                 case _:
                     pass
         return super().eventFilter(watched, event)
@@ -69,8 +73,12 @@ class ActivityMonitor(QObject):
         self._focused = focused
         self._updateActivity()
 
+    def _setEnabled(self, enabled: bool) -> None:
+        self._enabled = enabled
+        self._updateActivity()
+
     def _updateActivity(self) -> None:
-        active = self._focused and self._visible
+        active = self._focused and self._visible and self._enabled
         if active != self._active:
             self._active = active
             self.activityChanged.emit(active)

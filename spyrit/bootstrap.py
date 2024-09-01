@@ -30,6 +30,7 @@ from PySide6.QtWidgets import QApplication
 from spyrit import constants, platform, resources
 from spyrit.default_paths_base import DefaultPathsBase
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
+from spyrit.exception_handler import install_exception_handler
 from spyrit.gc_stats import GCStats
 from spyrit.resources.resources import Font
 from spyrit.session.session import Session
@@ -88,6 +89,12 @@ def _make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
         action="store",
         help="Where to log debug output: to the terminal's stderr, to the"
         " debug.log file in the configuration folder, or both",
+    )
+    parser.add_argument(
+        "--on-error-abort",
+        default=False,
+        action="store_true",
+        help="Quit the application when an uncaught error occurs",
     )
 
     # Add this pre-boostrap argument too so that it appears in the help text.
@@ -221,6 +228,10 @@ def bootstrap(args: list[str]) -> int:
     _setup_excepthook(logger)
 
     logging.debug("Debug logging on.")
+
+    # Install a custom exception handler.
+
+    install_exception_handler(flags.on_error_abort)
 
     # Load resources.
 

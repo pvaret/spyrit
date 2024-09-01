@@ -112,18 +112,6 @@ class SlidingPaneContainer(QScrollArea):
             self._onAnimationMaybeComplete
         )
 
-    def addPaneLeft(self, pane: Pane) -> None:
-        """
-        Adds the given pane to the left of the current pane, if any.
-
-        Args:
-            pane: The new pane to be added to this container.
-        """
-
-        index = self._active_pane_index
-        self.insertPane(index, pane)
-        self._switchToPaneIndex(index)
-
     def addPaneRight(self, pane: Pane) -> None:
         """
         Adds the given pane to the right of the current pane, if any.
@@ -228,14 +216,20 @@ class SlidingPaneContainer(QScrollArea):
             else self._slide_animation.currentValue()
         )
 
-        self._slide_animation.stop()
+        # Note that if the animation is already in progress, this resets it
+        # without ever stopping it. Stopping it would cause garbage collection
+        # to engage. We don't want that while the animation is incomplete.
+
         self._slide_animation.setStartValue(initial_value)
         self._slide_animation.setEndValue(float(index))
+        self._slide_animation.setCurrentTime(0)
         self._slide_animation.start()
 
         # Consider the target pane active right away.
 
         self._active_pane_index = index
+        if (current_pane := self._currentActivePane()) is not None:
+            self._makePaneActive(current_pane)
 
     def _currentActivePane(self) -> Pane | None:
         """
@@ -301,10 +295,6 @@ class SlidingPaneContainer(QScrollArea):
         """
 
         if not self._isInMotion():
-            # Make the target pane of the switching anination active.
-
-            if (current_pane := self._currentActivePane()) is not None:
-                self._makePaneActive(current_pane)
 
             # Tidy up transient panes that are no longer active.
 

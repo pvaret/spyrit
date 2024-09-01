@@ -186,9 +186,6 @@ class InstanceUI(SlidingPaneContainer):
         # Update the icon depending on the connection status.
 
         status.connected.connect(self._updateTabIconForConnection)
-        status.destroyed.connect(
-            CallWithArgs(self.tabUpdateRequested.emit, TabUpdate(icon=QIcon()))
-        )
         self._updateTabIconForConnection(status.isConnected())
 
         # Initiate the game connection.
@@ -224,7 +221,11 @@ class InstanceUI(SlidingPaneContainer):
         match pane:
             case WelcomePane():
                 self.tabUpdateRequested.emit(
-                    TabUpdate(title=constants.DEFAULT_TAB_TITLE)
+                    TabUpdate(
+                        title=constants.DEFAULT_TAB_TITLE,
+                        color=QColor(),
+                        icon=QIcon(),
+                    )
                 )
 
             case AboutPane():

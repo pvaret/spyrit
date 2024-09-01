@@ -51,8 +51,9 @@ class TestPane(Pane):
         row = 0
         layout.addWidget(QLabel(f"<b>Pane {i}</b>"), row, 0, 1, 2)
         row += 1
-        layout.addWidget(_make_button("Add left!", self.appendLeft), row, 0)
-        layout.addWidget(_make_button("Add right!", self.appendRight), row, 1)
+        layout.addWidget(
+            _make_button("Append!", self.appendRight), row, 0, 1, 2
+        )
         row += 1
         layout.addWidget(_make_button("Slide left!", parent.slideLeft), row, 0)
         layout.addWidget(
@@ -62,11 +63,6 @@ class TestPane(Pane):
         button = _make_button("Toggle persistent!", self.togglePersistent)
         layout.addWidget(button, row, 0, 1, 2)
         button.setCheckable(True)
-
-    def appendLeft(self) -> None:
-        global _counter
-        _counter += 1
-        self._container.addPaneLeft(TestPane(_counter, self._container))
 
     def appendRight(self) -> None:
         global _counter

@@ -19,11 +19,24 @@ from math import ceil
 
 from PySide6.QtCore import Qt
 from PySide6.QtSvgWidgets import QSvgWidget
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QGridLayout, QLabel, QWidget
 
 from spyrit import constants
 from spyrit.resources.resources import Logo
 from spyrit.ui.sizer import Sizer
+
+
+def _render_svg(path: str, width: int) -> QSvgWidget:
+    svg = QSvgWidget()
+    svg.load(path)
+    svg.renderer().setAspectRatioMode(Qt.AspectRatioMode.KeepAspectRatio)
+
+    svg_size = svg.renderer().defaultSize()
+    aspect_ratio = svg_size.height() / svg_size.width()
+    svg.setFixedWidth(width)
+    svg.setFixedHeight(int(ceil(width * aspect_ratio)))
+
+    return svg
 
 
 class SpyritLogo(QWidget):
@@ -31,34 +44,32 @@ class SpyritLogo(QWidget):
     Implements a visually pleasant application logo.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, width: int) -> None:
         super().__init__()
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        self.setLayout(layout := QGridLayout())
 
         unit = Sizer(self).unitSize()
-        logo_width = constants.LOGO_WIDTH_UNITS * unit
 
-        spyrit_label = QSvgWidget()
-        spyrit_label.load(Logo.SPYRIT_SVG)
-        spyrit_label.renderer().setAspectRatioMode(
-            Qt.AspectRatioMode.KeepAspectRatio
+        title_width = width * 3 // 4
+        icon_width = width - title_width
+
+        layout.setContentsMargins(unit // 2, unit // 2, unit // 2, unit // 2)
+        layout.setHorizontalSpacing(unit // 2)
+        layout.setVerticalSpacing(unit)
+
+        layout.addWidget(
+            _render_svg(Logo.APPLICATION_ICON_SVG, icon_width),
+            0,
+            0,
+            2,
+            1,
+            alignment=Qt.AlignmentFlag.AlignTop,
         )
 
-        svg_size = spyrit_label.renderer().defaultSize()
-        aspect_ratio = svg_size.height() / svg_size.width()
-        spyrit_label.setMinimumWidth(logo_width)
-        spyrit_label.setMinimumHeight(int(ceil(logo_width * aspect_ratio)))
-
-        layout.addWidget(spyrit_label)
-        layout.addSpacing(unit)
+        layout.addWidget(_render_svg(Logo.SPYRIT_SVG, title_width), 0, 1)
 
         version_label = QLabel()
-        version_label.setText(f"v{constants.SPYRIT_VERSION}")
-
-        version_label.setAlignment(
-            Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter
-        )
-
-        layout.addWidget(version_label)
+        version_label.setText(f"<i>v{constants.SPYRIT_VERSION}</i>")
+        version_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        layout.addWidget(version_label, 1, 1)

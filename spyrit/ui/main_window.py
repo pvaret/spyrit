@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
 )
 
 from spyrit import constants
-from spyrit.resources.resources import Icon
+from spyrit.resources.resources import Icon, Logo
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
@@ -279,6 +279,7 @@ class SpyritMainWindow(QMainWindow):
 
         # Set up the window properties.
 
+        self.setWindowIcon(QIcon(Logo.APPLICATION_ICON_SVG))
         self.setWindowTitle(constants.APPLICATION_NAME)
         size = state.ui.window_size.get()
         if size.isValid() and not size.isEmpty():

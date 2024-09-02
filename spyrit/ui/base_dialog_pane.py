@@ -22,6 +22,7 @@ from PySide6.QtWidgets import QHBoxLayout, QPushButton, QVBoxLayout, QWidget
 
 from spyrit.ui.bars import HBar
 from spyrit.ui.base_pane import Pane
+from spyrit.ui.sizer import Sizer
 
 
 class BaseDialogPane(Pane):
@@ -58,6 +59,10 @@ class BaseDialogPane(Pane):
 
         self.setLayout(pane_layout := QVBoxLayout())
 
+        unit = Sizer(self).unitSize() // 2
+        pane_layout.setSpacing(unit)
+        pane_layout.setContentsMargins(unit, unit, unit, unit)
+
         # Add the dialog's main widget.
 
         self._widget = QWidget()
@@ -70,6 +75,8 @@ class BaseDialogPane(Pane):
         # Add the dialog buttons.
 
         pane_layout.addLayout(button_layout := QHBoxLayout())
+
+        button_layout.setSpacing(unit)
 
         button_layout.addStretch()
 

@@ -55,6 +55,7 @@ UI_UNIT_SIZE_PX: int = 16  # pixels
 UI_MARGIN_SIZE_PX: int = 2  # pixels
 LOGO_WIDTH_UNITS: int = 20  # UI units
 FORM_WIDTH_UNITS: int = 20  # UI units
+ABOUT_WIDTH_UNITS: int = 25  # UI units
 
 PANE_ANIMATION_DURATION_MS: int = 450  # milliseconds
 SCROLL_ANIMATION_DURATION_MS: int = 250  # milliseconds

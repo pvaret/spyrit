@@ -85,8 +85,8 @@ class ConnectionToggleAction(QAction):
 
         self._prevent_connection_changes = threading.Lock()
         self._status = status
-        self._on_icon = QIcon(Icon.SWITCH_ON)
-        self._off_icon = QIcon(Icon.SWITCH_OFF)
+        self._on_icon = QIcon(Icon.SWITCH_ON_SVG)
+        self._off_icon = QIcon(Icon.SWITCH_OFF_SVG)
 
         self.setCheckable(True)
 

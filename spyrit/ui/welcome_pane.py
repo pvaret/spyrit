@@ -263,7 +263,7 @@ class WelcomePane(Pane):
 
         # Logo!
 
-        menu_layout.addWidget(SpyritLogo())
+        menu_layout.addWidget(SpyritLogo(constants.LOGO_WIDTH_UNITS * unit))
 
         menu_layout.addWidget(HBar())
 

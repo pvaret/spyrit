@@ -12,11 +12,12 @@ if __name__ == "__main__":
 
     sys.path.insert(0, this_dir.parent.as_posix())
 
+    from spyrit import constants
     from spyrit import resources
     from spyrit.ui.spyrit_logo import SpyritLogo
 
     resources.load()
     app = QApplication()
-    logo = SpyritLogo()
+    logo = SpyritLogo(constants.LOGO_WIDTH_UNITS * constants.UI_UNIT_SIZE_PX)
     logo.show()
     app.exec()

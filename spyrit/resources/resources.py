@@ -36,6 +36,7 @@ class _Resource(enum.StrEnum):
 
 
 class Logo(_Resource):
+    APPLICATION_ICON_SVG = ":/logos/app-icon.svg"
     SPYRIT_SVG = ":/logos/spyrit-logo.svg"
 
 
@@ -45,14 +46,14 @@ class Font(_Resource):
 
 class Icon(_Resource):
     CLOSE_SVG = ":/icons/close.svg"
+    CONNECTION_ON_SVG = ":/icons/connection-on.svg"
+    CONNECTION_OFF_SVG = ":/icons/connection-off.svg"
     INPUT_FIELD_SVG = ":/icons/input-field.svg"
     NEW_TAB_SVG = ":/icons/new-tab.svg"
     SEARCH_SVG = ":/icons/search.svg"
     SETTINGS_SVG = ":/icons/settings.svg"
-    SWITCH_OFF = ":/icons/switch-off.svg"
-    SWITCH_ON = ":/icons/switch-on.svg"
-    CONNECTION_ON = ":/icons/connection-on.svg"
-    CONNECTION_OFF = ":/icons/connection-off.svg"
+    SWITCH_OFF_SVG = ":/icons/switch-off.svg"
+    SWITCH_ON_SVG = ":/icons/switch-on.svg"
 
 
 class Misc(_Resource):

@@ -23,7 +23,7 @@ import sunset
 
 from PySide6 import __version__
 from PySide6.QtCore import Qt, qVersion
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QGridLayout, QLabel, QWidget
 
 from spyrit import constants
 from spyrit.ui.base_dialog_pane import BaseDialogPane
@@ -70,23 +70,23 @@ class AboutPane(BaseDialogPane):
 
         text = dedent(text.strip())
         label = QLabel(text)
+        label.setWordWrap(True)
+        label.setFixedWidth(constants.ABOUT_WIDTH_UNITS * sizer.unitSize())
         label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextBrowserInteraction
         )
         label.setOpenExternalLinks(True)
 
         pane = QWidget()
-        pane.setLayout(hlayout := QHBoxLayout())
-        hlayout.addStretch()
-        hlayout.addLayout(vlayout := QVBoxLayout())
-        hlayout.addStretch()
+        pane.setLayout(layout := QGridLayout())
 
-        vlayout.addStretch(1)
+        layout.setSpacing(2 * sizer.unitSize())
 
-        vlayout.addWidget(SpyritLogo())
-        vlayout.addSpacing(4 * sizer.unitSize())
-        vlayout.addWidget(label)
+        layout.setRowStretch(0, 1)
 
-        vlayout.addStretch(2)
+        layout.addWidget(SpyritLogo(label.width()), 1, 1)
+        layout.addWidget(label, 2, 1)
+
+        layout.setRowStretch(3, 1)
 
         self.setWidget(pane)

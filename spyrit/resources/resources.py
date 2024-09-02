@@ -45,9 +45,9 @@ class Font(_Resource):
 
 
 class Icon(_Resource):
-    CLOSE_SVG = ":/icons/close.svg"
     CONNECTION_ON_SVG = ":/icons/connection-on.svg"
     CONNECTION_OFF_SVG = ":/icons/connection-off.svg"
+    HOME_SVG = ":/icons/home.svg"
     INPUT_FIELD_SVG = ":/icons/input-field.svg"
     NEW_TAB_SVG = ":/icons/new-tab.svg"
     SEARCH_SVG = ":/icons/search.svg"

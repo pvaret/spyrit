@@ -9,7 +9,7 @@
     <qresource prefix="/icons/">
         <file>connection-off.svg</file>
         <file>connection-on.svg</file>
-        <file>close.svg</file>
+        <file>home.svg</file>
         <file>input-field.svg</file>
         <file>new-tab.svg</file>
         <file>search.svg</file>

@@ -472,7 +472,7 @@ class WorldPane(Pane):
                 "Close and return to menu",
                 shortcuts.return_to_menu,
                 self.closePaneRequested.emit,
-                icon=QIcon(Icon.CLOSE_SVG),
+                icon=QIcon(Icon.HOME_SVG),
             )
         )
         toolbar.addAction(close)

@@ -144,11 +144,6 @@ class Scroller(QObject):
             case QAbstractSlider.SliderAction.SliderToMinimum:
                 position = self._scrollbar.minimum()
 
-            case _:
-                # WORKAROUND: Pylance incorrect reports the base type itself as
-                # an unhandled case for this enum type.
-                pass
-
         self.smoothScrollToPosition(position)
 
     @Slot()

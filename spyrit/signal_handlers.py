@@ -44,11 +44,7 @@ def save_settings_on_signal(
         for saver in savers:
             saver.doSave()
 
-        if (
-            default_handler is not None
-            and not isinstance(default_handler, int)
-            and not isinstance(default_handler, signal.Handlers)
-        ):
+        if default_handler is not None and not isinstance(default_handler, int):
             default_handler(sig, frame)
 
     try:

@@ -172,11 +172,6 @@ class Connection(QObject):
             ):
                 pass
 
-            case _:
-                # WORKAROUND: Pylance incorrect reports the base type itself as
-                # an unhandled case for this enum type.
-                pass
-
     @Slot(QTcpSocket.SocketError)
     def _reportErrorOccurred(self, error: QTcpSocket.SocketError) -> None:
         """

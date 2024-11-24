@@ -206,7 +206,7 @@ class InstanceUI(SlidingPaneContainer):
                 pass
 
     @Slot(bool)
-    def _updateTabIconForConnection(self, connected: bool) -> None:  # noqa: FBT001
+    def _updateTabIconForConnection(self, connected: bool) -> None:
         icon = QIcon(Icon.CONNECTION_ON_SVG if connected else Icon.CONNECTION_OFF_SVG)
         self.tabUpdateRequested.emit(TabUpdate(icon=icon))
 

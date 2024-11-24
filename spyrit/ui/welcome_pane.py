@@ -130,14 +130,14 @@ class WorldsMenu(QMenu):
             self._count = 0
 
             for world in self._settings.worlds():
-                action = self.addAction(world.title())  # type: ignore
+                action = self.addAction(world.title())
                 action.triggered.connect(CallWithArgs(self.worldSelected.emit, world))
                 self._count += 1
 
                 for character in world.characters():
                     name = character.login.name.get()
                     if name:
-                        action = self.addAction(f"    … as {name}")  # type: ignore
+                        action = self.addAction(f"    … as {name}")
                         action.triggered.connect(
                             CallWithArgs(self.worldSelected.emit, character)
                         )

@@ -145,10 +145,11 @@ class _SideTabBar(QTabBar):
             # Ignore all the type errors because PySide6 types incorrectly omit
             # QStyleOptionTab.rect.
 
+            tab_rect = cast(QRect, opt.rect)  # type: ignore[reportAttributeAccessIssue]
             rect = QRect()
-            rect.setSize(opt.rect.size().transposed())  # type: ignore
-            rect.moveCenter(opt.rect.center())  # type: ignore
-            opt.rect = rect  # type: ignore
+            rect.setSize(tab_rect.size().transposed())
+            rect.moveCenter(tab_rect.center())
+            opt.rect = rect  # type: ignore[reportAttributeAccessIssue]
 
             # And render the text element.
 
@@ -203,7 +204,8 @@ class SettingsPane(BaseDialogPane):
         # Per-world settings go here.
 
         if settings.isCharacter():
-            assert (parent := settings.parent()) is not None
+            parent = settings.parent()
+            assert parent is not None  # noqa: S101
             settings = parent
 
         for world in root_settings.worlds():
@@ -228,6 +230,8 @@ class SettingsPane(BaseDialogPane):
             A UI to manage the given settings.
         """
 
+        # TODO: Actually implement.
+        del settings
         label = QLabel("Not implemented yet!")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label
@@ -243,6 +247,8 @@ class SettingsPane(BaseDialogPane):
             A UI to manage the application shortcuts.
         """
 
+        # TODO: Actually implement.
+        del settings
         label = QLabel("Not implemented yet!")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label
@@ -275,6 +281,8 @@ class SettingsPane(BaseDialogPane):
             A UI to manage the given settings.
         """
 
+        # TODO: Actually implement.
+        del settings
         label = QLabel("Not implemented yet!")
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label

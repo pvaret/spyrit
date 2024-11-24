@@ -63,9 +63,10 @@ class Size:
     @staticmethod
     def fromStr(string: str) -> QSize | None:
         size = string.split(",", 1)
-        if len(size) != 2:
+        try:
+            w, h = size
+        except ValueError:
             return None
-        w, h = size
         w = w.strip()
         h = h.strip()
         if w.isdigit() and h.isdigit():
@@ -87,7 +88,7 @@ class ColorSerializer:
 
         if string.isdigit():
             ansi_code = int(string)
-            if 0 <= ansi_code <= 255:
+            if 0 <= ansi_code <= 255:  # noqa: PLR2004
                 return ANSIColor(ansi_code)
 
         string = string.lower()
@@ -136,7 +137,7 @@ class SemiColonJoiner:
 
 class FormatSerializer:
     @staticmethod
-    def fromStr(string: str) -> FormatUpdate | None:
+    def fromStr(string: str) -> FormatUpdate | None:  # noqa: C901, PLR0912
         format_update = FormatUpdate()
 
         for item in SemiColonJoiner.split(string):
@@ -221,7 +222,7 @@ class FormatSerializer:
         return format_update
 
     @staticmethod
-    def toStr(value: FormatUpdate) -> str:
+    def toStr(value: FormatUpdate) -> str:  # noqa: C901
         items: list[str] = []
 
         if value.bold is not None:

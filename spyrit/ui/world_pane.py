@@ -197,7 +197,7 @@ class WorldPane(Pane):
 
     pane_is_persistent = True
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         settings: SpyritSettings,
         state: SpyritState.UI,
@@ -229,7 +229,7 @@ class WorldPane(Pane):
             toolbar, search_bar, extra_inputbox, settings.shortcuts
         )
 
-    def _layoutWidgets(
+    def _layoutWidgets(  # noqa: PLR0913
         self,
         state: SpyritState.UI,
         view: OutputView,

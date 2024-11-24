@@ -151,4 +151,4 @@ class TabProxy(QObject):
             # signal that triggered this slot is complete, which may cause other
             # tabs to be unexpectedly closed.
 
-            QTimer.singleShot(0, self.closeRequested.emit)  # type: ignore
+            QTimer.singleShot(0, self.closeRequested.emit)  # type: ignore[reportUnknownMemberType]

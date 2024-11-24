@@ -88,7 +88,7 @@ class TabWidget(QTabWidget):
 
         self.setStyleSheet(f"QTabBar::tab {{ min-height: {height} px ; }}")
 
-    def addTab(  # type: ignore  # wrong arg annotation in parent.
+    def addTab(  # type: ignore[reportIncompatibleMethodOverride]  # wrong arg annotation in parent.
         self, widget: QWidget, title: str
     ) -> int:
         """
@@ -172,8 +172,8 @@ class TabWidget(QTabWidget):
         widget_to = self.widget(index_to)
         title_from = self.tabText(index_from)
         title_to = self.tabText(index_to)
-        assert widget_from is not None
-        assert widget_to is not None
+        assert widget_from is not None  # noqa: S101
+        assert widget_to is not None  # noqa: S101
 
         # Note that inserting a tab with an existing widget at a new position
         # removes it from its previous position. So we don't need to do that
@@ -193,8 +193,9 @@ class TabWidget(QTabWidget):
             index: The index of the tab whose widget should get the focus.
         """
 
-        widget = self.widget(index)
-        if widget is not None:  # type: ignore
+        # The type annotation wrongly claims that QTabWidget.widget() cannot be None.
+        widget = cast(QWidget | None, self.widget(index))
+        if widget is not None:
             widget.setFocus()
 
     def tabInserted(self, index: int) -> None:
@@ -383,7 +384,7 @@ class SpyritMainWindow(QMainWindow):
             # the closing, because the code path that triggers this may still
             # need the window around in order to complete without crashing.
 
-            QTimer.singleShot(0, self.close)  # type: ignore # bad annotation.
+            QTimer.singleShot(0, self.close)  # type: ignore[reportUnknownMemberType] # bad annotation.
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """

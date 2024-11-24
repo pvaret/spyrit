@@ -377,7 +377,7 @@ class ANSIColor(Color):
     _ansi_code: int
 
     def __init__(self, ansi_code: int) -> None:
-        if not 0 <= ansi_code <= 255:
+        if not 0 <= ansi_code <= 255:  # noqa: PLR2004
             ansi_code = 0
         self._ansi_code = ansi_code
 
@@ -398,7 +398,7 @@ class ANSIColor(Color):
         return str(self._ansi_code)
 
     def bright(self) -> "ANSIColor":
-        if not 0 <= (ansi_code := self._ansi_code) <= 7:
+        if not 0 <= (ansi_code := self._ansi_code) <= 7:  # noqa: PLR2004
             return self
         return ANSIColor(ansi_code + 8)
 
@@ -411,17 +411,17 @@ class RGBColor(Color):
     def __init__(self, r: int, g: int, b: int) -> None:
         if r < 0:
             r = 0
-        elif r > 255:
+        elif r > 255:  # noqa: PLR2004
             r = 255
 
         if g < 0:
             g = 0
-        elif g > 255:
+        elif g > 255:  # noqa: PLR2004
             g = 255
 
         if b < 0:
             b = 0
-        elif b > 255:
+        elif b > 255:  # noqa: PLR2004
             b = 255
 
         self._r = r
@@ -461,7 +461,7 @@ def rgb_to_hsl(r: float, g: float, b: float) -> tuple[float, float, float]:
         h = s = 0.0
 
     else:
-        if l_ > 0.5:
+        if l_ > 0.5:  # noqa: PLR2004
             s = (maxf - minf) / (2.0 - (maxf + minf))
         else:
             s = (maxf - minf) / (maxf + minf)
@@ -481,7 +481,7 @@ def hsl_to_rgb(h: float, s: float, l_: float) -> tuple[float, float, float]:
         r = g = b = l_
 
     else:
-        q = l_ * (1 + s) if l_ < 0.5 else l_ + s * (1 - l_)
+        q = l_ * (1 + s) if l_ < 0.5 else l_ + s * (1 - l_)  # noqa: PLR2004
         p = 2 * l_ - q
 
         r = _hue_to_rgb(p, q, h + 1 / 3)

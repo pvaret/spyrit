@@ -212,7 +212,7 @@ class ANSIProcessor(BaseProcessor):
             case _:
                 yield fragment
 
-    def fragmentFromSGRCodes(self, codes: list[int]) -> ANSIFragment:
+    def fragmentFromSGRCodes(self, codes: list[int]) -> ANSIFragment:  # noqa: C901, PLR0912, PLR0915
         if not codes:  # An empty SGR sequence should be treated as a reset.
             codes.append(0)
 
@@ -254,7 +254,7 @@ class ANSIProcessor(BaseProcessor):
                 case 29:
                     format_update.setStrikeout(False)
 
-                case _ if 30 <= code <= 37:
+                case _ if 30 <= code <= 37:  # noqa: PLR2004
                     format_update.setForeground(ANSIColor(code - 30))
 
                 case 38:
@@ -271,7 +271,7 @@ class ANSIProcessor(BaseProcessor):
                 case 39:
                     format_update.setForeground(NoColor())
 
-                case _ if 40 <= code <= 47:
+                case _ if 40 <= code <= 47:  # noqa: PLR2004
                     format_update.setBackground(ANSIColor(code - 40))
 
                 case 48:
@@ -288,10 +288,10 @@ class ANSIProcessor(BaseProcessor):
                 case 49:
                     format_update.setBackground(NoColor())
 
-                case _ if 90 <= code <= 97:
+                case _ if 90 <= code <= 97:  # noqa: PLR2004
                     format_update.setForeground(ANSIColor(code - 90 + 8))
 
-                case _ if 100 <= code <= 107:
+                case _ if 100 <= code <= 107:  # noqa: PLR2004
                     format_update.setBackground(ANSIColor(code - 100 + 8))
 
                 case _:

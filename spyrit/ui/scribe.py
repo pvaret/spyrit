@@ -179,7 +179,7 @@ class Scribe(QObject):
         self._format_updater.pushFormat(self._ansi_format)
 
     @Slot(FragmentList)
-    def inscribe(self, fragments: Iterable[Fragment]) -> None:
+    def inscribe(self, fragments: Iterable[Fragment]) -> None:  # noqa: C901, PLR0912
         """
         Expresses the given fragments as formatted text on this Scribe's cursor.
         """

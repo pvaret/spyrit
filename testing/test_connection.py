@@ -42,7 +42,7 @@ class TestConnection:
         slot = mocker.stub()
         connection.dataReceived.connect(slot)
 
-        socket = connection._socket  # type:ignore
+        socket = connection._socket  # type: ignore
         socket.isValid = mocker.Mock(return_value=True)
         socket.readAll = mocker.Mock(return_value=b"abcde")
 

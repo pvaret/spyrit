@@ -136,8 +136,8 @@ class OutputView(QTextEdit):
         search_result_format.setBackground(self.palette().highlight())
 
         search_result = QTextEdit.ExtraSelection()
-        search_result.cursor = cursor  # type: ignore
-        search_result.format = search_result_format  # type: ignore
+        search_result.cursor = cursor  # type: ignore[reportAttributeAccessIssue]
+        search_result.format = search_result_format  # type: ignore[reportAttributeAccessIssue]
 
         self.setExtraSelections([search_result])
 

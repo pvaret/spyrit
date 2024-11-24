@@ -65,7 +65,7 @@ class Keepalive(QObject):
         self._connected = status == Status.CONNECTED
         self._maybeStartTimer(self._settings.enabled.get())
 
-    def _maybeStartTimer(self, enabled: bool) -> None:  # noqa: FBT001
+    def _maybeStartTimer(self, enabled: bool) -> None:
         if enabled and self._connected:
             self._timer.start()
         else:

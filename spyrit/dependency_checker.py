@@ -21,12 +21,12 @@ from collections.abc import Iterator
 try:
     import PySide6
 except (ModuleNotFoundError, ImportError):
-    PySide6 = None  # type: ignore
+    PySide6 = None
 
 try:
     from PySide6 import QtCore
 except (ModuleNotFoundError, ImportError):
-    QtCore = None  # type: ignore
+    QtCore = None
 
 from . import constants
 

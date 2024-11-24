@@ -16,9 +16,10 @@ A class that applies a configured style to the application.
 """
 
 import logging
+from typing import cast
 
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QApplication, QStyleFactory
+from PySide6.QtWidgets import QApplication, QStyle, QStyleFactory
 from sunset import Key
 
 
@@ -62,8 +63,9 @@ class StyleManager(QObject):
 
         logging.debug("Applying style '%s'...", style)
 
-        if (style := QStyleFactory.create(style)) is None:  # type: ignore
+        style_obj = cast(QStyle | None, QStyleFactory.create(style))
+        if (style_obj) is None:
             logging.warning("Failed to load style '%s'!", style)
             return
 
-        self._app.setStyle(style)
+        self._app.setStyle(style_obj)

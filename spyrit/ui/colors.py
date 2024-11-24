@@ -17,7 +17,6 @@ Implements support for ANSI color codes and palettes.
 
 from abc import ABC, abstractmethod
 from enum import IntEnum, StrEnum
-from typing import Any
 
 
 class Solarized(StrEnum):
@@ -349,7 +348,7 @@ class Color(ABC):
     @abstractmethod
     def toStr(self) -> str: ...
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, Color):
             return False
 
@@ -412,17 +411,17 @@ class RGBColor(Color):
     def __init__(self, r: int, g: int, b: int) -> None:
         if r < 0:
             r = 0
-        elif 255 < r:
+        elif r > 255:
             r = 255
 
         if g < 0:
             g = 0
-        elif 255 < g:
+        elif g > 255:
             g = 255
 
         if b < 0:
             b = 0
-        elif 255 < b:
+        elif b > 255:
             b = 255
 
         self._r = r
@@ -482,10 +481,7 @@ def hsl_to_rgb(h: float, s: float, l_: float) -> tuple[float, float, float]:
         r = g = b = l_
 
     else:
-        if l_ < 0.5:
-            q = l_ * (1 + s)
-        else:
-            q = l_ + s * (1 - l_)
+        q = l_ * (1 + s) if l_ < 0.5 else l_ + s * (1 - l_)
         p = 2 * l_ - q
 
         r = _hue_to_rgb(p, q, h + 1 / 3)

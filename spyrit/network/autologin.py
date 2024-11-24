@@ -16,7 +16,6 @@ Implements logic to automatically log into games after connection.
 """
 
 import logging
-
 from collections.abc import Sequence
 
 from PySide6.QtCore import QObject, Signal, Slot
@@ -72,7 +71,7 @@ class Autologin(QObject):
     # This signal is emitted when the Autologin wants the given login string to
     # be sent to the game server.
 
-    sendLoginString: Signal = Signal(str)
+    sendLoginString: Signal = Signal(str)  # noqa: N815
 
     _credentials: SpyritSettings.Login
     _login_sent: bool
@@ -143,5 +142,5 @@ class Autologin(QObject):
         """
 
         if login_string := _get_login_string(name, password, login_style):
-            logging.debug(f"Sending login string for '{name}'.")
+            logging.debug("Sending login string for '%s'.", name)
             self.sendLoginString.emit(login_string)

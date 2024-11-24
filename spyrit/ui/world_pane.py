@@ -25,10 +25,10 @@ from spyrit.network.connection import Connection, ConnectionStatus
 from spyrit.network.processors import (
     ANSIProcessor,
     BaseProcessor,
-    ConnectionProcessor,
-    PacketSplitterProcessor,
     ChainProcessor,
+    ConnectionProcessor,
     FlowControlProcessor,
+    PacketSplitterProcessor,
     UnicodeProcessor,
     UserPatternProcessor,
 )
@@ -36,13 +36,13 @@ from spyrit.resources.resources import Icon
 from spyrit.settings.default_patterns import get_default_patterns
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
-from spyrit.ui.autocompleter import Autocompleter, CompletionModel, Tokenizer
-from spyrit.ui.dialogs import askUserIfReadyToDisconnect
-from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
+from spyrit.ui.autocompleter import Autocompleter, CompletionModel, Tokenizer
 from spyrit.ui.base_pane import Pane
+from spyrit.ui.dialogs import askUserIfReadyToDisconnect
 from spyrit.ui.input_box import InputBox
 from spyrit.ui.input_history import Historian
+from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
 from spyrit.ui.scroller import Scroller
@@ -68,12 +68,12 @@ class ConnectionToggleAction(QAction):
     # This signal is sent when a user interaction with this action requests that
     # a connection be initiated.
 
-    connectRequested: Signal = Signal()
+    connectRequested: Signal = Signal()  # noqa: N815
 
     # This signal is sent when a user interaction with this action requests that
     # a connection be terminated.
 
-    disconnectRequested: Signal = Signal()
+    disconnectRequested: Signal = Signal()  # noqa: N815
 
     _status: ConnectionStatus
     _prevent_connection_changes: threading.Lock
@@ -170,25 +170,25 @@ class WorldPane(Pane):
     # This signal is sent when the user wants the given input sent to the game
     # world.
 
-    sendUserInput: Signal = Signal(str)
+    sendUserInput: Signal = Signal(str)  # noqa: N815
 
     # This signal is sent when the user asked for the pane to be closed, pending
     # confirmation.
 
-    closePaneRequested: Signal = Signal()
+    closePaneRequested: Signal = Signal()  # noqa: N815
 
     # This signal is sent when this pane wants the connection started.
 
-    startConnection: Signal = Signal()
+    startConnection: Signal = Signal()  # noqa: N815
 
     # This signal is sent when this pane wants the connection stopped.
 
-    stopConnection: Signal = Signal()
+    stopConnection: Signal = Signal()  # noqa: N815
 
     # This signal is sent when a user action requests for the settings pane to
     # the shown. The argument is this world's settings object.
 
-    showSettingsUI: Signal = Signal(SpyritSettings)
+    showSettingsUI: Signal = Signal(SpyritSettings)  # noqa: N815
 
     _settings: SpyritSettings
     _connection_status: ConnectionStatus

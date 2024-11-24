@@ -22,13 +22,12 @@ from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QFontMetrics, QPainter, QPaintEvent
 from PySide6.QtWidgets import (
     QLabel,
-    QTabBar,
-    QTabWidget,
     QStyle,
     QStyleOptionTab,
+    QTabBar,
+    QTabWidget,
     QWidget,
 )
-
 from sunset import List, Settings
 
 from spyrit import constants
@@ -37,7 +36,6 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 from spyrit.ui.sizer import Sizer
-
 
 _SettingsT = TypeVar("_SettingsT", bound=Settings)
 
@@ -106,8 +104,8 @@ class _SideTabBar(QTabBar):
         opt = QStyleOptionTab()
         self.initStyleOption(opt, index)
 
-        metrics = cast(QFontMetrics, opt.fontMetrics)  # type: ignore
-        label = cast(str, opt.text)  # type: ignore
+        metrics = cast(QFontMetrics, opt.fontMetrics)  # type: ignore[reportUnknownMemberType]
+        label = cast(str, opt.text)  # type: ignore[reportUnknownMemberType]
 
         line_height = metrics.boundingRect(label).height()
         line_count = len(label.split("\n"))

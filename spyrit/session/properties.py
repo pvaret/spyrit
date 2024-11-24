@@ -62,7 +62,7 @@ class InstanceProperties(QObject):
         return world
 
     @Slot(bool)
-    def setConnected(self, connected: bool) -> None:
+    def setConnected(self, connected: bool) -> None:  # noqa: FBT001
         self._connected = connected
 
     def isConnected(self) -> bool:

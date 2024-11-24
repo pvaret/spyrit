@@ -17,8 +17,6 @@ Looks up and return platform-specific parameters.
 
 import sys
 
-from typing import Optional
-
 from spyrit import (
     platform_darwin,
     platform_linux,
@@ -27,17 +25,17 @@ from spyrit import (
 from spyrit.default_paths_base import DefaultPathsBase
 
 
-def get_default_paths(platform: Optional[str] = None) -> DefaultPathsBase:
-    if platform is None:
-        platform = sys.platform
+def get_default_paths(platform: str = sys.platform) -> DefaultPathsBase:
+    match platform:
+        case "linux":
+            return platform_linux.DefaultPaths()
 
-    if platform == "linux":
-        return platform_linux.DefaultPaths()
+        case "win32":
+            return platform_win32.DefaultPaths()
 
-    if platform == "win32":
-        return platform_win32.DefaultPaths()
+        case "darwin":
+            return platform_darwin.DefaultPaths()
 
-    if platform == "darwin":
-        return platform_darwin.DefaultPaths()
-
-    raise NotImplementedError("This program doesn't support your OS. Sorry!")
+        case _:
+            msg = "This program doesn't support your OS. Sorry!"
+            raise NotImplementedError(msg)

@@ -20,9 +20,8 @@ import enum
 import logging
 import threading
 import zlib
-
 from collections.abc import Iterable, Iterator, Sequence
-from typing import overload
+from typing import ClassVar, cast, overload
 
 from PySide6.QtCore import (
     QEvent,
@@ -33,8 +32,7 @@ from PySide6.QtCore import (
     Slot,
 )
 from PySide6.QtGui import QKeyEvent, QTextCursor
-from PySide6.QtWidgets import QCompleter, QPlainTextEdit, QTextEdit
-
+from PySide6.QtWidgets import QAbstractItemView, QCompleter, QPlainTextEdit, QTextEdit
 from sunset import Key
 
 from spyrit import constants
@@ -44,8 +42,10 @@ from spyrit.network.fragments import (
     NetworkFragment,
     TextFragment,
 )
-from spyrit.resources.file import _Resource  # type: ignore
-from spyrit.resources.file import ResourceFile
+from spyrit.resources.file import (
+    ResourceFile,
+    _Resource,  # type: ignore[reportPrivateUsage]
+)
 from spyrit.resources.resources import Misc
 from spyrit.settings.key_shortcut import Shortcut
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
@@ -159,9 +159,9 @@ class StaticWordList(Sequence[str]):
 
     # These are *class* attributes. The static word list is shared between
     # instances of this class.
-    _words: list[str] = []
-    _word_set: set[str] = CaseInsensitiveSet()
-    _lock: threading.Lock = threading.Lock()
+    _words: ClassVar[list[str]] = []
+    _word_set: ClassVar[set[str]] = CaseInsensitiveSet()
+    _lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(self, resource: _Resource = Misc.WORDLIST_TXT_GZ) -> None:
         self._ensureWordListLoaded(resource)
@@ -234,7 +234,7 @@ class Tokenizer(QObject):
     # This signal is emitted whenever the tokenizer has found a complete token
     # in its input.
 
-    tokenFound: Signal = Signal(str)
+    tokenFound: Signal = Signal(str)  # noqa: N815
 
     _text_so_far: str
 
@@ -431,10 +431,7 @@ class Autocompleter(QCompleter):
         widget.installEventFilter(self)
 
         completion_action = ActionWithKeySetting(
-            self,
-            "Trigger autocompletion",
-            shortcut,
-            self.startCompletion,
+            self, "Trigger autocompletion", shortcut, self.startCompletion
         )
         widget.addAction(completion_action)
 
@@ -466,7 +463,7 @@ class Autocompleter(QCompleter):
             self.selectCompletableWord(cursor)
 
         prefix = cursor.selectedText()
-        logging.debug(f'Selected text for completion: "{prefix}"')
+        logging.debug('Selected text for completion: "%s"', prefix)
 
         if not prefix:
             return
@@ -550,7 +547,9 @@ class Autocompleter(QCompleter):
         considered part of the completion process.
         """
 
-        if (popup := self.popup()) is None or not popup.isVisible():  # type: ignore
+        # Type hints wrongly claim that QCompleter.popup() cannot return None.
+        popup = cast(QAbstractItemView | None, self.popup())
+        if popup is None or not popup.isVisible():
             return super().eventFilter(o, e)
 
         if o is not self._widget and o is not popup:

@@ -16,8 +16,7 @@ Utility class that checks if the requisite dependencies are installed.
 """
 
 import sys
-
-from typing import Iterator
+from collections.abc import Iterator
 
 try:
     import PySide6
@@ -30,7 +29,6 @@ except (ModuleNotFoundError, ImportError):
     QtCore = None  # type: ignore
 
 from . import constants
-
 
 # A command-line argument to be used when the program's dependencies should be
 # checked but the program itself should not be run.

@@ -18,7 +18,7 @@ in a QTabWidget.
 
 import weakref
 
-from PySide6.QtCore import QObject, QTimer, Qt, Signal, Slot
+from PySide6.QtCore import QObject, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWidgets import QTabWidget, QWidget
 
@@ -59,7 +59,7 @@ class TabProxy(QObject):
     # This signal is emitted when a user action is requesting that this tab be
     # closed.
 
-    closeRequested: Signal = Signal()
+    closeRequested: Signal = Signal()  # noqa: N815
 
     _tab_widget: QTabWidget
     _widget: weakref.ref[QWidget]

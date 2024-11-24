@@ -19,7 +19,6 @@ usage stats.
 import gc
 import logging
 import sys
-
 from functools import reduce
 
 from PySide6.QtCore import QObject, QTimer, Slot
@@ -86,7 +85,7 @@ class GCStats(QObject):
             mem_string,
         )
 
-        _builtins_name = type(True).__module__
+        _builtins_name = bool.__module__
 
         if self._obj_counts:
             obj_count_diff: dict[str, int] = {}

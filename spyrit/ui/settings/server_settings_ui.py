@@ -25,7 +25,6 @@ from spyrit.ui.settings.input_widgets import ServerPortEdit, TextLineEdit
 from spyrit.ui.settings.settings_block import SettingsBlock
 from spyrit.ui.sizer import Sizer
 
-
 _WORLD_NAME_HELP = """
 **World name** is the name you want to use for this world. For instance,
 *Discworld MUD* or *Harper's Tale MOO*.
@@ -62,21 +61,21 @@ class ServerSettingsUI(QWidget):
 
         layout.addLayout(help_layout := QVBoxLayout())
         layout.addStretch()
-        help_layout.addWidget(help := QLabel())
+        help_layout.addWidget(help_text := QLabel())
         help_layout.addStretch()
         help_layout.addStrut(sizer.unitSize() * constants.FORM_WIDTH_UNITS)
 
         settings_layout.addStrut(sizer.unitSize() * constants.FORM_WIDTH_UNITS)
 
-        help.setTextFormat(Qt.TextFormat.MarkdownText)
-        help.setWordWrap(True)
+        help_text.setTextFormat(Qt.TextFormat.MarkdownText)
+        help_text.setWordWrap(True)
 
         settings_layout.addWidget(
             block := SettingsBlock(
                 TextLineEdit(settings.name), "World name", _WORLD_NAME_HELP
             )
         )
-        block.helpTextDisplayRequested.connect(help.setText)
+        block.helpTextDisplayRequested.connect(help_text.setText)
         settings_layout.addSpacing(sizer.unitSize())
 
         settings_layout.addWidget(
@@ -85,6 +84,6 @@ class ServerSettingsUI(QWidget):
                 help_text=_SERVER_PORT_HELP,
             )
         )
-        block.helpTextDisplayRequested.connect(help.setText)
+        block.helpTextDisplayRequested.connect(help_text.setText)
 
         settings_layout.addStretch()

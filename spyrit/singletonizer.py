@@ -15,15 +15,16 @@
 Holds a class that helps ensure only one instance of the application is running.
 """
 
+import contextlib
 import errno
 import fcntl
 import logging
 import os
 import threading
-
+from collections.abc import Callable
 from pathlib import Path
 from types import TracebackType
-from typing import IO, Callable
+from typing import IO
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
@@ -91,8 +92,8 @@ class PIDFile:
             try:
                 fd = self._path.open()
 
-            except OSError as e:
-                logging.error("Error while opening PID file %s: %s", self._path, e)
+            except OSError:
+                logging.exception("Error while opening PID file %s:", self._path)
                 raise
 
             try:
@@ -103,7 +104,7 @@ class PIDFile:
 
             except OSError as e:
                 if e.errno != errno.EAGAIN:
-                    logging.error("Failed to lock PID file %s: %s", self._path, e)
+                    logging.exception("Failed to lock PID file %s:", self._path)
                     raise
 
                 # EAGAIN means someone else owns the lock. That's fine.
@@ -136,14 +137,11 @@ class PIDFile:
 
         with self._lock:
             if self._fd is not None:
-                try:
-                    self._flock_func(self._fd, fcntl.LOCK_UN)
-
-                except OSError:
+                with contextlib.suppress(OSError):
                     # Not a big deal if this fails, we're going to delete the
                     # file anyway.
 
-                    pass
+                    self._flock_func(self._fd, fcntl.LOCK_UN)
 
                 self._path.unlink()
                 self._fd.close()
@@ -154,8 +152,8 @@ class PIDFile:
             self._path.parent.mkdir(parents=True, exist_ok=True)
             self._path.touch()
 
-        except OSError as e:
-            logging.error("Error while creating PID file %s: %s", self._path, e)
+        except OSError:
+            logging.exception("Error while creating PID file %s:", self._path)
             raise
 
     def __del__(self) -> None:
@@ -178,7 +176,7 @@ class Singletonizer(QObject):
     # Signal that is emitted when another process instance of this program
     # notified this one that it started.
 
-    newInstanceStarted: Signal = Signal()
+    newInstanceStarted: Signal = Signal()  # noqa: N815
 
     _path: Path
     _pid: int
@@ -245,6 +243,7 @@ class Singletonizer(QObject):
         __exc_type: type[BaseException] | None,
         __exc_value: BaseException | None,
         __traceback: TracebackType | None,
+        /,
     ) -> None:
         self.shutdown()
 

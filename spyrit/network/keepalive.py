@@ -26,7 +26,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 class Keepalive(QObject):
-    # This signal fires when this object wishes to send a keepaline ping.
+    # This signal fires when this object wishes to send a keepalive ping.
 
     keepalive: Signal = Signal(bytes)
 
@@ -65,7 +65,7 @@ class Keepalive(QObject):
         self._connected = status == Status.CONNECTED
         self._maybeStartTimer(self._settings.enabled.get())
 
-    def _maybeStartTimer(self, enabled: bool) -> None:
+    def _maybeStartTimer(self, enabled: bool) -> None:  # noqa: FBT001
         if enabled and self._connected:
             self._timer.start()
         else:

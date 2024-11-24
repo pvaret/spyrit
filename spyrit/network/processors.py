@@ -18,14 +18,12 @@ that makes semantic sense and can be fed into e.g. a text display widget.
 
 import codecs
 import logging
-
 from collections import deque
-from typing import Iterable, Iterator, cast
+from collections.abc import Iterable, Iterator
+from typing import cast
 
 import regex
-
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
-
 from sunset import Key, List
 
 from spyrit import constants
@@ -43,9 +41,9 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.settings.pattern import Pattern
+from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
 from spyrit.ui.colors import ANSIColor, NoColor, RGBColor
 from spyrit.ui.format import FormatUpdate
-from spyrit.settings.spyrit_settings import ANSIBoldEffect, Encoding
 
 
 class BaseProcessor(QObject):
@@ -58,7 +56,7 @@ class BaseProcessor(QObject):
 
     # This signal fires when a processor has some output ready.
 
-    fragmentsReady: Signal = Signal(FragmentList)
+    fragmentsReady: Signal = Signal(FragmentList)  # noqa: N815
 
     _output_buffer: list[Fragment]
 
@@ -266,7 +264,7 @@ class ANSIProcessor(BaseProcessor):
                         case [5, n, *codes]:
                             format_update.setForeground(ANSIColor(n))
                         case _:
-                            seq = ";".join(str(i) for i in [code] + codes)
+                            seq = ";".join(str(i) for i in [code, *codes])
                             logging.debug("Received invalid ANSI SGR sequence: %s", seq)
                             continue
 
@@ -283,7 +281,7 @@ class ANSIProcessor(BaseProcessor):
                         case [5, n, *codes]:
                             format_update.setBackground(ANSIColor(n))
                         case _:
-                            seq = ";".join(str(i) for i in [code] + codes)
+                            seq = ";".join(str(i) for i in [code, *codes])
                             logging.debug("Received invalid ANSI SGR sequence: %s", seq)
                             continue
 
@@ -324,7 +322,7 @@ class UnicodeProcessor(BaseProcessor):
         try:
             codec = codecs.lookup(encoding)
         except LookupError:
-            logging.error(
+            logging.error(  # noqa: TRY400  # Actually don't log the exception!
                 "Couldn't find decoder for encoding '%s'; reverting to default"
                 " encoding 'ASCII'.",
                 encoding,
@@ -419,7 +417,7 @@ def inject_fragments_into_buffer(
             match buffer_fragment := buffer.pop(0):
                 case TextFragment(text):
                     fragment_offset = fragment_pos - current_pos
-                    assert fragment_offset > 0
+                    assert fragment_offset > 0  # noqa: S101
 
                     if len(text) < fragment_offset:
                         current_pos += len(text)
@@ -443,19 +441,19 @@ def inject_fragments_into_buffer(
     return ret
 
 
-def expand_url(format: FormatUpdate, text: str) -> FormatUpdate:
+def expand_url(format_: FormatUpdate, text: str) -> FormatUpdate:
     """
     Returns a FormatUpdate where the HREF match placeholder, if any, is
     replaced with the text that was matched, if any.
     """
 
-    if format.href is not None and constants.MATCH_PLACEHOLDER in format.href:
+    if format_.href is not None and constants.MATCH_PLACEHOLDER in format_.href:
         ret = FormatUpdate()
-        ret.update(format)
-        ret.href = format.href.replace(constants.MATCH_PLACEHOLDER, text)
+        ret.update(format_)
+        ret.href = format_.href.replace(constants.MATCH_PLACEHOLDER, text)
         return ret
 
-    return format
+    return format_
 
 
 class UserPatternProcessor(BaseProcessor):

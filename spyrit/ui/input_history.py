@@ -47,10 +47,7 @@ class Historian(QObject):
 
         inputbox.addAction(
             ActionWithKeySetting(
-                self,
-                "History next",
-                shortcuts.history_next,
-                self.historyNext,
+                self, "History next", shortcuts.history_next, self.historyNext
             )
         )
         inputbox.addAction(

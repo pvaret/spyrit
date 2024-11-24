@@ -15,7 +15,9 @@
 Implements helpers to manage signal connections.
 """
 
-from typing import Callable, ParamSpec
+import contextlib
+from collections.abc import Callable
+from typing import ParamSpec
 
 _P = ParamSpec("_P")
 
@@ -31,9 +33,9 @@ class CallWithArgs:
     """
 
     def __init__(
-        self, callable: Callable[_P, None], *args: _P.args, **kwargs: _P.kwargs
+        self, callable_: Callable[_P, None], *args: _P.args, **kwargs: _P.kwargs
     ) -> None:
-        self._callable = callable
+        self._callable = callable_
         self._args = args
         self._kwargs = kwargs
 
@@ -42,13 +44,11 @@ class CallWithArgs:
         Invokes the given callable with the given arguments.
         """
 
-        try:
-            self._callable(*self._args, **self._kwargs)
-        except RuntimeError:
+        with contextlib.suppress(RuntimeError):
             # Sadly, it can happen that the callable is a signal whose
             # underlying C++ object was deleted, and there is no way to detect
             # when such is the case. The deletion cannot be handled gracefully
             # through weakref cleverness either, because signals cannot be
             # weakref'ed. So we're left with just catching the exception and
             # discarding it. Sadness.
-            pass
+            self._callable(*self._args, **self._kwargs)

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!python
 
 # Copyright (c) 2007-2024 Pascal Varet <p.varet@gmail.com>
 #

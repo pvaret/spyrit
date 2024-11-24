@@ -16,10 +16,9 @@ A class that implements the main window of the application.
 """
 
 import logging
-
 from typing import cast
 
-from PySide6.QtCore import Qt, QEvent, QSize, QTimer, Signal, Slot
+from PySide6.QtCore import QEvent, QSize, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QEnterEvent, QIcon, QResizeEvent
 from PySide6.QtWidgets import (
     QApplication,
@@ -66,7 +65,7 @@ class TabWidget(QTabWidget):
     # This signal fires whenever a tab is added or removed. Its argument is the
     # new number of tabs.
 
-    tabCountChanged: Signal = Signal(int)
+    tabCountChanged: Signal = Signal(int)  # noqa: N815
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -235,27 +234,27 @@ class SpyritMainWindow(QMainWindow):
 
     # We fire this signal when the user asked to quit the application.
 
-    quitRequested: Signal = Signal()
+    quitRequested: Signal = Signal()  # noqa: N815
 
     # We fire this signal when the window is being asked to close by a user
     # action.
 
-    closeRequested: Signal = Signal()
+    closeRequested: Signal = Signal()  # noqa: N815
 
     # We fire this signal when the user triggered an action requesting that a
     # new window is opened.
 
-    newWindowRequested: Signal = Signal()
+    newWindowRequested: Signal = Signal()  # noqa: N815
 
     # We fire this signal when the user triggered an action requesting that a
     # new tab is opened in this window.
 
-    newTabRequested: Signal = Signal()
+    newTabRequested: Signal = Signal()  # noqa: N815
 
     # We fire this signal when the window's desktop focus status has changed.
     # Its parameter is True if the window now has focus, else False.
 
-    focusChanged: Signal = Signal(bool)
+    focusChanged: Signal = Signal(bool)  # noqa: N815
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -290,16 +289,10 @@ class SpyritMainWindow(QMainWindow):
         shortcuts = settings.shortcuts
         for action in (
             ActionWithKeySetting(
-                self,
-                "New window",
-                shortcuts.new_window,
-                self.newWindowRequested.emit,
+                self, "New window", shortcuts.new_window, self.newWindowRequested.emit
             ),
             ActionWithKeySetting(
-                self,
-                "Close window",
-                shortcuts.close_window,
-                self.closeRequested.emit,
+                self, "Close window", shortcuts.close_window, self.closeRequested.emit
             ),
             new_tab_action := ActionWithKeySetting(
                 self,
@@ -338,12 +331,7 @@ class SpyritMainWindow(QMainWindow):
                 shortcuts.move_current_tab_left,
                 self._tab_widget.moveCurrentTabLeft,
             ),
-            ActionWithKeySetting(
-                self,
-                "Quit",
-                shortcuts.quit,
-                self.quitRequested.emit,
-            ),
+            ActionWithKeySetting(self, "Quit", shortcuts.quit, self.quitRequested.emit),
         ):
             self.addAction(action)
 

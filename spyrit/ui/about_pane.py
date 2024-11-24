@@ -16,11 +16,9 @@ Implements a pane that shows basic information about the application.
 """
 
 import sys
-
 from textwrap import dedent
 
 import sunset
-
 from PySide6 import __version__
 from PySide6.QtCore import Qt, qVersion
 from PySide6.QtWidgets import QGridLayout, QLabel, QWidget
@@ -59,7 +57,8 @@ class AboutPane(BaseDialogPane):
             Copyright 2024 P.Varet.<br>
             <br>
             <b>{constants.APPLICATION_NAME}</b> is licensed to you under the
-            <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3 license</a>.<br>
+            <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GPLv3 license</a>.
+            <br>
             <br>
             Icons are by the <a href="https://github.com/iconoir-icons/iconoir/">
             Iconoir</a> project, and used under the

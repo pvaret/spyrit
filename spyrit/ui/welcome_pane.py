@@ -28,7 +28,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
 from sunset import Key
 
 from spyrit import constants
@@ -95,11 +94,11 @@ class WorldsMenu(QMenu):
 
     # This signal is sent when a world is selected in the menu.
 
-    worldSelected: Signal = Signal(SpyritSettings)
+    worldSelected: Signal = Signal(SpyritSettings)  # noqa: N815
 
     # This signal is sent when the item count of the menu changed.
 
-    itemCountChanged: Signal = Signal(int)
+    itemCountChanged: Signal = Signal(int)  # noqa: N815
 
     _settings: SpyritSettings
     _count: int = 0
@@ -223,24 +222,24 @@ class WelcomePane(Pane):
     # This signal is sent when a user action asks for the world creation UI to
     # be opened.
 
-    openWorldCreationUIRequested: Signal = Signal()
+    openWorldCreationUIRequested: Signal = Signal()  # noqa: N815
 
     # This signal is sent when a user action asks for a game world to be opened.
     # The argument is the *world's* settings objects.
 
-    openWorldRequested: Signal = Signal(SpyritSettings)
+    openWorldRequested: Signal = Signal(SpyritSettings)  # noqa: N815
 
     # This signal is sent when a user action asks to open the settings panel.
 
-    openSettingsUIRequested: Signal = Signal(SpyritSettings)
+    openSettingsUIRequested: Signal = Signal(SpyritSettings)  # noqa: N815
 
     # This signal is sent when a user action asks to open the About... pane.
 
-    openAboutRequested: Signal = Signal()
+    openAboutRequested: Signal = Signal()  # noqa: N815
 
     # This signal is sent when the user requests to quit the application.
 
-    quitRequested: Signal = Signal()
+    quitRequested: Signal = Signal()  # noqa: N815
 
     def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()

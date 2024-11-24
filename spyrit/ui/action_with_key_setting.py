@@ -16,12 +16,10 @@ A QAction subclass that binds to a SunsetSettings key containing a QKeySequence.
 """
 
 import logging
-
-from typing import Callable
+from collections.abc import Callable
 
 from PySide6.QtCore import QObject, Qt, SignalInstance, Slot
 from PySide6.QtGui import QAction, QIcon
-
 from sunset import Key
 
 from spyrit.settings.key_shortcut import Shortcut
@@ -58,6 +56,7 @@ class ActionWithKeySetting(QAction):
         text: str,
         key: Key[Shortcut],
         slot: Slot | SignalInstance | Callable[[], None],
+        *,
         checkable: bool = False,
         icon: QIcon | None = None,
     ) -> None:

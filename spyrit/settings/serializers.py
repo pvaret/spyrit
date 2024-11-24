@@ -17,8 +17,7 @@ Custom serializers used in our settings.
 
 import logging
 import re
-
-from typing import Sequence
+from collections.abc import Sequence
 
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFont
@@ -176,7 +175,9 @@ class FormatSerializer:
                     color = ColorSerializer.fromStr(value)
                     if color is None:
                         logging.warning(
-                            f"Invalid format string value for attribute '{item}': '{value}'"
+                            "Invalid format string value for attribute '%s': '%s'",
+                            item,
+                            value,
                         )
                         continue
                     format_update.setForeground(color)
@@ -185,7 +186,9 @@ class FormatSerializer:
                     color = ColorSerializer.fromStr(value)
                     if color is None:
                         logging.warning(
-                            f"Invalid format string value for attribute '{item}': '{value}'"
+                            "Invalid format string value for attribute '%s': '%s'",
+                            item,
+                            value,
                         )
                         continue
                     format_update.setBackground(color)
@@ -194,7 +197,9 @@ class FormatSerializer:
                     color = ColorSerializer.fromStr(value)
                     if color is None:
                         logging.warning(
-                            f"Invalid format string value for attribute '{item}': '{value}'"
+                            "Invalid format string value for attribute '%s': '%s'",
+                            item,
+                            value,
                         )
                         continue
                     format_update.setUnderlineColor(color)
@@ -202,13 +207,15 @@ class FormatSerializer:
                 case "href":
                     if not value:
                         logging.warning(
-                            f"Invalid format string value for attribute '{item}': '{value}'"
+                            "Invalid format string value for attribute '%s': '%s'",
+                            item,
+                            value,
                         )
                         continue
                     format_update.setHref(value)
 
                 case _:
-                    logging.warning(f"Unknown attribute in format string: '{item}'")
+                    logging.warning("Unknown attribute in format string: '%s'", item)
                     continue
 
         return format_update

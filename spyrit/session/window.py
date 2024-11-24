@@ -18,8 +18,7 @@ reacts to changes to this status.
 
 import logging
 import weakref
-
-from typing import Iterator
+from collections.abc import Iterator
 
 from PySide6.QtCore import QObject, Slot
 

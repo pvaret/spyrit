@@ -26,7 +26,6 @@ broadly here's the design we're going for:
 """
 
 import weakref
-
 from typing import cast
 
 from PySide6.QtCore import QObject, Slot

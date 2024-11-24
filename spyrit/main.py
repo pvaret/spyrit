@@ -1,3 +1,5 @@
+#!python
+
 # Copyright (c) 2007-2024 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
@@ -17,7 +19,6 @@ Check dependencies, bootstrap the program.
 """
 
 import sys
-
 from typing import NoReturn
 
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG, DependencyChecker
@@ -27,7 +28,7 @@ def show_deps_and_exit(
     checker: DependencyChecker,
 ) -> NoReturn:
     for msg in checker.messages():
-        print(msg)
+        print(msg)  # noqa: T201
 
     sys.exit(0 if checker.dependenciesMet() else 1)
 
@@ -50,3 +51,7 @@ def main(args: list[str]) -> int:
 
 def run() -> NoReturn:
     sys.exit(main(sys.argv))
+
+
+if __name__ == "__main__":
+    run()

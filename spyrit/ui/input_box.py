@@ -18,7 +18,6 @@ from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QFontMetrics, QKeyEvent
 from PySide6.QtWidgets import QPlainTextEdit
 
-
 CRLF = "\r\n"
 
 
@@ -32,11 +31,11 @@ class InputBox(QPlainTextEdit):
 
     # This signal fires when this input box wants its contents sent to the game world.
 
-    sendText: Signal = Signal(str)
+    sendText: Signal = Signal(str)  # noqa: N815
 
     # This signal fires when this input box no longer wants to have the focus.
 
-    expelFocus: Signal = Signal()
+    expelFocus: Signal = Signal()  # noqa: N815
 
     _active: bool = False
 

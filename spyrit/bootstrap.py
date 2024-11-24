@@ -20,7 +20,6 @@ import enum
 import logging
 import logging.handlers
 import sys
-
 from signal import Signals
 from types import TracebackType
 
@@ -110,6 +109,7 @@ def _make_arg_parser(default_config_path: str) -> argparse.ArgumentParser:
 
 def _build_logger(
     paths: DefaultPathsBase,
+    *,
     debug: bool = False,
     log_target: LogTarget = LogTarget.STDERR,
 ) -> logging.Logger:
@@ -224,14 +224,16 @@ def bootstrap(args: list[str]) -> int:
 
     # Set up logging based on args.
 
-    logger = _build_logger(default_paths, flags.debug, flags.log_target)
+    logger = _build_logger(
+        default_paths, debug=flags.debug, log_target=flags.log_target
+    )
     _setup_excepthook(logger)
 
     logging.debug("Debug logging on.")
 
     # Install a custom exception handler.
 
-    install_exception_handler(flags.on_error_abort)
+    install_exception_handler(abort_on_error=flags.on_error_abort)
 
     # Load resources.
 
@@ -240,10 +242,10 @@ def bootstrap(args: list[str]) -> int:
 
     # And start the app.
 
-    return _start_app(app, default_paths, flags.debug)
+    return _start_app(app, default_paths, debug=flags.debug)
 
 
-def _start_app(app: QApplication, paths: DefaultPathsBase, debug: bool) -> int:
+def _start_app(app: QApplication, paths: DefaultPathsBase, *, debug: bool) -> int:
     """
     Sets up and starts the given application.
 

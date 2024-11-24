@@ -50,6 +50,15 @@ class OutputCatcher:
         return ret
 
 
+class TestFragments:
+    def test_fragment_repr(self) -> None:
+        assert repr(Fragment()) == "Fragment()"
+        assert (
+            repr(NetworkFragment(event=Status.CONNECTED, text="Test!"))
+            == "NetworkFragment(event=<Status.CONNECTED: 4>,text='Test!')"
+        )
+
+
 class TestUnicodeProcessor:
     def test_process_ascii(self) -> None:
         processor = UnicodeProcessor(Key(Encoding.ASCII))

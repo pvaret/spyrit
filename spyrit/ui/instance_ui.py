@@ -29,14 +29,14 @@ from spyrit.session.properties import InstanceProperties
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.about_pane import AboutPane
-from spyrit.ui.signals import CallWithArgs
-from spyrit.ui.widget_activity_monitor import ActivityMonitor, AttentionPinger
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.dialogs import maybeAskUserIfReadyToClose
 from spyrit.ui.settings.settings_pane import SettingsPane
+from spyrit.ui.signals import CallWithArgs
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 from spyrit.ui.tab_proxy import TabUpdate
 from spyrit.ui.welcome_pane import WelcomePane
+from spyrit.ui.widget_activity_monitor import ActivityMonitor, AttentionPinger
 from spyrit.ui.world_creation_pane import WorldCreationPane
 from spyrit.ui.world_pane import WorldPane, make_processor, make_world_pane
 
@@ -49,11 +49,11 @@ class InstanceUI(SlidingPaneContainer):
 
     # This signal is sent when a user action is asking for the app to terminate.
 
-    quitRequested: Signal = Signal()
+    quitRequested: Signal = Signal()  # noqa: N815
 
     # This signal is sent when this container wants its tab's title updated.
 
-    tabUpdateRequested: Signal = Signal(TabUpdate)
+    tabUpdateRequested: Signal = Signal(TabUpdate)  # noqa: N815
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -206,7 +206,7 @@ class InstanceUI(SlidingPaneContainer):
                 pass
 
     @Slot(bool)
-    def _updateTabIconForConnection(self, connected: bool) -> None:
+    def _updateTabIconForConnection(self, connected: bool) -> None:  # noqa: FBT001
         icon = QIcon(Icon.CONNECTION_ON_SVG if connected else Icon.CONNECTION_OFF_SVG)
         self.tabUpdateRequested.emit(TabUpdate(icon=icon))
 

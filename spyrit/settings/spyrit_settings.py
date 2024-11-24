@@ -17,16 +17,14 @@ Declaration of the Spyrit settings.
 
 import enum
 import uuid
-
 from typing import Self
 
 from PySide6.QtGui import QFont
-
 from sunset import Bunch, Key, List, Settings
 
 from spyrit import constants
 from spyrit.settings import serializers
-from spyrit.settings.key_shortcut import shortcut_from_default, Shortcut
+from spyrit.settings.key_shortcut import Shortcut, shortcut_from_default
 from spyrit.settings.pattern import Pattern
 from spyrit.settings.scrambled_text import ScrambledText
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes, Color
@@ -230,7 +228,7 @@ class SpyritSettings(Settings):
         """
 
         section = super().newSection(name)
-        section._onCreation()
+        section._onCreation()  # noqa: SLF001
         return section
 
     def _updateSectionName(self, name_key: Key[str]) -> None:

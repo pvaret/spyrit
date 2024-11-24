@@ -26,7 +26,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
 from sunset import Key
 
 from spyrit.ui.sizer import Sizer

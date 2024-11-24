@@ -24,13 +24,11 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QWidget,
 )
-
 from sunset import Key
 
 from spyrit import constants
 from spyrit.ui.settings.connector import Connector
 from spyrit.ui.sizer import Sizer
-
 
 # LineEdits.
 
@@ -129,7 +127,7 @@ class ServerPortEdit(QWidget):
     # This signal fires when the contents of any of this widget's fields is
     # edited.
 
-    contentsEdited: Signal = Signal()
+    contentsEdited: Signal = Signal()  # noqa: N815
 
     def __init__(self, server_key: Key[str], port_key: Key[int]) -> None:
         super().__init__()

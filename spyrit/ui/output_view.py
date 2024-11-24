@@ -46,7 +46,7 @@ class OutputView(QTextEdit):
     # can't just update its own scrollbar. Instead it needs to use this signal
     # to communicate.
 
-    requestScrollToPosition: Signal = Signal(int)
+    requestScrollToPosition: Signal = Signal(int)  # noqa: N815
 
     _settings: SpyritSettings.UI.Output
 
@@ -191,9 +191,8 @@ class OutputView(QTextEdit):
         left button that was clicked.
         """
 
-        if button == Qt.MouseButton.LeftButton:
-            if anchor := self.anchorAt(pos):
-                QDesktopServices.openUrl(anchor)
+        if button == Qt.MouseButton.LeftButton and (anchor := self.anchorAt(pos)):
+            QDesktopServices.openUrl(anchor)
 
     def mouseMoveEvent(self, e: QMouseEvent) -> None:
         """
@@ -223,7 +222,7 @@ class ClickDetector(QObject):
 
     # This signal fires when a proper click is detected on the target widget.
 
-    mouseClick: Signal = Signal(QPoint, Qt.MouseButton)
+    mouseClick: Signal = Signal(QPoint, Qt.MouseButton)  # noqa: N815
 
     _click_pos: QPoint | None = None
     _click_button: Qt.MouseButton | None = None
@@ -247,11 +246,10 @@ class ClickDetector(QObject):
                     if (
                         self._click_pos is not None
                         and event.button() == self._click_button
-                    ):
-                        if (
-                            self._click_pos - event.pos()
-                        ).manhattanLength() <= constants.CLICK_DISTANCE_THRESHOLD:
-                            self.mouseClick.emit(event.pos(), event.button())
+                    ) and (
+                        self._click_pos - event.pos()
+                    ).manhattanLength() <= constants.CLICK_DISTANCE_THRESHOLD:
+                        self.mouseClick.emit(event.pos(), event.button())
 
                     self._click_pos = None
                     self._click_button = None

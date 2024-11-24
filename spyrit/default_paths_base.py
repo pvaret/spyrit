@@ -17,7 +17,6 @@ platform by platform.
 """
 
 import pathlib
-
 from abc import ABC, abstractmethod
 
 from spyrit import constants

@@ -19,13 +19,15 @@ text from game worlds.
 import enum
 import logging
 import re
-
-from typing import Any, Iterable
+from typing import TYPE_CHECKING, Any
 
 from sunset import Bunch, Key, List
 
 from spyrit.settings import serializers
 from spyrit.ui.format import FormatUpdate
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 
 class PatternType(enum.Enum):
@@ -151,7 +153,7 @@ class Pattern(Bunch):
             try:
                 re.compile(fragment_pattern)
             except re.error:
-                logging.warning(f"Failed to compile pattern fragment: {fragment}")
+                logging.warning("Failed to compile pattern fragment: %s", fragment)
                 continue
 
             pattern += fragment_pattern

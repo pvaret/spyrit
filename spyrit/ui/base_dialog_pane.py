@@ -41,11 +41,11 @@ class BaseDialogPane(Pane):
 
     # Signal emitted when the user clicks the dialog acceptance button.
 
-    okClicked: Signal = Signal()
+    okClicked: Signal = Signal()  # noqa: N815
 
     # Signal emitted when the user clicks the dialog cancel button.
 
-    cancelClicked: Signal = Signal()
+    cancelClicked: Signal = Signal()  # noqa: N815
 
     _widget: QWidget
 

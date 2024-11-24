@@ -17,7 +17,6 @@ Helpers to perform specific operations in response to certain signals.
 
 import logging
 import signal
-
 from types import FrameType
 
 from sunset import AutoSaver

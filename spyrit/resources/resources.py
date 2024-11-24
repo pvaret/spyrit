@@ -17,11 +17,9 @@ exist in the application.
 """
 
 import enum
-
-from typing import Sequence
+from collections.abc import Sequence
 
 from spyrit.resources.loader import load
-
 
 # Ensure the resources are loaded when this file is imported.
 

@@ -46,7 +46,7 @@ class SlidingPaneContainer(QScrollArea):
     # of the signal is the new active pane, or None if the last pane was
     # removed.
 
-    currentPaneChanged: Signal = Signal(Pane)
+    currentPaneChanged: Signal = Signal(Pane)  # noqa: N815
 
     # How long should the slide animation last, in milliseconds.
 
@@ -352,7 +352,7 @@ class SlidingPaneContainer(QScrollArea):
         remaining_panes: list[Pane] = []
         current_pane = self._currentActivePane()
 
-        for i, pane in enumerate(self._panes):
+        for pane in self._panes:
             if pane is current_pane or pane.pane_is_persistent:
                 remaining_panes.append(pane)
             else:

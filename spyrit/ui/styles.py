@@ -19,7 +19,6 @@ import logging
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication, QStyleFactory
-
 from sunset import Key
 
 

@@ -18,9 +18,12 @@ Provides a class that can be used to save text in settings in a scrambled form.
 import base64
 import binascii
 import hashlib
-import random
+import secrets
+from collections.abc import Iterator
 
-from typing import Iterator
+_SEEKRIT: bytes = base64.b64decode(
+    b"cG8tVEFZLXRvIHBvLVRBSC10bzqZDaAFScI0+jL2uLHxQy3wHK+grcOxEcWJUZLQq6kO4w=="
+)
 
 
 def _pads(salt: bytes) -> Iterator[bytes]:
@@ -38,13 +41,9 @@ def _pads(salt: bytes) -> Iterator[bytes]:
         A series of pads. XOR them to an input in order to scramble it.
     """
 
-    SEEKRIT = base64.b64decode(
-        b"cG8tVEFZLXRvIHBvLVRBSC10bzqZDaAFScI0+jL2uLHxQy3wHK+grcOxEcWJUZLQq6kO4w=="
-    )
-
-    hash = hashlib.sha256(salt)
-    hash.update(SEEKRIT)
-    pad = hash.digest()
+    hash_ = hashlib.sha256(salt)
+    hash_.update(_SEEKRIT)
+    pad = hash_.digest()
 
     while True:
         yield pad
@@ -82,18 +81,17 @@ class ScrambledText:
 
     def __init__(self, plaintext: str, salt: bytes | None = None) -> None:
         if "\0" in plaintext:
-            raise ValueError("Plaintext may not contain the NULL character.")
+            msg = "Plaintext may not contain the NULL character."
+            raise ValueError(msg)
 
-        if plaintext:
-            self._salt = random.randbytes(self.SALT_LENGTH) if salt is None else salt
-        else:
-            self._salt = b"\0" * self.SALT_LENGTH
+        self._salt = secrets.token_bytes(self.SALT_LENGTH) if salt is None else salt
 
         if len(self._salt) != self.SALT_LENGTH:
-            raise ValueError(
-                f"Invalid salt length: got {len(self._salt)},"
-                f" wanted {self.SALT_LENGTH}."
+            msg = (
+                f"Invalid salt length: got {len(self._salt)}, wanted"
+                f" {self.SALT_LENGTH}."
             )
+            raise ValueError(msg)
 
         self._cipher = self._scramble(self._salt, plaintext.encode(self.TEXT_ENCODING))
 
@@ -183,13 +181,13 @@ class ScrambledText:
             if not payload:
                 break
 
+            assert len(pad) > 0  # noqa: S101
             payload, block = payload[len(pad) :], payload[: len(pad)]
 
             if len(block) < len(pad):
                 block += b"\0" * (len(pad) - len(block))
 
-            assert len(block) == len(pad)
-            scrambled += bytes(b ^ p for b, p in zip(block, pad))
+            scrambled += bytes(b ^ p for b, p in zip(block, pad, strict=True))
 
         return scrambled
 

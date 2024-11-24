@@ -18,7 +18,6 @@ Declaration of the Spyrit state "settings".
 import operator
 
 from PySide6.QtCore import QSize
-
 from sunset import Bunch, Key, List, Settings
 
 from spyrit import constants

@@ -15,13 +15,12 @@
 Implements a Pythonic file wrapper around Qt resources.
 """
 
-from collections.abc import Buffer
+from collections.abc import Buffer, MutableSequence
 from io import RawIOBase
-from typing import MutableSequence
 
 from PySide6.QtCore import QFile
 
-from spyrit.resources.resources import _Resource  # type: ignore
+from spyrit.resources.resources import _Resource  # type: ignore[reportPrivateUsage]
 
 
 class ResourceFile(RawIOBase):
@@ -55,15 +54,15 @@ class ResourceFile(RawIOBase):
             resource data.
         """
 
-        if not isinstance(buffer, (MutableSequence, memoryview)):
-            raise TypeError(
-                f"Input parameter must be a mutable sequence; got {type(buffer)}."
-            )
+        if not isinstance(buffer, MutableSequence | memoryview):
+            msg = f"Input parameter must be a mutable sequence; got {type(buffer)}."
+            raise TypeError(msg)
 
         if self.closed:
-            raise ValueError("File object is closed and cannot be read from.")
+            msg = "File object is closed and cannot be read from."
+            raise ValueError(msg)
 
-        size = len(buffer)  # type: ignore
+        size = len(buffer)  # type: ignore[reportUnknownArgumentType]
         data = self._file.read(size).data()
         buffer[: len(data)] = data
         return len(data)
@@ -77,7 +76,8 @@ class ResourceFile(RawIOBase):
         """
 
         if self.closed:
-            raise ValueError("File object is closed and cannot be read from")
+            msg = "File object is closed and cannot be read from"
+            raise ValueError(msg)
 
         return bytes(self._file.readAll().data())
 

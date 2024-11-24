@@ -15,7 +15,7 @@
 Various confirmation dialogs.
 """
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox, QPushButton, QWidget

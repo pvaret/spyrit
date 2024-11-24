@@ -18,13 +18,12 @@ be applied to a cursor.
 
 import enum
 import logging
-
+from collections.abc import Iterable
 from functools import reduce
-from typing import Iterable, TypeVar
+from typing import TypeVar
 
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
-
 from sunset import Key
 
 from spyrit.network.connection import Status
@@ -42,7 +41,6 @@ from spyrit.network.fragments import (
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.colors import Color, NoColor
 from spyrit.ui.format import FormatUpdate
-
 
 _T = TypeVar("_T")
 

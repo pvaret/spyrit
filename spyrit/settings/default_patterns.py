@@ -21,7 +21,6 @@ from spyrit.settings.pattern import Pattern, PatternScope, PatternType
 from spyrit.ui.colors import ANSIColor, ANSIColorCodes
 from spyrit.ui.format import FormatUpdate
 
-
 _HOSTNAME_CHAR = r"-_a-zA-Z0-9"
 _URL_PATH_CHARS = r"-a-zA-Z0-9~#/_=:)};"
 _URL_PATH_INTERNAL_CHARS = _URL_PATH_CHARS + r"&({.!?"

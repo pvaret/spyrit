@@ -49,5 +49,4 @@ def shortcut_from_default(value: str) -> Shortcut:
     for the platform.
     """
 
-    key = Shortcut(value, format=QKeySequence.SequenceFormat.PortableText)
-    return key
+    return Shortcut(value, format=QKeySequence.SequenceFormat.PortableText)

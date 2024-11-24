@@ -18,16 +18,17 @@ Facilities to process otherwise uncaught exceptions.
 # pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false
 # pyright: reportUnknownArgumentType=false
 
+import contextlib
 import logging
 import sys
-
+from collections.abc import Callable
 from types import TracebackType
-from typing import Callable
 
 import stackprinter
 
 
 def _make_hook(
+    *,
     abort_on_error: bool = False,
 ) -> Callable[[type[BaseException], BaseException, TracebackType | None], None]:
     def hook(
@@ -36,26 +37,23 @@ def _make_hook(
         tb: TracebackType | None,
     ) -> None:
         logging.error(
-            "Uncaught exception:\n"
-            + stackprinter.format((exc_type, exc, tb), reverse=True)
+            "Uncaught exception:\n%s",
+            stackprinter.format((exc_type, exc, tb), reverse=True),
         )
 
         if abort_on_error:
             logging.error("Uncaught error occurred, quitting...")
-            try:
+            with contextlib.suppress(ImportError):
                 from PySide6.QtWidgets import QApplication
 
                 app = QApplication.instance()
                 if app is not None:
                     app.exit()
 
-            except ImportError:
-                pass
-
             sys.exit(-1)
 
     return hook
 
 
-def install_exception_handler(abort_on_error: bool = False) -> None:
-    sys.excepthook = _make_hook(abort_on_error)
+def install_exception_handler(*, abort_on_error: bool = False) -> None:
+    sys.excepthook = _make_hook(abort_on_error=abort_on_error)

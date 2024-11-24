@@ -16,13 +16,12 @@ Implements a helper that automatically updates values between a widget and a
 SunsetSettings Key.
 """
 
-from typing import Callable, Generic, TypeVar
+from collections.abc import Callable
+from typing import Generic, TypeVar
 
 from PySide6.QtCore import QObject, SignalInstance, Slot
 from PySide6.QtWidgets import QWidget
-
 from sunset import Key
-
 
 _T = TypeVar("_T", bound=int | str)
 
@@ -63,8 +62,7 @@ class Connector(Generic[_T], QObject):
     _to_value_converter: Callable[[str], _T]
     _from_value_converter: Callable[[_T], str]
 
-    # pylint: disable-next=too-many-arguments
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         parent: QWidget,
         key: Key[_T],

@@ -16,15 +16,14 @@ Implements container classes for typed fragments of network data.
 """
 
 import enum
-
-from abc import ABC
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from spyrit.network.connection import Status
 from spyrit.ui.format import FormatUpdate
 
 
-class Fragment(ABC):
+class Fragment:
     """
     Base class for all Fragments.
 
@@ -34,14 +33,14 @@ class Fragment(ABC):
     that displays text from the game.
     """
 
-    __match_args__: Sequence[str]
+    __match_args__: Sequence[str] = ()
 
     def __repr__(self) -> str:
         classname = self.__class__.__name__
-        args: list[str] = []
-
-        for argname in self.__match_args__:
-            args.append(argname + "=" + repr(getattr(self, argname, "?")))
+        args = [
+            f"{argname}={getattr(self, argname, '?')!r}"
+            for argname in self.__match_args__
+        ]
 
         return f"{classname}({','.join(args)})"
 
@@ -69,7 +68,7 @@ class ByteFragment(Fragment):
     def __init__(self, data: bytes) -> None:
         self.data = data
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, ByteFragment) and self.data == other.data
 
 
@@ -88,7 +87,7 @@ class TextFragment(Fragment):
     def __init__(self, text: str) -> None:
         self.text = text
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, TextFragment) and self.text == other.text
 
 
@@ -108,7 +107,7 @@ class ANSIFragment(Fragment):
     def __init__(self, format_update: FormatUpdate) -> None:
         self.format_update = format_update
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, ANSIFragment)
             and self.format_update == other.format_update
@@ -141,7 +140,7 @@ class FlowControlFragment(Fragment):
     def __init__(self, code: FlowControlCode) -> None:
         self.code = code
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, FlowControlFragment) and self.code == other.code
 
 
@@ -164,7 +163,7 @@ class NetworkFragment(Fragment):
         self.event = event
         self.text = text
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, NetworkFragment):
             return False
 
@@ -203,7 +202,7 @@ class PatternMatchFragment(Fragment):
         self.format = format_
         self.boundary = boundary
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, PatternMatchFragment):
             return False
 
@@ -222,10 +221,10 @@ class DummyFragment(Fragment):
 
     value: Any
 
-    def __init__(self, value: Any) -> None:
+    def __init__(self, value: object) -> None:
         self.value = value
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, DummyFragment):
             return False
 

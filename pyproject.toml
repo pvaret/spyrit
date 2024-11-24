@@ -1,9 +1,10 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "Spyrit"
+description = "A user-friendly MUD/MUSH/MOO graphical client."
 authors = [{ name = "P. Varet", email = "p.varet@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -14,10 +15,13 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Communications",
     "Topic :: Games/Entertainment :: Multi-User Dungeons (MUD)",
 ]
-dynamic = ["version", "description"]
+dynamic = ["version"]
 requires-python = ">=3.12"
 
 dependencies = [
@@ -28,37 +32,58 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["hypothesis", "pytest", "pytest-mock"]
-dev = ["bandit[toml]", "types-regex"]
+tests = ["hypothesis", "pytest", "pytest-mock"]
+dev = ["mypy", "types-regex"]
 
 [project.gui-scripts]
 spyrit = "spyrit.main:run"
 
-[tool.bandit]
-skips = [
-    "B101", # Disable alerting on 'assert' usage.
-    "B311", # Disable alerting on non-cryptographic 'random' usage.
-]
-
-[tool.flit.module]
-name = "spyrit"
-
-[tool.isort]
-# Use isort in black-compatible mode.
-profile = "black"
+[tool.pytest.ini_options]
+addopts = "-vv"
 
 [tool.mypy]
-show_error_codes = true
+exclude = ["testing/"]
+follow_imports = "skip"
 
-[tool.pylint.main]
-# Allow pylint to load PySide6 to check the existence of module members.
-extension-pkg-allow-list = ["PySide6"]
+[tool.ruff]
+# Use the default line length.
+line-length = 88
 
-[tool.pylint.BASIC]
-# Inform pylint of our actual method naming convention.
-method-naming-style = "camelCase"
-
-[tool.pylint."MESSAGES CONTROL"]
-disable = [
-    "invalid-name", # N815
+[tool.ruff.lint]
+# Enable all linting rules by default.
+select = ["ALL"]
+ignore = [
+    "ANN401",  # We're in fact careful about usage of Any.
+    "COM812",  # Can confuse the Ruff formatter.
+    "ISC001",  # Can confuse the Ruff formatter.
+    "N802",    # We in fact use camelCase method names.
+    "PLW2901", # We manipulate iteration variables a lot actually.
+    "TD002",   # We only use simple TODOs.
+    "TD003",   # We only use simple TODOs.
+    "D",       # Ignore docstring style linting for now. Revisit later.
+    "FBT",     # "Boolean trap" checks have a lot of false positives.
 ]
+exclude = ["testing/*"]
+
+[tool.hatch.version]
+path = "spyrit/constants.py"
+pattern = 'SPYRIT_VERSION *:? *\w* *= *"(?P<version>[\w.-]+)"'
+
+[tool.hatch.build.targets.wheel]
+packages = ["spyrit"]
+
+[tool.hatch.envs.hatch-test]
+# This forces hatch test to use the pytest ini options listed above.
+default-args = []
+# This makes this environment use the "tests" optional dependencies above. Hatch
+# installs its own set by default, but explicit is better than implicit.
+features = ["tests"]
+# Parallelizes test execution.
+parallel = true
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.12", "3.13"]
+
+[tool.hatch.envs.dev]
+# This is the environment used for developping the app.
+features = ["dev", "tests"]

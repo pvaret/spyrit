@@ -18,7 +18,6 @@ Facilities to process otherwise uncaught exceptions.
 # pyright: reportMissingTypeStubs=false, reportUnknownMemberType=false
 # pyright: reportUnknownArgumentType=false
 
-
 import logging
 import sys
 

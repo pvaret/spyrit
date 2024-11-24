@@ -16,7 +16,6 @@ Implements a helper that automatically updates values between a widget and a
 SunsetSettings Key.
 """
 
-
 from typing import Callable, Generic, TypeVar
 
 from PySide6.QtCore import QObject, SignalInstance, Slot

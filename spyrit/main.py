@@ -16,7 +16,6 @@
 Check dependencies, bootstrap the program.
 """
 
-
 import sys
 
 from typing import NoReturn

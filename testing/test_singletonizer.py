@@ -81,9 +81,7 @@ class TestSingletonizer:
         stub_server.listen = mocker.Mock(return_value=True)
 
         stub_make_socket_name = mocker.Mock(return_value="test-socket-name")
-        monkeypatch.setattr(
-            Singletonizer, "_makeSocketName", stub_make_socket_name
-        )
+        monkeypatch.setattr(Singletonizer, "_makeSocketName", stub_make_socket_name)
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
@@ -95,9 +93,7 @@ class TestSingletonizer:
         assert singletonizer.isMainInstance()
         assert singletonizer._server is not None  # type: ignore
 
-        stub_server.listen.assert_called_once_with(
-            "test-socket-name"
-        )
+        stub_server.listen.assert_called_once_with("test-socket-name")
 
     def test_singletonizer_non_main_instance(
         self, tmp_path: Path, mocker: MockerFixture
@@ -197,12 +193,8 @@ class TestSingletonizer:
         )
         stub_pidfile.tryLock = mocker.Mock(return_value=True)
         stub_server.listen = mocker.Mock(return_value=True)
-        stub_server.hasPendingConnections = mocker.Mock(
-            side_effect=[True, False]
-        )
-        stub_server.nextPendingConnection = mocker.Mock(
-            return_value=stub_socket
-        )
+        stub_server.hasPendingConnections = mocker.Mock(side_effect=[True, False])
+        stub_server.nextPendingConnection = mocker.Mock(return_value=stub_socket)
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
@@ -218,9 +210,7 @@ class TestSingletonizer:
         singletonizer._onNewConnectionReceived()  # type: ignore
 
         stub_socket.readAll.assert_called_once()
-        stub_socket.write.assert_called_once_with(
-            str(_TEST_PID).encode("ascii")
-        )
+        stub_socket.write.assert_called_once_with(str(_TEST_PID).encode("ascii"))
         stub_slot.assert_called_once()
 
     def test_send_secondary_instance_notification(
@@ -236,9 +226,7 @@ class TestSingletonizer:
         )
 
         stub_make_socket_name = mocker.Mock(return_value="test-socket-name")
-        monkeypatch.setattr(
-            Singletonizer, "_makeSocketName", stub_make_socket_name
-        )
+        monkeypatch.setattr(Singletonizer, "_makeSocketName", stub_make_socket_name)
 
         singletonizer = Singletonizer(
             tmp_path / "test.pid",
@@ -251,9 +239,5 @@ class TestSingletonizer:
         remote_pid = singletonizer.notifyNewInstanceStarted()
         assert remote_pid == str(_TEST_PID_REMOTE)
 
-        stub_socket.connectToServer.assert_called_once_with(
-            "test-socket-name"
-        )
-        stub_socket.write.assert_called_once_with(
-            str(_TEST_PID).encode("ascii")
-        )
+        stub_socket.connectToServer.assert_called_once_with("test-socket-name")
+        stub_socket.write.assert_called_once_with(str(_TEST_PID).encode("ascii"))

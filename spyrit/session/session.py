@@ -79,9 +79,7 @@ class Session(QObject):
         # Create the session to go with the window, and create a new instance in
         # it so it's not empty.
 
-        session_window = SessionWindow(
-            self, self._settings, self._state, window
-        )
+        session_window = SessionWindow(self, self._settings, self._state, window)
         session_window.newInstance()
         self._windows.add(session_window)
 

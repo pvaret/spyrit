@@ -39,8 +39,7 @@ def _pads(salt: bytes) -> Iterator[bytes]:
     """
 
     SEEKRIT = base64.b64decode(
-        b"cG8tVEFZLXRvIHBvLVRBSC10bzqZDaAFScI0+"
-        b"jL2uLHxQy3wHK+grcOxEcWJUZLQq6kO4w=="
+        b"cG8tVEFZLXRvIHBvLVRBSC10bzqZDaAFScI0+jL2uLHxQy3wHK+grcOxEcWJUZLQq6kO4w=="
     )
 
     hash = hashlib.sha256(salt)
@@ -86,9 +85,7 @@ class ScrambledText:
             raise ValueError("Plaintext may not contain the NULL character.")
 
         if plaintext:
-            self._salt = (
-                random.randbytes(self.SALT_LENGTH) if salt is None else salt
-            )
+            self._salt = random.randbytes(self.SALT_LENGTH) if salt is None else salt
         else:
             self._salt = b"\0" * self.SALT_LENGTH
 
@@ -98,9 +95,7 @@ class ScrambledText:
                 f" wanted {self.SALT_LENGTH}."
             )
 
-        self._cipher = self._scramble(
-            self._salt, plaintext.encode(self.TEXT_ENCODING)
-        )
+        self._cipher = self._scramble(self._salt, plaintext.encode(self.TEXT_ENCODING))
 
     def plaintext(self) -> str:
         """
@@ -150,9 +145,7 @@ class ScrambledText:
             return cls("")
 
         try:
-            payload = base64.b64decode(
-                text.encode(cls.B64_ENCODING), validate=True
-            )
+            payload = base64.b64decode(text.encode(cls.B64_ENCODING), validate=True)
         except (UnicodeEncodeError, ValueError, binascii.Error):
             return None
 

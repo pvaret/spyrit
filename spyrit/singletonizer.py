@@ -92,9 +92,7 @@ class PIDFile:
                 fd = self._path.open()
 
             except OSError as e:
-                logging.error(
-                    "Error while opening PID file %s: %s", self._path, e
-                )
+                logging.error("Error while opening PID file %s: %s", self._path, e)
                 raise
 
             try:
@@ -105,9 +103,7 @@ class PIDFile:
 
             except OSError as e:
                 if e.errno != errno.EAGAIN:
-                    logging.error(
-                        "Failed to lock PID file %s: %s", self._path, e
-                    )
+                    logging.error("Failed to lock PID file %s: %s", self._path, e)
                     raise
 
                 # EAGAIN means someone else owns the lock. That's fine.
@@ -209,13 +205,9 @@ class Singletonizer(QObject):
         self._socket_factory = _socket_factory
 
         if self._pidfile.tryLock():
-            logging.info(
-                "Main process instance running with PID %s.", self._pid
-            )
+            logging.info("Main process instance running with PID %s.", self._pid)
             server = _server_factory(self)
-            server.setSocketOptions(
-                QLocalServer.SocketOption.AbstractNamespaceOption
-            )
+            server.setSocketOptions(QLocalServer.SocketOption.AbstractNamespaceOption)
             self._socket_name = self._makeSocketName()
 
             # Remove an existing socket, if any. This can happen if an instance
@@ -230,8 +222,7 @@ class Singletonizer(QObject):
 
             if not server.listen(self._socket_name):
                 logging.error(
-                    "Failed to create named socket '%s' for singleton server:"
-                    " %s",
+                    "Failed to create named socket '%s' for singleton server: %s",
                     self._socket_name,
                     server.errorString(),
                 )
@@ -244,9 +235,7 @@ class Singletonizer(QObject):
             self._server.newConnection.connect(self._onNewConnectionReceived)
 
         else:
-            logging.debug(
-                "Process with PID %s is not the main instance.", self._pid
-            )
+            logging.debug("Process with PID %s is not the main instance.", self._pid)
 
     def __enter__(self) -> "Singletonizer":
         return self
@@ -287,8 +276,7 @@ class Singletonizer(QObject):
         conn.connectToServer(socket_name)
         if not conn.waitForConnected(msecs=_TIMEOUT_MS):
             logging.error(
-                "Failed to connect to singleton server on named socket"
-                " '%s': %s",
+                "Failed to connect to singleton server on named socket '%s': %s",
                 socket_name,
                 conn.errorString(),
             )

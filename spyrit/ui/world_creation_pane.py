@@ -15,7 +15,6 @@
 Implements a UI to set up a new world.
 """
 
-
 from typing import Any
 
 from PySide6.QtCore import QObject, Signal, Slot
@@ -59,10 +58,7 @@ class SettingsValidator(QObject):
             self.validityChanged.emit(valid)
 
     def valid(self) -> bool:
-        return (
-            self._settings.net.port.isSet()
-            and self._settings.net.server.isSet()
-        )
+        return self._settings.net.port.isSet() and self._settings.net.server.isSet()
 
 
 class WorldCreationPane(BaseDialogPane):

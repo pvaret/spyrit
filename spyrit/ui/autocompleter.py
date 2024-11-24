@@ -425,9 +425,7 @@ class Autocompleter(QCompleter):
 
         self.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        self.setModelSorting(
-            QCompleter.ModelSorting.CaseInsensitivelySortedModel
-        )
+        self.setModelSorting(QCompleter.ModelSorting.CaseInsensitivelySortedModel)
 
         self.setWidget(widget)
         widget.installEventFilter(self)
@@ -462,9 +460,7 @@ class Autocompleter(QCompleter):
         Initiates the completion process.
         """
 
-        self._completion_cursor = cursor = QTextCursor(
-            self._widget.textCursor()
-        )
+        self._completion_cursor = cursor = QTextCursor(self._widget.textCursor())
 
         if not cursor.hasSelection():
             self.selectCompletableWord(cursor)
@@ -570,30 +566,22 @@ class Autocompleter(QCompleter):
             case QKeyEvent() if e.type() == QKeyEvent.Type.KeyPress:
                 # Up, down, page up and page down are passed verbatim to the popup.
 
-                if (
-                    e.modifiers() == Qt.KeyboardModifier.NoModifier
-                    and e.key()
-                    in (
-                        Qt.Key.Key_Up,
-                        Qt.Key.Key_Down,
-                        Qt.Key.Key_PageUp,
-                        Qt.Key.Key_PageDown,
-                    )
+                if e.modifiers() == Qt.KeyboardModifier.NoModifier and e.key() in (
+                    Qt.Key.Key_Up,
+                    Qt.Key.Key_Down,
+                    Qt.Key.Key_PageUp,
+                    Qt.Key.Key_PageDown,
                 ):
                     return super().eventFilter(o, e)
 
                 # Space, Enter, Return and Tab accept the current selection, if
                 # any, and are then consumed without further processing.
 
-                if (
-                    e.modifiers() == Qt.KeyboardModifier.NoModifier
-                    and e.key()
-                    in (
-                        Qt.Key.Key_Space,
-                        Qt.Key.Key_Enter,
-                        Qt.Key.Key_Return,
-                        Qt.Key.Key_Tab,
-                    )
+                if e.modifiers() == Qt.KeyboardModifier.NoModifier and e.key() in (
+                    Qt.Key.Key_Space,
+                    Qt.Key.Key_Enter,
+                    Qt.Key.Key_Return,
+                    Qt.Key.Key_Tab,
                 ):
                     index = popup.currentIndex()
                     if index.isValid():

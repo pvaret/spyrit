@@ -20,29 +20,21 @@ def _salt_hypothesis() -> hypothesis.strategies.SearchStrategy[bytes]:
 
 class TestScrambledText:
     @hypothesis.given(text=_text_hypothesis(), salt=_salt_hypothesis())
-    def test_text_descrambles_to_initial_value(
-        self, text: str, salt: bytes
-    ) -> None:
+    def test_text_descrambles_to_initial_value(self, text: str, salt: bytes) -> None:
         assert ScrambledText(text, salt).plaintext() == text
 
     @hypothesis.given(text=_text_hypothesis(), salt=_salt_hypothesis())
-    def test_fromStr_restores_scrambled_text(
-        self, text: str, salt: bytes
-    ) -> None:
+    def test_fromStr_restores_scrambled_text(self, text: str, salt: bytes) -> None:
         cipher = ScrambledText(text, salt).toStr()
         scrambled = ScrambledText.fromStr(cipher)
         assert scrambled is not None and scrambled.plaintext() == text
 
-    @hypothesis.given(
-        text=_text_hypothesis(non_empty=True), salt=_salt_hypothesis()
-    )
+    @hypothesis.given(text=_text_hypothesis(non_empty=True), salt=_salt_hypothesis())
     def test_scrambled_text_is_scrambled(self, text: str, salt: bytes) -> None:
         assert ScrambledText(text, salt).toStr() != text
 
     @hypothesis.given(salt=_salt_hypothesis())
-    def test_empty_plaintext_serializes_to_empty_string(
-        self, salt: bytes
-    ) -> None:
+    def test_empty_plaintext_serializes_to_empty_string(self, salt: bytes) -> None:
         assert ScrambledText("", salt).toStr() == ""
         assert ScrambledText("").toStr() == ""
 
@@ -87,9 +79,7 @@ class TestScrambledText:
             lambda b: len(b) != ScrambledText.SALT_LENGTH
         ),
     )
-    def test_invalid_salt_length_raises_assertion(
-        self, text: str, salt: bytes
-    ) -> None:
+    def test_invalid_salt_length_raises_assertion(self, text: str, salt: bytes) -> None:
         with pytest.raises(ValueError):
             ScrambledText(text, salt)
 

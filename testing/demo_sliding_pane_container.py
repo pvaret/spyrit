@@ -37,9 +37,7 @@ class TestPane(Pane):
 
         self.setLayout(layout := QGridLayout())
 
-        def _make_button(
-            text: str, callback: Callable[[], None]
-        ) -> QPushButton:
+        def _make_button(text: str, callback: Callable[[], None]) -> QPushButton:
             button = QPushButton(text)
             button.setSizePolicy(
                 QSizePolicy.Policy.Expanding,
@@ -51,14 +49,10 @@ class TestPane(Pane):
         row = 0
         layout.addWidget(QLabel(f"<b>Pane {i}</b>"), row, 0, 1, 2)
         row += 1
-        layout.addWidget(
-            _make_button("Append!", self.appendRight), row, 0, 1, 2
-        )
+        layout.addWidget(_make_button("Append!", self.appendRight), row, 0, 1, 2)
         row += 1
         layout.addWidget(_make_button("Slide left!", parent.slideLeft), row, 0)
-        layout.addWidget(
-            _make_button("Slide right!", parent.slideRight), row, 1
-        )
+        layout.addWidget(_make_button("Slide right!", parent.slideRight), row, 1)
         row += 1
         button = _make_button("Toggle persistent!", self.togglePersistent)
         layout.addWidget(button, row, 0, 1, 2)

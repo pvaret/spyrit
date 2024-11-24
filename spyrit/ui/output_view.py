@@ -15,7 +15,6 @@
 Implements a widget to display the text of a game.
 """
 
-
 from typing import Any
 
 from PySide6.QtCore import QEvent, QObject, QPoint, Qt, Signal, Slot
@@ -123,14 +122,11 @@ class OutputView(QTextEdit):
         """
 
         if cursor.isNull():
-
             # A null cursor means that we're resetting the search. Clear all the
             # selections, and scroll to the bottom.
 
             self.setExtraSelections([])
-            self.requestScrollToPosition.emit(
-                self.verticalScrollBar().maximum()
-            )
+            self.requestScrollToPosition.emit(self.verticalScrollBar().maximum())
             return
 
         cursor.setKeepPositionOnInsert(True)
@@ -243,15 +239,11 @@ class ClickDetector(QObject):
 
         if watched is self.parent():
             match event:
-                case (
-                    QMouseEvent()
-                ) if event.type() == QEvent.Type.MouseButtonPress:
+                case QMouseEvent() if event.type() == QEvent.Type.MouseButtonPress:
                     self._click_pos = event.pos()
                     self._click_button = event.button()
 
-                case (
-                    QMouseEvent()
-                ) if event.type() == QEvent.Type.MouseButtonRelease:
+                case QMouseEvent() if event.type() == QEvent.Type.MouseButtonRelease:
                     if (
                         self._click_pos is not None
                         and event.button() == self._click_button

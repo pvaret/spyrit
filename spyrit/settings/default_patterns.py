@@ -15,7 +15,6 @@
 Provides patterns to be used by default for all worlds.
 """
 
-
 from spyrit import constants
 from spyrit.regex_helpers import any_of, blocks_with_separator, optional
 from spyrit.settings.pattern import Pattern, PatternScope, PatternType
@@ -42,8 +41,7 @@ URL_MATCH_RE: str = (
     + optional(r":\d+")
     # path
     + optional(
-        r"/"
-        + optional(rf"[{_URL_PATH_INTERNAL_CHARS}]*" + rf"[{_URL_PATH_CHARS}]")
+        r"/" + optional(rf"[{_URL_PATH_INTERNAL_CHARS}]*" + rf"[{_URL_PATH_CHARS}]")
     )
 )
 

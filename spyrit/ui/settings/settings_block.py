@@ -15,7 +15,6 @@
 Implements a widget that contains one or several settings widgets.
 """
 
-
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QEnterEvent
 from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
@@ -41,9 +40,7 @@ class SettingsBlock(QWidget):
 
     _help_text: str
 
-    def __init__(
-        self, widget: QWidget, label: str = "", help_text: str = ""
-    ) -> None:
+    def __init__(self, widget: QWidget, label: str = "", help_text: str = "") -> None:
         super().__init__()
 
         self.setLayout(QVBoxLayout())

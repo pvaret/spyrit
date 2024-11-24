@@ -15,7 +15,6 @@ from spyrit.settings.scrambled_text import ScrambledText
 
 
 class ScrambleUI(QWidget):
-
     _input: QLineEdit
     _output: QLineEdit
 

@@ -14,7 +14,6 @@
 Implements an input box for the user to type text in.
 """
 
-
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QFontMetrics, QKeyEvent
 from PySide6.QtWidgets import QPlainTextEdit

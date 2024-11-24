@@ -14,9 +14,7 @@ def _all_pattern_matches(pattern: Pattern, text: str) -> list[str]:
 
 
 def _text_line() -> hypothesis.strategies.SearchStrategy:
-    return hypothesis.strategies.text(min_size=1).filter(
-        lambda s: "\n" not in s
-    )
+    return hypothesis.strategies.text(min_size=1).filter(lambda s: "\n" not in s)
 
 
 class TestFragmentMatching:
@@ -397,9 +395,7 @@ def test_url_regex() -> None:
     assert re.fullmatch(pattern, "http://www.python.org:80")
     assert re.fullmatch(pattern, "http://www.python.org:80/")
     assert re.fullmatch(pattern, "https://docs.python.org/3/whatsnew/3.12.html")
-    assert re.fullmatch(
-        pattern, "https://docs.python.org/3/search.html?q=regex"
-    )
+    assert re.fullmatch(pattern, "https://docs.python.org/3/search.html?q=regex")
 
 
 def test_url_no_match() -> None:

@@ -15,7 +15,6 @@
 Implements a Pythonic file wrapper around Qt resources.
 """
 
-
 from collections.abc import Buffer
 from io import RawIOBase
 from typing import MutableSequence

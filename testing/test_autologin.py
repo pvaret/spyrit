@@ -15,13 +15,9 @@ class TestAutologin:
         credentials = SpyritSettings.Login()
         credentials.name.set(name := "test")
         credentials.password.set(password := ScrambledText("test"))
-        credentials.login_style.set(
-            style := LoginStyle.CONNECT_NAME_PASSWORD_CR
-        )
+        credentials.login_style.set(style := LoginStyle.CONNECT_NAME_PASSWORD_CR)
 
-        monkeypatch.setattr(
-            Autologin, "_sendLogin", send_login := mocker.Mock()
-        )
+        monkeypatch.setattr(Autologin, "_sendLogin", send_login := mocker.Mock())
 
         autologin = Autologin(credentials, Connection(SpyritSettings.Network()))
 
@@ -65,9 +61,7 @@ class TestAutologin:
         credentials.password.set(ScrambledText("test"))
         credentials.login_style.set(LoginStyle.CONNECT_NAME_PASSWORD_CR)
 
-        monkeypatch.setattr(
-            Autologin, "_sendLogin", send_login := mocker.Mock()
-        )
+        monkeypatch.setattr(Autologin, "_sendLogin", send_login := mocker.Mock())
 
         autologin = Autologin(credentials, Connection(SpyritSettings.Network()))
 
@@ -117,9 +111,7 @@ class TestAutologin:
             ScrambledText("test_password"),
             LoginStyle.CONNECT_NAME_PASSWORD_CR,
         )
-        connection.sendText.assert_called_once_with(
-            "connect test_name test_password\n"
-        )
+        connection.sendText.assert_called_once_with("connect test_name test_password\n")
         connection.sendText.reset_mock()
 
         autologin._sendLogin(  # pyright: ignore [reportPrivateUsage]

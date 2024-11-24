@@ -14,7 +14,6 @@
 Implements history for input boxes.
 """
 
-
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtWidgets import QPlainTextEdit
 
@@ -74,10 +73,7 @@ class Historian(QObject):
         if not text:
             return
 
-        if (
-            len(history := self._state.history) > 0
-            and history[-1].get() == text
-        ):
+        if len(history := self._state.history) > 0 and history[-1].get() == text:
             return
 
         history.appendOne().set(text)

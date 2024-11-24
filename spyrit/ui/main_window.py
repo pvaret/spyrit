@@ -448,6 +448,4 @@ class SpyritMainWindow(QMainWindow):
         super().leaveEvent(event)
 
     def __del__(self) -> None:
-        logging.debug(
-            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
-        )
+        logging.debug("%s (%s) destroyed.", self.__class__.__name__, hex(id(self)))

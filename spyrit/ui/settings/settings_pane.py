@@ -58,9 +58,7 @@ def _root(settings: _SettingsT) -> _SettingsT:
     return _root(parent)
 
 
-def linewrap(
-    text: str, line_length: int = constants.TAB_TEXT_WIDTH_CHARS
-) -> str:
+def linewrap(text: str, line_length: int = constants.TAB_TEXT_WIDTH_CHARS) -> str:
     """
     Wraps the given text to the given length.
 
@@ -135,9 +133,7 @@ class _SideTabBar(QTabBar):
 
             # Draw the tab's frame.
 
-            style.drawControl(
-                QStyle.ControlElement.CE_TabBarTabShape, opt, painter
-            )
+            style.drawControl(QStyle.ControlElement.CE_TabBarTabShape, opt, painter)
 
             # Transpose the painter.
 
@@ -158,9 +154,7 @@ class _SideTabBar(QTabBar):
 
             # And render the text element.
 
-            style.drawControl(
-                QStyle.ControlElement.CE_TabBarTabLabel, opt, painter
-            )
+            style.drawControl(QStyle.ControlElement.CE_TabBarTabLabel, opt, painter)
             painter.restore()
 
 
@@ -203,9 +197,7 @@ class SettingsPane(BaseDialogPane):
 
         # Global settings go here.
 
-        pane_widget.addTab(
-            self._appearanceSettingsUI(root_settings.ui), "Appearance"
-        )
+        pane_widget.addTab(self._appearanceSettingsUI(root_settings.ui), "Appearance")
         pane_widget.addTab(
             self._shortcutsSettingsUI(root_settings.shortcuts), "Shortcuts"
         )
@@ -242,9 +234,7 @@ class SettingsPane(BaseDialogPane):
         label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         return label
 
-    def _shortcutsSettingsUI(
-        self, settings: SpyritSettings.KeyShortcuts
-    ) -> QWidget:
+    def _shortcutsSettingsUI(self, settings: SpyritSettings.KeyShortcuts) -> QWidget:
         """
         Constructs and returns a UI to manage the application's key shortcuts.
 

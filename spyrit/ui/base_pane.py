@@ -16,7 +16,6 @@ Implements a base class that provides the common functionality between panes
 contained in a SlidingPaneContainer.
 """
 
-
 import logging
 
 from PySide6.QtWidgets import QWidget
@@ -32,6 +31,4 @@ class Pane(QWidget):
     pane_is_persistent: bool = False
 
     def __del__(self) -> None:
-        logging.debug(
-            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
-        )
+        logging.debug("%s (%s) destroyed.", self.__class__.__name__, hex(id(self)))

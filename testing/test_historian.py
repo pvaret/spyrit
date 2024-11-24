@@ -34,7 +34,6 @@ def inputbox(mocker: MockerFixture) -> Iterator[QPlainTextEdit]:
 
 class TestHistorian:
     def test_historian(self, inputbox: unittest.mock.Mock) -> None:
-
         state = SpyritState()
 
         historian = Historian(
@@ -89,15 +88,11 @@ class TestHistorian:
         inputbox.clear.assert_called_once()
         inputbox.appendPlainText.assert_called_once_with("")
 
-    def test_historian_history_limit(
-        self, inputbox: unittest.mock.Mock
-    ) -> None:
+    def test_historian_history_limit(self, inputbox: unittest.mock.Mock) -> None:
         state = SpyritState()
         state.history.max_history_length.set(1)
 
-        historian = Historian(
-            inputbox, state.history, SpyritSettings.KeyShortcuts()
-        )
+        historian = Historian(inputbox, state.history, SpyritSettings.KeyShortcuts())
         historian.recordNewInput("line 1")
         historian.recordNewInput("line 2")
         historian.recordNewInput("line 3")
@@ -117,9 +112,7 @@ class TestHistorian:
     def test_historian_saves_state(self, inputbox: unittest.mock.Mock) -> None:
         state = SpyritState()
 
-        historian = Historian(
-            inputbox, state.history, SpyritSettings.KeyShortcuts()
-        )
+        historian = Historian(inputbox, state.history, SpyritSettings.KeyShortcuts())
 
         historian.recordNewInput("1")
         historian.recordNewInput("2")
@@ -130,9 +123,7 @@ class TestHistorian:
     def test_no_duplicates(self, inputbox: unittest.mock.Mock) -> None:
         state = SpyritState()
 
-        historian = Historian(
-            inputbox, state.history, SpyritSettings.KeyShortcuts()
-        )
+        historian = Historian(inputbox, state.history, SpyritSettings.KeyShortcuts())
 
         historian.recordNewInput("2")
         historian.recordNewInput("1")

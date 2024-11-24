@@ -15,7 +15,6 @@
 Implements a class that can encode formatting instructions.
 """
 
-
 import dataclasses
 
 from spyrit.ui.colors import Color
@@ -77,9 +76,7 @@ class FormatUpdate:
     def __repr__(self) -> str:
         attributes = dataclasses.asdict(self)
         reprs = [
-            f"{name}={value}"
-            for name, value in attributes.items()
-            if value is not None
+            f"{name}={value}" for name, value in attributes.items() if value is not None
         ]
         contents = "; ".join(reprs)
         return f"{self.__class__.__qualname__}({contents})"

@@ -15,7 +15,6 @@
 Implements the UI that is first displayed when opening a new window.
 """
 
-
 from typing import Any, cast
 
 from PySide6.QtCore import Signal, Slot
@@ -51,9 +50,7 @@ def _set_button_size_properties(button: QAbstractButton) -> None:
     """
 
     unit = Sizer(button).unitSize()
-    button.setSizePolicy(
-        QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred
-    )
+    button.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
     button.setStyleSheet(
         f"QAbstractButton {{ padding: {unit/1.5} {unit} {unit/1.5} {unit} }}"
     )
@@ -135,9 +132,7 @@ class WorldsMenu(QMenu):
 
             for world in self._settings.worlds():
                 action = self.addAction(world.title())  # type: ignore
-                action.triggered.connect(
-                    CallWithArgs(self.worldSelected.emit, world)
-                )
+                action.triggered.connect(CallWithArgs(self.worldSelected.emit, world))
                 self._count += 1
 
                 for character in world.characters():

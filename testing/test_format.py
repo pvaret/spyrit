@@ -109,9 +109,7 @@ class TestFormat:
         format_.update(FormatUpdate(background=NoColor()))
         assert format_.background == NoColor()
 
-        format_.update(
-            FormatUpdate(underline_color=ANSIColor(ANSIColorCodes.Red))
-        )
+        format_.update(FormatUpdate(underline_color=ANSIColor(ANSIColorCodes.Red)))
         assert format_.underline_color == ANSIColor(ANSIColorCodes.Red)
         format_.update(FormatUpdate(underline_color=NoColor()))
         assert format_.underline_color == NoColor()

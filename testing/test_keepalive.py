@@ -25,9 +25,7 @@ class TestKeepalive:
 
         timer.setInterval.assert_called_once_with(456000)
 
-    def test_only_start_if_enabled_and_connected(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_only_start_if_enabled_and_connected(self, mocker: MockerFixture) -> None:
         connection = Connection(SpyritSettings.Network())
         timer: Any = mocker.Mock(spec=QTimer)
 
@@ -73,6 +71,4 @@ class TestKeepalive:
 
         timer.timeout.emit()
 
-        connection.send.assert_called_once_with(
-            KeepaliveMessage.CARRIAGE_RETURN.value
-        )
+        connection.send.assert_called_once_with(KeepaliveMessage.CARRIAGE_RETURN.value)

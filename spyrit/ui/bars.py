@@ -14,7 +14,6 @@
 Implements vertical and horizontal bars.
 """
 
-
 import enum
 
 from PySide6.QtWidgets import QFrame, QWidget
@@ -26,9 +25,7 @@ class _Direction(enum.Enum):
 
 
 class _Bar(QFrame):
-    def __init__(
-        self, direction: _Direction, parent: QWidget | None = None
-    ) -> None:
+    def __init__(self, direction: _Direction, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         if direction == _Direction.VERTICAL:

@@ -133,9 +133,7 @@ class ConnectionToggleAction(QAction):
         """
 
         self.setToolTip(
-            self._CONNECTED_TOOLTIP
-            if connecting
-            else self._DISCONNECTED_TOOLTIP
+            self._CONNECTED_TOOLTIP if connecting else self._DISCONNECTED_TOOLTIP
         )
         self.setIcon(self._on_icon if connecting else self._off_icon)
 
@@ -217,9 +215,7 @@ class WorldPane(Pane):
 
         # Assemble the game UI layout.
 
-        self._layoutWidgets(
-            state, view, search_bar, toolbar, inputbox, extra_inputbox
-        )
+        self._layoutWidgets(state, view, search_bar, toolbar, inputbox, extra_inputbox)
 
         # Set up the interconnections between the widgets.
 
@@ -283,9 +279,7 @@ class WorldPane(Pane):
         )
         input_splitter.setContentsMargins(0, 0, margin, margin)
 
-        self.layout().addWidget(
-            Splitter(state.output_splitter_sizes, outputs, inputs)
-        )
+        self.layout().addWidget(Splitter(state.output_splitter_sizes, outputs, inputs))
 
     def _setupGameWidgets(
         self,
@@ -333,9 +327,7 @@ class WorldPane(Pane):
             ),
         ):
             self.addAction(
-                ActionWithKeySetting(
-                    parent=self, text=text, key=shortcut, slot=slot
-                )
+                ActionWithKeySetting(parent=self, text=text, key=shortcut, slot=slot)
             )
 
         # Set up the focus logic for the game UI. TL;DR: the pane just forwards
@@ -361,7 +353,6 @@ class WorldPane(Pane):
         search_bar.hide()
 
         for box in (inputbox, extra_inputbox):
-
             # The input boxes are active if and only if a connection to the game
             # world is active.
 
@@ -396,9 +387,7 @@ class WorldPane(Pane):
         # Set up the connection toggle.
 
         toolbar.addAction(
-            connection_toggle := ConnectionToggleAction(
-                self, self._connection_status
-            )
+            connection_toggle := ConnectionToggleAction(self, self._connection_status)
         )
         connection_toggle.connectRequested.connect(self.startConnection)
         connection_toggle.disconnectRequested.connect(self._maybeDisconnect)
@@ -459,9 +448,7 @@ class WorldPane(Pane):
         # Add space so the close button is isolated at the bottom.
 
         spacer = QWidget()
-        spacer.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding
-        )
+        spacer.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         toolbar.addWidget(spacer)
 
         # Set up the close button.
@@ -492,16 +479,13 @@ class WorldPane(Pane):
         is currently established.
         """
 
-        if (
-            not self._connection_status.isConnected()
-            or askUserIfReadyToDisconnect(self)
+        if not self._connection_status.isConnected() or askUserIfReadyToDisconnect(
+            self
         ):
             self.stopConnection.emit()
 
 
-def make_processor(
-    connection: Connection, settings: SpyritSettings
-) -> BaseProcessor:
+def make_processor(connection: Connection, settings: SpyritSettings) -> BaseProcessor:
     """
     Constructs and returns the processor to parse the network output from the
     game.

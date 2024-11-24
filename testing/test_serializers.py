@@ -53,10 +53,7 @@ def test_size_serializer() -> None:
 def test_color_serializer() -> None:
     assert ColorSerializer.toStr(NoColor()) == "-"
     assert ColorSerializer.toStr(ANSIColor(ANSIColorCodes.Black)) == "Black"
-    assert (
-        ColorSerializer.toStr(ANSIColor(ANSIColorCodes.LightCyan))
-        == "LightCyan"
-    )
+    assert ColorSerializer.toStr(ANSIColor(ANSIColorCodes.LightCyan)) == "LightCyan"
     assert ColorSerializer.toStr(ANSIColor(201)) == "201"
     assert ColorSerializer.toStr(RGBColor(0, 0, 0)) == "#000000"
     assert ColorSerializer.toStr(RGBColor(123, 231, 132)) == "#7be784"
@@ -68,9 +65,7 @@ def test_color_serializer() -> None:
     assert ColorSerializer.fromStr("0") == ANSIColor(ANSIColorCodes.Black)
     assert ColorSerializer.fromStr("black") == ANSIColor(ANSIColorCodes.Black)
     assert ColorSerializer.fromStr("BLACK") == ANSIColor(ANSIColorCodes.Black)
-    assert ColorSerializer.fromStr("13") == ANSIColor(
-        ANSIColorCodes.LightMagenta
-    )
+    assert ColorSerializer.fromStr("13") == ANSIColor(ANSIColorCodes.LightMagenta)
     assert ColorSerializer.fromStr("lightmagenta") == ANSIColor(
         ANSIColorCodes.LightMagenta
     )
@@ -156,9 +151,7 @@ def test_format_serializer() -> None:
     assert FormatSerializer.fromStr("background: #000000") == FormatUpdate(
         background=RGBColor(0, 0, 0)
     )
-    assert FormatSerializer.fromStr("href:   test  ") == FormatUpdate(
-        href="test"
-    )
+    assert FormatSerializer.fromStr("href:   test  ") == FormatUpdate(href="test")
     assert FormatSerializer.fromStr(
         FormatSerializer.toStr(FormatUpdate(href="a;b;c"))
     ) == FormatUpdate(href="a;b;c")
@@ -172,9 +165,9 @@ def test_format_serializer_invalid_values() -> None:
     assert FormatSerializer.fromStr("background: #0000zz") == FormatUpdate()
     assert FormatSerializer.fromStr("background:") == FormatUpdate()
     assert FormatSerializer.fromStr("invalid") == FormatUpdate()
-    assert FormatSerializer.fromStr(
-        "bold ; invalid ; -strikeout"
-    ) == FormatUpdate(bold=True, strikeout=False)
+    assert FormatSerializer.fromStr("bold ; invalid ; -strikeout") == FormatUpdate(
+        bold=True, strikeout=False
+    )
 
 
 def _text_hypothesis() -> hypothesis.strategies.SearchStrategy[str]:

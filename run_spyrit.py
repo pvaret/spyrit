@@ -17,7 +17,6 @@
 Imports and runs the main function of the application.
 """
 
-
 from spyrit import main
 
 main.run()

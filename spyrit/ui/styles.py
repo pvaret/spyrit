@@ -15,7 +15,6 @@
 A class that applies a configured style to the application.
 """
 
-
 import logging
 
 from PySide6.QtCore import QObject
@@ -41,9 +40,7 @@ class StyleManager(QObject):
     def __init__(self, app: QApplication, style_key: Key[str]) -> None:
         super().__init__(parent=app)
 
-        logging.debug(
-            "Installed styles found: %s.", ", ".join(QStyleFactory.keys())
-        )
+        logging.debug("Installed styles found: %s.", ", ".join(QStyleFactory.keys()))
         logging.debug("Current style: %s", app.style().name())
 
         self._app = app

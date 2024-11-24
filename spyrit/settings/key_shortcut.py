@@ -15,7 +15,6 @@
 Implements a key shortcut type that's serializable by SunsetSettings.
 """
 
-
 from PySide6.QtGui import QKeySequence
 
 

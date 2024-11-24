@@ -15,7 +15,6 @@
 Implements custom widgets to be used in configuration forms.
 """
 
-
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIntValidator, QRegularExpressionValidator
 from PySide6.QtWidgets import (
@@ -44,9 +43,7 @@ class LineEdit(QLineEdit):
     def __init__(self) -> None:
         super().__init__()
 
-        self.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
-        )
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
 
 
 class TextLineEdit(LineEdit):
@@ -104,9 +101,7 @@ class PortLineEdit(LineEdit):
         super().__init__()
 
         self.setFixedWidth(4 * Sizer(self).unitSize())
-        self.setValidator(
-            QIntValidator(constants.MIN_TCP_PORT, constants.MAX_TCP_PORT)
-        )
+        self.setValidator(QIntValidator(constants.MIN_TCP_PORT, constants.MAX_TCP_PORT))
 
         Connector[int](
             self,

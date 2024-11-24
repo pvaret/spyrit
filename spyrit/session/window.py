@@ -16,7 +16,6 @@ Provides a class that keeps track of the current status of a game window, and
 reacts to changes to this status.
 """
 
-
 import logging
 import weakref
 
@@ -138,6 +137,4 @@ class SessionWindow(QObject):
         yield from self._instances
 
     def __del__(self) -> None:
-        logging.debug(
-            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
-        )
+        logging.debug("%s (%s) destroyed.", self.__class__.__name__, hex(id(self)))

@@ -16,7 +16,6 @@ Implements classes that transform raw byte data from the network into something
 that makes semantic sense and can be fed into e.g. a text display widget.
 """
 
-
 import codecs
 import logging
 
@@ -268,9 +267,7 @@ class ANSIProcessor(BaseProcessor):
                             format_update.setForeground(ANSIColor(n))
                         case _:
                             seq = ";".join(str(i) for i in [code] + codes)
-                            logging.debug(
-                                "Received invalid ANSI SGR sequence: %s", seq
-                            )
+                            logging.debug("Received invalid ANSI SGR sequence: %s", seq)
                             continue
 
                 case 39:
@@ -287,9 +284,7 @@ class ANSIProcessor(BaseProcessor):
                             format_update.setBackground(ANSIColor(n))
                         case _:
                             seq = ";".join(str(i) for i in [code] + codes)
-                            logging.debug(
-                                "Received invalid ANSI SGR sequence: %s", seq
-                            )
+                            logging.debug("Received invalid ANSI SGR sequence: %s", seq)
                             continue
 
                 case 49:
@@ -302,9 +297,7 @@ class ANSIProcessor(BaseProcessor):
                     format_update.setBackground(ANSIColor(code - 100 + 8))
 
                 case _:
-                    logging.debug(
-                        "Unsupported ANSI SGR code received: %d", code
-                    )
+                    logging.debug("Unsupported ANSI SGR code received: %d", code)
 
         return ANSIFragment(format_update)
 
@@ -497,26 +490,20 @@ class UserPatternProcessor(BaseProcessor):
 
             case NetworkFragment() | FlowControlFragment(FlowControlCode.LF):
                 patterns: list[tuple[int, PatternMatchFragment]] = []
-                for format_, start, end in self._findUserPatterns(
-                    self._line_so_far
-                ):
+                for format_, start, end in self._findUserPatterns(self._line_so_far):
                     pattern = PatternMatchFragment(format_, MatchBoundary.START)
                     patterns.append((start, pattern))
                     pattern = PatternMatchFragment(format_, MatchBoundary.END)
                     patterns.append((end, pattern))
 
-                yield from inject_fragments_into_buffer(
-                    patterns, self._fragment_buffer
-                )
+                yield from inject_fragments_into_buffer(patterns, self._fragment_buffer)
                 self._line_so_far = ""
                 self._fragment_buffer.clear()
 
             case _:
                 pass
 
-    def _findUserPatterns(
-        self, line: str
-    ) -> Iterator[tuple[FormatUpdate, int, int]]:
+    def _findUserPatterns(self, line: str) -> Iterator[tuple[FormatUpdate, int, int]]:
         for pattern in self._getPatterns():
             for start, end, format_ in pattern.matches(line):
                 if start < end and not format_.empty():

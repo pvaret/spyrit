@@ -68,9 +68,7 @@ def _confirmationDialog(
     return dialog.clickedButton() is confirm
 
 
-def maybeAskUserIfReadyToClose(
-    widget: QWidget | None, names: Sequence[str]
-) -> bool:
+def maybeAskUserIfReadyToClose(widget: QWidget | None, names: Sequence[str]) -> bool:
     """
     Asks the user to confirm they are really ready to close still connected
     games. If the given list of connected instance names is empty, assume yes.
@@ -103,9 +101,7 @@ def maybeAskUserIfReadyToClose(
     return _confirmationDialog(widget, title, message, "Close")
 
 
-def maybeAskUserIfReadyToQuit(
-    widget: QWidget | None, names: Sequence[str]
-) -> bool:
+def maybeAskUserIfReadyToQuit(widget: QWidget | None, names: Sequence[str]) -> bool:
     """
     Asks the user to confirm they are really ready to quit the application. If
     the given list of instance names is empty, assume yes without asking.
@@ -151,6 +147,6 @@ def askUserIfReadyToDisconnect(widget: QWidget | None) -> bool:
     """
 
     title = "Really disconnect?"
-    message = f"You are still connected to this world. Really disconnect?"
+    message = "You are still connected to this world. Really disconnect?"
 
     return _confirmationDialog(widget, title, message, "Disconnect")

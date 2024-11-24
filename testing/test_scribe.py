@@ -39,9 +39,7 @@ def _describe_char_format(char_format: QTextCharFormat) -> str:
 class MockCursor(QTextCursor):
     _text: str = ""
 
-    def insertText(
-        self, text: str, format: QTextCharFormat | None = None
-    ) -> None:
+    def insertText(self, text: str, format: QTextCharFormat | None = None) -> None:
         if format is not None:
             format_desc = _describe_char_format(format)
             if format_desc:
@@ -62,9 +60,7 @@ class TestCharFormatUpdater:
         settings.default_text_color.set(NoColor())
         settings.canvas_color.set(NoColor())
 
-        updater = CharFormatUpdater(
-            settings.default_text_color, settings.canvas_color
-        )
+        updater = CharFormatUpdater(settings.default_text_color, settings.canvas_color)
         updater.pushFormat(format_ := FormatUpdate())
         char_format = QTextCharFormat()
 
@@ -109,17 +105,11 @@ class TestCharFormatUpdater:
 
         format_.setReverse(True)
         updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 10,10,10 ; bg: 100,100,100"
-        )
+        assert _describe_char_format(char_format) == "fg: 10,10,10 ; bg: 100,100,100"
 
         format_.setReverse(False)
         updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 100,100,100 ; bg: 10,10,10"
-        )
+        assert _describe_char_format(char_format) == "fg: 100,100,100 ; bg: 10,10,10"
 
         format_.setForeground(NoColor())
         format_.setBackground(NoColor())
@@ -137,9 +127,7 @@ class TestCharFormatUpdater:
         settings.default_text_color.set(NoColor())
         settings.canvas_color.set(NoColor())
 
-        updater = CharFormatUpdater(
-            settings.default_text_color, settings.canvas_color
-        )
+        updater = CharFormatUpdater(settings.default_text_color, settings.canvas_color)
         updater.pushFormat(format_ := FormatUpdate())
         char_format = QTextCharFormat()
 
@@ -158,19 +146,14 @@ class TestCharFormatUpdater:
 
         format_.setReverse(True)
         updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 100,100,100 ; bg: 34,34,34"
-        )
+        assert _describe_char_format(char_format) == "fg: 100,100,100 ; bg: 34,34,34"
 
     def test_format_layers_applied_in_order(self) -> None:
         settings = SpyritSettings.UI.Output()
         settings.default_text_color.set(NoColor())
         settings.canvas_color.set(NoColor())
 
-        updater = CharFormatUpdater(
-            settings.default_text_color, settings.canvas_color
-        )
+        updater = CharFormatUpdater(settings.default_text_color, settings.canvas_color)
         char_format = QTextCharFormat()
 
         format1 = FormatUpdate(bold=True, italic=True)
@@ -208,9 +191,7 @@ class TestCharFormatUpdater:
         assert format1 == format3
 
         char_format = QTextCharFormat()
-        updater = CharFormatUpdater(
-            settings.default_text_color, settings.canvas_color
-        )
+        updater = CharFormatUpdater(settings.default_text_color, settings.canvas_color)
 
         updater.pushFormat(format1)
         updater.pushFormat(format2)
@@ -224,9 +205,7 @@ class TestCharFormatUpdater:
         assert _describe_char_format(char_format) == "bold ; italic"
 
         char_format = QTextCharFormat()
-        updater = CharFormatUpdater(
-            settings.default_text_color, settings.canvas_color
-        )
+        updater = CharFormatUpdater(settings.default_text_color, settings.canvas_color)
 
         updater.pushFormat(format1)
         updater.pushFormat(format2)
@@ -245,9 +224,7 @@ class TestCharFormatUpdater:
         settings.canvas_color.set(RGBColor(10, 10, 10))
 
         char_format = QTextCharFormat()
-        updater = CharFormatUpdater(
-            settings.default_text_color, settings.canvas_color
-        )
+        updater = CharFormatUpdater(settings.default_text_color, settings.canvas_color)
         updater.pushFormat(format_ := FormatUpdate())
         updater.applyFormat(char_format)
         assert _describe_char_format(char_format) == "fg: 100,100,100"
@@ -258,17 +235,11 @@ class TestCharFormatUpdater:
 
         format_.setReverse(True)
         updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 10,10,10 ; bg: 115,115,115"
-        )
+        assert _describe_char_format(char_format) == "fg: 10,10,10 ; bg: 115,115,115"
 
         format_.setBright(False)
         updater.applyFormat(char_format)
-        assert (
-            _describe_char_format(char_format)
-            == "fg: 10,10,10 ; bg: 100,100,100"
-        )
+        assert _describe_char_format(char_format) == "fg: 10,10,10 ; bg: 100,100,100"
 
 
 class TestScribe:
@@ -368,12 +339,8 @@ class TestScribe:
         scribe.inscribe([TextFragment("")])
         assert cursor.get() == "[bold ; italic ; fg: 100,100,100]"
 
-        scribe.inscribe(
-            [ANSIFragment(FormatUpdate(bold=False, underline=True))]
-        )
-        scribe.inscribe(
-            [ANSIFragment(FormatUpdate(underline=False, strikeout=True))]
-        )
+        scribe.inscribe([ANSIFragment(FormatUpdate(bold=False, underline=True))])
+        scribe.inscribe([ANSIFragment(FormatUpdate(underline=False, strikeout=True))])
         scribe.inscribe([TextFragment("")])
         assert cursor.get() == "[italic ; strikeout ; fg: 100,100,100]"
 
@@ -398,9 +365,7 @@ class TestScribe:
         settings.status_text_format.set(FormatUpdate(italic=True))
 
         scribe.inscribe([NetworkFragment(Status.RESOLVING, "test.test")])
-        assert cursor.get() == (
-            "[italic ; fg: 55,55,55]• Looking up 'test.test'..."
-        )
+        assert cursor.get() == ("[italic ; fg: 55,55,55]• Looking up 'test.test'...")
 
         cursor = MockCursor()
         scribe = Scribe(cursor, settings)
@@ -448,13 +413,9 @@ class TestScribe:
         ansi_format = FormatUpdate(foreground=RGBColor(20, 20, 20))
 
         scribe.inscribe([ANSIFragment(ansi_format)])
-        scribe.inscribe(
-            [PatternMatchFragment(pattern_format, MatchBoundary.START)]
-        )
+        scribe.inscribe([PatternMatchFragment(pattern_format, MatchBoundary.START)])
         scribe.inscribe([TextFragment("1234")])
-        scribe.inscribe(
-            [PatternMatchFragment(pattern_format, MatchBoundary.END)]
-        )
+        scribe.inscribe([PatternMatchFragment(pattern_format, MatchBoundary.END)])
         scribe.inscribe([TextFragment("5678")])
 
         assert cursor.get() == ("[fg: 50,50,50]1234[fg: 20,20,20]5678")

@@ -59,9 +59,7 @@ class TestCase:
 
 
 class TestStaticWordList:
-    def test_word_list_len(
-        self, reset_static_word_list: StaticWordListFixture
-    ) -> None:
+    def test_word_list_len(self, reset_static_word_list: StaticWordListFixture) -> None:
         words = StaticWordList(Misc.TEST_TXT_GZ)
         assert len(words) == 2
 
@@ -295,26 +293,17 @@ class TestCompleter:
         assert self._select_completable_word("test1''test2", pos=8) == "test2"
         assert self._select_completable_word("test 'test", pos=8) == "test"
         assert (
-            self._select_completable_word(
-                '"Well then, this is awkward!"', pos=0
-            )
-            == ""
+            self._select_completable_word('"Well then, this is awkward!"', pos=0) == ""
         )
         assert (
-            self._select_completable_word(
-                '"Well then, this is awkward!"', pos=1
-            )
+            self._select_completable_word('"Well then, this is awkward!"', pos=1)
             == "Well"
         )
         assert (
-            self._select_completable_word(
-                '"Well then, this is awkward!"', pos=6
-            )
+            self._select_completable_word('"Well then, this is awkward!"', pos=6)
             == "then"
         )
         assert (
-            self._select_completable_word(
-                '"Well then, this is awkward!"', pos=21
-            )
+            self._select_completable_word('"Well then, this is awkward!"', pos=21)
             == "awkward"
         )

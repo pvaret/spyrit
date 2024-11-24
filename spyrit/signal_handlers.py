@@ -23,9 +23,7 @@ from types import FrameType
 from sunset import AutoSaver
 
 
-def save_settings_on_signal(
-    sig: int | signal.Signals, *savers: AutoSaver
-) -> None:
+def save_settings_on_signal(sig: int | signal.Signals, *savers: AutoSaver) -> None:
     """
     Attaches a signal handler for the given signal that forces the given
     AutoSavers to save.

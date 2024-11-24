@@ -16,7 +16,6 @@ Class that provides a container for panes that can be switched between with a
 sliding animation.
 """
 
-
 import logging
 
 from PySide6.QtCore import (
@@ -91,13 +90,9 @@ class SlidingPaneContainer(QScrollArea):
         self._x_scroll_enforced_value = 0
         self._y_scroll_enforced_value = 0
 
-        self.horizontalScrollBar().valueChanged.connect(
-            self._enforceXScrollPosition
-        )
+        self.horizontalScrollBar().valueChanged.connect(self._enforceXScrollPosition)
 
-        self.verticalScrollBar().valueChanged.connect(
-            self._enforceYScrollPosition
-        )
+        self.verticalScrollBar().valueChanged.connect(self._enforceYScrollPosition)
 
         # Pane switching animation setup goes here.
 
@@ -105,12 +100,8 @@ class SlidingPaneContainer(QScrollArea):
         self._slide_animation.setEasingCurve(self._EASING_CURVE)
         self._slide_animation.setDuration(self._ANIMATION_DURATION)
 
-        self._slide_animation.valueChanged.connect(
-            self._enforceXScrollPositionForValue
-        )
-        self._slide_animation.stateChanged.connect(
-            self._onAnimationMaybeComplete
-        )
+        self._slide_animation.valueChanged.connect(self._enforceXScrollPositionForValue)
+        self._slide_animation.stateChanged.connect(self._onAnimationMaybeComplete)
 
     def addPaneRight(self, pane: Pane) -> None:
         """
@@ -295,7 +286,6 @@ class SlidingPaneContainer(QScrollArea):
         """
 
         if not self._isInMotion():
-
             # Tidy up transient panes that are no longer active.
 
             self._garbageCollectPanes()
@@ -460,6 +450,4 @@ class SlidingPaneContainer(QScrollArea):
         Logs a debug message on deletion.
         """
 
-        logging.debug(
-            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
-        )
+        logging.debug("%s (%s) destroyed.", self.__class__.__name__, hex(id(self)))

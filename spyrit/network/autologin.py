@@ -121,9 +121,7 @@ class Autologin(QObject):
                     # game would have accepted the connection, but not yet fired
                     # up its login function.
 
-                    self._sendLogin(
-                        name, password, self._credentials.login_style.get()
-                    )
+                    self._sendLogin(name, password, self._credentials.login_style.get())
                     self._login_sent = True
 
                 case _:

@@ -69,9 +69,7 @@ class SearchBar(QWidget):
         margin = Sizer(self).marginSize()
 
         self.setLayout(QHBoxLayout())
-        self.setSizePolicy(
-            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed
-        )
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.layout().setContentsMargins(margin, margin, margin, 0)
         self.layout().setSpacing(margin)
 
@@ -166,9 +164,7 @@ class SearchBar(QWidget):
         if not text:
             return
 
-        self._search_cursor = self._document.find(
-            text, self._search_cursor, flags
-        )
+        self._search_cursor = self._document.find(text, self._search_cursor, flags)
         self.searchResultReady.emit(self._search_cursor)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:

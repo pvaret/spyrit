@@ -24,9 +24,7 @@ class TestRGB:
         for r in values:
             for g in values:
                 for b in values:
-                    rr, gg, bb = hsl_to_rgb(
-                        *rgb_to_hsl(r / 255, g / 255, b / 255)
-                    )
+                    rr, gg, bb = hsl_to_rgb(*rgb_to_hsl(r / 255, g / 255, b / 255))
                     assert (
                         round(rr * 255),
                         round(gg * 255),
@@ -35,9 +33,7 @@ class TestRGB:
 
     def test_brighten(self) -> None:
         assert brighten(1.0, 1.0, 1.0, brightness=0.1) == (1.0, 1.0, 1.0)
-        assert brighten(
-            0.0, 0.0, 0.0, brightness=0.1
-        ) == pytest.approx(  # type: ignore
+        assert brighten(0.0, 0.0, 0.0, brightness=0.1) == pytest.approx(  # type: ignore
             (0.1, 0.1, 0.1)
         )
 

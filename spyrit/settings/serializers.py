@@ -15,7 +15,6 @@
 Custom serializers used in our settings.
 """
 
-
 import logging
 import re
 
@@ -132,9 +131,7 @@ class SemiColonJoiner:
     def split(cls, string: str) -> list[str]:
         splitter = re.compile(f"(?<!{cls._SEP}){cls._SEP}(?!{cls._SEP})")
         return list(
-            filter(
-                None, (cls._unescape(s).strip() for s in splitter.split(string))
-            )
+            filter(None, (cls._unescape(s).strip() for s in splitter.split(string)))
         )
 
 
@@ -144,7 +141,6 @@ class FormatSerializer:
         format_update = FormatUpdate()
 
         for item in SemiColonJoiner.split(string):
-
             value = ""
             if ":" in item:
                 item, value = item.split(":", 1)
@@ -212,9 +208,7 @@ class FormatSerializer:
                     format_update.setHref(value)
 
                 case _:
-                    logging.warning(
-                        f"Unknown attribute in format string: '{item}'"
-                    )
+                    logging.warning(f"Unknown attribute in format string: '{item}'")
                     continue
 
         return format_update

@@ -15,7 +15,6 @@
 Implements a class that handles the lifecycle of a network connection.
 """
 
-
 import enum
 import logging
 
@@ -136,9 +135,7 @@ class Connection(QObject):
             return
 
         byte_data = bytes(data)  # type: ignore  # Actually valid!
-        logging.debug(
-            "Received data packet of length %d bytes.", len(byte_data)
-        )
+        logging.debug("Received data packet of length %d bytes.", len(byte_data))
         self.dataReceived.emit(byte_data)
 
     @Slot(QTcpSocket.SocketState)
@@ -155,9 +152,7 @@ class Connection(QObject):
                 self.statusChanged.emit(Status.DISCONNECTED, "")
 
             case QTcpSocket.SocketState.HostLookupState:
-                self.statusChanged.emit(
-                    Status.RESOLVING, self._socket.peerName()
-                )
+                self.statusChanged.emit(Status.RESOLVING, self._socket.peerName())
 
             case QTcpSocket.SocketState.ConnectingState:
                 self.statusChanged.emit(Status.CONNECTING, "")
@@ -201,9 +196,7 @@ class Connection(QObject):
                 self.statusChanged.emit(Status.ERROR, error_text)
 
     def __del__(self) -> None:
-        logging.debug(
-            "%s (%s) destroyed.", self.__class__.__name__, hex(id(self))
-        )
+        logging.debug("%s (%s) destroyed.", self.__class__.__name__, hex(id(self)))
 
 
 class ConnectionStatus(QObject):

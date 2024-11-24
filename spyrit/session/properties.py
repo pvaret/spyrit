@@ -69,7 +69,6 @@ class InstanceProperties(QObject):
         return self._connected
 
     def setPropertiesFromSettings(self, settings: SpyritSettings) -> None:
-
         if settings.isCharacter():
             self.setCharacterName(settings.login.name.get())
 

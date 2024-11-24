@@ -72,9 +72,7 @@ class AboutPane(BaseDialogPane):
         label = QLabel(text)
         label.setWordWrap(True)
         label.setFixedWidth(constants.ABOUT_WIDTH_UNITS * sizer.unitSize())
-        label.setTextInteractionFlags(
-            Qt.TextInteractionFlag.TextBrowserInteraction
-        )
+        label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         label.setOpenExternalLinks(True)
 
         pane = QWidget()

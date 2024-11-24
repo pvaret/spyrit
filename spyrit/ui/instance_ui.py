@@ -111,9 +111,7 @@ class InstanceUI(SlidingPaneContainer):
     def _openWorld(self, world_settings: SpyritSettings) -> None:
         self._properties.setPropertiesFromSettings(world_settings)
 
-        world_state = self._state.getStateSectionForSettingsSection(
-            world_settings
-        )
+        world_state = self._state.getStateSectionForSettingsSection(world_settings)
 
         # Create the connection.
 
@@ -139,9 +137,7 @@ class InstanceUI(SlidingPaneContainer):
         # Create the UI and plug it in.
 
         self.addPaneRight(
-            pane := make_world_pane(
-                world_settings, world_state, status, processor
-            )
+            pane := make_world_pane(world_settings, world_state, status, processor)
         )
 
         pane.closePaneRequested.connect(self._maybeCloseWorldPane)
@@ -178,9 +174,7 @@ class InstanceUI(SlidingPaneContainer):
         )
         pinger.callForAttention.connect(self._highlightWindow)
         pinger.clearAttentionCall.connect(
-            CallWithArgs(
-                self.tabUpdateRequested.emit, TabUpdate(color=QColor())
-            )
+            CallWithArgs(self.tabUpdateRequested.emit, TabUpdate(color=QColor()))
         )
 
         # Update the icon depending on the connection status.
@@ -213,9 +207,7 @@ class InstanceUI(SlidingPaneContainer):
 
     @Slot(bool)
     def _updateTabIconForConnection(self, connected: bool) -> None:
-        icon = QIcon(
-            Icon.CONNECTION_ON_SVG if connected else Icon.CONNECTION_OFF_SVG
-        )
+        icon = QIcon(Icon.CONNECTION_ON_SVG if connected else Icon.CONNECTION_OFF_SVG)
         self.tabUpdateRequested.emit(TabUpdate(icon=icon))
 
     @Slot(Pane)

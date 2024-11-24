@@ -151,9 +151,7 @@ class Pattern(Bunch):
             try:
                 re.compile(fragment_pattern)
             except re.error:
-                logging.warning(
-                    f"Failed to compile pattern fragment: {fragment}"
-                )
+                logging.warning(f"Failed to compile pattern fragment: {fragment}")
                 continue
 
             pattern += fragment_pattern

@@ -15,7 +15,6 @@
 Declaration of the Spyrit settings.
 """
 
-
 import enum
 import uuid
 
@@ -61,9 +60,7 @@ def _shortcut_key(combination: str) -> Key[Shortcut]:
 
 
 def _font_key(font_family: list[str], font_size: int) -> Key[QFont]:
-    return Key(
-        default=QFont(font_family, font_size), serializer=serializers.Font
-    )
+    return Key(default=QFont(font_family, font_size), serializer=serializers.Font)
 
 
 def _color_key(ansi_color: ANSIColorCodes) -> Key[Color]:
@@ -95,9 +92,7 @@ class SpyritSettings(Settings):
         switch_to_previous_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgUp")
         switch_to_next_tab: Key[Shortcut] = _shortcut_key("Ctrl+PgDown")
         move_current_tab_left: Key[Shortcut] = _shortcut_key("Ctrl+Shift+PgUp")
-        move_current_tab_right: Key[Shortcut] = _shortcut_key(
-            "Ctrl+Shift+PgDown"
-        )
+        move_current_tab_right: Key[Shortcut] = _shortcut_key("Ctrl+Shift+PgDown")
         page_up: Key[Shortcut] = _shortcut_key("PgUp")
         page_down: Key[Shortcut] = _shortcut_key("PgDown")
         line_up: Key[Shortcut] = _shortcut_key("Ctrl+Shift+Up")
@@ -151,9 +146,7 @@ class SpyritSettings(Settings):
         password: Key[ScrambledText] = Key(default=ScrambledText(""))
 
         # Stores the login string pattern to use when logging into this world.
-        login_style: Key[LoginStyle] = Key(
-            default=LoginStyle.CONNECT_NAME_PASSWORD_CR
-        )
+        login_style: Key[LoginStyle] = Key(default=LoginStyle.CONNECT_NAME_PASSWORD_CR)
 
     class UI(Bunch):
         """
@@ -172,18 +165,14 @@ class SpyritSettings(Settings):
 
             # How many characters to display in a line before wrapping to the
             # next line. If 0, wrapping occurs at the width of the output view.
-            word_wrap_column: Key[int] = Key(
-                constants.OUTPUT_VIEW_WORD_WRAP_COLUMN
-            )
+            word_wrap_column: Key[int] = Key(constants.OUTPUT_VIEW_WORD_WRAP_COLUMN)
 
             # The color of the UI canvas onto which game text is rendered.
             canvas_color: Key[Color] = _color_key(ANSIColorCodes.Black)
 
             # The color used to render game text when no other color is applied
             # through e.g. ANSI codes or user-defined formatting.
-            default_text_color: Key[Color] = _color_key(
-                ANSIColorCodes.LightGray
-            )
+            default_text_color: Key[Color] = _color_key(ANSIColorCodes.LightGray)
 
             # Rendering properties of the text used for status messages.
             status_text_format: Key[FormatUpdate] = Key(
@@ -198,9 +187,7 @@ class SpyritSettings(Settings):
             # How to interpret the 'bold' ANSI code. There is no clear standard
             # between actually using a heavier font weight and a lighter font
             # color, so by default we do both.
-            ansi_bold_effect: Key[ANSIBoldEffect] = Key(
-                default=ANSIBoldEffect.BOTH
-            )
+            ansi_bold_effect: Key[ANSIBoldEffect] = Key(default=ANSIBoldEffect.BOTH)
 
         output: Output = Output()
 

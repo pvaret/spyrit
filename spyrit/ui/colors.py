@@ -15,7 +15,6 @@
 Implements support for ANSI color codes and palettes.
 """
 
-
 from abc import ABC, abstractmethod
 from enum import IntEnum, StrEnum
 from typing import Any
@@ -437,9 +436,7 @@ class RGBColor(Color):
         return self.asHex()
 
     def bright(self) -> "RGBColor":
-        r, g, b = brighten(
-            self._r / 255, self._g / 255, self._b / 255, brightness=0.1
-        )
+        r, g, b = brighten(self._r / 255, self._g / 255, self._b / 255, brightness=0.1)
 
         return RGBColor(round(r * 255), round(g * 255), round(b * 255))
 

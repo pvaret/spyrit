@@ -17,7 +17,6 @@ Provides a class that manages the scrollbar for a continuously growing text edit
 widget.
 """
 
-
 from PySide6.QtCore import (
     QEasingCurve,
     QEvent,
@@ -65,9 +64,7 @@ class Scroller(QObject):
         self._scroll_animation = QVariantAnimation(self)
         self._scroll_animation.setDuration(self._ANIMATION_DURATION)
         self._scroll_animation.setEasingCurve(self._EASING_CURVE)
-        self._scroll_animation.valueChanged.connect(
-            self._updateSmoothScrollPosition
-        )
+        self._scroll_animation.valueChanged.connect(self._updateSmoothScrollPosition)
 
         # Report value updates continuously, not just at the end of a user
         # motion.
@@ -162,39 +159,27 @@ class Scroller(QObject):
 
     @Slot()
     def scrollOnePageUp(self) -> None:
-        self._scrollbar.triggerAction(
-            QAbstractSlider.SliderAction.SliderPageStepSub
-        )
+        self._scrollbar.triggerAction(QAbstractSlider.SliderAction.SliderPageStepSub)
 
     @Slot()
     def scrollOnePageDown(self) -> None:
-        self._scrollbar.triggerAction(
-            QAbstractSlider.SliderAction.SliderPageStepAdd
-        )
+        self._scrollbar.triggerAction(QAbstractSlider.SliderAction.SliderPageStepAdd)
 
     @Slot()
     def scrollOneLineUp(self) -> None:
-        self._scrollbar.triggerAction(
-            QAbstractSlider.SliderAction.SliderSingleStepSub
-        )
+        self._scrollbar.triggerAction(QAbstractSlider.SliderAction.SliderSingleStepSub)
 
     @Slot()
     def scrollOneLineDown(self) -> None:
-        self._scrollbar.triggerAction(
-            QAbstractSlider.SliderAction.SliderSingleStepAdd
-        )
+        self._scrollbar.triggerAction(QAbstractSlider.SliderAction.SliderSingleStepAdd)
 
     @Slot()
     def scrollToTop(self) -> None:
-        self._scrollbar.triggerAction(
-            QAbstractSlider.SliderAction.SliderToMinimum
-        )
+        self._scrollbar.triggerAction(QAbstractSlider.SliderAction.SliderToMinimum)
 
     @Slot()
     def scrollToBottom(self) -> None:
-        self._scrollbar.triggerAction(
-            QAbstractSlider.SliderAction.SliderToMaximum
-        )
+        self._scrollbar.triggerAction(QAbstractSlider.SliderAction.SliderToMaximum)
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if watched is self._scrollbar and isinstance(event, QWheelEvent):

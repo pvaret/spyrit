@@ -16,7 +16,6 @@ Implements a class that translates network fragments into text and formatting to
 be applied to a cursor.
 """
 
-
 import enum
 import logging
 
@@ -101,20 +100,14 @@ class CharFormatUpdater:
         underline = reduce(not_none, (f.underline for f in formats), False)
         reverse = reduce(not_none, (f.reverse for f in formats), False)
         strikeout = reduce(not_none, (f.strikeout for f in formats), False)
-        foreground = reduce(
-            valid_color, (f.foreground for f in formats), NoColor()
-        )
-        background = reduce(
-            valid_color, (f.background for f in formats), NoColor()
-        )
+        foreground = reduce(valid_color, (f.foreground for f in formats), NoColor())
+        background = reduce(valid_color, (f.background for f in formats), NoColor())
         underline_color = reduce(
             valid_color, (f.underline_color for f in formats), NoColor()
         )
         href = reduce(not_none, (f.href for f in formats), "")
 
-        char_format.setFontWeight(
-            QFont.Weight.Bold if bold else QFont.Weight.Medium
-        )
+        char_format.setFontWeight(QFont.Weight.Bold if bold else QFont.Weight.Medium)
         char_format.setFontItalic(italic)
         char_format.setFontUnderline(underline)
         char_format.setFontStrikeOut(strikeout)

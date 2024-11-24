@@ -142,9 +142,7 @@ class FlowControlFragment(Fragment):
         self.code = code
 
     def __eq__(self, other: Any) -> bool:
-        return (
-            isinstance(other, FlowControlFragment) and self.code == other.code
-        )
+        return isinstance(other, FlowControlFragment) and self.code == other.code
 
 
 class NetworkFragment(Fragment):

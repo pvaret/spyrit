@@ -15,7 +15,6 @@
 Implements the UI to configure the server settings of a game.
 """
 
-
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 

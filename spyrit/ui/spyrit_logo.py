@@ -14,7 +14,6 @@
 Implements a simple logo for the application.
 """
 
-
 from math import ceil
 
 from PySide6.QtCore import Qt

@@ -17,7 +17,6 @@ that the connection is not considered idle and reset by the server, or, say,
 CGNATs.
 """
 
-
 import logging
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot

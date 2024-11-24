@@ -7,9 +7,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 class TestConnection:
-    def test_connection_reports_socket_state(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_connection_reports_socket_state(self, mocker: MockerFixture) -> None:
         connection = Connection(SpyritSettings.Network())
 
         slot = mocker.stub()
@@ -38,9 +36,7 @@ class TestConnection:
         slot.assert_called_once_with(Status.ERROR, "Test!")
         slot.reset_mock()
 
-    def test_connection_reports_socket_data(
-        self, mocker: MockerFixture
-    ) -> None:
+    def test_connection_reports_socket_data(self, mocker: MockerFixture) -> None:
         connection = Connection(SpyritSettings.Network())
 
         slot = mocker.stub()

@@ -19,7 +19,14 @@ import threading
 
 from PySide6.QtCore import QObject, QSize, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon, QTextCursor
-from PySide6.QtWidgets import QHBoxLayout, QSizePolicy, QToolBar, QWidget
+from PySide6.QtWidgets import (
+    QAbstractSlider,
+    QHBoxLayout,
+    QScrollBar,
+    QSizePolicy,
+    QToolBar,
+    QWidget,
+)
 
 from spyrit.network.connection import Connection, ConnectionStatus
 from spyrit.network.processors import (
@@ -38,6 +45,7 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 from spyrit.ui.autocompleter import Autocompleter, CompletionModel, Tokenizer
+from spyrit.ui.autoscroller import Autoscroller
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.dialogs import askUserIfReadyToDisconnect
 from spyrit.ui.input_box import InputBox
@@ -45,9 +53,10 @@ from spyrit.ui.input_history import Historian
 from spyrit.ui.layout_widgets import HBox, Splitter, VBox
 from spyrit.ui.output_view import OutputView
 from spyrit.ui.scribe import Scribe
-from spyrit.ui.scroller import Scroller
 from spyrit.ui.search_bar import SearchBar
+from spyrit.ui.signals import CallWithArgs
 from spyrit.ui.sizer import Sizer
+from spyrit.ui.smooth_scrollbar_proxy import SmoothScrollbarProxy
 
 
 class ConnectionToggleAction(QAction):
@@ -215,12 +224,22 @@ class WorldPane(Pane):
 
         # Assemble the game UI layout.
 
-        self._layoutWidgets(state, view, search_bar, toolbar, inputbox, extra_inputbox)
+        scrollbar_proxy = SmoothScrollbarProxy(view.verticalScrollBar())
+        Autoscroller(scrollbar_proxy)
+
+        self._layoutWidgets(
+            state, view, scrollbar_proxy, search_bar, toolbar, inputbox, extra_inputbox
+        )
 
         # Set up the interconnections between the widgets.
 
         self._setupGameWidgets(
-            view, search_bar, inputbox, extra_inputbox, settings.shortcuts
+            view,
+            scrollbar_proxy,
+            search_bar,
+            inputbox,
+            extra_inputbox,
+            settings.shortcuts,
         )
 
         # Set up the tool bar icons and related shortcuts.
@@ -233,6 +252,7 @@ class WorldPane(Pane):
         self,
         state: SpyritState.UI,
         view: OutputView,
+        scrollbar: QScrollBar,
         search_bar: SearchBar,
         toolbar: QToolBar,
         inputbox: InputBox,
@@ -245,6 +265,8 @@ class WorldPane(Pane):
             state: The state holding UI properties to be bound to the widgets.
 
             view: The output view that displays contents from the game.
+
+            scrollbar: The scrollbar that controls the output view.
 
             search_bar: The text search UI.
 
@@ -263,7 +285,9 @@ class WorldPane(Pane):
         self.layout().setContentsMargins(0, 0, 0, 0)
 
         outputs = VBox()
-        outputs.addWidget(view)
+        outputs.addWidget(view_hbox := HBox())
+        view_hbox.addWidget(view)
+        view_hbox.addWidget(scrollbar)
         outputs.addWidget(search_bar)
 
         inputs = HBox()
@@ -281,9 +305,10 @@ class WorldPane(Pane):
 
         self.layout().addWidget(Splitter(state.output_splitter_sizes, outputs, inputs))
 
-    def _setupGameWidgets(
+    def _setupGameWidgets(  # noqa: PLR0913
         self,
         view: OutputView,
+        scrollbar: QScrollBar,
         search_bar: SearchBar,
         inputbox: InputBox,
         extra_inputbox: InputBox,
@@ -296,6 +321,8 @@ class WorldPane(Pane):
         Args:
             view: The output view that displays contents from the game.
 
+            scrollbar: The scrollbar that controls the output view.
+
             search_bar: The text search UI.
 
             inputbox: The main user text entry box.
@@ -305,29 +332,48 @@ class WorldPane(Pane):
             shortcuts: The key shortcuts to use for UI actions.
         """
 
-        # Install up the user-friendly scrollbar helper.
-
-        scroller = Scroller(view.verticalScrollBar())
-
-        view.requestScrollToPosition.connect(scroller.smoothScrollToPosition)
-
         # Set up view-related shortcuts. Those need to be on the WorldPane
         # itself because the view never has focus.
 
-        for text, shortcut, slot in (
-            ("Page up", shortcuts.page_up, scroller.scrollOnePageUp),
-            ("Page down", shortcuts.page_down, scroller.scrollOnePageDown),
-            ("Scroll up", shortcuts.line_up, scroller.scrollOneLineUp),
-            ("Scroll down", shortcuts.line_down, scroller.scrollOneLineDown),
-            ("Scroll to top", shortcuts.scroll_to_top, scroller.scrollToTop),
+        for text, shortcut, action in (
+            (
+                "Page up",
+                shortcuts.page_up,
+                QAbstractSlider.SliderAction.SliderPageStepSub,
+            ),
+            (
+                "Page down",
+                shortcuts.page_down,
+                QAbstractSlider.SliderAction.SliderPageStepAdd,
+            ),
+            (
+                "Scroll up",
+                shortcuts.line_up,
+                QAbstractSlider.SliderAction.SliderSingleStepSub,
+            ),
+            (
+                "Scroll down",
+                shortcuts.line_down,
+                QAbstractSlider.SliderAction.SliderSingleStepAdd,
+            ),
+            (
+                "Scroll to top",
+                shortcuts.scroll_to_top,
+                QAbstractSlider.SliderAction.SliderToMinimum,
+            ),
             (
                 "Scroll to bottom",
                 shortcuts.scroll_to_bottom,
-                scroller.scrollToBottom,
+                QAbstractSlider.SliderAction.SliderToMaximum,
             ),
         ):
             self.addAction(
-                ActionWithKeySetting(parent=self, text=text, key=shortcut, slot=slot)
+                ActionWithKeySetting(
+                    parent=self,
+                    text=text,
+                    key=shortcut,
+                    slot=CallWithArgs(scrollbar.triggerAction, action),
+                )
             )
 
         # Set up the focus logic for the game UI. TL;DR: the pane just forwards

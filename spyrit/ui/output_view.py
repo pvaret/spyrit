@@ -27,7 +27,7 @@ from PySide6.QtGui import (
     QTextCursor,
     QTextOption,
 )
-from PySide6.QtWidgets import QTextEdit, QWidget
+from PySide6.QtWidgets import QAbstractSlider, QTextEdit, QWidget
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
@@ -40,13 +40,6 @@ class OutputView(QTextEdit):
     Args:
         settings: The settings object for this specific widget.
     """
-
-    # This signal fires when the view wishes to scroll to the given position. As
-    # it currently stands, scrolling is managed by the Scroller, so the view
-    # can't just update its own scrollbar. Instead it needs to use this signal
-    # to communicate.
-
-    requestScrollToPosition: Signal = Signal(int)  # noqa: N815
 
     _settings: SpyritSettings.UI.Output
 
@@ -126,7 +119,9 @@ class OutputView(QTextEdit):
             # selections, and scroll to the bottom.
 
             self.setExtraSelections([])
-            self.requestScrollToPosition.emit(self.verticalScrollBar().maximum())
+            self.verticalScrollBar().triggerAction(
+                QAbstractSlider.SliderAction.SliderToMaximum
+            )
             return
 
         cursor.setKeepPositionOnInsert(True)
@@ -144,7 +139,7 @@ class OutputView(QTextEdit):
         # This scrolls the view so that the given cursor is a bit above the
         # middle of the view. Works well aesthetically.
 
-        self.requestScrollToPosition.emit(
+        self.verticalScrollBar().setValue(
             self.verticalScrollBar().value()
             + self.cursorRect(cursor).y()
             - self.viewport().height() // 2

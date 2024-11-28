@@ -39,12 +39,15 @@ class Box(QWidget):
         layout: The layout to use for adding widgets in this box.
     """
 
-    def __init__(self, layout: QLayout) -> None:
+    def __init__(self, layout: QLayout, *widgets: QWidget) -> None:
         super().__init__()
 
         self.setLayout(layout)
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
+
+        for widget in widgets:
+            self.addWidget(widget)
 
     def addWidget(self, widget: QWidget) -> None:
         """
@@ -72,8 +75,8 @@ class VBox(Box):
     Helper class to lay out widgets vertically.
     """
 
-    def __init__(self) -> None:
-        super().__init__(QVBoxLayout())
+    def __init__(self, *widgets: QWidget) -> None:
+        super().__init__(QVBoxLayout(), *widgets)
 
 
 class HBox(Box):
@@ -81,8 +84,8 @@ class HBox(Box):
     Helper class to lay out widgets vertically.
     """
 
-    def __init__(self) -> None:
-        super().__init__(QHBoxLayout())
+    def __init__(self, *widgets: QWidget) -> None:
+        super().__init__(QHBoxLayout(), *widgets)
 
 
 class Splitter(QSplitter):

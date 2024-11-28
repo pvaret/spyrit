@@ -284,23 +284,19 @@ class WorldPane(Pane):
         self.setLayout(QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        outputs = VBox()
-        outputs.addWidget(view_hbox := HBox())
-        view_hbox.addWidget(view)
-        view_hbox.addWidget(scrollbar)
-        outputs.addWidget(search_bar)
+        outputs = VBox(HBox(view, scrollbar), search_bar)
 
-        inputs = HBox()
+        inputs = HBox(
+            toolbar,
+            input_splitter := Splitter(
+                state.input_splitter_sizes, inputbox, extra_inputbox
+            ),
+        )
+
         toolbar.setOrientation(Qt.Orientation.Vertical)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         toolbar.setIconSize(QSize(unit + margin, unit + margin))
-        inputs.addWidget(toolbar)
 
-        inputs.addWidget(
-            input_splitter := Splitter(
-                state.input_splitter_sizes, inputbox, extra_inputbox
-            )
-        )
         input_splitter.setContentsMargins(0, 0, margin, margin)
 
         self.layout().addWidget(Splitter(state.output_splitter_sizes, outputs, inputs))

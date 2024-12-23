@@ -38,7 +38,7 @@ def _make_hook(
     ) -> None:
         logging.error(
             "Uncaught exception:\n%s",
-            stackprinter.format((exc_type, exc, tb), reverse=True),
+            stackprinter.format((exc_type, exc, tb)),
         )
 
         if abort_on_error:

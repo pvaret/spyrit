@@ -1,3 +1,4 @@
+from io import StringIO
 import re
 
 import hypothesis
@@ -5,6 +6,7 @@ import hypothesis.strategies
 
 from spyrit.settings import default_patterns
 from spyrit.settings.pattern import Pattern, PatternScope, PatternType
+from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.format import FormatUpdate
 
 
@@ -54,6 +56,13 @@ class TestFragmentMatching:
         fragment.pattern_text.set(fragment_pattern)
 
         assert _all_pattern_matches(pattern, text)[0] == text
+
+    def test_bad_regex_does_not_crash(self) -> None:
+        pattern = Pattern()
+        fragment = pattern.fragments.appendOne()
+        fragment.type.set(PatternType.REGEX)
+        fragment.pattern_text.set("*")
+        assert not pattern.matches("*")
 
 
 class TestCompoundPatternEntireLine:
@@ -385,6 +394,26 @@ class TestCompoundPatternAnyWhereInLine:
             "x",  # pattern
             "x",  # fragment
         ]
+
+
+def test_pattern_is_compiled_on_loading() -> None:
+    settings_txt = """
+    [main]
+    patterns.1.fragments.1.pattern_text = abcd
+    patterns.1.fragments.1.type = EXACT_MATCH
+    patterns.1.fragments.2.pattern_text = efgh
+    patterns.1.fragments.2.type = EXACT_MATCH
+    patterns.2.fragments.1.pattern_text = ijkl
+    patterns.2.fragments.1.type = EXACT_MATCH
+    patterns.2.fragments.2.pattern_text = mnop
+    patterns.2.fragments.2.type = EXACT_MATCH
+    """
+    settings = SpyritSettings()
+    settings.load(StringIO(settings_txt))
+
+    assert len(settings.patterns) == 2
+    assert settings.patterns[0].matches("abcdefgh")
+    assert settings.patterns[1].matches("ijklmnop")
 
 
 def test_url_regex() -> None:

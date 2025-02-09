@@ -29,6 +29,8 @@ from spyrit.ui.format import FormatUpdate
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
+_NEVER_MATCHES = r"$  ^"
+
 
 class PatternType(enum.Enum):
     # An ANYTHING pattern matches any characters, as *few* as possible,
@@ -133,16 +135,22 @@ class Pattern(Bunch):
         default=FormatUpdate(), serializer=serializers.FormatSerializer
     )
 
-    _re: re.Pattern[str]
+    _re: re.Pattern[str] = re.compile(_NEVER_MATCHES)
+    _compiled: bool = False
 
-    def __post_init__(self) -> None:
-        super().__post_init__()
+    def __init__(self) -> None:
+        super().__init__()
 
-        self.fragments.onUpdateCall(self._compile)
-        self.onLoadedCall(self._compile)
-        self._compile()
+        self.fragments.onUpdateCall(self._reset)
 
-    def _compile(self, _: Any = None) -> None:
+    def _reset(self, _: Any) -> None:
+        self._re = re.compile(_NEVER_MATCHES)
+        self._compiled = False
+
+    def _ensure_compiled(self) -> None:
+        if self._compiled:
+            return
+
         pattern = ""
 
         for fragment in self.fragments:
@@ -159,9 +167,10 @@ class Pattern(Bunch):
             pattern += fragment_pattern
 
         if not pattern:
-            pattern = r"$  ^"  # Never matches anything.
+            pattern = _NEVER_MATCHES
 
         self._re = re.compile(pattern, flags=re.IGNORECASE)
+        self._compiled = True
 
     def matches(self, line: str) -> list[tuple[int, int, FormatUpdate]]:
         """
@@ -177,6 +186,8 @@ class Pattern(Bunch):
 
         ret: list[tuple[int, int, FormatUpdate]] = []
         matches: Iterable[re.Match[str]] = []
+
+        self._ensure_compiled()
 
         match self.scope.get():
             case PatternScope.ENTIRE_LINE:

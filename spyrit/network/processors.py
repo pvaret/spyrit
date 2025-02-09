@@ -20,7 +20,6 @@ import codecs
 import logging
 from collections import deque
 from collections.abc import Iterable, Iterator
-from typing import cast
 
 import regex
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
@@ -221,9 +220,6 @@ class ANSIProcessor(BaseProcessor):
         format_update = FormatUpdate()
 
         while codes:
-            # This cast shouldn't be necessary, but without it the pattern
-            # matching below confuses some versions of Pylance.
-            codes = cast(list[int], codes)
             match code := codes.pop(0):
                 case 0:
                     format_update.update(self._SGR_reset)

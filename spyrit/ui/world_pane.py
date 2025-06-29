@@ -281,8 +281,8 @@ class WorldPane(Pane):
         unit = sizer.unitSize()
         margin = sizer.marginSize()
 
-        self.setLayout(QHBoxLayout())
-        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout := QHBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
 
         outputs = VBox(HBox(view, scrollbar), search_bar)
 
@@ -299,7 +299,7 @@ class WorldPane(Pane):
 
         input_splitter.setContentsMargins(0, 0, margin, margin)
 
-        self.layout().addWidget(Splitter(state.output_splitter_sizes, outputs, inputs))
+        layout.addWidget(Splitter(state.output_splitter_sizes, outputs, inputs))
 
     def _setupGameWidgets(  # noqa: PLR0913
         self,

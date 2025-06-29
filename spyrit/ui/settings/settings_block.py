@@ -43,13 +43,13 @@ class SettingsBlock(QWidget):
     def __init__(self, widget: QWidget, label: str = "", help_text: str = "") -> None:
         super().__init__()
 
-        self.setLayout(QVBoxLayout())
-        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout := QVBoxLayout())
+        layout.setContentsMargins(0, 0, 0, 0)
 
         if label:
-            self.layout().addWidget(QLabel(f"<b>{label}</b>"))
+            layout.addWidget(QLabel(f"<b>{label}</b>"))
 
-        self.layout().addWidget(widget)
+        layout.addWidget(widget)
         self._help_text = help_text
 
     def enterEvent(self, event: QEnterEvent) -> None:

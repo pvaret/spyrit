@@ -24,10 +24,10 @@ classifiers = [
 dynamic = ["version"]
 requires-python = ">=3.12"
 
-dependencies = ["PySide6>=6.7.0", "regex", "stackprinter", "SunsetSettings>=0.6.0"]
+dependencies = ["PySide6>=6.9.1", "regex", "stackprinter", "SunsetSettings>=0.7.0"]
 
 [project.optional-dependencies]
-tests = ["hypothesis", "pytest", "pytest-mock"]
+tests = ["hypothesis", "pytest", "pytest-cov", "pytest-mock"]
 dev   = ["pyright", "types-regex"]
 
 [project.gui-scripts]
@@ -47,8 +47,10 @@ ignore = [
     "ANN401",  # We're in fact careful about usage of Any.
     "COM812",  # Can confuse the Ruff formatter.
     "ISC001",  # Can confuse the Ruff formatter.
+    "LOG015",  # We use the root logged a lot, actually. TODO: Fix that.
     "N802",    # We in fact use camelCase method names.
     "PLW2901", # We manipulate iteration variables a lot actually.
+    "TC006",   # Obsoleted by PEP 563 (future type annotations).
     "TD002",   # We only use simple TODOs.
     "TD003",   # We only use simple TODOs.
     "D",       # Ignore docstring style linting for now. Revisit later.
@@ -61,14 +63,16 @@ path    = "spyrit/constants.py"
 pattern = 'SPYRIT_VERSION *:? *\w* *= *"(?P<version>[\w.-]+)"'
 
 [tool.hatch.build.targets.wheel]
-packages = ["spyrit"]
+packages = ["spyrit/"]
 
 [tool.hatch.envs.hatch-test]
 # This forces hatch test to use the pytest ini options listed above.
 default-args = []
+
 # This makes this environment use the "tests" optional dependencies above. Hatch
 # installs its own set by default, but explicit is better than implicit.
 features = ["tests"]
+
 # Parallelizes test execution.
 parallel = true
 
@@ -78,3 +82,11 @@ python = ["3.12", "3.13"]
 [tool.hatch.envs.dev]
 # This is the environment used for developping the app.
 features = ["dev", "tests"]
+
+[tool.hatch.envs.hatch-static-analysis]
+# Require a version of Ruff that agrees with the linting parameters above.
+dependencies = ["ruff>=0.12.1"]
+
+# Disable Hatch's custom Ruff defaults so that our linting parameters above are the
+# entirety of what is used.
+config-path = "none"

@@ -68,15 +68,15 @@ class SearchBar(QWidget):
 
         margin = Sizer(self).marginSize()
 
-        self.setLayout(QHBoxLayout())
+        self.setLayout(layout := QHBoxLayout())
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        self.layout().setContentsMargins(margin, margin, margin, 0)
-        self.layout().setSpacing(margin)
+        layout.setContentsMargins(margin, margin, margin, 0)
+        layout.setSpacing(margin)
 
-        self.layout().addWidget(QLabel("Find:"))
-        self.layout().addWidget(textbox := QLineEdit())
-        self.layout().addWidget(search_up := QToolButton())
-        self.layout().addWidget(search_down := QToolButton())
+        layout.addWidget(QLabel("Find:"))
+        layout.addWidget(textbox := QLineEdit())
+        layout.addWidget(search_up := QToolButton())
+        layout.addWidget(search_down := QToolButton())
 
         search_up.setText("⏶")
         search_down.setText("⏷")

@@ -91,11 +91,7 @@ class DefaultPathsBase(ABC):
             A path to the current configuration folder.
         """
 
-        if self._config_folder_path:
-            config_folder_path = self._config_folder_path
-
-        else:
-            config_folder_path = self.getDefaultConfigFolder()
+        config_folder_path = self._config_folder_path or self.getDefaultConfigFolder()
 
         return config_folder_path.absolute().resolve()
 

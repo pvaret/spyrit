@@ -107,5 +107,8 @@ class BaseDialogPane(Pane):
                 be reparented to this dialog.
         """
 
-        self.layout().replaceWidget(self._widget, widget)
+        if not (layout := self.layout()):
+            return
+
+        layout.replaceWidget(self._widget, widget)
         self._widget = widget

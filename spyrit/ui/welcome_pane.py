@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2024 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2025 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -51,7 +51,7 @@ def _set_button_size_properties(button: QAbstractButton) -> None:
     unit = Sizer(button).unitSize()
     button.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
     button.setStyleSheet(
-        f"QAbstractButton {{ padding: {unit/1.5} {unit} {unit/1.5} {unit} }}"
+        f"QAbstractButton {{ padding: {unit / 1.5} {unit} {unit / 1.5} {unit} }}"
     )
 
 

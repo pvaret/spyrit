@@ -1,4 +1,4 @@
-# Copyright (c) 2007-2024 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2025 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #
@@ -86,7 +86,7 @@ class _SideTabBar(QTabBar):
         unit = Sizer(self).unitSize()
 
         self.setStyleSheet(
-            f"QTabBar::tab {{ padding: {unit} {unit/1.5} {unit} {unit/1.5} }}"
+            f"QTabBar::tab {{ padding: {unit} {unit / 1.5} {unit} {unit / 1.5} }}"
         )
 
     def tabSizeHint(self, index: int) -> QSize:

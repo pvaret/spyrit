@@ -33,7 +33,7 @@ def _render_svg(path: str, width: int) -> QSvgWidget:
     svg_size = svg.renderer().defaultSize()
     aspect_ratio = svg_size.height() / svg_size.width()
     svg.setFixedWidth(width)
-    svg.setFixedHeight(int(ceil(width * aspect_ratio)))
+    svg.setFixedHeight(ceil(width * aspect_ratio))
 
     return svg
 

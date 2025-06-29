@@ -17,16 +17,13 @@ SunsetSettings Key.
 """
 
 from collections.abc import Callable
-from typing import Generic, TypeVar
 
 from PySide6.QtCore import QObject, SignalInstance, Slot
 from PySide6.QtWidgets import QWidget
 from sunset import Key
 
-_T = TypeVar("_T", bound=int | str)
 
-
-class Connector(Generic[_T], QObject):
+class Connector[T: int | str](QObject):
     """
     Generic helper that takes a SunsetSettings Key and setters / getters /
     converters for a Qt widget, and binds the widget to the Key so that their
@@ -56,21 +53,21 @@ class Connector(Generic[_T], QObject):
             widget when it's empy.
     """
 
-    _key: Key[_T]
+    _key: Key[T]
     _widget_value_getter: Callable[[], str]
     _widget_value_setter: Callable[[str], None]
-    _to_value_converter: Callable[[str], _T]
-    _from_value_converter: Callable[[_T], str]
+    _to_value_converter: Callable[[str], T]
+    _from_value_converter: Callable[[T], str]
 
     def __init__(  # noqa: PLR0913
         self,
         parent: QWidget,
-        key: Key[_T],
+        key: Key[T],
         widget_value_getter: Callable[[], str],
         widget_value_setter: Callable[[str], None],
         widget_value_changed_signal: SignalInstance,
-        to_value_converter: Callable[[str], _T],
-        from_value_converter: Callable[[_T], str],
+        to_value_converter: Callable[[str], T],
+        from_value_converter: Callable[[T], str],
         widget_placeholder_setter: Callable[[str], None] = lambda _: None,
     ) -> None:
         super().__init__(parent)
@@ -110,7 +107,7 @@ class Connector(Generic[_T], QObject):
         if value != self._key.get():
             self._key.set(value)
 
-    def _updateWidgetValueFromKey(self, key: Key[_T]) -> None:
+    def _updateWidgetValueFromKey(self, key: Key[T]) -> None:
         """
         Reads the current value of the Key bound to this connector, and updates
         the widget's contents accordingly.

@@ -38,7 +38,8 @@ addopts = "-vv"
 
 [tool.ruff]
 # Use the default line length.
-line-length = 88
+line-length    = 88
+extend-exclude = ["spyrit/resources/___compiled.py"]
 
 [tool.ruff.lint]
 # Enable all linting rules by default.
@@ -47,6 +48,7 @@ ignore = [
     "ANN401",  # We're in fact careful about usage of Any.
     "COM812",  # Can confuse the Ruff formatter.
     "ISC001",  # Can confuse the Ruff formatter.
+    "FIX002",  # We do track the TODOs, actually.
     "LOG015",  # We use the root logged a lot, actually. TODO: Fix that.
     "N802",    # We in fact use camelCase method names.
     "PLW2901", # We manipulate iteration variables a lot actually.

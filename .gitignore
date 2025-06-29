@@ -1,12 +1,23 @@
-*.py[co]
-__pycache__/
+# Tooling directories.
+
 .hatch/
 .hypothesis/
+.jj/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
 .vscode/
-build/
+
+# Build and test artifacts.
+
+*.py[co]
+__pycache__/
+.coverage*
+coverage.xml
 dist/
+build/
+
+# Local-only files.
 
 TODO.txt
+*.code-workspace

@@ -28,7 +28,7 @@ def load() -> bool:
     """
 
     try:
-        import spyrit.resources.___compiled as compiled
+        import spyrit.resources.___compiled as compiled  # noqa: PLC0415
 
         del compiled
 

@@ -16,7 +16,7 @@ Implements an application settings pane.
 """
 
 from textwrap import TextWrapper
-from typing import TypeVar, cast
+from typing import cast
 
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QFontMetrics, QPainter, QPaintEvent
@@ -37,10 +37,8 @@ from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 from spyrit.ui.sizer import Sizer
 
-_SettingsT = TypeVar("_SettingsT", bound=Settings)
 
-
-def _root(settings: _SettingsT) -> _SettingsT:
+def _root[SettingsT: Settings](settings: SettingsT) -> SettingsT:
     """
     Returns the topmost parent of the given settings object.
 

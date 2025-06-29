@@ -71,6 +71,9 @@ class ByteFragment(Fragment):
     def __eq__(self, other: object) -> bool:
         return isinstance(other, ByteFragment) and self.data == other.data
 
+    def __hash__(self) -> int:
+        return hash(self.data)
+
 
 class TextFragment(Fragment):
     """
@@ -89,6 +92,9 @@ class TextFragment(Fragment):
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, TextFragment) and self.text == other.text
+
+    def __hash__(self) -> int:
+        return hash(self.text)
 
 
 class ANSIFragment(Fragment):
@@ -112,6 +118,9 @@ class ANSIFragment(Fragment):
             isinstance(other, ANSIFragment)
             and self.format_update == other.format_update
         )
+
+    def __hash__(self) -> int:
+        return hash(self.format_update)
 
 
 class FlowControlCode(enum.Enum):
@@ -143,6 +152,9 @@ class FlowControlFragment(Fragment):
     def __eq__(self, other: object) -> bool:
         return isinstance(other, FlowControlFragment) and self.code == other.code
 
+    def __hash__(self) -> int:
+        return hash(self.code)
+
 
 class NetworkFragment(Fragment):
     """
@@ -168,6 +180,9 @@ class NetworkFragment(Fragment):
             return False
 
         return self.event == other.event and self.text == other.text
+
+    def __hash__(self) -> int:
+        return hash(self.event) ^ hash(self.text)
 
 
 class MatchBoundary(enum.Enum):
@@ -208,6 +223,9 @@ class PatternMatchFragment(Fragment):
 
         return self.format == other.format and self.boundary == other.boundary
 
+    def __hash__(self) -> int:
+        return hash(self.format) ^ hash(self.boundary)
+
 
 class DummyFragment(Fragment):
     """
@@ -229,3 +247,6 @@ class DummyFragment(Fragment):
             return False
 
         return self.value == other.value
+
+    def __hash__(self) -> int:
+        return hash(self.value)

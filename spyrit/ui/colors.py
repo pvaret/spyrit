@@ -356,6 +356,10 @@ class Color(ABC):
             self.isUnset() and other.isUnset()
         ) or self.asHex().lower() == other.asHex().lower()
 
+    def __hash__(self) -> int:
+        # __hash__() needs to be kept in sync with __eq__(). See https://docs.astral.sh/ruff/rules/eq-without-hash/.
+        return hash(self.asHex())
+
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}({self.toStr()})"
 

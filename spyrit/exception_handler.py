@@ -44,7 +44,7 @@ def _make_hook(
         if abort_on_error:
             logging.error("Uncaught error occurred, quitting...")
             with contextlib.suppress(ImportError):
-                from PySide6.QtWidgets import QApplication
+                from PySide6.QtWidgets import QApplication  # noqa: PLC0415
 
                 app = QApplication.instance()
                 if app is not None:

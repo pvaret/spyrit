@@ -44,7 +44,7 @@ def main(args: list[str]) -> int:
 
     # Note that we don't pull in any dependencies until now.
     # pylint: disable-next=import-outside-toplevel
-    from spyrit.bootstrap import bootstrap
+    from spyrit.bootstrap import bootstrap  # noqa: PLC0415
 
     return bootstrap(args)
 

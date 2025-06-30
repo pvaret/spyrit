@@ -48,7 +48,8 @@ class TestFragmentMatching:
         fragment_pattern = "".join(
             c
             for c in map(chr, range(32, 256))
-            if c.isprintable() and c.lower() not in text.lower()
+            if c.isprintable()
+            and not re.search(re.escape(c), text, flags=re.IGNORECASE)
         )
 
         fragment = pattern.fragments.appendOne()

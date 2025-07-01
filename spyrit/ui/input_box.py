@@ -15,7 +15,7 @@ Implements an input box for the user to type text in.
 """
 
 from PySide6.QtCore import Qt, Signal, Slot
-from PySide6.QtGui import QFontMetrics, QKeyEvent
+from PySide6.QtGui import QFocusEvent, QFontMetrics, QKeyEvent
 from PySide6.QtWidgets import QPlainTextEdit
 
 CRLF = "\r\n"
@@ -126,3 +126,13 @@ class InputBox(QPlainTextEdit):
             self.setFocus()
         elif had_focus:
             self.expelFocus.emit()
+
+    def focusInEvent(self, e: QFocusEvent) -> None:
+        # WORKAROUND: In rare circumstances, a race condition can occur where the cursor
+        # vanishes, likely after a pop-up menu was displayed. In Qt 6, making the cursor
+        # vanish is done by giving it a width of 0. We work around this issue here, by
+        # restoring the cursor to a width of 1 if needed, that being the default.
+        if self.cursorWidth() <= 0:
+            self.setCursorWidth(1)
+
+        return super().focusInEvent(e)

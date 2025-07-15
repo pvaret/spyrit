@@ -141,7 +141,7 @@ class TabWidget(QTabWidget):
         """
 
         current_index = self.currentIndex()
-        self._swapTabs(current_index, current_index - 1)
+        self.tabBar().moveTab(current_index, current_index - 1)
 
     @Slot()
     def moveCurrentTabRight(self) -> None:
@@ -150,39 +150,7 @@ class TabWidget(QTabWidget):
         """
 
         current_index = self.currentIndex()
-        self._swapTabs(current_index, current_index + 1)
-
-    def _swapTabs(self, index_from: int, index_to: int) -> None:
-        """
-        Swaps the positions of the tabs at the given indexes.
-
-        Args:
-            index_from, index_to: The indexes of the tabs to be swapped.
-        """
-
-        index_from = max(0, index_from)
-        index_from = min(self.count() - 1, index_from)
-        index_to = max(0, index_to)
-        index_to = min(self.count() - 1, index_to)
-
-        if index_from == index_to:
-            return
-
-        widget_from = self.widget(index_from)
-        widget_to = self.widget(index_to)
-        title_from = self.tabText(index_from)
-        title_to = self.tabText(index_to)
-        assert widget_from is not None  # noqa: S101
-        assert widget_to is not None  # noqa: S101
-
-        # Note that inserting a tab with an existing widget at a new position
-        # removes it from its previous position. So we don't need to do that
-        # explicitly.
-
-        self.insertTab(index_from, widget_to, title_to)
-        self.insertTab(index_to, widget_from, title_from)
-
-        self.setCurrentIndex(index_to)
+        self.tabBar().moveTab(current_index, current_index + 1)
 
     @Slot(int)
     def _setTabWidgetFocus(self, index: int) -> None:
@@ -274,6 +242,7 @@ class SpyritMainWindow(QMainWindow):
         # Set up the main widget.
 
         self._tab_widget = TabWidget(self)
+        self._tab_widget.setMovable(True)
         self._tab_widget.tabCountChanged.connect(self._closeIfEmpty)
         self.setCentralWidget(self._tab_widget)
 

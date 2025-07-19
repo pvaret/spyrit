@@ -19,12 +19,6 @@ exist in the application.
 import enum
 from collections.abc import Sequence
 
-from spyrit.resources.loader import load
-
-# Ensure the resources are loaded when this file is imported.
-
-load()
-
 
 class _Resource(enum.StrEnum):
     """

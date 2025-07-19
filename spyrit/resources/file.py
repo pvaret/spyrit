@@ -76,7 +76,7 @@ class ResourceFile(RawIOBase):
         """
 
         if self.closed:
-            msg = "File object is closed and cannot be read from"
+            msg = "File object is closed and cannot be read from."
             raise ValueError(msg)
 
         return bytes(self._file.readAll().data())

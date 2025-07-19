@@ -16,6 +16,7 @@ __pycache__/
 coverage.xml
 dist/
 build/
+__resources__.py
 
 # Local-only files.
 

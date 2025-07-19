@@ -1,5 +1,5 @@
 [build-system]
-requires      = ["hatchling"]
+requires      = ["hatchling", "hatch-build-scripts"]
 build-backend = "hatchling.build"
 
 [project]
@@ -38,8 +38,7 @@ addopts = "-vv"
 
 [tool.ruff]
 # Use the default line length.
-line-length    = 88
-extend-exclude = ["spyrit/resources/___compiled.py"]
+line-length = 88
 
 [tool.ruff.lint]
 # Enable all linting rules by default.
@@ -49,7 +48,7 @@ ignore = [
     "COM812",  # Can confuse the Ruff formatter.
     "ISC001",  # Can confuse the Ruff formatter.
     "FIX002",  # We do track the TODOs, actually.
-    "LOG015",  # We use the root logged a lot, actually. TODO: Fix that.
+    "LOG015",  # We use the root logger a lot, actually. TODO: Fix that.
     "N802",    # We in fact use camelCase method names.
     "PLW2901", # We manipulate iteration variables a lot actually.
     "TC006",   # Obsoleted by PEP 563 (future type annotations).
@@ -66,6 +65,23 @@ pattern = 'SPYRIT_VERSION *:? *\w* *= *"(?P<version>[\w.-]+)"'
 
 [tool.hatch.build.targets.wheel]
 packages = ["spyrit/"]
+
+# Explicitly add the built resources file to the wheel, even if the VCS configuration is
+# set to ignore it.
+artifacts = ["spyrit/__resources__.py"]
+
+[[tool.hatch.build.targets.wheel.hooks.build-scripts.scripts]]
+commands = ["hatch run build-resources"]
+
+[tool.hatch.envs.default.scripts]
+build-resources = """
+    pyside6-rcc \
+        --generator python \
+        --compress 9 \
+        --threshold 0.95 \
+        --output spyrit/__resources__.py \
+        resources/resources.qrc
+"""
 
 [tool.hatch.envs.hatch-test]
 # This forces hatch test to use the pytest ini options listed above.

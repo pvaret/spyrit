@@ -15,8 +15,8 @@
 Provides utilities to make Spyrit resources available to Qt.
 """
 
+import importlib
 import logging
-import pathlib
 
 
 def load() -> bool:
@@ -28,22 +28,12 @@ def load() -> bool:
     """
 
     try:
-        import spyrit.resources.___compiled as compiled  # noqa: PLC0415
-
-        del compiled
+        importlib.import_module("spyrit.__resources__")
 
     except ImportError:
-        this_file = pathlib.Path(__file__)
-        this_dir: str = this_file.parent.absolute().as_posix()
-
         logging.error(  # noqa: TRY400  # Actually don't print the exception.
             "Resources not compiled. In order to compile them, run:\n"
-            " pyside6-rcc --generator python"
-            " --compress 9 --threshold 0.95"
-            " --output %s/___compiled.py"
-            " %s/resources.qrc",
-            this_dir,
-            this_dir,
+            "  hatch build --ext"
         )
         return False
 

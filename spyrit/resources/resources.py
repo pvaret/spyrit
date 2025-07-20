@@ -20,23 +20,23 @@ import enum
 from collections.abc import Sequence
 
 
-class _Resource(enum.StrEnum):
+class Resource(enum.StrEnum):
     """
     This class serves as a marker to identify our resource enums, as opposed to
     generic enums that may not contain valid resource names.
     """
 
 
-class Logo(_Resource):
+class Logo(Resource):
     APPLICATION_ICON_SVG = ":/logos/app-icon.svg"
     SPYRIT_SVG = ":/logos/spyrit-logo.svg"
 
 
-class Font(_Resource):
+class Font(Resource):
     NOTO_SANS_MONO_TTF = ":/fonts/NotoSansMono.ttf"
 
 
-class Icon(_Resource):
+class Icon(Resource):
     CONNECTION_ON_SVG = ":/icons/connection-on.svg"
     CONNECTION_OFF_SVG = ":/icons/connection-off.svg"
     HOME_SVG = ":/icons/home.svg"
@@ -48,10 +48,8 @@ class Icon(_Resource):
     SWITCH_ON_SVG = ":/icons/switch-on.svg"
 
 
-class Misc(_Resource):
+class Misc(Resource):
     WORDLIST_TXT_GZ = ":/misc/wordlist.txt.gz"
-    TEST_TXT = ":/misc/test.txt"
-    TEST_TXT_GZ = ":/misc/test.txt.gz"
 
 
-RESOURCES: Sequence[type[_Resource]] = (Logo, Font, Icon, Misc)
+RESOURCES: Sequence[type[Resource]] = (Logo, Font, Icon, Misc)

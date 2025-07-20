@@ -20,7 +20,7 @@ from io import RawIOBase
 
 from PySide6.QtCore import QFile
 
-from spyrit.resources.resources import _Resource  # type: ignore[reportPrivateUsage]
+from spyrit.resources.resources import Resource
 
 
 class ResourceFile(RawIOBase):
@@ -34,7 +34,7 @@ class ResourceFile(RawIOBase):
 
     _file: QFile
 
-    def __init__(self, resource: _Resource) -> None:
+    def __init__(self, resource: Resource) -> None:
         super().__init__()
         self._file = QFile(resource)
         self._file.open(QFile.OpenModeFlag.ReadOnly)
@@ -54,7 +54,7 @@ class ResourceFile(RawIOBase):
             resource data.
         """
 
-        if not isinstance(buffer, MutableSequence | memoryview):
+        if not isinstance(buffer, MutableSequence | memoryview):  # pragma: no cover
             msg = f"Input parameter must be a mutable sequence; got {type(buffer)}."
             raise TypeError(msg)
 
@@ -75,7 +75,7 @@ class ResourceFile(RawIOBase):
             The remainder of the contents of the file.
         """
 
-        if self.closed:
+        if self.closed:  # pragma: no cover
             msg = "File object is closed and cannot be read from."
             raise ValueError(msg)
 

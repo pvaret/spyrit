@@ -1,5 +1,11 @@
 [build-system]
-requires      = ["hatchling", "hatch-build-scripts"]
+requires = [
+    "hatchling",
+    "hatch-build-scripts",
+    # Note that the following are needed at build time in order to compile resources.
+    "pip",
+    "PySide6",
+]
 build-backend = "hatchling.build"
 
 [project]
@@ -33,6 +39,50 @@ dev   = ["pyright", "types-regex"]
 [project.gui-scripts]
 spyrit = "spyrit.main:run"
 
+[tool.hatch.version]
+path    = "spyrit/constants.py"
+pattern = 'SPYRIT_VERSION *:? *\w* *= *"(?P<version>[\w.-]+)"'
+
+[tool.hatch.build.targets.wheel]
+packages = ["spyrit/"]
+
+# Explicitly add the built resources file to the wheel, even if the VCS configuration is
+# set to ignore it.
+artifacts = ["spyrit/__resources__.py"]
+
+[[tool.hatch.build.targets.wheel.hooks.build-scripts.scripts]]
+commands = ["""
+    pyside6-rcc \
+        --generator python \
+        --compress 9 \
+        --threshold 0.95 \
+        --output spyrit/__resources__.py \
+        resources/resources.qrc
+"""]
+
+[tool.hatch.envs.hatch-test]
+# This forces hatch test to use the pytest ini options listed above.
+default-args = []
+
+# This makes this environment use the "tests" optional dependencies above. Hatch
+# installs its own set by default, but explicit is better than implicit.
+features = ["tests"]
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.12", "3.13"]
+
+[tool.hatch.envs.dev]
+# This is the environment used for developing the app.
+features = ["dev", "tests"]
+
+[tool.hatch.envs.hatch-static-analysis]
+# Require a version of Ruff that agrees with the linting parameters underneath.
+dependencies = ["ruff>=0.12.1"]
+
+# Disable Hatch's custom Ruff defaults so that our linting parameters underneath are the
+# entirety of what is used.
+config-path = "none"
+
 [tool.pytest.ini_options]
 addopts = "-vv"
 
@@ -59,52 +109,9 @@ ignore = [
 ]
 exclude = ["testing/*"]
 
-[tool.hatch.version]
-path    = "spyrit/constants.py"
-pattern = 'SPYRIT_VERSION *:? *\w* *= *"(?P<version>[\w.-]+)"'
+[tool.coverage.run]
+omit = ["__resources__.py", "demo_*.py"]
 
-[tool.hatch.build.targets.wheel]
-packages = ["spyrit/"]
-
-# Explicitly add the built resources file to the wheel, even if the VCS configuration is
-# set to ignore it.
-artifacts = ["spyrit/__resources__.py"]
-
-[[tool.hatch.build.targets.wheel.hooks.build-scripts.scripts]]
-commands = ["hatch run build-resources"]
-
-[tool.hatch.envs.default.scripts]
-build-resources = """
-    pyside6-rcc \
-        --generator python \
-        --compress 9 \
-        --threshold 0.95 \
-        --output spyrit/__resources__.py \
-        resources/resources.qrc
-"""
-
-[tool.hatch.envs.hatch-test]
-# This forces hatch test to use the pytest ini options listed above.
-default-args = []
-
-# This makes this environment use the "tests" optional dependencies above. Hatch
-# installs its own set by default, but explicit is better than implicit.
-features = ["tests"]
-
-# Parallelizes test execution.
-parallel = true
-
-[[tool.hatch.envs.hatch-test.matrix]]
-python = ["3.12", "3.13"]
-
-[tool.hatch.envs.dev]
-# This is the environment used for developping the app.
-features = ["dev", "tests"]
-
-[tool.hatch.envs.hatch-static-analysis]
-# Require a version of Ruff that agrees with the linting parameters above.
-dependencies = ["ruff>=0.12.1"]
-
-# Disable Hatch's custom Ruff defaults so that our linting parameters above are the
-# entirety of what is used.
-config-path = "none"
+# Disable a spurious warning caused by coverage getting confused about temporary
+# shiboken-related files.
+disable_warnings = ["couldnt-parse"]

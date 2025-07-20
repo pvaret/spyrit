@@ -42,10 +42,7 @@ from spyrit.network.fragments import (
     NetworkFragment,
     TextFragment,
 )
-from spyrit.resources.file import (
-    ResourceFile,
-    _Resource,  # type: ignore[reportPrivateUsage]
-)
+from spyrit.resources.file import Resource, ResourceFile
 from spyrit.resources.resources import Misc
 from spyrit.settings.key_shortcut import Shortcut
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
@@ -163,11 +160,11 @@ class StaticWordList(Sequence[str]):
     _word_set: ClassVar[set[str]] = CaseInsensitiveSet()
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
-    def __init__(self, resource: _Resource = Misc.WORDLIST_TXT_GZ) -> None:
+    def __init__(self, resource: Resource = Misc.WORDLIST_TXT_GZ) -> None:
         self._ensureWordListLoaded(resource)
 
     @classmethod
-    def _ensureWordListLoaded(cls, resource: _Resource) -> None:
+    def _ensureWordListLoaded(cls, resource: Resource) -> None:
         """
         Loads the word list from the compressed resource file with the given
         name, if and only if it hasn't already been loaded by another instance

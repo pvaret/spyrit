@@ -1,6 +1,6 @@
-from typing import Iterator
+from collections.abc import Callable, Iterator
 
-from pytest import MonkeyPatch, FixtureDef, fixture
+from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 
 from PySide6.QtGui import QTextCursor, QTextDocument
@@ -11,7 +11,6 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.resources.file import ResourceFile
-from spyrit.resources.resources import Misc
 from spyrit.ui.autocompleter import (
     Autocompleter,
     Case,
@@ -21,7 +20,7 @@ from spyrit.ui.autocompleter import (
 )
 from spyrit.ui.autocompleter import _apply_case, _compute_case  # type: ignore
 
-StaticWordListFixture = FixtureDef[None]
+from .conftest import MockResource
 
 
 @fixture
@@ -59,21 +58,35 @@ class TestCase:
 
 
 class TestStaticWordList:
-    def test_word_list_len(self, reset_static_word_list: StaticWordListFixture) -> None:
-        words = StaticWordList(Misc.TEST_TXT_GZ)
+    def test_word_list_len(
+        self,
+        reset_static_word_list: None,
+        make_text_resource: Callable[[str], type[MockResource]],
+    ) -> None:
+        DummyResource = make_text_resource("a\nb\n")
+        words = StaticWordList(DummyResource.TEXT_TXT_GZ)
+
         assert len(words) == 2
 
     def test_word_list_getitem(
-        self, reset_static_word_list: StaticWordListFixture
+        self,
+        reset_static_word_list: None,
+        make_text_resource: Callable[[str], type[MockResource]],
     ) -> None:
-        words = StaticWordList(Misc.TEST_TXT_GZ)
+        DummyResource = make_text_resource("Po-TAH-to\nPo-TAY-to")
+        words = StaticWordList(DummyResource.TEXT_TXT_GZ)
+
         assert words[0] == "Po-TAH-to"
         assert words[1] == "Po-TAY-to"
 
     def test_word_list_contains(
-        self, reset_static_word_list: StaticWordListFixture
+        self,
+        reset_static_word_list: None,
+        make_text_resource: Callable[[str], type[MockResource]],
     ) -> None:
-        words = StaticWordList(Misc.TEST_TXT_GZ)
+        DummyResource = make_text_resource("Po-TAH-to\nPo-TAY-to")
+        words = StaticWordList(DummyResource.TEXT_TXT_GZ)
+
         assert "Po-TAH-to" in words
         assert "Po-TAY-to" in words
         assert "PO-TAY-TO" in words
@@ -82,22 +95,24 @@ class TestStaticWordList:
 
     def test_costly_functions_only_called_once(
         self,
-        reset_static_word_list: StaticWordListFixture,
+        reset_static_word_list: None,
+        make_text_resource: Callable[[str], type[MockResource]],
         mocker: MockerFixture,
         monkeypatch: MonkeyPatch,
     ) -> None:
-        data = ResourceFile(Misc.TEST_TXT_GZ).readall()
+        DummyResource = make_text_resource("dummy")
+        data = ResourceFile(DummyResource.TEXT_TXT_GZ).readall()
 
         readall = mocker.Mock(return_value=data)
         monkeypatch.setattr(ResourceFile, "readall", readall)
 
         readall.assert_not_called()
 
-        StaticWordList(Misc.TEST_TXT_GZ)
+        StaticWordList(DummyResource.TEXT_TXT_GZ)
         readall.assert_called_once()
         readall.reset_mock()
 
-        StaticWordList(Misc.TEST_TXT_GZ)
+        StaticWordList(DummyResource.TEXT_TXT_GZ)
         readall.assert_not_called()
 
 

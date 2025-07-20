@@ -18,6 +18,10 @@ Provides utilities to make Spyrit resources available to Qt.
 import importlib
 import logging
 
+from PySide6.QtCore import QFile
+
+from spyrit.resources.resources import RESOURCES
+
 
 def load() -> bool:
     """
@@ -30,11 +34,15 @@ def load() -> bool:
     try:
         importlib.import_module("spyrit.__resources__")
 
-    except ImportError:
+    except ImportError:  # pragma: no cover
         logging.error(  # noqa: TRY400  # Actually don't print the exception.
             "Resources not compiled. In order to compile them, run:\n"
             "  hatch build --ext"
         )
         return False
 
-    return True
+    return all(
+        QFile(filename).exists()
+        for resource_type in RESOURCES
+        for filename in resource_type
+    )

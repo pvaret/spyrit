@@ -26,7 +26,7 @@ from types import TracebackType
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import QApplication
 
-from spyrit import constants, platform, resources
+from spyrit import constants, platform, resources, version
 from spyrit.default_paths_base import DefaultPathsBase
 from spyrit.dependency_checker import CHECK_DEPENDENCIES_ARG
 from spyrit.exception_handler import install_exception_handler
@@ -229,6 +229,9 @@ def bootstrap(args: list[str]) -> int:
     )
     _setup_excepthook(logger)
 
+    logging.info(
+        "%s v%s starting...", constants.APPLICATION_NAME, version.get_version()
+    )
     logging.debug("Debug logging on.")
 
     # Install a custom exception handler.

@@ -20,12 +20,12 @@ purposes.
 # Dependencies
 
 REQUIRED_PYTHON_VERSION: tuple[int, int] = (3, 12)
-REQUIRED_QT_VERSION: tuple[int, int] = (6, 7)
+REQUIRED_QT_VERSION: tuple[int, int] = (6, 9)
 
 # Name
 
 APPLICATION_NAME: str = "SpyritNG"
-SPYRIT_VERSION: str = "0.6-dev"
+PACKAGE_NAME: str = "Spyrit"
 DEFAULT_TAB_TITLE: str = f"Welcome to {APPLICATION_NAME}!"
 
 # Special named files

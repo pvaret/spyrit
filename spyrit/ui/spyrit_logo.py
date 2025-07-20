@@ -20,7 +20,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtWidgets import QGridLayout, QLabel, QWidget
 
-from spyrit import constants
+from spyrit import version
 from spyrit.resources.resources import Logo
 from spyrit.ui.sizer import Sizer
 
@@ -69,6 +69,6 @@ class SpyritLogo(QWidget):
         layout.addWidget(_render_svg(Logo.SPYRIT_SVG, title_width), 0, 1)
 
         version_label = QLabel()
-        version_label.setText(f"<i>v{constants.SPYRIT_VERSION}</i>")
+        version_label.setText(f"<i>v{version.get_version()}</i>")
         version_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         layout.addWidget(version_label, 1, 1)

@@ -2,6 +2,7 @@
 requires = [
     "hatchling",
     "hatch-build-scripts",
+    "hatch-vcs",
     # Note that the following are needed at build time in order to compile resources.
     "pip",
     "PySide6",
@@ -40,8 +41,10 @@ dev   = ["pyright", "types-regex"]
 spyrit = "spyrit.main:run"
 
 [tool.hatch.version]
-path    = "spyrit/constants.py"
-pattern = 'SPYRIT_VERSION *:? *\w* *= *"(?P<version>[\w.-]+)"'
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+local_scheme = "no-local-version"
 
 [tool.hatch.build.targets.wheel]
 packages = ["spyrit/"]

@@ -224,8 +224,11 @@ class WorldPane(Pane):
 
         # Assemble the game UI layout.
 
-        scrollbar_proxy = SmoothScrollbarProxy(view.verticalScrollBar())
-        Autoscroller(scrollbar_proxy)
+        scrollbar_proxy = SmoothScrollbarProxy(
+            view.verticalScrollBar(), view.document()
+        )
+        autoscroller = Autoscroller(scrollbar_proxy)
+        view.document().contentsChanged.connect(autoscroller.maybeScrollToBottom)
 
         self._layoutWidgets(
             state, view, scrollbar_proxy, search_bar, toolbar, inputbox, extra_inputbox

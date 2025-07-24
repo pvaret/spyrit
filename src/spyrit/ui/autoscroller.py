@@ -34,20 +34,28 @@ class BottomTracker(QObject):
 
     _scrollbar: QScrollBar
     _at_bottom: bool
+    _last_value: int
 
     def __init__(self, scrollbar: QScrollBar) -> None:
         super().__init__(scrollbar)
 
         self._scrollbar = scrollbar
-        self._scrollbar.rangeChanged.connect(self._updateAtBottom)
-        self._scrollbar.valueChanged.connect(self._updateAtBottom)
+        self._last_value = scrollbar.value()
         self._at_bottom = True
+        self._scrollbar.valueChanged.connect(self._updateAtBottom)
 
     @Slot()
     def _updateAtBottom(self) -> None:
-        at_bottom = (
-            self._scrollbar.value() >= self._scrollbar.maximum() - self._THRESHOLD
-        )
+        value = self._scrollbar.value()
+
+        if self._at_bottom:
+            # The user scrolled up. We're no longer at the bottom.
+            at_bottom = not (value < self._last_value)
+        else:
+            at_bottom = (
+                self._scrollbar.value() >= self._scrollbar.maximum() - self._THRESHOLD
+            )
+
         if at_bottom != self._at_bottom:
             self._at_bottom = at_bottom
             self.atBottom.emit(at_bottom)
@@ -59,9 +67,8 @@ class Autoscroller(QObject):
 
     def __init__(self, scrollbar: QScrollBar) -> None:
         super().__init__(parent=scrollbar)
+        BottomTracker(scrollbar).atBottom.connect(self._setAtBottom)
         self._scrollbar = scrollbar
-        self._scrollbar.rangeChanged.connect(self.maybeScrollToBottom)
-        BottomTracker(self._scrollbar).atBottom.connect(self._setAtBottom)
 
     @Slot(bool)
     def _setAtBottom(self, at_bottom: bool) -> None:

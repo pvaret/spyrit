@@ -133,17 +133,17 @@ def _build_logger(
     logger.handlers.clear()
     formatter = logging.Formatter(fmt="%(asctime)s %(levelname)s %(message)s")
     if log_target in (LogTarget.STDERR, LogTarget.BOTH):
-        logger.addHandler(handler := logging.StreamHandler())
-        handler.setFormatter(formatter)
+        logger.addHandler(stream_handler := logging.StreamHandler())
+        stream_handler.setFormatter(formatter)
     if log_target in (LogTarget.FILE, LogTarget.BOTH):
         logger.addHandler(
-            handler := logging.handlers.TimedRotatingFileHandler(
+            file_handler := logging.handlers.TimedRotatingFileHandler(
                 filename=paths.getDebugLogFilePath(),
                 when="midnight",
                 backupCount=10,
             )
         )
-        handler.setFormatter(formatter)
+        file_handler.setFormatter(formatter)
     return logger
 
 
@@ -159,7 +159,7 @@ def _setup_excepthook(logger: logging.Logger) -> None:
     def _log_exception(
         _exc_type_unused: type[BaseException],
         exc_value: BaseException,
-        _traceback_unused: TracebackType,
+        _traceback_unused: TracebackType | None,
     ) -> None:
         logger.critical("Exception occurred:", exc_info=exc_value)
 

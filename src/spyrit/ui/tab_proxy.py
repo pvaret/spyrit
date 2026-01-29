@@ -59,7 +59,7 @@ class TabProxy(QObject):
     # This signal is emitted when a user action is requesting that this tab be
     # closed.
 
-    closeRequested: Signal = Signal()  # noqa: N815
+    closeRequested: Signal = Signal()
 
     _tab_widget: QTabWidget
     _widget: weakref.ref[QWidget]
@@ -151,4 +151,4 @@ class TabProxy(QObject):
             # signal that triggered this slot is complete, which may cause other
             # tabs to be unexpectedly closed.
 
-            QTimer.singleShot(0, self.closeRequested.emit)  # type: ignore[reportUnknownMemberType]
+            QTimer.singleShot(0, self.closeRequested.emit)

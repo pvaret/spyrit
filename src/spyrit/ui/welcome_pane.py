@@ -15,7 +15,7 @@
 Implements the UI that is first displayed when opening a new window.
 """
 
-from typing import Any, cast
+from typing import Any
 
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtWidgets import (
@@ -94,11 +94,11 @@ class WorldsMenu(QMenu):
 
     # This signal is sent when a world is selected in the menu.
 
-    worldSelected: Signal = Signal(SpyritSettings)  # noqa: N815
+    worldSelected: Signal = Signal(SpyritSettings)
 
     # This signal is sent when the item count of the menu changed.
 
-    itemCountChanged: Signal = Signal(int)  # noqa: N815
+    itemCountChanged: Signal = Signal(int)
 
     _settings: SpyritSettings
     _count: int = 0
@@ -121,10 +121,7 @@ class WorldsMenu(QMenu):
         if (
             entity is None
             or isinstance(entity, SpyritSettings)
-            or (
-                isinstance(entity, Key)
-                and _is_ancestor(self._settings.name, cast(Key[Any], entity))
-            )
+            or (isinstance(entity, Key) and _is_ancestor(self._settings.name, entity))
         ):
             self.clear()
             self._count = 0
@@ -222,24 +219,24 @@ class WelcomePane(Pane):
     # This signal is sent when a user action asks for the world creation UI to
     # be opened.
 
-    openWorldCreationUIRequested: Signal = Signal()  # noqa: N815
+    openWorldCreationUIRequested: Signal = Signal()
 
     # This signal is sent when a user action asks for a game world to be opened.
     # The argument is the *world's* settings objects.
 
-    openWorldRequested: Signal = Signal(SpyritSettings)  # noqa: N815
+    openWorldRequested: Signal = Signal(SpyritSettings)
 
     # This signal is sent when a user action asks to open the settings panel.
 
-    openSettingsUIRequested: Signal = Signal(SpyritSettings)  # noqa: N815
+    openSettingsUIRequested: Signal = Signal(SpyritSettings)
 
     # This signal is sent when a user action asks to open the About... pane.
 
-    openAboutRequested: Signal = Signal()  # noqa: N815
+    openAboutRequested: Signal = Signal()
 
     # This signal is sent when the user requests to quit the application.
 
-    quitRequested: Signal = Signal()  # noqa: N815
+    quitRequested: Signal = Signal()
 
     def __init__(self, settings: SpyritSettings) -> None:
         super().__init__()

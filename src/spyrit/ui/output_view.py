@@ -15,7 +15,7 @@
 Implements a widget to display the text of a game.
 """
 
-from typing import Any
+from typing import Any, cast
 
 from PySide6.QtCore import QEvent, QObject, QPoint, Qt, Signal, Slot
 from PySide6.QtGui import (
@@ -31,6 +31,14 @@ from PySide6.QtWidgets import QAbstractSlider, QTextEdit, QWidget
 
 from spyrit import constants
 from spyrit.settings.spyrit_settings import SpyritSettings
+
+
+class _ExtraSelectionType(QTextEdit.ExtraSelection):
+    # WORKAROUND: The type hints for ExtraSelection (as of PySide6 6.10.1)
+    # incorrectly omit several attributes. We create a custom type to expose
+    # them again.
+    cursor: QTextCursor
+    format: QTextCharFormat
 
 
 class OutputView(QTextEdit):
@@ -131,9 +139,9 @@ class OutputView(QTextEdit):
         search_result_format.setForeground(self.palette().highlightedText())
         search_result_format.setBackground(self.palette().highlight())
 
-        search_result = QTextEdit.ExtraSelection()
-        search_result.cursor = cursor  # type: ignore[reportAttributeAccessIssue]
-        search_result.format = search_result_format  # type: ignore[reportAttributeAccessIssue]
+        search_result = cast(_ExtraSelectionType, QTextEdit.ExtraSelection())
+        search_result.cursor = cursor
+        search_result.format = search_result_format
 
         self.setExtraSelections([search_result])
 
@@ -218,7 +226,7 @@ class ClickDetector(QObject):
 
     # This signal fires when a proper click is detected on the target widget.
 
-    mouseClick: Signal = Signal(QPoint, Qt.MouseButton)  # noqa: N815
+    mouseClick: Signal = Signal(QPoint, Qt.MouseButton)
 
     _click_pos: QPoint | None = None
     _click_button: Qt.MouseButton | None = None

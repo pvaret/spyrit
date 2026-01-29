@@ -2,9 +2,9 @@ import errno
 import fcntl
 from pathlib import Path
 
+import pytest
 from PySide6.QtCore import QByteArray
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
-from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
 from spyrit.singletonizer import PIDFile, Singletonizer
@@ -69,7 +69,7 @@ class TestPIDFile:
 
 class TestSingletonizer:
     def test_singletonizer_main_instance(
-        self, tmp_path: Path, mocker: MockerFixture, monkeypatch: MonkeyPatch
+        self, tmp_path: Path, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         stub_pidfile = mocker.Mock(spec=PIDFile)
         stub_server = mocker.Mock(spec=QLocalServer)
@@ -89,7 +89,7 @@ class TestSingletonizer:
             _socket_factory=lambda: stub_socket,
         )
         assert singletonizer.isMainInstance()
-        assert singletonizer._server is not None  # type: ignore
+        assert singletonizer._server is not None
 
         stub_server.listen.assert_called_once_with("test-socket-name")
 
@@ -110,7 +110,7 @@ class TestSingletonizer:
             _socket_factory=lambda: stub_socket,
         )
         assert not singletonizer.isMainInstance()
-        assert singletonizer._server is None  # type: ignore
+        assert singletonizer._server is None
 
         stub_server.listen.assert_not_called()
 
@@ -147,15 +147,9 @@ class TestSingletonizer:
             _socket_factory=lambda: stub_socket,
         )
 
-        assert (
-            singletonizer_a1._makeSocketName()  # type: ignore
-            == singletonizer_a2._makeSocketName()  # type: ignore
-        )
+        assert singletonizer_a1._makeSocketName() == singletonizer_a2._makeSocketName()
 
-        assert (
-            singletonizer_a1._makeSocketName()  # type: ignore
-            != singletonizer_b._makeSocketName()  # type: ignore
-        )
+        assert singletonizer_a1._makeSocketName() != singletonizer_b._makeSocketName()
 
     def test_shutdown(self, tmp_path: Path, mocker: MockerFixture) -> None:
         stub_pidfile = mocker.Mock(spec=PIDFile)
@@ -174,9 +168,9 @@ class TestSingletonizer:
         )
 
         assert singletonizer.isMainInstance()
-        assert singletonizer._server is not None  # type: ignore
+        assert singletonizer._server is not None
         singletonizer.shutdown()
-        assert singletonizer._server is None  # type: ignore
+        assert singletonizer._server is None
         assert not singletonizer.isMainInstance()
 
     def test_secondary_instance_notification_received(
@@ -205,14 +199,14 @@ class TestSingletonizer:
         stub_slot = mocker.stub()
         singletonizer.newInstanceStarted.connect(stub_slot)
 
-        singletonizer._onNewConnectionReceived()  # type: ignore
+        singletonizer._onNewConnectionReceived()
 
         stub_socket.readAll.assert_called_once()
         stub_socket.write.assert_called_once_with(str(_TEST_PID).encode("ascii"))
         stub_slot.assert_called_once()
 
     def test_send_secondary_instance_notification(
-        self, tmp_path: Path, mocker: MockerFixture, monkeypatch: MonkeyPatch
+        self, tmp_path: Path, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         stub_pidfile = mocker.Mock(spec=PIDFile)
         stub_server = mocker.Mock(spec=QLocalServer)

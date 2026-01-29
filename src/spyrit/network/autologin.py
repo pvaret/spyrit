@@ -71,7 +71,7 @@ class Autologin(QObject):
     # This signal is emitted when the Autologin wants the given login string to
     # be sent to the game server.
 
-    sendLoginString: Signal = Signal(str)  # noqa: N815
+    sendLoginString: Signal = Signal(str)
 
     _credentials: SpyritSettings.Login
     _login_sent: bool

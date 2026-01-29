@@ -386,10 +386,10 @@ class ANSIColor(Color):
         self._ansi_code = ansi_code
 
     def asHex(self) -> str:
-        if (hex_ := SolarizedPalette.get(self._ansi_code, None)) is not None:
+        if (hex_ := SolarizedPalette.get(self._ansi_code)) is not None:
             return hex_
 
-        if (hex_ := ExtendedANSIPalette.get(self._ansi_code, None)) is not None:
+        if (hex_ := ExtendedANSIPalette.get(self._ansi_code)) is not None:
             return hex_
 
         return "#000000"

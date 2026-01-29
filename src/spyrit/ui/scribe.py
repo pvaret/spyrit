@@ -20,7 +20,6 @@ import enum
 import logging
 from collections.abc import Iterable
 from functools import reduce
-from typing import TypeVar
 
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
@@ -41,8 +40,6 @@ from spyrit.network.fragments import (
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.colors import Color, NoColor
 from spyrit.ui.format import FormatUpdate
-
-_T = TypeVar("_T")
 
 _INFO_PREFIX = "•"
 _ERROR_PREFIX = "‼"
@@ -86,11 +83,13 @@ class CharFormatUpdater:
 
         formats = self._format_stack.values()
 
-        def not_none(this: _T, other: _T | None) -> _T:
+        def not_none[T](this: T, other: T | None) -> T:
             return other if other is not None else this
 
         def valid_color(this: Color, other: Color | None) -> Color:
             return other if other is not None and not other.isUnset() else this
+
+        no_color: Color = NoColor()
 
         bold = reduce(not_none, (f.bold for f in formats), False)
         bright = reduce(not_none, (f.bright for f in formats), False)
@@ -98,10 +97,10 @@ class CharFormatUpdater:
         underline = reduce(not_none, (f.underline for f in formats), False)
         reverse = reduce(not_none, (f.reverse for f in formats), False)
         strikeout = reduce(not_none, (f.strikeout for f in formats), False)
-        foreground = reduce(valid_color, (f.foreground for f in formats), NoColor())
-        background = reduce(valid_color, (f.background for f in formats), NoColor())
+        foreground = reduce(valid_color, (f.foreground for f in formats), no_color)
+        background = reduce(valid_color, (f.background for f in formats), no_color)
         underline_color = reduce(
-            valid_color, (f.underline_color for f in formats), NoColor()
+            valid_color, (f.underline_color for f in formats), no_color
         )
         href = reduce(not_none, (f.href for f in formats), "")
 

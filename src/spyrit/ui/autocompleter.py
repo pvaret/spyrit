@@ -21,7 +21,7 @@ import logging
 import threading
 import zlib
 from collections.abc import Iterable, Iterator, Sequence
-from typing import ClassVar, cast, overload
+from typing import ClassVar, overload
 
 from PySide6.QtCore import (
     QEvent,
@@ -32,7 +32,7 @@ from PySide6.QtCore import (
     Slot,
 )
 from PySide6.QtGui import QKeyEvent, QTextCursor
-from PySide6.QtWidgets import QAbstractItemView, QCompleter, QPlainTextEdit, QTextEdit
+from PySide6.QtWidgets import QCompleter, QPlainTextEdit, QTextEdit
 from sunset import Key
 
 from spyrit import constants
@@ -42,8 +42,8 @@ from spyrit.network.fragments import (
     NetworkFragment,
     TextFragment,
 )
-from spyrit.resources.file import Resource, ResourceFile
-from spyrit.resources.resources import Misc
+from spyrit.resources.file import ResourceFile
+from spyrit.resources.resources import Misc, Resource
 from spyrit.settings.key_shortcut import Shortcut
 from spyrit.ui.action_with_key_setting import ActionWithKeySetting
 
@@ -231,7 +231,7 @@ class Tokenizer(QObject):
     # This signal is emitted whenever the tokenizer has found a complete token
     # in its input.
 
-    tokenFound: Signal = Signal(str)  # noqa: N815
+    tokenFound: Signal = Signal(str)
 
     _text_so_far: str
 
@@ -544,8 +544,7 @@ class Autocompleter(QCompleter):
         considered part of the completion process.
         """
 
-        # Type hints wrongly claim that QCompleter.popup() cannot return None.
-        popup = cast(QAbstractItemView | None, self.popup())
+        popup = self.popup()
         if popup is None or not popup.isVisible():
             return super().eventFilter(o, e)
 

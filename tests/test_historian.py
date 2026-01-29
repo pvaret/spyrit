@@ -1,37 +1,21 @@
-import unittest.mock
-from collections.abc import Iterator
-
-import pytest
-from PySide6.QtWidgets import QApplication, QPlainTextEdit
+from PySide6.QtWidgets import QPlainTextEdit
 from pytest_mock import MockerFixture
+from pytestqt.qtbot import QtBot
 
 from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.settings.spyrit_state import SpyritState
 from spyrit.ui.input_history import Historian
 
 
-@pytest.fixture
-def inputbox(mocker: MockerFixture) -> Iterator[QPlainTextEdit]:
-    """
-    Provides a QPlainTextEdit with suitably mocked methods.
-
-    Also creates a QApplication for the duration of the test... else
-    instantiating QPlainTextEdit fails hard.
-    """
-    app = QApplication()
-
-    inputbox = QPlainTextEdit()
-    inputbox.clear = mocker.stub()
-    inputbox.appendPlainText = mocker.stub()
-    inputbox.toPlainText = mocker.stub()
-    yield inputbox
-
-    app.shutdown()
-
-
 class TestHistorian:
-    def test_historian(self, inputbox: unittest.mock.Mock) -> None:
+    def test_historian(self, qtbot: QtBot, mocker: MockerFixture) -> None:
         state = SpyritState()
+
+        inputbox = QPlainTextEdit()
+        qtbot.addWidget(inputbox)
+        clear = mocker.spy(inputbox, "clear")
+        append_plain_text = mocker.spy(inputbox, "appendPlainText")
+        to_plain_text = mocker.spy(inputbox, "toPlainText")
 
         historian = Historian(
             inputbox,
@@ -41,53 +25,57 @@ class TestHistorian:
 
         historian.historyNext()
 
-        inputbox.clear.assert_not_called()
-        inputbox.appendPlainText.assert_not_called()
+        clear.assert_not_called()
+        append_plain_text.assert_not_called()
 
         historian.historyPrevious()
 
-        inputbox.clear.assert_not_called()
-        inputbox.appendPlainText.assert_not_called()
+        clear.assert_not_called()
+        append_plain_text.assert_not_called()
 
         historian.recordNewInput("line 1")
         historian.recordNewInput("line 2")
 
-        inputbox.toPlainText.return_value = ""
+        to_plain_text.return_value = ""
         historian.historyPrevious()
 
-        inputbox.clear.assert_called_once()
-        inputbox.appendPlainText.assert_called_once_with("line 2")
+        clear.assert_called_once()
+        append_plain_text.assert_called_once_with("line 2")
 
-        inputbox.clear.reset_mock()
-        inputbox.appendPlainText.reset_mock()
+        clear.reset_mock()
+        append_plain_text.reset_mock()
 
-        inputbox.toPlainText.return_value = "line 2"
+        to_plain_text.return_value = "line 2"
         historian.historyPrevious()
 
-        inputbox.clear.assert_called_once()
-        inputbox.appendPlainText.assert_called_once_with("line 1")
+        clear.assert_called_once()
+        append_plain_text.assert_called_once_with("line 1")
 
-        inputbox.clear.reset_mock()
-        inputbox.appendPlainText.reset_mock()
+        clear.reset_mock()
+        append_plain_text.reset_mock()
 
-        inputbox.toPlainText.return_value = "line 1"
+        to_plain_text.return_value = "line 1"
         historian.historyNext()
 
-        inputbox.clear.assert_called_once()
-        inputbox.appendPlainText.assert_called_once_with("line 2")
+        clear.assert_called_once()
+        append_plain_text.assert_called_once_with("line 2")
 
-        inputbox.clear.reset_mock()
-        inputbox.appendPlainText.reset_mock()
+        clear.reset_mock()
+        append_plain_text.reset_mock()
 
-        inputbox.toPlainText.return_value = "line 2"
+        to_plain_text.return_value = "line 2"
         historian.historyNext()
 
-        inputbox.clear.assert_called_once()
-        inputbox.appendPlainText.assert_called_once_with("")
+        clear.assert_called_once()
+        append_plain_text.assert_called_once_with("")
 
-    def test_historian_history_limit(self, inputbox: unittest.mock.Mock) -> None:
+    def test_historian_history_limit(self, mocker: MockerFixture, qtbot: QtBot) -> None:
         state = SpyritState()
         state.history.max_history_length.set(1)
+
+        inputbox = QPlainTextEdit()
+        qtbot.addWidget(inputbox)
+        append_plain_text = mocker.spy(inputbox, "appendPlainText")
 
         historian = Historian(inputbox, state.history, SpyritSettings.KeyShortcuts())
         historian.recordNewInput("line 1")
@@ -95,19 +83,22 @@ class TestHistorian:
         historian.recordNewInput("line 3")
 
         historian.historyNext()
-        inputbox.appendPlainText.assert_not_called()
+        append_plain_text.assert_not_called()
 
         historian.historyPrevious()
 
-        inputbox.appendPlainText.assert_called_once_with("line 3")
-        inputbox.appendPlainText.reset_mock()
+        append_plain_text.assert_called_once_with("line 3")
+        append_plain_text.reset_mock()
 
         historian.historyPrevious()
 
-        inputbox.appendPlainText.assert_not_called()
+        append_plain_text.assert_not_called()
 
-    def test_historian_saves_state(self, inputbox: unittest.mock.Mock) -> None:
+    def test_historian_saves_state(self, qtbot: QtBot) -> None:
         state = SpyritState()
+
+        inputbox = QPlainTextEdit()
+        qtbot.addWidget(inputbox)
 
         historian = Historian(inputbox, state.history, SpyritSettings.KeyShortcuts())
 
@@ -117,9 +108,11 @@ class TestHistorian:
 
         assert [key.get() for key in state.history.history] == ["1", "2", "3"]
 
-    def test_no_duplicates(self, inputbox: unittest.mock.Mock) -> None:
+    def test_no_duplicates(self, qtbot: QtBot) -> None:
         state = SpyritState()
 
+        inputbox = QPlainTextEdit()
+        qtbot.addWidget(inputbox)
         historian = Historian(inputbox, state.history, SpyritSettings.KeyShortcuts())
 
         historian.recordNewInput("2")

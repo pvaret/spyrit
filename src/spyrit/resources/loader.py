@@ -42,7 +42,7 @@ def load() -> bool:
         return False
 
     return all(
-        QFile(filename).exists()
+        QFile.exists(filename)
         for resource_type in RESOURCES
         for filename in resource_type
     )

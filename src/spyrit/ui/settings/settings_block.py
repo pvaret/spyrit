@@ -36,7 +36,7 @@ class SettingsBlock(QWidget):
     # This signal fires when this SettingsBlock wants its help text to be
     # displayed.
 
-    helpTextDisplayRequested: Signal = Signal(str)  # noqa: N815
+    helpTextDisplayRequested: Signal = Signal(str)
 
     _help_text: str
 

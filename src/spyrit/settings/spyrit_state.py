@@ -42,14 +42,14 @@ class ToggleKey(Key[bool]):
 class SpyritState(Settings):
     class UI(Bunch):
         window_size: Key[QSize] = Key(
-            _default_size, serializer=Size, validator=_size_validator
+            _default_size, serializer=Size(), validator=_size_validator
         )
 
         output_splitter_sizes: Key[list[int]] = Key(
-            default=[800, 200], serializer=IntList
+            default=[800, 200], serializer=IntList()
         )
         input_splitter_sizes: Key[list[int]] = Key(
-            default=[800, 200], serializer=IntList
+            default=[800, 200], serializer=IntList()
         )
 
     class History(Bunch):
@@ -69,15 +69,15 @@ class SpyritState(Settings):
     ) -> "SpyritState":
         hierarchy: list[str] = []
 
-        while (parent := settings.parent()) is not None:
+        while (settings_parent := settings.parent()) is not None:
             hierarchy.append(settings.id.get())
-            settings = parent
+            settings = settings_parent
 
         # Go up the state tree to find the root.
 
         state = self
-        while (parent := state.parent()) is not None:
-            state = parent
+        while (state_parent := state.parent()) is not None:
+            state = state_parent
 
         # Return the state section equivalent to the given settings section.
 

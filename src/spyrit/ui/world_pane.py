@@ -77,12 +77,12 @@ class ConnectionToggleAction(QAction):
     # This signal is sent when a user interaction with this action requests that
     # a connection be initiated.
 
-    connectRequested: Signal = Signal()  # noqa: N815
+    connectRequested: Signal = Signal()
 
     # This signal is sent when a user interaction with this action requests that
     # a connection be terminated.
 
-    disconnectRequested: Signal = Signal()  # noqa: N815
+    disconnectRequested: Signal = Signal()
 
     _status: ConnectionStatus
     _prevent_connection_changes: threading.Lock
@@ -179,25 +179,25 @@ class WorldPane(Pane):
     # This signal is sent when the user wants the given input sent to the game
     # world.
 
-    sendUserInput: Signal = Signal(str)  # noqa: N815
+    sendUserInput: Signal = Signal(str)
 
     # This signal is sent when the user asked for the pane to be closed, pending
     # confirmation.
 
-    closePaneRequested: Signal = Signal()  # noqa: N815
+    closePaneRequested: Signal = Signal()
 
     # This signal is sent when this pane wants the connection started.
 
-    startConnection: Signal = Signal()  # noqa: N815
+    startConnection: Signal = Signal()
 
     # This signal is sent when this pane wants the connection stopped.
 
-    stopConnection: Signal = Signal()  # noqa: N815
+    stopConnection: Signal = Signal()
 
     # This signal is sent when a user action requests for the settings pane to
     # the shown. The argument is this world's settings object.
 
-    showSettingsUI: Signal = Signal(SpyritSettings)  # noqa: N815
+    showSettingsUI: Signal = Signal(SpyritSettings)
 
     _settings: SpyritSettings
     _connection_status: ConnectionStatus

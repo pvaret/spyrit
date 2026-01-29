@@ -70,7 +70,8 @@ class Historian(QObject):
         if not text:
             return
 
-        if len(history := self._state.history) > 0 and history[-1].get() == text:
+        history = self._state.history
+        if len(history) > 0 and history[-1].get() == text:
             return
 
         history.appendOne().set(text)

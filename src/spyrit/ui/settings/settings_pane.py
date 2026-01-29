@@ -16,7 +16,7 @@ Implements an application settings pane.
 """
 
 from textwrap import TextWrapper
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QFontMetrics, QPainter, QPaintEvent
@@ -36,6 +36,16 @@ from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 from spyrit.ui.sizer import Sizer
+
+if TYPE_CHECKING:
+
+    class QStyleOptionTabType(QStyleOptionTab):
+        # WORKAROUND: The type hints for QStyleOptionTab (as of PySide6 6.10.1)
+        # incorrectly omit several attributes. We create a custom type to expose
+        # them again.
+        fontMetrics: QFontMetrics
+        text: str
+        rect: QRect
 
 
 def _root[SettingsT: Settings](settings: SettingsT) -> SettingsT:
@@ -99,11 +109,11 @@ class _SideTabBar(QTabBar):
             A size hint for the tab, rotated 90 degrees.
         """
 
-        opt = QStyleOptionTab()
+        opt: QStyleOptionTabType = cast(QStyleOptionTabType, QStyleOptionTab())
         self.initStyleOption(opt, index)
 
-        metrics = cast(QFontMetrics, opt.fontMetrics)  # type: ignore[reportUnknownMemberType]
-        label = cast(str, opt.text)  # type: ignore[reportUnknownMemberType]
+        metrics = opt.fontMetrics
+        label = opt.text
 
         line_height = metrics.boundingRect(label).height()
         line_count = len(label.split("\n"))
@@ -121,7 +131,7 @@ class _SideTabBar(QTabBar):
         del arg__1  # Unused.
 
         style = self.style()
-        opt = QStyleOptionTab()
+        opt: QStyleOptionTabType = cast(QStyleOptionTabType, QStyleOptionTab())
         painter = QPainter(self)
 
         for i in range(self.count()):
@@ -140,14 +150,12 @@ class _SideTabBar(QTabBar):
             painter.translate(-center)
 
             # Transpose the text element's rect.
-            # Ignore all the type errors because PySide6 types incorrectly omit
-            # QStyleOptionTab.rect.
 
-            tab_rect = cast(QRect, opt.rect)  # type: ignore[reportAttributeAccessIssue]
+            tab_rect = opt.rect
             rect = QRect()
             rect.setSize(tab_rect.size().transposed())
             rect.moveCenter(tab_rect.center())
-            opt.rect = rect  # type: ignore[reportAttributeAccessIssue]
+            opt.rect = rect
 
             # And render the text element.
 

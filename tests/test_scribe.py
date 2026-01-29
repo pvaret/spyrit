@@ -39,7 +39,7 @@ def _describe_char_format(char_format: QTextCharFormat) -> str:
 class MockCursor(QTextCursor):
     _text: str = ""
 
-    def insertText(self, text: str, format: QTextCharFormat | None = None) -> None:
+    def insertText(self, text: str, format: QTextCharFormat | None = None) -> None:  # noqa: A002
         if format is not None:
             format_desc = _describe_char_format(format)
             if format_desc:

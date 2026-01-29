@@ -30,7 +30,7 @@ class BottomTracker(QObject):
     # This signal fires with True when the target scrollbar is all the way to the
     # bottom, give or take a few pixels, and with False when it is not.
 
-    atBottom: Signal = Signal(bool)  # noqa: N815
+    atBottom: Signal = Signal(bool)
 
     _scrollbar: QScrollBar
     _at_bottom: bool

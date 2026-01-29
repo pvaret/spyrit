@@ -20,13 +20,17 @@ from collections.abc import Iterator
 
 try:
     import PySide6
+
+    pyside6_version = PySide6.__version__
 except (ModuleNotFoundError, ImportError):
-    PySide6 = None
+    pyside6_version = ""
 
 try:
     from PySide6 import QtCore
+
+    qt_version = QtCore.qVersion()
 except (ModuleNotFoundError, ImportError):
-    QtCore = None
+    qt_version = ""
 
 from . import constants
 
@@ -108,7 +112,7 @@ class DependencyChecker:
         Checks whether the required version of PySide6 is installed, and records
         the result and a user-friendly explanation message.
         """
-        if PySide6 is None:
+        if pyside6_version is None:
             self.dependencies_met = False
             self.pyside_check_msg = (
                 "❌ PySide6 required!"
@@ -116,8 +120,7 @@ class DependencyChecker:
             )
 
         else:
-            version = PySide6.__version__
-            self.pyside_check_msg = f"🗸 Found PySide6 v{version}."
+            self.pyside_check_msg = f"🗸 Found PySide6 v{pyside6_version}."
 
     @staticmethod
     def qtVersion() -> tuple[bool, tuple[int, int]]:
@@ -129,7 +132,7 @@ class DependencyChecker:
             A tuple of whether a suitable version was found, along with that
             version as a (major, minor) tuple.
         """
-        if QtCore is None:
+        if qt_version is None:
             return False, (0, 0)
 
         # Parse qVersion (of the form "X.Y.Z") into a tuple of (major, minor).
@@ -138,7 +141,7 @@ class DependencyChecker:
         # is incorrectly typed as still returning bytes. Casting to str solves
         # the type variance and the typing issue both.
 
-        version_str = str(QtCore.qVersion())
+        version_str = str(qt_version)
         version_numbers = [int(c) for c in version_str.split(".")]
         version = version_numbers[0], version_numbers[1]
 

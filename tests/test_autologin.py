@@ -1,4 +1,4 @@
-from pytest import MonkeyPatch
+import pytest
 from pytest_mock import MockerFixture
 
 from spyrit.network.autologin import Autologin
@@ -10,7 +10,7 @@ from spyrit.settings.spyrit_settings import LoginStyle, SpyritSettings
 
 class TestAutologin:
     def test_login_sent_when_conditions_are_met(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch
+        self, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         credentials = SpyritSettings.Login()
         credentials.name.set(name := "test")
@@ -54,7 +54,7 @@ class TestAutologin:
         send_login.reset_mock()
 
     def test_login_not_send_if_name_or_password_empty(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch
+        self, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         credentials = SpyritSettings.Login()
         credentials.name.set("test")
@@ -106,7 +106,7 @@ class TestAutologin:
 
         autologin = Autologin(credentials, connection)
 
-        autologin._sendLogin(  # pyright: ignore [reportPrivateUsage]
+        autologin._sendLogin(
             "test_name",
             ScrambledText("test_password"),
             LoginStyle.CONNECT_NAME_PASSWORD_CR,
@@ -114,14 +114,14 @@ class TestAutologin:
         connection.sendText.assert_called_once_with("connect test_name test_password\n")
         connection.sendText.reset_mock()
 
-        autologin._sendLogin(  # pyright: ignore [reportPrivateUsage]
+        autologin._sendLogin(
             "",
             ScrambledText("test_password"),
             LoginStyle.CONNECT_NAME_PASSWORD_CR,
         )
         connection.sendText.assert_not_called()
 
-        autologin._sendLogin(  # pyright: ignore [reportPrivateUsage]
+        autologin._sendLogin(
             "test_name",
             ScrambledText(""),
             LoginStyle.CONNECT_NAME_PASSWORD_CR,

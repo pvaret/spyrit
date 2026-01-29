@@ -120,7 +120,7 @@ class Pattern(Bunch):
 
         # Which format to apply to the given fragment.
         format: Key[FormatUpdate] = Key(
-            default=FormatUpdate(), serializer=serializers.FormatSerializer
+            default=FormatUpdate(), serializer=serializers.FormatSerializer()
         )
 
     # Whether to match entire lines, or anywhere in lines.
@@ -132,7 +132,7 @@ class Pattern(Bunch):
     # The format to apply to the fragment matches that don't have their own
     # specific format.
     format: Key[FormatUpdate] = Key(
-        default=FormatUpdate(), serializer=serializers.FormatSerializer
+        default=FormatUpdate(), serializer=serializers.FormatSerializer()
     )
 
     _re: re.Pattern[str] = re.compile(_NEVER_MATCHES)

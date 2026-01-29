@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterator
 
+import pytest
 from PySide6.QtGui import QTextCursor, QTextDocument
-from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
 
 from spyrit.network.fragments import (
@@ -10,7 +10,7 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.resources.file import ResourceFile
-from spyrit.ui.autocompleter import (  # type: ignore
+from spyrit.ui.autocompleter import (
     Autocompleter,
     Case,
     CompletionModel,
@@ -21,15 +21,6 @@ from spyrit.ui.autocompleter import (  # type: ignore
 )
 
 from .conftest import MockResource
-
-
-@fixture
-def reset_static_word_list() -> Iterator[None]:
-    """
-    This fixture resets the static word list's contents after each test.
-    """
-    yield
-    StaticWordList.reset()
 
 
 class TestCase:
@@ -58,34 +49,39 @@ class TestCase:
 
 
 class TestStaticWordList:
+    @pytest.fixture(autouse=True)
+    def reset_static_word_list(self) -> Iterator[None]:
+        """
+        This fixture resets the static word list's contents after each test.
+        """
+        yield
+        StaticWordList.reset()
+
     def test_word_list_len(
         self,
-        reset_static_word_list: None,
         make_text_resource: Callable[[str], type[MockResource]],
     ) -> None:
-        DummyResource = make_text_resource("a\nb\n")
-        words = StaticWordList(DummyResource.TEXT_TXT_GZ)
+        dummy_resource = make_text_resource("a\nb\n")
+        words = StaticWordList(dummy_resource.TEXT_TXT_GZ)
 
         assert len(words) == 2
 
     def test_word_list_getitem(
         self,
-        reset_static_word_list: None,
         make_text_resource: Callable[[str], type[MockResource]],
     ) -> None:
-        DummyResource = make_text_resource("Po-TAH-to\nPo-TAY-to")
-        words = StaticWordList(DummyResource.TEXT_TXT_GZ)
+        dummy_resource = make_text_resource("Po-TAH-to\nPo-TAY-to")
+        words = StaticWordList(dummy_resource.TEXT_TXT_GZ)
 
         assert words[0] == "Po-TAH-to"
         assert words[1] == "Po-TAY-to"
 
     def test_word_list_contains(
         self,
-        reset_static_word_list: None,
         make_text_resource: Callable[[str], type[MockResource]],
     ) -> None:
-        DummyResource = make_text_resource("Po-TAH-to\nPo-TAY-to")
-        words = StaticWordList(DummyResource.TEXT_TXT_GZ)
+        dummy_resource = make_text_resource("Po-TAH-to\nPo-TAY-to")
+        words = StaticWordList(dummy_resource.TEXT_TXT_GZ)
 
         assert "Po-TAH-to" in words
         assert "Po-TAY-to" in words
@@ -95,24 +91,23 @@ class TestStaticWordList:
 
     def test_costly_functions_only_called_once(
         self,
-        reset_static_word_list: None,
         make_text_resource: Callable[[str], type[MockResource]],
         mocker: MockerFixture,
-        monkeypatch: MonkeyPatch,
+        monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        DummyResource = make_text_resource("dummy")
-        data = ResourceFile(DummyResource.TEXT_TXT_GZ).readall()
+        dummy_resource = make_text_resource("dummy")
+        data = ResourceFile(dummy_resource.TEXT_TXT_GZ).readall()
 
         readall = mocker.Mock(return_value=data)
         monkeypatch.setattr(ResourceFile, "readall", readall)
 
         readall.assert_not_called()
 
-        StaticWordList(DummyResource.TEXT_TXT_GZ)
+        StaticWordList(dummy_resource.TEXT_TXT_GZ)
         readall.assert_called_once()
         readall.reset_mock()
 
-        StaticWordList(DummyResource.TEXT_TXT_GZ)
+        StaticWordList(dummy_resource.TEXT_TXT_GZ)
         readall.assert_not_called()
 
 
@@ -121,38 +116,38 @@ class TestTokenizer:
         output: list[str] = []
         t = Tokenizer()
         t.tokenFound.connect(output.append)
-        CRLF = FlowControlFragment(FlowControlCode.LF)
+        crlf = FlowControlFragment(FlowControlCode.LF)
 
-        t.processFragments([TextFragment("test"), CRLF])
+        t.processFragments([TextFragment("test"), crlf])
         assert output == ["test"]
 
         output.clear()
-        t.processFragments([TextFragment("te"), TextFragment("st"), CRLF])
+        t.processFragments([TextFragment("te"), TextFragment("st"), crlf])
         assert output == ["test"]
 
         output.clear()
-        t.processFragments([TextFragment("test test"), CRLF])
+        t.processFragments([TextFragment("test test"), crlf])
         assert output == ["test", "test"]
 
         output.clear()
-        t.processFragments([TextFragment("testé"), CRLF])
+        t.processFragments([TextFragment("testé"), crlf])
         assert output == ["testé"]
 
         output.clear()
-        t.processFragments([TextFragment("'test'"), CRLF])
+        t.processFragments([TextFragment("'test'"), crlf])
         assert output == ["test"]
 
         output.clear()
-        t.processFragments([TextFragment(" test 'test' "), CRLF])
+        t.processFragments([TextFragment(" test 'test' "), crlf])
         assert output == ["test", "test"]
 
         output.clear()
-        t.processFragments([TextFragment("don't"), CRLF])
+        t.processFragments([TextFragment("don't"), crlf])
         assert output == ["don't"]
 
         output.clear()
         text = '''And then he said, "I've got a bad feeling about this!"'''
-        t.processFragments([TextFragment(text), CRLF])
+        t.processFragments([TextFragment(text), crlf])
         assert output == [
             "And",
             "then",
@@ -171,40 +166,40 @@ class TestTokenizer:
         output: list[str] = []
         t = Tokenizer()
         t.tokenFound.connect(output.append)
-        CRLF = FlowControlFragment(FlowControlCode.LF)
+        crlf = FlowControlFragment(FlowControlCode.LF)
 
-        t.processFragments([TextFragment(""), CRLF])
+        t.processFragments([TextFragment(""), crlf])
         assert output == []
 
-        t.processFragments([TextFragment("!?"), CRLF])
+        t.processFragments([TextFragment("!?"), crlf])
         assert output == []
 
         output.clear()
-        t.processFragments([TextFragment(" test test "), CRLF])
+        t.processFragments([TextFragment(" test test "), crlf])
         assert output == ["test", "test"]
 
         output.clear()
-        t.processFragments([TextFragment("$test!test?"), CRLF])
+        t.processFragments([TextFragment("$test!test?"), crlf])
         assert output == ["test", "test"]
 
         output.clear()
-        t.processFragments([TextFragment("test1/test2"), CRLF])
+        t.processFragments([TextFragment("test1/test2"), crlf])
         assert output == ["test1", "test2"]
 
         output.clear()
-        t.processFragments([TextFragment("test_test"), CRLF])
+        t.processFragments([TextFragment("test_test"), crlf])
         assert output == ["test_test"]
 
         output.clear()
-        t.processFragments([TextFragment("_test_test_"), CRLF])
+        t.processFragments([TextFragment("_test_test_"), crlf])
         assert output == ["test_test"]
 
         output.clear()
-        t.processFragments([TextFragment("'"), CRLF])
+        t.processFragments([TextFragment("'"), crlf])
         assert output == []
 
         output.clear()
-        t.processFragments([TextFragment("test'test test''test"), CRLF])
+        t.processFragments([TextFragment("test'test test''test"), crlf])
         assert output == ["test'test", "test", "test"]
 
 

@@ -74,7 +74,10 @@ class GCStats(QObject):
             per_obj_count[obj_name] += 1
             return (count + 1, mem + sys.getsizeof(obj), per_obj_count)
 
-        count, mem, per_obj_count = reduce(_reducer, gc.get_objects(), (0, 0, {}))
+        per_obj_count: dict[str, int] = {}
+        count, mem, per_obj_count = reduce(
+            _reducer, gc.get_objects(), (0, 0, per_obj_count)
+        )
 
         count_string = f"{count:,}"
         mem_string = f"{mem:,}"

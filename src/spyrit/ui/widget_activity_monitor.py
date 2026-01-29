@@ -31,7 +31,7 @@ class ActivityMonitor(QObject):
     # active means that it's both visible, and in a window that currently has
     # the focus.
 
-    activityChanged: Signal = Signal(bool)  # noqa: N815
+    activityChanged: Signal = Signal(bool)
 
     _visible: bool
     _focused: bool
@@ -91,12 +91,12 @@ class AttentionPinger(QObject):
     # This signal fires when the user's attention is needed about a widget that
     # is not currently active.
 
-    callForAttention: Signal = Signal()  # noqa: N815
+    callForAttention: Signal = Signal()
 
     # This signal fires when the user gave their attention to the widget and the
     # attention call is no longer needed.
 
-    clearAttentionCall: Signal = Signal()  # noqa: N815
+    clearAttentionCall: Signal = Signal()
 
     _active: bool = False
 

@@ -17,7 +17,6 @@ Implements container classes for typed fragments of network data.
 
 import enum
 from collections.abc import Sequence
-from typing import Any
 
 from spyrit.network.connection import Status
 from spyrit.ui.format import FormatUpdate
@@ -237,14 +236,14 @@ class DummyFragment(Fragment):
 
     __match_args__ = ("value",)
 
-    value: Any
+    value: object
 
     def __init__(self, value: object) -> None:
         self.value = value
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, DummyFragment):
-            return False
+            return NotImplemented
 
         return self.value == other.value
 

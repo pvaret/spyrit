@@ -94,7 +94,7 @@ class Session(QObject):
         """
 
         app = cast(QApplication | None, QApplication.instance())
-        active_window = app and app.activeWindow()
+        active_window = app.activeWindow() if app else None
         connected_instances = [
             instance.title()
             for window in self._windows

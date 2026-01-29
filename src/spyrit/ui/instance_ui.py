@@ -49,11 +49,11 @@ class InstanceUI(SlidingPaneContainer):
 
     # This signal is sent when a user action is asking for the app to terminate.
 
-    quitRequested: Signal = Signal()  # noqa: N815
+    quitRequested: Signal = Signal()
 
     # This signal is sent when this container wants its tab's title updated.
 
-    tabUpdateRequested: Signal = Signal(TabUpdate)  # noqa: N815
+    tabUpdateRequested: Signal = Signal(TabUpdate)
 
     _settings: SpyritSettings
     _state: SpyritState

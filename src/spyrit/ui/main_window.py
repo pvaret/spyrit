@@ -65,7 +65,7 @@ class TabWidget(QTabWidget):
     # This signal fires whenever a tab is added or removed. Its argument is the
     # new number of tabs.
 
-    tabCountChanged: Signal = Signal(int)  # noqa: N815
+    tabCountChanged: Signal = Signal(int)
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -88,9 +88,7 @@ class TabWidget(QTabWidget):
 
         self.setStyleSheet(f"QTabBar::tab {{ min-height: {height} px ; }}")
 
-    def addTab(  # type: ignore[reportIncompatibleMethodOverride]  # wrong arg annotation in parent.
-        self, widget: QWidget, title: str
-    ) -> int:
+    def addTab(self, widget: QWidget, title: str) -> int:  # type: ignore[override]  # Buggy hints in PySide6.
         """
         Appends a tab to the TabWidget, and then switches to it.
 
@@ -161,8 +159,7 @@ class TabWidget(QTabWidget):
             index: The index of the tab whose widget should get the focus.
         """
 
-        # The type annotation wrongly claims that QTabWidget.widget() cannot be None.
-        widget = cast(QWidget | None, self.widget(index))
+        widget = self.widget(index)
         if widget is not None:
             widget.setFocus()
 
@@ -203,27 +200,27 @@ class SpyritMainWindow(QMainWindow):
 
     # We fire this signal when the user asked to quit the application.
 
-    quitRequested: Signal = Signal()  # noqa: N815
+    quitRequested: Signal = Signal()
 
     # We fire this signal when the window is being asked to close by a user
     # action.
 
-    closeRequested: Signal = Signal()  # noqa: N815
+    closeRequested: Signal = Signal()
 
     # We fire this signal when the user triggered an action requesting that a
     # new window is opened.
 
-    newWindowRequested: Signal = Signal()  # noqa: N815
+    newWindowRequested: Signal = Signal()
 
     # We fire this signal when the user triggered an action requesting that a
     # new tab is opened in this window.
 
-    newTabRequested: Signal = Signal()  # noqa: N815
+    newTabRequested: Signal = Signal()
 
     # We fire this signal when the window's desktop focus status has changed.
     # Its parameter is True if the window now has focus, else False.
 
-    focusChanged: Signal = Signal(bool)  # noqa: N815
+    focusChanged: Signal = Signal(bool)
 
     _settings: SpyritSettings
     _state: SpyritState
@@ -353,7 +350,7 @@ class SpyritMainWindow(QMainWindow):
             # the closing, because the code path that triggers this may still
             # need the window around in order to complete without crashing.
 
-            QTimer.singleShot(0, self.close)  # type: ignore[reportUnknownMemberType] # bad annotation.
+            QTimer.singleShot(0, self.close)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """

@@ -1,3 +1,5 @@
+import re
+
 import hypothesis
 import hypothesis.strategies
 import pytest
@@ -27,7 +29,9 @@ class TestScrambledText:
     def test_fromStr_restores_scrambled_text(self, text: str, salt: bytes) -> None:
         cipher = ScrambledText(text, salt).toStr()
         scrambled = ScrambledText.fromStr(cipher)
-        assert scrambled is not None and scrambled.plaintext() == text
+
+        assert scrambled is not None
+        assert scrambled.plaintext() == text
 
     @hypothesis.given(text=_text_hypothesis(non_empty=True), salt=_salt_hypothesis())
     def test_scrambled_text_is_scrambled(self, text: str, salt: bytes) -> None:
@@ -80,7 +84,7 @@ class TestScrambledText:
         ),
     )
     def test_invalid_salt_length_raises_assertion(self, text: str, salt: bytes) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Invalid salt length: .*"):
             ScrambledText(text, salt)
 
     @hypothesis.given(salt=_salt_hypothesis())
@@ -92,14 +96,22 @@ class TestScrambledText:
 
     @hypothesis.given(salt=_salt_hypothesis())
     def test_null_character_in_plaintext_disallowed(self, salt: bytes) -> None:
-        with pytest.raises(ValueError):
-            ScrambledText("\0")
-        with pytest.raises(ValueError):
-            ScrambledText("xxxxx\0")
-        with pytest.raises(ValueError):
-            ScrambledText("\0xxxxx")
-        with pytest.raises(ValueError):
-            ScrambledText("xxxxx\0xxxxx")
+        with pytest.raises(
+            ValueError, match=re.escape("Plaintext may not contain the NULL character.")
+        ):
+            ScrambledText("\0", salt)
+        with pytest.raises(
+            ValueError, match=re.escape("Plaintext may not contain the NULL character.")
+        ):
+            ScrambledText("xxxxx\0", salt)
+        with pytest.raises(
+            ValueError, match=re.escape("Plaintext may not contain the NULL character.")
+        ):
+            ScrambledText("\0xxxxx", salt)
+        with pytest.raises(
+            ValueError, match=re.escape("Plaintext may not contain the NULL character.")
+        ):
+            ScrambledText("xxxxx\0xxxxx", salt)
 
     @hypothesis.given(text=_text_hypothesis(non_empty=True))
     def test_truth_value_true(self, text: str) -> None:

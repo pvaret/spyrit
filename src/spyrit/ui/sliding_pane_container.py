@@ -46,7 +46,7 @@ class SlidingPaneContainer(QScrollArea):
     # of the signal is the new active pane, or None if the last pane was
     # removed.
 
-    currentPaneChanged: Signal = Signal(Pane)  # noqa: N815
+    currentPaneChanged: Signal = Signal(Pane)
 
     # How long should the slide animation last, in milliseconds.
 
@@ -334,7 +334,9 @@ class SlidingPaneContainer(QScrollArea):
         # Note that the *viewport* is the element whose size we care about here.
 
         size = self.viewport().size()
-        self.widget().resize(size.width() * max(len(self), 1), size.height())
+        widget = self.widget()
+        if widget is not None:
+            widget.resize(size.width() * max(len(self), 1), size.height())
 
     def _garbageCollectPanes(self) -> None:
         """
@@ -381,7 +383,7 @@ class SlidingPaneContainer(QScrollArea):
             pane.move(size.width() * i, 0)
             pane.resize(size.width(), size.height())
 
-    def resizeEvent(self, event: QResizeEvent) -> None:  # type: ignore[reportIncompatibleMethodOverride]
+    def resizeEvent(self, event: QResizeEvent) -> None:
         """
         Propagates resize events to the child panes and updates the scrollbar
         position to stay fixed relative to the panes.
@@ -401,11 +403,11 @@ class SlidingPaneContainer(QScrollArea):
             # because we're switching to the pane right now. So, schedule a
             # scrollbar update for immediately after.
 
-            QTimer.singleShot(0, self._enforceXScrollPosition)  # type: ignore[reportUnknownMemberType]
+            QTimer.singleShot(0, self._enforceXScrollPosition)
 
         super().resizeEvent(event)
 
-    def wheelEvent(self, event: QWheelEvent) -> None:  # type: ignore[reportIncompatibleMethodOverride]
+    def wheelEvent(self, event: QWheelEvent) -> None:
         """
         Overrides QScrollArea's mouse wheel handling. We never want to scroll
         this widget from mouse events. Instead, pass down the mouse event to the

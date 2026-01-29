@@ -127,7 +127,7 @@ class ServerPortEdit(QWidget):
     # This signal fires when the contents of any of this widget's fields is
     # edited.
 
-    contentsEdited: Signal = Signal()  # noqa: N815
+    contentsEdited: Signal = Signal()
 
     def __init__(self, server_key: Key[str], port_key: Key[int]) -> None:
         super().__init__()

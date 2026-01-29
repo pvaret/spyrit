@@ -40,7 +40,7 @@ class SettingsValidator(QObject):
     # This signal is sent when the validity of the settings object's contents
     # changes one way or another.
 
-    validityChanged: Signal = Signal(bool)  # noqa: N815
+    validityChanged: Signal = Signal(bool)
 
     _valid: bool = False
     _settings: SpyritSettings
@@ -72,7 +72,7 @@ class WorldCreationPane(BaseDialogPane):
     # This signal is sent when the user asks for the world configured in this
     # pane to be opened. The arguments is the new world's settings object.
 
-    openWorldRequested: Signal = Signal(SpyritSettings)  # noqa: N815
+    openWorldRequested: Signal = Signal(SpyritSettings)
 
     _world_settings: SpyritSettings
     _connect_button: QPushButton

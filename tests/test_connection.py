@@ -1,3 +1,4 @@
+import pytest
 from PySide6.QtNetwork import QTcpSocket
 from pytest_mock import MockerFixture
 
@@ -12,7 +13,7 @@ class TestConnection:
         slot = mocker.stub()
         connection.statusChanged.connect(slot)
 
-        socket = connection._socket  # type: ignore
+        socket = connection._socket
 
         socket.stateChanged.emit(QTcpSocket.SocketState.ConnectedState)
         slot.assert_called_once_with(Status.CONNECTED, "")
@@ -35,15 +36,21 @@ class TestConnection:
         slot.assert_called_once_with(Status.ERROR, "Test!")
         slot.reset_mock()
 
-    def test_connection_reports_socket_data(self, mocker: MockerFixture) -> None:
+    def test_connection_reports_socket_data(
+        self, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         connection = Connection(SpyritSettings.Network())
 
         slot = mocker.stub()
         connection.dataReceived.connect(slot)
 
-        socket = connection._socket  # type: ignore
-        socket.isValid = mocker.Mock(return_value=True)
-        socket.readAll = mocker.Mock(return_value=b"abcde")
+        socket = connection._socket
+        monkeypatch.setattr(
+            socket, "isValid", mocker.Mock(spec=socket.isValid, return_value=True)
+        )
+        monkeypatch.setattr(
+            socket, "readAll", mocker.Mock(spec=socket.readAll, return_value=b"abcde")
+        )
 
         socket.readyRead.emit()
         slot.assert_called_once_with(b"abcde")

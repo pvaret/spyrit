@@ -1,8 +1,7 @@
 #!python
 
-import pathlib
-import sys
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Iterator
+from typing import Any, ClassVar, NoReturn
 
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
@@ -13,19 +12,21 @@ from PySide6.QtWidgets import (
     QSizePolicy,
 )
 
-this_file = pathlib.Path(__file__)
-this_dir = this_file.parent.absolute()
-
-sys.path.insert(0, this_dir.parent.as_posix())
-
 from spyrit.ui.base_pane import Pane
 from spyrit.ui.sliding_pane_container import SlidingPaneContainer
 
-_counter: int = 0
+
+def counter() -> Generator[int, Any, NoReturn]:
+    i = 1
+    while True:
+        yield i
+        i += 1
 
 
 class TestPane(Pane):
     _container: SlidingPaneContainer
+    _i: int
+    _counter: ClassVar[Iterator[int]] = counter()
 
     def __init__(self, i: int, parent: SlidingPaneContainer) -> None:
         super().__init__(parent)
@@ -57,9 +58,7 @@ class TestPane(Pane):
         button.setCheckable(True)
 
     def appendRight(self) -> None:
-        global _counter
-        _counter += 1
-        self._container.addPaneRight(TestPane(_counter, self._container))
+        self._container.addPaneRight(TestPane(next(self._counter), self._container))
 
     @Slot(bool)
     def togglePersistent(self, persistent: bool) -> None:

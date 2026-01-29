@@ -1,4 +1,4 @@
-from pytest import MonkeyPatch
+import pytest
 from pytest_mock import MockerFixture
 from sunset import Key, List, Settings
 
@@ -167,7 +167,7 @@ class TestANSIProcessor:
         processor.feed([ByteFragment(b"\033[0m")])
         assert output.get() == [ANSIFragment(reset_all)]
 
-    def test_ansi_sgr_sequences(self) -> None:
+    def test_ansi_sgr_sequences(self) -> None:  # noqa: PLR0915
         bold_effect = Key(default=ANSIBoldEffect.BOLD)
         processor = ANSIProcessor(bold_effect)
         output = OutputCatcher(processor)
@@ -880,30 +880,30 @@ class TestConnectionProcessor:
 
 class TestChainProcessor:
     def test_chain_processor(
-        self, mocker: MockerFixture, monkeypatch: MonkeyPatch
+        self, mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         p1 = BaseProcessor()
         p2 = BaseProcessor()
         p3 = BaseProcessor()
 
-        monkeypatch.setattr(p1, "feed", mocker.Mock(wraps=p1.feed))
-        monkeypatch.setattr(p2, "feed", mocker.Mock(wraps=p2.feed))
-        monkeypatch.setattr(p3, "feed", mocker.Mock(wraps=p3.feed))
+        monkeypatch.setattr(p1, "feed", p1_feed := mocker.Mock(wraps=p1.feed))
+        monkeypatch.setattr(p2, "feed", p2_feed := mocker.Mock(wraps=p2.feed))
+        monkeypatch.setattr(p3, "feed", p3_feed := mocker.Mock(wraps=p3.feed))
 
         output_p1 = OutputCatcher(p1)
 
         p1.feed([TextFragment("dummy")])
 
         assert output_p1.get() == [TextFragment("dummy")]
-        p1.feed.assert_called_once()  # type: ignore
-        p1.feed.reset_mock()  # type: ignore
+        p1_feed.assert_called_once()
+        p1_feed.reset_mock()
 
         processor = ChainProcessor(p1, p2, p3)
         output = OutputCatcher(processor)
 
         processor.feed([TextFragment("dummy")])
 
-        p1.feed.assert_called_once()  # type: ignore
-        p2.feed.assert_called_once()  # type: ignore
-        p3.feed.assert_called_once()  # type: ignore
+        p1_feed.assert_called_once()
+        p2_feed.assert_called_once()
+        p3_feed.assert_called_once()
         assert output.get() == [TextFragment("dummy")]

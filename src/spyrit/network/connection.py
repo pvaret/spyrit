@@ -17,6 +17,7 @@ Implements a class that handles the lifecycle of a network connection.
 
 import enum
 import logging
+from typing import cast
 
 from PySide6.QtCore import QObject, Signal, Slot
 from PySide6.QtNetwork import QTcpSocket
@@ -49,11 +50,11 @@ class Connection(QObject):
 
     # This signal is emitted when data is received from the socket.
 
-    dataReceived: Signal = Signal(bytes)  # noqa: N815
+    dataReceived: Signal = Signal(bytes)
 
     # This signal is emitted when the status of the connection changed.
 
-    statusChanged: Signal = Signal(Status, str)  # noqa: N815
+    statusChanged: Signal = Signal(Status, str)
 
     def __init__(self, settings: SpyritSettings.Network) -> None:
         super().__init__()
@@ -118,7 +119,7 @@ class Connection(QObject):
             Whether the text was sent entirely.
         """
         data = text.encode(self._settings.encoding.get(), "ignore")
-        return self.send(data)
+        return cast(bool, self.send(data))
 
     @Slot()
     def _readFromSocket(self) -> None:
@@ -130,13 +131,12 @@ class Connection(QObject):
         if not self._socket.isValid():
             return
 
-        data = self._socket.readAll()
+        data = cast(bytes, self._socket.readAll())  # Wrong type hints on method.
         if not data:
             return
 
-        byte_data = bytes(data)  # type: ignore[reportArgumentType]
-        logging.debug("Received data packet of length %d bytes.", len(byte_data))
-        self.dataReceived.emit(byte_data)
+        logging.debug("Received data packet of length %d bytes.", len(data))
+        self.dataReceived.emit(data)
 
     @Slot(QTcpSocket.SocketState)
     def _reportStatusChange(self, status: QTcpSocket.SocketState) -> None:

@@ -31,11 +31,11 @@ class InputBox(QPlainTextEdit):
 
     # This signal fires when this input box wants its contents sent to the game world.
 
-    sendText: Signal = Signal(str)  # noqa: N815
+    sendText: Signal = Signal(str)
 
     # This signal fires when this input box no longer wants to have the focus.
 
-    expelFocus: Signal = Signal()  # noqa: N815
+    expelFocus: Signal = Signal()
 
     _active: bool = False
 

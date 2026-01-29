@@ -12,13 +12,13 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Communications",
     "Topic :: Games/Entertainment :: Multi-User Dungeons (MUD)",
 ]
 dynamic = ["version"]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 
 dependencies = ["PySide6>=6.9.1", "regex", "stackprinter", "SunsetSettings>=0.7.0"]
 
@@ -26,8 +26,22 @@ dependencies = ["PySide6>=6.9.1", "regex", "stackprinter", "SunsetSettings>=0.7.
 spyrit = "spyrit.main:run"
 
 [dependency-groups]
-tests = ["hypothesis", "pytest", "pytest-cov", "pytest-mock"]
-dev   = [{ include-group = "tests" }, "mypy", "pyright", "ruff", "types-regex"]
+tests = [
+    # Test-specific dependencies.
+    "hypothesis",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-qt",
+]
+dev = [
+    # Dev dependencies.
+    { include-group = "tests" },
+    "mypy",
+    "ruff",
+    "ty",
+    "types-regex",
+]
 
 [build-system]
 requires = [
@@ -83,6 +97,7 @@ ignore = [
     "ANN401",  # We're in fact careful about usage of Any.
     "COM812",  # Can confuse the Ruff formatter.
     "ISC001",  # Can confuse the Ruff formatter.
+    "N815",    # Use Qt-style camel-case names for signals, for now.
     "FIX002",  # We do track the TODOs, actually.
     "LOG015",  # We use the root logger a lot, actually. TODO: Fix that.
     "N802",    # We in fact use camelCase method names.
@@ -100,16 +115,21 @@ ignore = [
     "PLR2004", # Magic values in comparisons occur a lot in tests.
     "SLF001",  # Tests may call private methods.
 ]
+"demo_*.py" = [
+    "T201", # Demos can use print().
+]
 
 [tool.coverage.run]
-omit = ["__resources__.py", "demo_*.py"]
+source_dirs = ["src/", "tests/"]
+omit        = ["__resources__.py", "demo_*.py"]
 
-# Disable a spurious warning caused by coverage getting confused about temporary
-# shiboken-related files.
-disable_warnings = ["couldnt-parse"]
+# # Disable a spurious warning caused by coverage getting confused about temporary
+# # shiboken-related files.
+# disable_warnings = ["couldnt-parse"]
 
 [tool.mypy]
-packages          = ["spyrit"]
-strict            = true
-exclude_gitignore = true
-pretty            = true
+packages               = ["spyrit"]
+strict                 = true
+follow_untyped_imports = true
+exclude_gitignore      = true
+pretty                 = true

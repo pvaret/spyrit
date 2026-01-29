@@ -28,7 +28,11 @@ if __name__ == "__main__":
         "Test 4: AlsoVeryLongButWithoutAnywhereToSplitTheLabelBetweenWordsOhMy"
     )
 
-    pane = SettingsPane(random.choice([settings, test1, test2, test3, test4]))
+    pane = SettingsPane(
+        random.choice(  # noqa: S311  # This is in fact not cryptography.
+            [settings, test1, test2, test3, test4]
+        )
+    )
     pane.show()
 
     pane.okClicked.connect(pane.close)

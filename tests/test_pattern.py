@@ -1,5 +1,5 @@
-from io import StringIO
 import re
+from io import StringIO
 
 import hypothesis
 import hypothesis.strategies

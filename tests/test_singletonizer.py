@@ -1,13 +1,11 @@
 import errno
 import fcntl
-
 from pathlib import Path
-
-from pytest import MonkeyPatch
-from pytest_mock import MockerFixture
 
 from PySide6.QtCore import QByteArray
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
+from pytest import MonkeyPatch
+from pytest_mock import MockerFixture
 
 from spyrit.singletonizer import PIDFile, Singletonizer
 

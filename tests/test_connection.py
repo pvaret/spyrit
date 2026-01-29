@@ -1,6 +1,5 @@
-from pytest_mock import MockerFixture
-
 from PySide6.QtNetwork import QTcpSocket
+from pytest_mock import MockerFixture
 
 from spyrit.network.connection import Connection, ConnectionStatus, Status
 from spyrit.settings.spyrit_settings import SpyritSettings

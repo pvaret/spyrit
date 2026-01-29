@@ -1,8 +1,9 @@
 import gzip
-from pytest import fixture
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
 from pathlib import Path
 from typing import cast
+
+import pytest
 
 from spyrit.resources.resources import Resource
 
@@ -16,8 +17,8 @@ class MockResource(Resource):
     TEXT_TXT_GZ = ""
 
 
-@fixture
-def make_text_resource(tmp_path: Path) -> Iterator[Callable[[str], type[MockResource]]]:
+@pytest.fixture
+def make_text_resource(tmp_path: Path) -> Callable[[str], type[MockResource]]:
     def _make_text_resource(text: str) -> type[MockResource]:
         text_txt_path = tmp_path / "text.txt"
         text_txt_path.write_text(text)
@@ -31,4 +32,4 @@ def make_text_resource(tmp_path: Path) -> Iterator[Callable[[str], type[MockReso
 
         return cast(type[MockResource], DummyResource)
 
-    yield _make_text_resource
+    return _make_text_resource

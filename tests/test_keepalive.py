@@ -1,7 +1,7 @@
 from typing import Any
-from pytest_mock import MockerFixture
 
 from PySide6.QtCore import QTimer
+from pytest_mock import MockerFixture
 
 from spyrit.network.connection import Connection, Status
 from spyrit.network.keepalive import Keepalive

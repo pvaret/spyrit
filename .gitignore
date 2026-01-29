@@ -1,5 +1,6 @@
 # Tooling directories.
 
+.venv/
 .hatch/
 .hypothesis/
 .jj/

@@ -1,4 +1,5 @@
 from collections.abc import Callable
+
 import pytest
 
 from spyrit.resources.file import ResourceFile

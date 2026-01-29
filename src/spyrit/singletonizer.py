@@ -24,7 +24,7 @@ import threading
 from collections.abc import Callable
 from pathlib import Path
 from types import TracebackType
-from typing import IO
+from typing import IO, Self
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtNetwork import QLocalServer, QLocalSocket
@@ -235,7 +235,7 @@ class Singletonizer(QObject):
         else:
             logging.debug("Process with PID %s is not the main instance.", self._pid)
 
-    def __enter__(self) -> "Singletonizer":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(

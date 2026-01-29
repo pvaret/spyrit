@@ -1,9 +1,8 @@
 from collections.abc import Callable, Iterator
 
+from PySide6.QtGui import QTextCursor, QTextDocument
 from pytest import MonkeyPatch, fixture
 from pytest_mock import MockerFixture
-
-from PySide6.QtGui import QTextCursor, QTextDocument
 
 from spyrit.network.fragments import (
     FlowControlCode,
@@ -11,14 +10,15 @@ from spyrit.network.fragments import (
     TextFragment,
 )
 from spyrit.resources.file import ResourceFile
-from spyrit.ui.autocompleter import (
+from spyrit.ui.autocompleter import (  # type: ignore
     Autocompleter,
     Case,
     CompletionModel,
     StaticWordList,
     Tokenizer,
+    _apply_case,
+    _compute_case,
 )
-from spyrit.ui.autocompleter import _apply_case, _compute_case  # type: ignore
 
 from .conftest import MockResource
 

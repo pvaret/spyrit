@@ -1,8 +1,7 @@
-from PySide6.QtCore import QSize
-from PySide6.QtGui import QFont
-
 import hypothesis
 import hypothesis.strategies
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QFont
 
 from spyrit.settings.serializers import (
     ColorSerializer,

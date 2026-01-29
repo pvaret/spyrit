@@ -1,6 +1,5 @@
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
-
 from sunset import Key, List, Settings
 
 from spyrit.network.connection import Connection, Status

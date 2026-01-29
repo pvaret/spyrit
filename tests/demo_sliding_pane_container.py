@@ -2,8 +2,7 @@
 
 import pathlib
 import sys
-
-from typing import Callable
+from collections.abc import Callable
 
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
@@ -13,7 +12,6 @@ from PySide6.QtWidgets import (
     QPushButton,
     QSizePolicy,
 )
-
 
 this_file = pathlib.Path(__file__)
 this_dir = this_file.parent.absolute()

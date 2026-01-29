@@ -5,7 +5,6 @@ import sys
 
 from PySide6.QtWidgets import QApplication, QLabel, QPushButton
 
-
 if __name__ == "__main__":
     this_file = pathlib.Path(__file__)
     this_dir = this_file.parent.absolute()

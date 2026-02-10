@@ -50,7 +50,7 @@ def _make_hook(
                 if app is not None:
                     app.exit()
 
-            sys.exit(-1)
+            sys.exit(1)
 
     return hook
 

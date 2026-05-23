@@ -15,11 +15,13 @@
 Implements an application settings pane.
 """
 
+from __future__ import annotations
+
 from textwrap import TextWrapper
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QRect, QSize, Qt
-from PySide6.QtGui import QFontMetrics, QPainter, QPaintEvent
+from PySide6.QtGui import QPainter, QPaintEvent
 from PySide6.QtWidgets import (
     QLabel,
     QStyle,
@@ -31,21 +33,13 @@ from PySide6.QtWidgets import (
 from sunset import List, Settings
 
 from spyrit import constants
-from spyrit.settings.pattern import Pattern
-from spyrit.settings.spyrit_settings import SpyritSettings
 from spyrit.ui.base_dialog_pane import BaseDialogPane
 from spyrit.ui.settings.server_settings_ui import ServerSettingsUI
 from spyrit.ui.sizer import Sizer
 
 if TYPE_CHECKING:
-
-    class QStyleOptionTabType(QStyleOptionTab):
-        # WORKAROUND: The type hints for QStyleOptionTab (as of PySide6 6.10.1)
-        # incorrectly omit several attributes. We create a custom type to expose
-        # them again.
-        fontMetrics: QFontMetrics
-        text: str
-        rect: QRect
+    from spyrit.settings.pattern import Pattern
+    from spyrit.settings.spyrit_settings import SpyritSettings
 
 
 def _root[SettingsT: Settings](settings: SettingsT) -> SettingsT:
@@ -109,8 +103,7 @@ class _SideTabBar(QTabBar):
             A size hint for the tab, rotated 90 degrees.
         """
 
-        opt: QStyleOptionTabType = cast(QStyleOptionTabType, QStyleOptionTab())
-        self.initStyleOption(opt, index)
+        self.initStyleOption(opt := QStyleOptionTab(), index)
 
         metrics = opt.fontMetrics
         label = opt.text
@@ -131,11 +124,10 @@ class _SideTabBar(QTabBar):
         del arg__1  # Unused.
 
         style = self.style()
-        opt: QStyleOptionTabType = cast(QStyleOptionTabType, QStyleOptionTab())
         painter = QPainter(self)
 
         for i in range(self.count()):
-            self.initStyleOption(opt, i)
+            self.initStyleOption(opt := QStyleOptionTab(), i)
 
             # Draw the tab's frame.
 

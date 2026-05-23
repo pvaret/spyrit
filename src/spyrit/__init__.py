@@ -4,4 +4,4 @@ from . import constants
 
 __project__ = constants.PACKAGE_NAME
 __author__ = "P. Varet"
-__copyright__ = "2025, P. Varet"
+__copyright__ = "2026, P. Varet"

@@ -1,6 +1,6 @@
 #!python
 
-# Copyright (c) 2007-2025 Pascal Varet <p.varet@gmail.com>
+# Copyright (c) 2007-2026 Pascal Varet <p.varet@gmail.com>
 #
 # This file is part of Spyrit.
 #

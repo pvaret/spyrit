@@ -51,4 +51,4 @@ GitHub: https://github.com/pvaret/spyrit/issues.
 License
 =======
 
-**Spyrit** is (c) 2007-2025 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv3.
+**Spyrit** is (c) 2007-2026 Pascal Varet <p.varet@gmail.com> and licensed to you under the GPLv3.

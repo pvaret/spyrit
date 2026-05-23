@@ -123,10 +123,6 @@ ignore = [
 source_dirs = ["src/", "tests/"]
 omit        = ["__resources__.py", "demo_*.py"]
 
-# # Disable a spurious warning caused by coverage getting confused about temporary
-# # shiboken-related files.
-# disable_warnings = ["couldnt-parse"]
-
 [tool.mypy]
 packages               = ["spyrit"]
 strict                 = true
